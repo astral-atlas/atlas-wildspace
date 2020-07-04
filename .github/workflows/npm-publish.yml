@@ -7,6 +7,10 @@ on:
   push:
     tags: [client-v**]
 
+defaults:
+  run:
+    working-directory: client
+
 jobs:
   publish-npm:
     runs-on: ubuntu-latest
