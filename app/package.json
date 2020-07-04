@@ -1,0 +1,25 @@
+{
+  "name": "@astral-atlas/wildspace-web",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "rollup -c -w",
+    "serve": "serve -s public",
+    "dev": "concurrently npm:build npm:serve"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^13.0.0",
+    "@rollup/plugin-node-resolve": "^8.1.0",
+    "concurrently": "^5.2.0",
+    "rollup": "^2.18.2",
+    "serve": "^11.3.2"
+  },
+  "dependencies": {
+    "@astral-atlas/wildspace-client": "file:../client",
+    "preact": "^10.4.5",
+    "uuid": "^8.2.0"
+  }
+}

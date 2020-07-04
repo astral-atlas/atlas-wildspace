@@ -1,0 +1,12 @@
+{
+  "name": "@astral-atlas/wildspace-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main",
+  "scripts": {},
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "yup": "^0.29.1"
+  }
+}
