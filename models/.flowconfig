@@ -1,0 +1,13 @@
+[ignore]
+
+[include]
+flow-typed
+node_modules/@lukekaalim/schema
+
+[libs]
+
+[lints]
+
+[options]
+
+[strict]
