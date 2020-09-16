@@ -1,0 +1,11 @@
+{
+  "name": "@atlas/wildspace",
+  "private": true,
+  "scripts": {
+    "postinstall": "lerna bootstrap",
+    "clean": "lerna clean"
+  },
+  "devDependencies": {
+    "lerna": "^3.22.1"
+  }
+}
