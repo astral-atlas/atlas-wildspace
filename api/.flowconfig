@@ -1,0 +1,11 @@
+[ignore]
+
+[include]
+node_modules/@astral-atlas/wildspace-models
+[libs]
+
+[lints]
+
+[options]
+
+[strict]
