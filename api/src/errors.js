@@ -72,15 +72,15 @@ const getResponseForError = (error/*: APIError*/) => {
   
   switch (error.type) {
     case 'InvalidPermission':
-      return forbidden({ type: error.type, message: error.message });
+      return forbidden({ type: error.type, reason: error.message });
     case 'InvalidAuthentication':
     case 'UnsupportedAuthorization':
     case 'MissingAuthentication':
-      return unauthorized({ type: error.type, message: error.message });
+      return unauthorized({ type: error.type, reason: error.message });
     case 'NonexistentResource':
-      return notFound({ type: error.type, message: error.message });
+      return notFound({ type: error.type, reason: error.message });
     case 'MissingParameter':
-      return badRequest({ type: error.type, message: error.message });
+      return badRequest({ type: error.type, reason: error.message });
     default:
       (error/*: empty*/)
       return internalServerError(`The API has encountered an impossible error.`)

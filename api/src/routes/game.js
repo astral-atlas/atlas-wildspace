@@ -9,7 +9,24 @@ const {
   InvalidPermissionError
 } = require('../errors');
 
-const games = new Map/*:: <GameID, Game>*/();
+const games = new Map/*:: <GameID, Game>*/([
+  ['123', {
+    id: '123',
+    players: [],
+    gms: ['luke'],
+    characters: [],
+    monsters: [],
+    grids: [],
+  }],
+  ['234', {
+    id: '123',
+    players: [],
+    gms: ['luke'],
+    characters: [],
+    monsters: [],
+    grids: [],
+  }]
+]);
 
 const createGameRoutes = (services/*: Services*/) => {
   const getGame = (gameId, user) => {

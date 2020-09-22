@@ -41,6 +41,7 @@ const createAuthService = () => {
   };
 
   const getUser = (auth/*: Authorization*/)/*: User*/ => {
+    console.log(auth);
     if (auth.type === 'none')
       throw new e.MissingAuthenticationError();
     if (auth.type !== 'bearer')
