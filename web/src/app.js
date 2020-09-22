@@ -1,6 +1,7 @@
 import { h } from 'preact';
 import { PageContextProvider, usePageContext } from './context/pageContext';
 import { AppContextProvider } from './context/appContext';
+import { WildspaceProvider } from './context/wildspaceContext';
 
 import { HomePage } from './pages/home';
 import { NotFoundPage } from './pages/notFound';
@@ -16,8 +17,7 @@ const Router = () => {
     case '/room':
       return h(RoomPage);
     case '/room-editor':
-      const { roomId } = params;
-      return h(RoomEditor, { roomId });
+      return h(RoomEditor);
     case '/':
     case '/home':
       return h(HomePage);
@@ -30,7 +30,9 @@ const App = ({ initialPage, initialParams }) => {
   return (
     h(PageContextProvider, { initialPage, initialParams },
       h(AppContextProvider, {}, 
-        h(Router)
+        h(WildspaceProvider, {}, 
+          h(Router)
+        )
       )
     )
   );

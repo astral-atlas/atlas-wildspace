@@ -44,7 +44,7 @@ const EditRoomForm = ({ editRoom }) => {
   ]);
 };
 
-const EditExistingRoomForm = ({ invitation, editRoom }) => {
+const EditExistingRoomForm = ({ invitation, editRoom, forgetRoom }) => {
   const onSubmit = (event) => {
     editRoom(invitation);
     event.preventDefault();
@@ -54,7 +54,7 @@ const EditExistingRoomForm = ({ invitation, editRoom }) => {
     h(EntryFormField, { label: 'roomId', value: invitation.roomId, disabled: true }),
     h(EntryFormField, { label: 'refereeSecret', value: invitation.refereeSecret, disabled: true }),
     h('input', { type: 'submit', value: 'Edit Room' }),
-    h('input', { type: 'button', value: 'Forget Room' }),
+    h('input', { type: 'button', value: 'Forget Room', onClick: forgetRoom }),
   ]);
 };
 

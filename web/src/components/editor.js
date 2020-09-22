@@ -9,8 +9,11 @@ const RoomEditorPanel = ({ room, setRoom }) => {
     })
   };
   return [
-    h('h3', {}, room.roomId),
-    h('p', { onChange: event => setRefereeSecret(event.currentTarget.value)}, room.refereeSecret),
+    h('h3', {}, room.id),
+    h('label', {}, [
+      'Referee Secret',
+      h('input', { type: 'text', onChange: event => setRefereeSecret(event.currentTarget.value), value: room.refereeSecret }),
+    ])
   ]
 };
 
@@ -36,9 +39,9 @@ const CameraPanel = ({ cameraPosition, cursorPosition }) => {
 }
 
 const BackgroundPanel = ({ room, setRoom }) => {
-  const addBackground = () => {
+  const addBackground = (event) => {
     const backgrounds = [
-      ...backgrounds,
+      ...room.backgrounds,
       {
         id: uuid(),
         src: 'https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png',
@@ -49,11 +52,11 @@ const BackgroundPanel = ({ room, setRoom }) => {
     setRoom({ ...room, backgrounds });
   };
   const removeBackground = (backgroundToRemove) => () => {
-    const backgrounds = backgrounds.filter(background => background.id !== backgroundToRemove.id);
+    const backgrounds = room.backgrounds.filter(background => background.id !== backgroundToRemove.id);
     setRoom({ ...room, backgrounds });
   };
   const updateBackgroundProperty = (backgroundToUpdate, propertyName) => (event) => {
-    const backgrounds = backgrounds.map(background => {
+    const backgrounds = room.backgrounds.map(background => {
       if (background.id !== backgroundToUpdate.id)
         return background;
       return {
@@ -66,7 +69,7 @@ const BackgroundPanel = ({ room, setRoom }) => {
   return h('details', {}, [
     h('summary', {}, 'Backgrounds'),
     h('input', { type: 'button', value: 'Add new Background', onClick: addBackground }),
-    h('ul', { class: 'backgrounds-list' }, room.backgrounds.map(background => (
+    h('ul', { class: 'editor-list' }, room.backgrounds.map(background => (
       h('li', {}, [
         h('label', {}, ['ID', h('pre', {}, background.id)]),
         h('label', {}, [
@@ -95,10 +98,85 @@ const BackgroundPanel = ({ room, setRoom }) => {
   ]);
 };
 
+const PlayerPanel = ({ room, setRoom }) => {
+  const addPlayer = () => {
+    const players = [
+      ...room.players,
+      {
+        id: uuid(),
+        name: 'Unnamed Player',
+        image: 'https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png',
+        x: 0, y: 0,
+        secret: uuid(),
+        height: 1, width: 1
+      }
+    ];
+    setRoom({ ...room, players });
+  };
+  const removePlayer = (playerToRemove) => () => {
+    const players = room.players.filter(player => player.id !== playerToRemove.id);
+    setRoom({ ...room, players });
+  };
+  const updatePlayerProperty = (playerToUpdate, property) => (event) => {
+    const players = room.players.map(player => {
+      if (player.id !== playerToUpdate.id)
+        return player;
+      return {
+        ...player,
+        [property]: event.currentTarget.value,
+      };
+    })
+    setRoom({ ...room, players });
+  }
+  return h('details', {}, [
+    h('summary', {}, 'Players'),
+    h('input', { type: 'button', value: 'Add new Player', onClick: addPlayer }),
+    h('ul', { class: 'editor-list' }, room.players.map(player => (
+      h('li', {}, [
+        h('label', {}, ['ID', h('pre', {}, player.id)]),
+        h('label', {}, [
+          'Name',
+          h('input', { type: 'text', value: player.name, onInput: updatePlayerProperty(player, 'name') })
+        ]),
+        h('label', {}, [
+          'Image',
+          h('input', { type: 'text', value: player.image, onInput: updatePlayerProperty(player, 'image') })
+        ]),
+        h('label', {}, [
+          'Secret',
+          h('input', { type: 'text', value: player.secret, onInput: updatePlayerProperty(player, 'secret') })
+        ]),
+        h('label', {}, [
+          'X',
+          h('input', { type: 'number', value: player.x, onInput: updatePlayerProperty(player, 'x') })
+        ]),
+        h('label', {}, [
+          'Y',
+          h('input', { type: 'number', value: player.y, onInput: updatePlayerProperty(player, 'y') })
+        ]),
+        h('label', {}, [
+          'Height',
+          h('input', { type: 'number', value: player.height, onInput: updatePlayerProperty(player, 'height') })
+        ]),
+        h('label', {}, [
+          'Width',
+          h('input', { type: 'number', value: player.width, onInput: updatePlayerProperty(player, 'width') })
+        ]),
+        h('input', { type: 'button', value: 'Remove Player', onClick: removePlayer(player) }, 'Remove Player')
+      ])
+    )))
+  ]);
+};
+
+const MonsterPanel = ({ room, setRoom }) => {
+
+};
+
 const EditorPanel = ({ cameraPosition, cursorPosition, room, setRoom }) => {
   return h('form', { class: 'editor-panel' }, [
     h(RoomEditorPanel, { room, setRoom }),
     h(CameraPanel, { cameraPosition, cursorPosition }),
+    h(PlayerPanel, { room, setRoom }),
     h(BackgroundPanel, { room, setRoom })
   ])
 };
