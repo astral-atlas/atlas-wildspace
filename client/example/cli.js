@@ -22,11 +22,24 @@ const cli = async () => {
     const game = await client.game.getGame(gameId);
     console.log(game);
   };
+  const createGame = async () => {
+    const game = await client.game.createGame();
+    console.log(game);
+  }
+
+  const gameCommands = async (command, ...commandArgs) => {
+    switch (command) {
+      case 'create':
+        return await createGame();
+      case 'read':
+        return await getGame(...commandArgs);
+    }
+  }
   
   try {
     switch (command) {
       case 'game':
-        return await getGame(...commandArgs);
+        return await gameCommands(...commandArgs);
     }
   } catch (error) {
     console.error(error);

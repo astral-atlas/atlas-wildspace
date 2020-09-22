@@ -9,6 +9,7 @@ const u = require('./users');
 const a = require('./actions');
 const h = require('./aspects');
 const api = require('./api');
+const audio = require('./audio');
 
 const models = [
   g.game, g.gameId,
@@ -20,7 +21,10 @@ const models = [
   u.user,
   a.playerAction,
   h.fateAspect,
-  api.errorResponse
+  api.errorResponse,
+  audio.audioSource,
+  audio.httpSource,
+  audio.youtubeSource,
 ];
 
 const jsonSchemas = {

@@ -35,7 +35,7 @@ export type {
 const createRESTClient = ({ endpoint, client, auth = { type: 'none' }}/*: RESTOptions*/) => {
   const getURL = (resource, params = {}) => {
     const resourceURL = new URL(endpoint.href);
-    
+
     resourceURL.pathname = [
       ...resourceURL.pathname.split('/'),
       ...resource.split('/')
@@ -74,7 +74,7 @@ const createRESTClient = ({ endpoint, client, auth = { type: 'none' }}/*: RESTOp
     ].filter(Boolean);
   };
   const getHeaderValue = (headers, headerName) => {
-    const header = headers.find(({ name }) => name.toLowerCase() === headerName.toLowerCase());
+    const header = headers.find(([name]) => name.toLowerCase() === headerName.toLowerCase());
     if (!header)
       return null;
     return header.value;

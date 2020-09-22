@@ -1,0 +1,9 @@
+{
+  "userStore": {
+    "type": "local",
+    "users": [
+      { "type": "game-master", "gameMaster": { "id": "0", "name": "luke" } }
+
+    ]
+  }
+}

@@ -1,7 +1,8 @@
 // @flow strict
 /*:: import type { Game, GameID } from '@astral-atlas/wildspace-models'; */
 /*:: import type { Services } from '../services'; */
-const { resource, ok } = require('@lukekaalim/server');
+const { v4: uuid } = require('uuid');
+const { resource, ok, created } = require('@lukekaalim/server');
 const {
   getResponseForError,
   MissingParameterError,
@@ -9,28 +10,9 @@ const {
   InvalidPermissionError
 } = require('../errors');
 
-const games = new Map/*:: <GameID, Game>*/([
-  ['123', {
-    id: '123',
-    players: [],
-    gms: ['luke'],
-    characters: [],
-    monsters: [],
-    grids: [],
-  }],
-  ['234', {
-    id: '123',
-    players: [],
-    gms: ['luke'],
-    characters: [],
-    monsters: [],
-    grids: [],
-  }]
-]);
-
 const createGameRoutes = (services/*: Services*/) => {
-  const getGame = (gameId, user) => {
-    const game = games.get(gameId);
+  const getGame = async (gameId, user) => {
+    const game = await services.games.get(gameId);
 
     if (!game)
       throw new NonexistentResourceError('game', `no game with gameId: ${gameId}`);
@@ -50,7 +32,7 @@ const createGameRoutes = (services/*: Services*/) => {
           throw new MissingParameterError('gameId');
   
         const user = services.auth.getUser(auth);
-        const game = getGame(gameId, user);
+        const game = await getGame(gameId, user);
 
         return ok(game);
       } catch (error) {
@@ -58,7 +40,22 @@ const createGameRoutes = (services/*: Services*/) => {
       }
     },
     async create({ auth, content }) {
-      return ok();
+      const user = services.auth.getUser(auth);
+      if (user.type !== 'game-master')
+        throw new InvalidPermissionError('game', 'user is not a gm, only gms can create games');
+
+      const newGame/*: Game*/ = {
+        id: uuid(),
+        gms: [user.gameMaster.id],
+        players: [],
+        grids: [],
+        characters: [],
+        monsters: [],
+      };
+
+      await services.games.set(newGame.id, newGame);
+
+      return created(newGame);
     }
   })
 };

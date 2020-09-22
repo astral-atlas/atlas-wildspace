@@ -9,9 +9,14 @@ const createGameClient = (rest/*: RESTClient*/) => {
     const { content } = await rest.read({ resource: '/game', params: { gameId } });
     return coerce(content, gameStruct);
   };
+  const createGame = async ()/*: Promise<Game>*/ => {
+    const { content } = await rest.create({ resource: '/game' });
+    return coerce(content, gameStruct);
+  }
 
   return {
     getGame,
+    createGame,
   };
 };
 
