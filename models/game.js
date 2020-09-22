@@ -32,4 +32,5 @@ module.exports = {
   gameId,
   grid,
   gridId,
+  gridPosition,
 };

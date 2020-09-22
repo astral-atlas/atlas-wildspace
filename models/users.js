@@ -13,7 +13,19 @@ const player = s.define('Player', 'A player is a regular user', s.object([
   ['name', s.string()],
 ]));
 
+const user = s.define('User', 'A type of player in wildspace', s.union([
+  s.object([
+    ['type', s.literal('player')],
+    ['player', player],
+  ]),
+  s.object([
+    ['type', s.literal('game-master')],
+    ['gameMaster', gameMaster],
+  ]),
+]));
+
 module.exports = {
   player, playerId,
   gameMaster, gameMasterId,
+  user,
 };
