@@ -9,6 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "password-generator": "^2.3.2"
+    "@astral-atlas/wildspace-models": "file:../models",
+    "@lukekaalim/http-client": "^2.1.0",
+    "superstruct": "^0.10.12"
   }
 }
