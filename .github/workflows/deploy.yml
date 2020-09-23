@@ -47,6 +47,7 @@ jobs:
       - run: echo "::set-output name=test::${terraform output -json}"
         id: output
   deploy-api:
+    runs-on: ubuntu-latest
     needs: [build-api, deploy]
     steps:
       - uses: actions/download-artifact@v2
