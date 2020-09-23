@@ -7,7 +7,7 @@ on:
   pull_request:
 
 jobs:
-  build api:
+  build-api:
     name: "Build API"
     runs-on: ubuntu-latest
     steps:
@@ -21,7 +21,7 @@ jobs:
   deploy:
     name: "Deploy Infrastructure"
     runs-on: ubuntu-latest
-    needs: build api
+    needs: build-api
     defaults:
       run:
         working-directory: infra/test
