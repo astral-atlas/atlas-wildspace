@@ -1,3 +1,5 @@
+name: Deploy TEST Environment
+
 on:
   push:
     branches:
