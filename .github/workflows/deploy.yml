@@ -63,6 +63,7 @@ jobs:
         run: |
           cat infra-output.json
           echo "::set-output name=application_name::$(cat infra-output.json | jq -r .api_application.value)"
+          echo "::set-output name=environment_name::$(cat infra-output.json | jq -r .api_test_environment.value)"
 
       - name: Deploy to EB
         uses: einaregilsson/beanstalk-deploy@v11
@@ -70,7 +71,7 @@ jobs:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: ${{ steps.vars.outputs.application_name }}
-          environment_name: Test
+          environment_name: ${{ steps.vars.outputs.environment_name }}
           version_label: ${{ github.sha }}
           region: ap-southeast-2
           deployment_package: api-package.zip
