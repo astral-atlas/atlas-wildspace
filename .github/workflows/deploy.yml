@@ -43,7 +43,7 @@ jobs:
       - name: Terraform Apply
         if: github.ref == 'refs/heads/canon' && github.event_name == 'push'
         run: terraform apply -auto-approve
-      - run: echo "::set-output name=test::${terraform output -json}"
+      - run: echo "::set-output name=test::$(terraform output -json)"
         id: output
   deploy-api:
     runs-on: ubuntu-latest
