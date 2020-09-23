@@ -15,7 +15,6 @@ jobs:
         working-directory: infra/test
     steps:
       - name: Checkout
-        working-directory: ./
         uses: actions/checkout@v2
 
       - name: Setup Terraform
