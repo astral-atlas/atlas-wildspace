@@ -1,4 +1,10 @@
 terraform {
+  required_providers {
+    elastic-beanstalk = {
+      source = "registry.terraform.io/lukekaalim/elastic-beanstalk"
+      version = ">= 1.3.1"
+    }
+  }
   backend "remote" {
     organization = "luke"
 
@@ -12,6 +18,11 @@ resource "random_pet" "build_bucket" {}
 
 provider "aws" {
   region = "ap-southeast-2"
+}
+
+provider "elastic-beanstalk" {
+  aws_profile = "personal"
+  aws_region = "ap-southeast-2"
 }
 
 resource "aws_s3_bucket" "astral_atlas_builds_bucket" {
@@ -48,10 +59,28 @@ resource "aws_iam_role" "api" {
 EOF
 }
 
+resource "elastic-beanstalk_bundle" "source" {
+  bucket = aws_s3_bucket.astral_atlas_builds_bucket.bucket
+  file = abspath("${path.module}/../../artifacts/api.zip")
+
+  prefix = "wildspace"
+  fileHash = filemd5(abspath("${path.module}/../../artifacts/api.zip"))
+}
+
+resource "elastic-beanstalk_application_version" "latest_api" {
+  applicationName = aws_elastic_beanstalk_application.api.name
+
+  sourceBundle = {
+    bucket = elastic-beanstalk_bundle.source.bucket
+    key = elastic-beanstalk_bundle.source.key
+  }
+}
+
 resource "aws_elastic_beanstalk_environment" "api_test" {
   name                = "wildspace-api-test-env"
   application         = aws_elastic_beanstalk_application.api.name
   solution_stack_name = "64bit Amazon Linux 2 v5.2.1 running Node.js 12"
+  version_label = elastic-beanstalk_application_version.latest_api.version
 
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
