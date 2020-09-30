@@ -2,7 +2,7 @@ terraform {
   required_providers {
     elastic-beanstalk = {
       source = "registry.terraform.io/lukekaalim/elastic-beanstalk"
-      version = ">= 1.3.1"
+      version = ">= 1.4.0"
     }
   }
   backend "remote" {
@@ -21,7 +21,6 @@ provider "aws" {
 }
 
 provider "elastic-beanstalk" {
-  aws_profile = "personal"
   aws_region = "ap-southeast-2"
 }
 

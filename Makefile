@@ -11,7 +11,7 @@ api/node_modules api/package-lock.json: api/package.json
 	touch api/package-lock.json api/node_modules
 
 artifacts/api.zip: api/node_modules artifacts api/**/*.js
-	cd api; zip -r ../artifacts/api.zip .
+	cd api; zip -q -r ../artifacts/api.zip .
 
 clean:
 	rm -rf artifacts
@@ -22,6 +22,6 @@ infra/test/.terraform: infra/**/*.tf
 	touch infra/test/.terraform
 
 artifacts/test-deployment.json: artifacts infra/test/.terraform infra/**/*.tf artifacts/api.zip
-	cd infra/test; terraform apply -auto-approve; terraform output -json > ../../artifacts/test-deployment.json
+	cd infra/test; terraform apply -auto-approve && terraform output -json > ../../artifacts/test-deployment.json
 
 .PHONY: clean
