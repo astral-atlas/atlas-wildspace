@@ -1,31 +1,68 @@
 // @flow strict
-const s = require('@lukekaalim/schema');
+const { toObject, toString } = require('./casting');
+const { toUUID } = require('./id');
 
-const gameMasterId = s.define('GameMasterID', 'A unique ID for a GameMaster', s.string());
-const gameMaster = s.define('GameMaster', 'An authoritative user with special permissions', s.object([
-  ['id', gameMasterId],
-  ['name', s.string()],
-]));
+/*::
+type UUID = string;
 
-const playerId = s.define('PlayerID', 'A unique ID for a Player', s.string());
-const player = s.define('Player', 'A player is a regular user', s.object([
-  ['id', playerId],
-  ['name', s.string()],
-]));
+type GameMasterID = UUID;
+type GameMaster = {
+  id: GameMasterID,
+  name: string,
+};
 
-const user = s.define('User', 'A type of player in wildspace', s.union([
-  s.object([
-    ['type', s.literal('player')],
-    ['player', player],
-  ]),
-  s.object([
-    ['type', s.literal('game-master')],
-    ['gameMaster', gameMaster],
-  ]),
-]));
+type PlayerID = UUID;
+type Player = {
+  id: PlayerID,
+  name: string,
+};
+
+type User =
+  | { type: 'player', player: Player }
+  | { type: 'game-master', gameMaster: GameMaster }
+
+export type {
+  User,
+  PlayerID,
+  Player,
+  GameMasterID,
+  GameMaster,
+};
+*/
+const toGameMasterID = (value/*: mixed*/)/*: GameMasterID*/ => toUUID(value);
+const toGameMaster = (value/*: mixed*/)/*: GameMaster*/ => {
+  const object = toObject(value);
+  return {
+    id: toGameMasterID(object.id),
+    name: toString(object.id),
+  };
+}
+
+const toPlayerID = (value/*: mixed*/)/*: PlayerID*/ => toUUID(value);
+const toPlayer = (value/*: mixed*/)/*: Player*/ => {
+  const object = toObject(value);
+  return {
+    id: toPlayerID(object.id),
+    name: toString(object.id),
+  };
+}
+
+const toUser = (value/*: mixed*/)/*: User*/ => {
+  const object = toObject(value);
+  switch (object.type) {
+    case 'player':
+      return { type: 'player', player: toPlayer(object.player) };
+    case 'game-master':
+      return { type: 'game-master', gameMaster: toGameMaster(object.player) };
+    default:
+      throw new TypeError();
+  }
+};
 
 module.exports = {
-  player, playerId,
-  gameMaster, gameMasterId,
-  user,
+  toGameMasterID,
+  toGameMaster,
+  toPlayerID,
+  toPlayer,
+  toUser,
 };

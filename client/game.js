@@ -1,17 +1,28 @@
 // @flow strict
-/*:: import type { Game, GameID } from '@astral-atlas/wildspace-models'; */
+/*:: import type { Game, GameID, PlayerID } from '@astral-atlas/wildspace-models'; */
 /*:: import type { RESTClient } from './rest'; */
-const { coerce } = require('superstruct');
-const { game: gameStruct } = require('./structs');
+const { toGame, toGameArray } = require('@astral-atlas/wildspace-models');
 
-const createGameClient = (rest/*: RESTClient*/) => {
-  const getGame = async (gameId/*: GameID*/)/*: Promise<Game>*/ => {
+/*::
+type GameClient = {
+  getGame: (game: GameID) => Promise<Game>,
+  createGame: (players: PlayerID[]) => Promise<Game>,
+};
+export type {
+  GameClient,
+};
+*/
+
+const createGameClient = (rest/*: RESTClient*/)/*: GameClient*/ => {
+  const getGame = async (gameId) => {
     const { content } = await rest.read({ resource: '/game', params: { gameId } });
-    return coerce(content, gameStruct);
+    const game = toGame(content);
+    return game;
   };
-  const createGame = async ()/*: Promise<Game>*/ => {
-    const { content } = await rest.create({ resource: '/game' });
-    return coerce(content, gameStruct);
+  const createGame = async (players) => {
+    const { content } = await rest.create({ resource: '/game', content: { players } });
+    const game = toGame(content);
+    return game;
   }
 
   return {

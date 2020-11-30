@@ -17,11 +17,15 @@ const gms = new Map/*:: <GameMasterID, GameMaster>*/([
 ]);
 
 /*::
-export type AuthService = $Call<typeof createAuthService>;
+export type AuthService = {
+  getUser: Authorization => Promise<User>,
+  getPlayer: (id: string, secret: string) => Promise<Player>,
+  getGameMaster: (id: string, secret: string) => Promise<GameMaster>,
+};
 */
 
-const createAuthService = () => {
-  const getPlayer = (proposedId/*: string*/, proposedSecret/*: string*/) => {
+const createAuthService = ()/*: AuthService*/ => {
+  const getPlayer = async (proposedId/*: string*/, proposedSecret/*: string*/) => {
     const player = players.get(proposedId);
     if (!player)
       throw new e.InvalidAuthenticationError();
@@ -30,7 +34,7 @@ const createAuthService = () => {
       throw new e.InvalidAuthenticationError();
     return player;
   };
-  const getGameMaster = (proposedId/*: string*/, proposedSecret/*: string*/) => {
+  const getGameMaster = async (proposedId/*: string*/, proposedSecret/*: string*/) => {
     const gm = gms.get(proposedId);
     if (!gm)
       throw new e.InvalidAuthenticationError();
@@ -40,8 +44,7 @@ const createAuthService = () => {
     return gm;
   };
 
-  const getUser = (auth/*: Authorization*/)/*: User*/ => {
-    console.log(auth);
+  const getUser = async (auth/*: Authorization*/)/*: Promise<User>*/ => {
     if (auth.type === 'none')
       throw new e.MissingAuthenticationError();
     if (auth.type !== 'bearer')
@@ -53,9 +56,9 @@ const createAuthService = () => {
 
     switch (type) {
       case 'player':
-        return { type: 'player', player: getPlayer(id, secret) };
+        return { type: 'player', player: await getPlayer(id, secret) };
       case 'game-master':
-        return { type: 'game-master', gameMaster: getGameMaster(id, secret) };
+        return { type: 'game-master', gameMaster: await getGameMaster(id, secret) };
       default:
         throw new e.InvalidAuthenticationError(); 
     }

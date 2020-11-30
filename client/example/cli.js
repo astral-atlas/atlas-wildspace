@@ -23,7 +23,7 @@ const cli = async () => {
     console.log(game);
   };
   const createGame = async () => {
-    const game = await client.game.createGame();
+    const game = await client.game.createGame([]);
     console.log(game);
   }
 

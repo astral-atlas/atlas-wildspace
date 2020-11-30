@@ -2,10 +2,16 @@
 /*:: import type { HTTPClient, HTTPResponse } from '@lukekaalim/http-client'; */
 /*:: import type { JSONValue } from './json'; */
 const { stringify, parse } = require('./json');
-const { UnexpectedResponseError } = require('./errors')
+
+class UnexpectedResponseError extends Error {}
 
 /*::
-type RESTClient = $Call<typeof createRESTClient, RESTOptions>;
+type RESTClient = {
+  create: (request: RESTRequest) => Promise<{ location: string | null, content: JSONValue }>,
+  read: (request: RESTRequest) => Promise<{ content: JSONValue }>,
+  update: (request: RESTRequest) => Promise<{ content: JSONValue }>,
+  destroy: (request: RESTRequest) => Promise<{}>,
+};
 
 type RESTRequest = {
   resource: string,
@@ -32,7 +38,7 @@ export type {
 };
 */
 
-const createRESTClient = ({ endpoint, client, auth = { type: 'none' }}/*: RESTOptions*/) => {
+const createRESTClient = ({ endpoint, client, auth = { type: 'none' }}/*: RESTOptions*/)/*: RESTClient*/ => {
   const getURL = (resource, params = {}) => {
     const resourceURL = new URL(endpoint.href);
 
@@ -67,9 +73,15 @@ const createRESTClient = ({ endpoint, client, auth = { type: 'none' }}/*: RESTOp
         throw new Error(`Unrecognized authorization`);
     }
   };
-  const getHeaders = (headers = []) => {
+  const getContentHeaders = (content)/*: null | [string, string]*/ => {
+    if (!content)
+      return null;
+    return ['Content-Type', 'application/json'];
+  };
+  const getHeaders = (headers = [], content = null) => {
     return [
       getAuthHeader(),
+      getContentHeaders(content),
       ...headers,
     ].filter(Boolean);
   };
@@ -84,7 +96,7 @@ const createRESTClient = ({ endpoint, client, auth = { type: 'none' }}/*: RESTOp
   
     const response = await client.sendRequest({
       url: getURL(resource, params),
-      headers: getHeaders(headers),
+      headers: getHeaders(headers, content),
       method,
       body: getBody(content)
     });
@@ -131,6 +143,8 @@ const createRESTClient = ({ endpoint, client, auth = { type: 'none' }}/*: RESTOp
 
     if (response.status !== 204)
       throw new UnexpectedResponseError(response);
+
+    return {};
   };
 
   return {

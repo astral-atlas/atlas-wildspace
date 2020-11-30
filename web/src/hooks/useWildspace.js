@@ -1,3 +1,6 @@
+// @flow strict
+/*:: import type { Game } from '@astral-atlas/wildspace-models'; */
+/*:: import type { WildspaceClient, Store } from '@astral-atlas/wildspace-client'; */
 import { useEffect, useState } from 'preact/hooks';
 import { useWildspaceClient } from '../context/wildspaceContext';
 
@@ -64,7 +67,49 @@ const useRoom = (roomId, playerSecret, updateInterval) => {
   return [room, error];
 };
 
+const useData = /*::<T>*/(getData/*: WildspaceClient => Promise<T>*/)/*: ?T*/ => {
+  const [state, setState] = useState(null);
+  const client = useWildspaceClient();
+
+  useEffect(() => void (async () => {
+    setState(await getData(client));
+  })(), [client]);
+
+  return state;
+};
+
+const useAsync = /*::<T>*/(getData/*: () => Promise<T>*/, deps/*: mixed[]*/)/*: ?T*/ => {
+  const [state, setState] = useState(null);
+
+  useEffect(() => void (async () => {
+    setState(await getData());
+  })(), deps);
+
+  return state;
+};
+
+const useGames = (client/*: WildspaceClient*/)/*: ?Game[]*/ => {
+  const [games, setGames] = useState(null);
+
+  useEffect(() => void (async () => {
+    setGames(await client.game.listGames());
+  })(), [client]);
+
+  return games;
+};
+
+const useStoreIds = ()/*: ?string[]*/ => {
+  return useData(async client => await client.store.listStoreIds());
+};
+const useStore = (id/*: string*/)/*: ?Store*/ => {
+  return useData(async client => await client.store.getStore(id));
+};
+
 export {
-  useRoom,
-  useRefereeRoom,
+  useStoreIds,
+  useGames,
+  useAsync,
+  useData,
+  useStore,
+  useWildspaceClient,
 };

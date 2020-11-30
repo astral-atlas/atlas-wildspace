@@ -7,6 +7,7 @@ const main = () => {
   const url = new URL(window.location.href);
   const initialPage = url.pathname;
   const initialParams = Object.fromEntries(url.searchParams);
+  
   render(h(App, { initialPage, initialParams }), document.body);
 };
 

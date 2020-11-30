@@ -1,4 +1,5 @@
 // @flow strict
+/*:: import type { ResourceRequest, RouteResponse } from '@lukekaalim/server'; */
 const { badRequest, unauthorized, forbidden, internalServerError, notFound } = require('@lukekaalim/server')
 
 class MissingAuthenticationError extends Error {
@@ -39,11 +40,40 @@ class NonexistentResourceError extends Error {
     this.reason = reason;
   }
 }
+
+class PreexistingResourceError extends Error {
+  type/*: 'PreexistingResource'*/ = 'PreexistingResource'
+  /*:: resource: string*/
+  constructor(resource/*: string*/) {
+    super(`Could not create ${resource} because a pre-existing resource with that ID exists`);
+    this.resource = resource;
+  }
+}
 class MissingParameterError extends Error {
   type/*: 'MissingParameter'*/ = 'MissingParameter'
 
   constructor(parameter/*: string*/) {
     super(`The request is missing a required parameter, ${parameter}`);
+  }
+}
+class BadRequestBodyError extends Error {
+  type/*: 'BadRequestBody'*/ = 'BadRequestBody'
+  /*:: reason: string*/
+
+  constructor(reason/*: string*/) {
+    super(`The provided request body was invalid because: ${reason}`);
+    this.reason = reason;
+  }
+}
+
+class BadContentType extends BadRequestBodyError {
+  constructor(expectedType/*: string*/) {
+    super(`Content-Type was not "${expectedType}"`);
+  }
+}
+class BadStructure extends BadRequestBodyError {
+  constructor(structureName/*: string*/) {
+    super(`Body was not "${structureName}"`);
   }
 }
 /*::
@@ -54,6 +84,8 @@ type APIError =
   | NonexistentResourceError
   | UnsupportedAuthorizationError
   | MissingParameterError
+  | BadRequestBodyError
+  | PreexistingResourceError
 
 export type {
   APIError,
@@ -62,11 +94,14 @@ export type {
   InvalidPermissionError,
   NonexistentResourceError,
   UnsupportedAuthorizationError,
-  MissingParameterError
+  MissingParameterError,
+  PreexistingResourceError,
+  BadRequestBodyError
 };
 */
 
-const getResponseForError = (error/*: APIError*/) => {
+const getResponseForError = (error/*: APIError*/)/*: RouteResponse*/ => {
+  console.log(error);
   if (!error.type)
     return internalServerError(`The API has encountered an unrecoverable error.`);
   
@@ -79,7 +114,9 @@ const getResponseForError = (error/*: APIError*/) => {
       return unauthorized({ type: error.type, reason: error.message });
     case 'NonexistentResource':
       return notFound({ type: error.type, reason: error.message });
+    case 'PreexistingResource':
     case 'MissingParameter':
+    case 'BadRequestBody':
       return badRequest({ type: error.type, reason: error.message });
     default:
       (error/*: empty*/)
@@ -94,6 +131,11 @@ module.exports = {
   NonexistentResourceError,
   UnsupportedAuthorizationError,
   MissingParameterError,
+  BadRequestBodyError,
+  PreexistingResourceError,
+
+  BadContentType,
+  BadStructure,
 
   getResponseForError,
 };
