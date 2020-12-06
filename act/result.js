@@ -1,7 +1,7 @@
 // @flow strict
 /*:: import type { DirtyMark } from './dirty'; */
 /*:: import type { Node } from './node'; */
-const { v4: uuid } = require('uuid');
+const { nanoid: uuid } = require('nanoid');
 const { removeHooks } = require('./hooks');
 const { applyNode, nodesEqual } = require('./node');
 

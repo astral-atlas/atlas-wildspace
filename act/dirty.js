@@ -1,7 +1,7 @@
 // @flow strict
 /*:: import type { Result } from './result'; */
 /*:: import type { Node } from './node'; */
-const { v4: uuid } = require('uuid')
+const { nanoid: uuid } = require('nanoid');
 
 const { createNewResult, createNextResult } = require('./result');
 const { node } = require('./node');
@@ -16,7 +16,6 @@ export type Event =
   | { type: 'updated', updated: Result }
   | { type: 'created', created: Result }
 */
-
 
 const renderer = (rootNode/*: Node*/, handleEvent/*: (event: Event) => void*/)/*: Result*/ => {
   let rootResult;

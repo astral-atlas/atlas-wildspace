@@ -1,5 +1,5 @@
 // @flow strict
-const { v4: uuid } = require('uuid');
+const { nanoid: uuid } = require('nanoid');
 /*:: import type { NodeState } from './result'; */
 /*:: import type { DirtyMark } from './dirty'; */
 /*:: import type { Hooks } from './hooks'; */
