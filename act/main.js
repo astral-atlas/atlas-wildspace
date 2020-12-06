@@ -6,7 +6,7 @@ const { v4: uuid } = require('uuid');
 type Context = { Provider: (value: mixed) => Node[] };
 type Hooks = {
   useState: (initialValue: mixed) => [mixed, (value: mixed) => void],
-  useEffect: (effectHandler: () => ?(() => void), deps: mixed[]) => void,
+  useEffect: (effectHandler: () => ?(() => void), deps?: null | mixed[]) => void,
   //useContext: (contextProvider: Context) => mixed,
 };
 type Props = { [string]: mixed };
@@ -42,7 +42,11 @@ type Result = {
 };
 
 type NodeState = {
-  usedStates: Map<number, [mixed, (value: mixed) => void, string[]]>
+  usedStates: Map<number, [mixed, (value: mixed) => void, string[]]>,
+  usedEffects: Map<number, {
+    cleanup: ?(() => void),
+    deps: null | mixed[]
+  }>
 };
 
 type DirtyMark = {
@@ -50,7 +54,8 @@ type DirtyMark = {
 };
 */
 const createNewNodeState = ()/*: NodeState*/ => ({
-  usedStates: new Map()
+  usedStates: new Map(),
+  usedEffects: new Map(),
 });
 
 const setupUseState = (idsChain, { usedStates }, markDirty) => {
@@ -85,13 +90,42 @@ const setupUseState = (idsChain, { usedStates }, markDirty) => {
   return useState;
 };
 
-const setupUseEffect = (idsChain, nodeState, markDirty) => {
+const depsAreEqual = (depsA, depsB) => {
+  if (depsA === null || depsB === null)
+    return false;
+  if (depsA.length !== depsB.length)
+    return false;
+  return depsA.every((value, index) => value === depsB[index]);
+}
 
+const setupUseEffect = (nodeState) => {
+  let useEffectCount = 0;
+
+  const useEffect = (effect, deps = null) => {
+    const effectIndex = useEffectCount;
+    useEffectCount++;
+
+    const previousEffect = nodeState.usedEffects.get(effectIndex)
+    if (!previousEffect) {
+      const cleanup = effect();
+      nodeState.usedEffects.set(effectIndex, { cleanup, deps });
+      return;
+    }
+    const { cleanup, deps: oldDeps } = previousEffect;
+    if (depsAreEqual(deps, oldDeps))
+      return;
+
+    cleanup && cleanup();
+    const newCleanup = effect();
+    nodeState.usedEffects.set(effectIndex, { cleanup: newCleanup, effect, deps });
+  };
+
+  return useEffect;
 };
 
 const setupHooks = (idsChain, nodeState, markDirty)/*: Hooks*/ => {
   const useState = setupUseState(idsChain, nodeState, markDirty);
-  const useEffect = setupUseEffect(idsChain, nodeState, markDirty);
+  const useEffect = setupUseEffect(nodeState);
 
   return {
     useState,
@@ -200,9 +234,16 @@ const getResultOrLast = (
   return createNewResult(node, markDirty, parentIds, last);
 }
 
+const removeHooks = (result) => {
+  for (const [, { cleanup }] of result.nodeState.usedEffects)
+    cleanup && cleanup();
+};
+
 const getRemovedResult = (parentIds/*: string[]*/, last/*: Result*/) => {
   const id = uuid();
   const idsChain = [...parentIds, id];
+
+  removeHooks(last);
 
   return {
     ...last,
@@ -391,7 +432,12 @@ const getTree = (result/*: Result*/)/*: Tree[]*/ => {
   }];
 };
 
-const Character = ({ name }, children, { useState }) => {
+const Character = ({ name }, children, { useState, useEffect }) => {
+  useEffect(() => {
+    const id = setInterval(() => console.log(name), 100);
+    return () => clearInterval(id);
+  }, null);
+
   return [node('group', { name: 'character', id: name }, [
     node('arm'),
     node('leg'),
@@ -430,7 +476,7 @@ setTimeout(() => {
   setTimeout(() => {
     firstHook(['luke', 'carlo']);
     debugger;
-  }, 100);
+  }, 500);
   
-}, 100);
+}, 500);
 
