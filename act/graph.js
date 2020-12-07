@@ -8,7 +8,7 @@ const { updateCommit, createCommit, updateCommitWithState } = require('./commit'
 const { node } = require('./node');
 
 /*::
-export type RequestFrame = (frame: () => mixed) => mixed;
+export type RequestFrame = (frame: () => void) => mixed;
 
 export type ActGraph = {
   states: Map<StateID, CommitState>,
@@ -62,7 +62,7 @@ const createGraph = (rootNode/*: Node*/, rf/*: RequestFrame*/)/*: ActGraph*/ => 
       const update = queuedUpdates.shift();
       states.set(update.path[update.path.length - 1], update.newState);
       [commit, diff] = updateCommitWithState(graph, update, commit);
-      events.push(...getEventsForDiff(diff));
+      events.push(...getEventsForDiff(diff), { type: 'updated', commit, diff });
     }
     for (const listener of listeners)
       listener(events);
@@ -70,7 +70,7 @@ const createGraph = (rootNode/*: Node*/, rf/*: RequestFrame*/)/*: ActGraph*/ => 
 
   const listen = (listener) => {
     listeners.push(listener);
-    listener(getEventsForDiff(diff));
+    listener([...getEventsForDiff(diff), { type: 'created', commit, diff }]);
     return { closeListener: () => {
       listeners = listeners.filter(l => l !== listener);
     } }
@@ -85,10 +85,11 @@ const createGraph = (rootNode/*: Node*/, rf/*: RequestFrame*/)/*: ActGraph*/ => 
     listen,
     getRoot,
   };
-  let [commit, diff] = createCommit(graph, node('graph', {}, [rootNode]), []);
+  let [commit, diff] = createCommit(graph, rootNode, []);
   return graph;
 };
 
 module.exports = {
+  graph: createGraph,
   createGraph,
 };

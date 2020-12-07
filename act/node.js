@@ -16,7 +16,7 @@ export type Node = {
 };
 */
 
-const node = /*::<P: Props = {}>*/(
+const createNode = /*::<P: Props = {}>*/(
   type/*: string | (p: P, c: Node[], h: StateHooks) => Node[]*/,
   props/*: ?P*/,
   children/*: Node[]*/ = []
@@ -90,7 +90,8 @@ const renderNode = (lifecycle/*: NodeLifecycle*/, graph/*: ActGraph*/, node/*: N
 };
 
 module.exports = {
-  node,
+  node: createNode,
+  createNode,
   propsEqual,
   nodesEqual,
   renderNode,

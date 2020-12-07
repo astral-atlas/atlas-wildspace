@@ -1,7 +1,6 @@
 // @flow strict
 /*:: import type { Commit, Props } from '@lukekaalim/act'; */
 const { createInterface } = require('readline');
-const { inspect } = require('util');
 const { node, createGraph } = require('@lukekaalim/act');
 
 const CharacterList = ({ characters }) => {
