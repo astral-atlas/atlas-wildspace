@@ -1,33 +1,13 @@
 // @flow strict
 /*:: import type { Commit, Props } from '@lukekaalim/act'; */
+const { createInterface } = require('readline');
 const { inspect } = require('util');
 const { node, createGraph } = require('@lukekaalim/act');
 
-/*::
-type Tree = {
-  type: string,
-  props: ?Props,
-  children: Tree[],
-};
-*/
-
-const getTree = (commit/*: Commit*/)/*: Tree[]*/ => {
-  if (typeof commit.node.type === 'function')
-    return commit.childCommits.map(getTree).flat(1);
-  
-  return [{
-    type: commit.node.type,
-    id: commit.statePath.join('\\'),
-    props: commit.node.props,
-    children: commit.childCommits.map(getTree).flat(1),
-  }];
-};
-
-const Character = ({ name }, children, { useState, useEffect }) => {
-  return [node('group', { name: 'character', id: name }, [
-    node('arm'),
-    node('leg'),
-  ])]
+const CharacterList = ({ characters }) => {
+  return [
+    ...characters.map(character => node('text', { content: character }))
+  ];
 }
 
 /*::
@@ -37,21 +17,52 @@ type AppProps = {
 */
 const App = ({ initialCharacters }/*: AppProps*/, [], { useState, useEffect }) => {
   const [characters, setCharacters] = useState(initialCharacters);
+
   useEffect(() => {
-    const id = setTimeout(() => setCharacters(['luke', 'barry']), 100);
-    return () => {
-      clearTimeout(id);
+    const readLine = createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+    const keyPressListener = (c, key) => {
+      if (key.name === 'backspace')
+        setCharacters(characters.slice(0, characters.length - 1))
     };
-  }, []);
+    process.stdin.on('keypress', keyPressListener);
+    readLine.on('line', line => setCharacters([...characters, line]));
+    
+    return () => {
+      process.stdin.off('keypress', keyPressListener);
+      readLine.close();
+    };
+  }, [characters]);
 
   return [
-    node('hook', { setCharacters }),
-    node('scene', {}, [
-      node('light'),
-      ...characters.map((name) => node(Character, { key: name, name })),
-    ])
+    node('text', { content: 'Characters:' }),
+    node(CharacterList, { characters }),
   ];
 };
 
-const graph = createGraph(node(App, { initialCharacters: ['luke'] }), setImmediate);
-graph.listen(events => events.map(event => console.log(event.type, event.commit.node.type)));
+const textGraph = (root) => {
+  const commitToText = (commit, depth = 0) => {
+    if (commit.node.type === 'text') {
+      const content = commit.node.props?.content;
+      if (typeof content === 'string')
+        return content.padStart(depth * 2, ' ');
+      return ''.padStart(depth * 2, ' ');
+    }
+    
+    return commit.childCommits
+      .map(child => commitToText(child, depth + 2))
+      .join('\n');
+  }
+
+  const handleEvent = () => {
+    console.clear();
+    console.log(commitToText(graph.getRoot()));
+  }
+
+  const graph = createGraph(root, setImmediate);
+  graph.listen(() => handleEvent());
+};
+
+textGraph(node(App, { initialCharacters: ['luke', 'dave'] }));

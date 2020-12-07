@@ -13,7 +13,8 @@ export type RequestFrame = (frame: () => mixed) => mixed;
 export type ActGraph = {
   states: Map<StateID, CommitState>,
   update: (state: StateUpdate) => void,
-  listen: (listener: (events: CommitEvent[]) => mixed) => { closeListener: () => void }; 
+  listen: (listener: (events: CommitEvent[]) => mixed) => { closeListener: () => void },
+  getRoot: () => Commit,
 };
 
 export type CommitEvent =
@@ -74,10 +75,15 @@ const createGraph = (rootNode/*: Node*/, rf/*: RequestFrame*/)/*: ActGraph*/ => 
       listeners = listeners.filter(l => l !== listener);
     } }
   };
+  const getRoot = () => {
+    return commit;
+  };
+
   const graph = {
     states,
     update,
-    listen
+    listen,
+    getRoot,
   };
   let [commit, diff] = createCommit(graph, node('graph', {}, [rootNode]), []);
   return graph;
