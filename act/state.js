@@ -23,6 +23,7 @@ export type StateHooks = {
   useState: UseState,
   useEffect: UseEffect,
   useContext: UseContext,
+  useMemo: <T>(calculator: () => T, deps: mixed[]) => T,
   useGraph: () => Graph,
   useStatePath: () => StatePath,
   useHooks: <T>(hookLoader: (hooks: StateHooks) => T) => T,
@@ -52,6 +53,17 @@ export type StateUpdate = {
 */
 const createStateId = ()/*: StateID*/ => uuid();
 
+const loadUseMemo = (useState, useEffect) =>
+  /*:: <T>*/(calculator/*: () => T*/, deps/*: mixed[]*/)/*: T*/ => {
+  const [calculation, updateCalculation] = useState(calculator());
+
+  useEffect(() => {
+    updateCalculation(calculator());
+  }, deps)
+
+  return calculation;
+};
+
 const setupHooks = (graph/*: Graph*/, path/*: StatePath*/)/*: StateHooks*/ => {
   const state = {
     usedStates: new Map(),
@@ -63,6 +75,7 @@ const setupHooks = (graph/*: Graph*/, path/*: StatePath*/)/*: StateHooks*/ => {
   const useState = setupUseState(graph, path, state);
   const useEffect = setupUseEffect(graph, path, state);
   const useContext = setupUseContext(graph, path, state);
+  const useMemo = loadUseMemo(useState, useEffect);
   
   const hooks = {
     useState,
@@ -71,6 +84,7 @@ const setupHooks = (graph/*: Graph*/, path/*: StatePath*/)/*: StateHooks*/ => {
     useHooks: /*::<T>*/(loader/*: StateHooks => T*/)/*: T*/ => loader(hooks),
     useGraph: () => graph,
     useStatePath: () => path,
+    useMemo,
   };
 
   return hooks;
@@ -84,6 +98,7 @@ const loadHooks = (graph/*: Graph*/, path/*: StatePath*/)/*: StateHooks*/ => {
   const useState = loadUseState(graph, path, state);
   const useEffect = loadUseEffect(graph, path, state);
   const useContext = loadUseContext(graph, path, state);
+  const useMemo = loadUseMemo(useState, useEffect);
 
   const hooks = {
     useState,
@@ -92,6 +107,7 @@ const loadHooks = (graph/*: Graph*/, path/*: StatePath*/)/*: StateHooks*/ => {
     useHooks: /*::<T>*/(loader/*: StateHooks => T*/)/*: T*/ => loader(hooks),
     useGraph: () => graph,
     useStatePath: () => path,
+    useMemo,
   };
 
   return hooks;

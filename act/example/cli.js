@@ -3,10 +3,13 @@
 const { createInterface } = require('readline');
 const { node, createGraph, createContext } = require('@lukekaalim/act');
 
-const CharacterList = ({ characters }, _, { useContext }) => {
+const CharacterList = ({ characters }, _, { useContext, useMemo }) => {
   const app = useContext(appContext);
 
+  const characterCount = useMemo(() => characters.length, [characters]);
+
   return [
+    node('text', { content: characterCount.toString() }),
     ...characters.map(character =>
       node('text', { content: `${character} (${app[character] || 0})` }))
   ];
@@ -20,7 +23,7 @@ type AppContext = {
   [character: string]: number
 };
 */
-const appContext = createContext/*:: <AppContext>*/({ ratings: {} });
+const appContext = createContext/*:: <AppContext>*/({});
 
 const App = ({ initialCharacters }/*: AppProps*/, [], { useState, useEffect }) => {
   const [characters, setCharacters] = useState(initialCharacters);
