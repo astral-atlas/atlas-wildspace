@@ -15,8 +15,12 @@ declare module "preact" {
     children: $PropertyType<{| children: void, ...($Exact<T>) |}, 'children'>
   ) => Element
 
-  declare type Context<T> = { Provider: Component<{ children: Node, value: T }>, Consumer: Component<{ children: T => Node }> }
+  declare type Context<T> = {
+    Provider: Component<{ children: Node, value: T }>,
+    Consumer: Component<{ children: (value: T) => Node }>
+  }
   declare var createContext: <T>(defaultContent: T) => Context<T>;
+  declare var Fragment: Component<{| children: Node |}>;
 
   declare var render: <T>(node: Node, element: HTMLElement) => void;
 
@@ -25,6 +29,7 @@ declare module "preact" {
     h: typeof createElement,
     render: typeof render,
     createContext: typeof createContext,
+    Fragment: typeof Fragment,
   }
 }
 
@@ -38,6 +43,7 @@ declare module "preact/hooks" {
   declare var useEffect: (effect: () => (void | () => void), dependencies?: mixed[]) => void;
   declare var useMemo: <T>(computeExpensiveValue: () => T, dependencies?: mixed[]) => T;
   declare var useRef: <T>(initial: T) => { current: T };
+  declare var useReducer: <S, A>(reducer: (state: S, action: A) => S, initialState: S) => [S, (action: A) => void];
 
   declare module.exports: {
     useContext: typeof useContext,
@@ -45,6 +51,7 @@ declare module "preact/hooks" {
     useEffect: typeof useEffect,
     useRef: typeof useRef,
     useMemo: typeof useMemo,
+    useReducer: typeof useReducer,
   }
 }
 

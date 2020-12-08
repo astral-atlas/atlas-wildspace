@@ -78,14 +78,21 @@ const useData = /*::<T>*/(getData/*: WildspaceClient => Promise<T>*/)/*: ?T*/ =>
   return state;
 };
 
-const useAsync = /*::<T>*/(getData/*: () => Promise<T>*/, deps/*: mixed[]*/)/*: ?T*/ => {
+const useAsync = /*::<T>*/(getData/*: () => Promise<T>*/, deps/*: mixed[]*/)/*: [?T, ?Error]*/ => {
   const [state, setState] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => void (async () => {
-    setState(await getData());
+    try {
+      setState(await getData());
+      setError(null);
+    } catch (thrownError) {
+      setState(null);
+      setError(thrownError);
+    }
   })(), deps);
 
-  return state;
+  return [state, error];
 };
 
 const useGames = (client/*: WildspaceClient*/)/*: ?Game[]*/ => {

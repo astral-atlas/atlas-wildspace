@@ -1,6 +1,6 @@
 import "preact/debug";
 
-import { render, h } from 'preact';
+import { render, h, options } from 'preact';
 import { App } from './app';
 
 const main = () => {
