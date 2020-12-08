@@ -1,16 +1,11 @@
 // @flow strict
-/*:: import type { Player, PlayerID, GameMasterID, GameMaster, User } from '@astral-atlas/wildspace-models'; */
+/*:: import type { Player, PlayerID, GameMasterID, GameMaster, User, AuthenticationRequest } from '@astral-atlas/wildspace-models'; */
 /*:: import type { Authorization } from '@lukekaalim/server'; */
+/*:: import type { MemoryStore } from './store'; */
 const e = require('../errors');
 
-const playerSecrets = new Map/*:: <PlayerID, string>*/([
-  ['luke', 'bothways']
-]);
 const gmSecrets = new Map/*:: <GameMasterID, string>*/([
   ['luke', 'bothways']
-]);
-const players = new Map/*:: <PlayerID, Player>*/([
-  ['luke', { id: 'luke', name: 'Luke Kaalim' }]
 ]);
 const gms = new Map/*:: <GameMasterID, GameMaster>*/([
   ['luke', { id: 'luke', name: 'Luke Kaalim' }]
@@ -19,17 +14,21 @@ const gms = new Map/*:: <GameMasterID, GameMaster>*/([
 /*::
 export type AuthService = {
   getUser: Authorization => Promise<User>,
+  getUserFromRequest: AuthenticationRequest => Promise<User>,
   getPlayer: (id: string, secret: string) => Promise<Player>,
   getGameMaster: (id: string, secret: string) => Promise<GameMaster>,
 };
 */
 
-const createAuthService = ()/*: AuthService*/ => {
+const createAuthService = (
+  players/*: MemoryStore<PlayerID, Player>*/,
+  playerSecrets/*: MemoryStore<PlayerID, { secret: string }>*/
+)/*: AuthService*/ => {
   const getPlayer = async (proposedId/*: string*/, proposedSecret/*: string*/) => {
-    const player = players.get(proposedId);
+    const player = await players.get(proposedId);
     if (!player)
       throw new e.InvalidAuthenticationError();
-    const secret = playerSecrets.get(proposedId);
+    const { secret } = await playerSecrets.get(proposedId) || {};
     if (secret !== proposedSecret)
       throw new e.InvalidAuthenticationError();
     return player;
@@ -63,11 +62,22 @@ const createAuthService = ()/*: AuthService*/ => {
         throw new e.InvalidAuthenticationError(); 
     }
   };
+  const getUserFromRequest = async ({ user, secret }) => {
+    switch (user.type) {
+      case 'player':
+        return { type: 'player', player: await getPlayer(user.playerId, secret) };
+      case 'game-master':
+        return { type: 'game-master', gameMaster: await getGameMaster(user.gameMasterId, secret) };
+      default:
+        throw new e.InvalidAuthenticationError(); 
+    }
+  };
 
   return {
     getUser,
     getPlayer,
     getGameMaster,
+    getUserFromRequest,
   };
 };
 

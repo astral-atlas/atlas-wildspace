@@ -1,6 +1,6 @@
 // @flow strict
 /*:: import type { ResourceRequest, RouteResponse } from '@lukekaalim/server'; */
-const { badRequest, unauthorized, forbidden, internalServerError, notFound } = require('@lukekaalim/server')
+const { json: { badRequest, unauthorized, forbidden, internalServerError, notFound } } = require('@lukekaalim/server')
 
 class MissingAuthenticationError extends Error {
   type/*: 'MissingAuthentication'*/ = 'MissingAuthentication'

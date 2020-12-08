@@ -1,6 +1,17 @@
 // @flow strict
-/*:: import type { ResourceRequest, RouteResponse, Content } from '@lukekaalim/server';*/
+/*:: import type { ResourceRequest, RouteResponse, Content, Route as HTTPRoute } from '@lukekaalim/server';*/
+/*:: import type { APIRoute } from '../routes';*/
+/*:: import type { WSRoute } from '../socket';*/
 const { getResponseForError, BadContentType, BadStructure, BadRequestBodyError } = require('../errors');
+
+const ws = (wsRoute/*: WSRoute*/)/*: APIRoute*/ => ({
+  protocol: 'ws',
+  wsRoute
+});
+const http = (httpRoute/*: HTTPRoute*/)/*: APIRoute*/ => ({
+  protocol: 'http',
+  httpRoute,
+});
 
 /*::
 type Handler = ResourceRequest => Promise<RouteResponse>;
@@ -44,4 +55,6 @@ module.exports = {
   withErrorHandling,
   withErrorHandling,
   validateContent,
+  ws,
+  http,
 };

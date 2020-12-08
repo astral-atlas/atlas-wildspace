@@ -1,6 +1,6 @@
 // @flow strict
-/*:: import type { GameID, Game, GameParams, User } from '@astral-atlas/wildspace-models'; */ 
-/*:: import type { StoreService, IndexService } from './store'; */ 
+/*:: import type { GameID, Game, GameParams, User, Player } from '@astral-atlas/wildspace-models'; */ 
+/*:: import type { MemoryStore } from './store'; */ 
 /*:: import type { PlayerService } from './player'; */
 const { v4: uuid } = require('uuid');
 const e = require('../errors');
@@ -11,7 +11,7 @@ type GameService = {
   create: (params: GameParams, user: User) => Promise<Game>,
   update: (id: GameID, params: GameParams, user: User) => Promise<Game>,
   destroy: (id: GameID, user: User) => Promise<Game>,
-  list: (user: User) => Promise<GameID[]>,
+  listIds: (user: User) => Promise<GameID[]>,
 };
 
 export type {
@@ -19,11 +19,7 @@ export type {
 };
 */
 
-const createGameService = (
-  store/*: StoreService<GameID, Game>*/,
-  index/*: IndexService<GameID>*/,
-  player/*: PlayerService*/,
-)/*: GameService*/ => {
+const createGameService = (store/*: MemoryStore<GameID, Game>*/, player/*: PlayerService*/)/*: GameService*/ => {
   const isCreator = (game, user) => (
     user.type === 'game-master'
     && user.gameMaster.id === game.creator
@@ -52,7 +48,7 @@ const createGameService = (
       throw new e.InvalidPermissionError('New Game', `Only GM's can create Games`);
 
     await validateParams(gameParams);
-    const newGame = {
+    const newGame/*: Game*/ = {
       ...gameParams,
       id: uuid(),
       creator: user.gameMaster.id,
@@ -85,19 +81,24 @@ const createGameService = (
 
     return game;
   };
-  const list = async (user) => {
-    if (user.type !== 'game-master')
-      throw new e.InvalidPermissionError('AllGamesList', `Only a GM can list all games`);
-    const gameIDs = await index.list();
-
-    return gameIDs;
+  const listIds = async (user) => {
+    if (user.type === 'game-master')
+      return [...store.values]
+        .map(([, game]) => game.id);
+    else
+      return [...store.values]
+        .map(([, game]) => game)
+        // players can only see games they are a part of
+        .filter(game => game.players.includes(user.player.id))
+        .map(game => game.id);
   }
+
   return {
     read,
     create,
     update,
     destroy,
-    list,
+    listIds,
   };
 };
 

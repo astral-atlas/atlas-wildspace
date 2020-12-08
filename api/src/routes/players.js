@@ -3,7 +3,7 @@
 /*:: import type { RouteResponse, ResourceRequest, Route } from '@lukekaalim/server'; */
 const { v4: uuid } = require('uuid');
 
-const { resource, ok, created } = require('@lukekaalim/server');
+const { resource, json: { ok, created } } = require('@lukekaalim/server');
 const { toPlayerParams } = require('@astral-atlas/wildspace-models');
 const { withErrorHandling, validateContent } = require('./utils');
 const e = require('../errors');
@@ -15,14 +15,14 @@ const playerRoutes = (services/*: Services*/)/*: Route[]*/  => {
     const player = await services.players.create(params, user);
     return created(player);
   };
-  const read = async ({ params: { playerId }}) => {
+  const read = async ({ query: { playerId }}) => {
     if (!playerId)
       throw new e.MissingParameterError('playerId');
 
     const player = await services.players.read(playerId);
     return ok(player);
   };
-  const update = async ({ params: { playerId }, content, auth }) => {
+  const update = async ({ query: { playerId }, content, auth }) => {
     if (!playerId)
       throw new e.MissingParameterError('playerId');
 
@@ -32,7 +32,7 @@ const playerRoutes = (services/*: Services*/)/*: Route[]*/  => {
     const newPlayer = await services.players.update(playerId, params, user);
     return ok(newPlayer);
   };
-  const destroy = async ({ params: { playerId }, auth}) => {
+  const destroy = async ({ query: { playerId }, auth}) => {
     if (!playerId)
       throw new e.MissingParameterError('playerId');
     const user = await services.auth.getUser(auth);
@@ -40,10 +40,8 @@ const playerRoutes = (services/*: Services*/)/*: Route[]*/  => {
     return ok(destroyedPlayer);
   };
   return resource('/players', {
-    create: withErrorHandling(create),
-    read: withErrorHandling(read),
-    update: withErrorHandling(update),
-    destroy: withErrorHandling(destroy),
+    get: withErrorHandling(read),
+    put: withErrorHandling(update),
   });
 };
 

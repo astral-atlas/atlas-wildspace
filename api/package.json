@@ -11,8 +11,9 @@
   "license": "ISC",
   "dependencies": {
     "@astral-atlas/wildspace-models": "file:../models",
-    "@lukekaalim/server": "^5.2.1",
+    "@lukekaalim/server": "^6.0.2",
     "aws-sdk": "^2.758.0",
-    "uuid": "^8.2.0"
+    "uuid": "^8.2.0",
+    "ws": "^7.4.0"
   }
 }

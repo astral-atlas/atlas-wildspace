@@ -11,11 +11,11 @@ type IndexService<Value: JSONValue> = {
   list: () => Promise<Value[]>,
 };
 
-type MemoryStore<K: string, V: JSONValue> = (
-  StoreService<K, V> &
-  IndexService<K> &
-  { values: Iterable<[K, V]> }
-);
+type MemoryStore<K: string, V: JSONValue> = {
+ ...$Exact<StoreService<K, V>>,
+ ...$Exact<IndexService<K>>,
+ values: Iterable<[K, V]>
+};
 
 export type {
   StoreService,
@@ -42,7 +42,6 @@ const createMemoryStore = /*:: <Key: string, Value: JSONValue>*/(
   const list = async () => {
     return [...values.keys()];
   };
-  
 
   const store = { get, set };
   const index = { list };
