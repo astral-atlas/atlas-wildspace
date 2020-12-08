@@ -73,8 +73,8 @@ const textGraph = (root) => {
     if (commit.node.type === 'text') {
       const content = commit.node.props?.content;
       if (typeof content === 'string')
-        return content.padStart(depth * 2, ' ');
-      return ''.padStart(depth * 2, ' ');
+        return content.padStart(content.length + (depth * 2), ' ');
+      throw new Error('No Content')
     }
     
     return commit.childCommits
