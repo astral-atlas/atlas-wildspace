@@ -1,9 +1,9 @@
 [ignore]
 
 [include]
-
+node_modules/@astral-atlas/wildspace-client
 [libs]
-flow
+
 [lints]
 
 [options]

@@ -53,12 +53,12 @@ const toStore = (value/*: mixed*/)/*: Store*/ => {
 
 const createStoreClient = (rest/*: RESTClient*/)/*: StoreClient*/ => {
   const listStoreIds = async () => {
-    const { content } = await rest.read({ resource: '/stores/ids', });
+    const { content } = await rest.get({ resource: '/stores/ids', });
     const ids = toArray(content).map(toString);
     return ids;
   };
   const getStore = async (storeId) => {
-    const { content } = await rest.read({ resource: '/stores', params: { storeId } });
+    const { content } = await rest.get({ resource: '/stores', params: { storeId } });
     const store = toStore(content);
     return store;
   };
@@ -68,7 +68,7 @@ const createStoreClient = (rest/*: RESTClient*/)/*: StoreClient*/ => {
       params: { storeId, key },
       content: value,
     };
-    const { content } = await rest.update(params);
+    const { content } = await rest.put(params);
     const updatedStore = toStore(content);
     return updatedStore;
   };

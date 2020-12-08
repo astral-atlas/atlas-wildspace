@@ -1,0 +1,16 @@
+{
+  "name": "@astral-atlas/wildspace-client-example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "cli.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@astral-atlas/wildspace-client": "file:..",
+    "isomorphic-ws": "^4.0.1",
+    "ws": "^7.4.1"
+  }
+}

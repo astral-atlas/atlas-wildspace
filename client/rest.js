@@ -3,14 +3,21 @@
 /*:: import type { JSONValue } from './json'; */
 const { stringify, parse } = require('./json');
 
-class UnexpectedResponseError extends Error {}
+class UnexpectedResponseError extends Error {
+  /*:: response: HTTPResponse */;
+
+  constructor(response/*: HTTPResponse*/) {
+    super();
+    this.response = response;
+  }
+}
 
 /*::
 type RESTClient = {
-  create: (request: RESTRequest) => Promise<{ location: string | null, content: JSONValue }>,
-  read: (request: RESTRequest) => Promise<{ content: JSONValue }>,
-  update: (request: RESTRequest) => Promise<{ content: JSONValue }>,
-  destroy: (request: RESTRequest) => Promise<{}>,
+  post: (request: RESTRequest) => Promise<{ location: string | null, content: JSONValue }>,
+  get: (request: RESTRequest) => Promise<{ content: JSONValue }>,
+  put: (request: RESTRequest) => Promise<{ content: JSONValue }>,
+  delete: (request: RESTRequest) => Promise<{}>,
 };
 
 type RESTRequest = {
@@ -20,7 +27,7 @@ type RESTRequest = {
   headers?: ([string, string])[]
 }
 
-type Authorization =
+type RESTAuthorization =
   | { type: 'none' }
   | { type: 'basic', username: string, password: string }
   | { type: 'bearer', token: string };
@@ -28,13 +35,13 @@ type Authorization =
 type RESTOptions = {
   endpoint: URL,
   client: HTTPClient,
-  auth?: Authorization,
+  auth?: RESTAuthorization,
 };
 
 export type {
   RESTClient,
   RESTRequest,
-  Authorization,
+  RESTAuthorization,
 };
 */
 
@@ -52,7 +59,7 @@ const createRESTClient = ({ endpoint, client, auth = { type: 'none' }}/*: RESTOp
     return resourceURL.href;
   };
   const getBody = (content) => {
-    return content ? stringify(content) : undefined;
+    return content !== undefined ? stringify(content) : undefined;
   }
   const getAuthHeader = ()/*: null | [string, string]*/ => {
     switch (auth.type) {
@@ -74,7 +81,7 @@ const createRESTClient = ({ endpoint, client, auth = { type: 'none' }}/*: RESTOp
     }
   };
   const getContentHeaders = (content)/*: null | [string, string]*/ => {
-    if (!content)
+    if (content === undefined)
       return null;
     return ['Content-Type', 'application/json'];
   };
@@ -104,7 +111,7 @@ const createRESTClient = ({ endpoint, client, auth = { type: 'none' }}/*: RESTOp
     return response;
   };
 
-  const create = async (request/*: RESTRequest*/) => {
+  const post = async (request/*: RESTRequest*/) => {
     const response = await getResponse('POST', request);
 
     if (response.status !== 201)
@@ -115,7 +122,7 @@ const createRESTClient = ({ endpoint, client, auth = { type: 'none' }}/*: RESTOp
       content: parse(response.body),
     };
   };
-  const read = async (request/*: RESTRequest*/) => {
+  const get = async (request/*: RESTRequest*/) => {
     const response = await getResponse('GET', request);
 
     if (response.status !== 200)
@@ -125,7 +132,7 @@ const createRESTClient = ({ endpoint, client, auth = { type: 'none' }}/*: RESTOp
       content: parse(response.body),
     };
   };
-  const update = async (request/*: RESTRequest*/) => {
+  const put = async (request/*: RESTRequest*/) => {
     const response = await getResponse('PUT', request);
 
     if (response.status !== 200 && response.status !== 204)
@@ -138,7 +145,7 @@ const createRESTClient = ({ endpoint, client, auth = { type: 'none' }}/*: RESTOp
       content: parse(response.body),
     };
   };
-  const destroy = async (request/*: RESTRequest*/) => {
+  const _delete = async (request/*: RESTRequest*/) => {
     const response = await getResponse('DELETE', request);
 
     if (response.status !== 204)
@@ -148,13 +155,14 @@ const createRESTClient = ({ endpoint, client, auth = { type: 'none' }}/*: RESTOp
   };
 
   return {
-    create,
-    read,
-    update,
-    destroy,
+    post,
+    get,
+    put,
+    delete: _delete,
   };
 };
 
 module.exports = {
+  UnexpectedResponseError,
   createRESTClient,
 };

@@ -17,7 +17,7 @@ export type {
 
 const createPlayerClient = (rest/*: RESTClient*/)/*: PlayerClient*/ => {
   const getPlayer = async (playerId) => {
-    const { content } = await rest.read({ resource: '/player', params: { playerId } });
+    const { content } = await rest.get({ resource: '/player', params: { playerId } });
     const player = toPlayer(content);
     return player;
   };
@@ -25,7 +25,7 @@ const createPlayerClient = (rest/*: RESTClient*/)/*: PlayerClient*/ => {
     const requestContent = {
       name,
     };
-    const { content } = await rest.create({ resource: '/player', content: requestContent });
+    const { content } = await rest.post({ resource: '/player', content: requestContent });
     const player = toPlayer(content);
     return player;
   };
