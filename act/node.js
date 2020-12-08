@@ -7,17 +7,18 @@ const { setupHooks, loadHooks } = require('./state');
 /*::
 export type Props = { [string]: mixed };
 export type Component = (props: Props, children: Node[], hooks: StateHooks) => Node[];
+export type TypedComponent<T> = (props: T, children: Node[], hooks: StateHooks) => Node[];
 
 export type Node = {
   id: string,
-  type: string | Component,
+  type: string | Component | Symbol,
   props: ?Props,
   children: Node[],
 };
 */
 
 const createNode = /*::<P: Props = {}>*/(
-  type/*: string | (p: P, c: Node[], h: StateHooks) => Node[]*/,
+  type/*: symbol | string | TypedComponent<P>*/,
   props/*: ?P*/,
   children/*: Node[]*/ = []
 )/*: Node*/ => ({
@@ -83,6 +84,7 @@ const renderNode = (lifecycle/*: NodeLifecycle*/, graph/*: ActGraph*/, node/*: N
     case 'function':
       return type(props || {}, children, getHooks(lifecycle, graph, path));
     case 'string':
+    case 'symbol':
       return node.children;
     default:
       throw new Error(`Unknown component type`);

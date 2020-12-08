@@ -8,5 +8,9 @@ export default {
     file: './build/act.js',
     format: 'esm',
   },
-  plugins: [terser(), resolve(), commonjs()],
+  plugins: [
+    resolve({ browser: true }),
+    commonjs(),
+    terser()
+  ],
 };

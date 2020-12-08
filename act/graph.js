@@ -1,6 +1,7 @@
 // @flow strict
 /*:: import type { Commit, CommitDiff } from './commit'; */
 /*:: import type { Node } from './node'; */
+/*:: import type { ContextID, ContextState } from './context'; */
 /*:: import type { StateID, CommitState, StateUpdate } from './state'; */
 const { nanoid: uuid } = require('nanoid');
 
@@ -10,12 +11,19 @@ const { node } = require('./node');
 /*::
 export type RequestFrame = (frame: () => void) => mixed;
 
-export type ActGraph = {
+export type Graph = {
+  symbols: {
+    context: symbol,
+  },
+
   states: Map<StateID, CommitState>,
+  contexts: Map<StateID, ContextState<mixed>>,
   update: (state: StateUpdate) => void,
   listen: (listener: (events: CommitEvent[]) => mixed) => { closeListener: () => void },
   getRoot: () => Commit,
+  updateRoot: (newNode: Node) => void,
 };
+export type ActGraph = Graph;
 
 export type CommitEvent =
   | { type: 'removed', commit: Commit, diff: CommitDiff }
@@ -48,6 +56,11 @@ const createGraph = (rootNode/*: Node*/, rf/*: RequestFrame*/)/*: ActGraph*/ => 
   let listeners = [];
 
   const states = new Map();
+  const contexts = new Map();
+  const symbols = {
+    context: Symbol(),
+  };
+
   const queuedUpdates = [];
 
   const update = (stateUpdate) => {
@@ -56,13 +69,13 @@ const createGraph = (rootNode/*: Node*/, rf/*: RequestFrame*/)/*: ActGraph*/ => 
       rf(processUpdates);
   };
   const processUpdates = () => {
-    debugger;
     const events = [];
     while (queuedUpdates.length > 0) {
-      const update = queuedUpdates.shift();
+      const update = queuedUpdates[0];
       states.set(update.path[update.path.length - 1], update.newState);
       [commit, diff] = updateCommitWithState(graph, update, commit);
       events.push(...getEventsForDiff(diff), { type: 'updated', commit, diff });
+      queuedUpdates.shift();
     }
     for (const listener of listeners)
       listener(events);
@@ -78,12 +91,20 @@ const createGraph = (rootNode/*: Node*/, rf/*: RequestFrame*/)/*: ActGraph*/ => 
   const getRoot = () => {
     return commit;
   };
+  const updateRoot = (newNode) => {
+    [commit, diff] = updateCommit(graph, newNode, commit);
+    for (const listener of listeners)
+      listener([...getEventsForDiff(diff), { type: 'updated', commit, diff }]);
+  }
 
   const graph = {
+    symbols,
+    contexts,
     states,
     update,
     listen,
     getRoot,
+    updateRoot,
   };
   let [commit, diff] = createCommit(graph, rootNode, []);
   return graph;

@@ -73,7 +73,12 @@ const createDiff = (
     .filter(Boolean);
 
   const removed = old.childCommits
-    .map((oldCommit, index) => persistedIndices[index] !== -1 ? null : removeCommit(graph, oldCommit))
+    .map((oldCommit, index) => {
+      const persistedIndex = persistedIndices[index];
+      if ((persistedIndex === -1 || persistedIndex === undefined) && persistedIndex !== 0)
+        return removeCommit(graph, oldCommit);
+      return null;
+    })
     .filter(Boolean);
 
   const updated = childPairs
@@ -103,7 +108,8 @@ const createDiff = (
 const removeCommit = (graph/*: ActGraph*/, last/*: Commit*/)/*: [Commit, CommitDiff]*/ => {
   const id = createCommitId();
 
-  teardownHooks(graph, last.statePath);
+  if (typeof last.node.type === 'function')
+    teardownHooks(graph, last.statePath);
 
   const commit = {
     ...last,
@@ -184,7 +190,7 @@ const updateCommitWithState = (graph/*: ActGraph*/, update/*: StateUpdate*/, las
     const childPairs = last.childCommits
       .map(child => {
         const childStateId = child.statePath[child.statePath.length - 1];
-        if (childStateId === nextUpdate.path[nextUpdate.path.length - 1])
+        if (childStateId === nextUpdate.path[0])
           return updateCommitWithState(graph, nextUpdate, child);
         return [child, emptyDiff];
       });

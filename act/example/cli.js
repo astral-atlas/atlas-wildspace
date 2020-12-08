@@ -1,11 +1,14 @@
 // @flow strict
 /*:: import type { Commit, Props } from '@lukekaalim/act'; */
 const { createInterface } = require('readline');
-const { node, createGraph } = require('@lukekaalim/act');
+const { node, createGraph, createContext } = require('@lukekaalim/act');
 
-const CharacterList = ({ characters }) => {
+const CharacterList = ({ characters }, _, { useContext }) => {
+  const app = useContext(appContext);
+
   return [
-    ...characters.map(character => node('text', { content: character }))
+    ...characters.map(character =>
+      node('text', { content: `${character} (${app[character] || 0})` }))
   ];
 }
 
@@ -13,9 +16,15 @@ const CharacterList = ({ characters }) => {
 type AppProps = {
   initialCharacters: string[],
 };
+type AppContext = {
+  [character: string]: number
+};
 */
+const appContext = createContext/*:: <AppContext>*/({ ratings: {} });
+
 const App = ({ initialCharacters }/*: AppProps*/, [], { useState, useEffect }) => {
   const [characters, setCharacters] = useState(initialCharacters);
+  const [ratings, setRatings] = useState/*::<{ [character: string]: number }>*/({});
 
   useEffect(() => {
     const readLine = createInterface({
@@ -23,8 +32,21 @@ const App = ({ initialCharacters }/*: AppProps*/, [], { useState, useEffect }) =
       output: process.stdout,
     });
     const keyPressListener = (c, key) => {
-      if (key.name === 'backspace')
-        setCharacters(characters.slice(0, characters.length - 1))
+      const currentCharacter = characters[characters.length - 1];
+      switch (key.name) {
+        case 'backspace':
+          return setCharacters(characters.slice(0, characters.length - 1))
+        case 'left':
+          return setRatings({
+            ...ratings,
+            [currentCharacter]: (ratings[currentCharacter] || 0) + 1
+          })
+        case 'right':
+          return setRatings({
+            ...ratings,
+            [currentCharacter]: (ratings[currentCharacter] || 0) - 1
+          })
+      }
     };
     process.stdin.on('keypress', keyPressListener);
     readLine.on('line', line => setCharacters([...characters, line]));
@@ -33,11 +55,13 @@ const App = ({ initialCharacters }/*: AppProps*/, [], { useState, useEffect }) =
       process.stdin.off('keypress', keyPressListener);
       readLine.close();
     };
-  }, [characters]);
+  }, [characters, ratings]);
 
   return [
-    node('text', { content: 'Characters:' }),
-    node(CharacterList, { characters }),
+    node(appContext.Provider, { value: ratings }, [
+      node('text', { content: 'Characters:' }),
+      node(CharacterList, { characters }),
+    ])
   ];
 };
 
