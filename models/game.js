@@ -2,12 +2,13 @@
 /*:: import type { UUID } from './id'; */
 /*:: import type { GameMasterID, PlayerID } from './users'; */
 const { toUUID } = require('./id');
-const { toObject, toArray } = require('./casting');
+const { toObject, toArray, toString } = require('./casting');
 
 /*::
 type GameID = UUID;
 type Game = {
   id: GameID,
+  name: string,
   creator: GameMasterID,
   players: PlayerID[]
 };
@@ -24,6 +25,7 @@ const toGame = (value/*: mixed*/)/*: Game*/ => {
   const object = toObject(value);
   return {
     id: toGameID(object.id),
+    name: toString(object.name || ''),
     creator: toUUID(object.creator),
     players: toArray(object.players).map(toUUID),
   };

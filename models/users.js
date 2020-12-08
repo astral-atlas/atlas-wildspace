@@ -21,12 +21,17 @@ type User =
   | { type: 'player', player: Player }
   | { type: 'game-master', gameMaster: GameMaster }
 
+type UserReference =
+| { type: 'player', playerId: PlayerID }
+| { type: 'game-master', gameMasterId: GameMasterID }
+
 export type {
   User,
   PlayerID,
   Player,
   GameMasterID,
   GameMaster,
+  UserReference,
 };
 */
 const toGameMasterID = (value/*: mixed*/)/*: GameMasterID*/ => toUUID(value);
@@ -34,7 +39,7 @@ const toGameMaster = (value/*: mixed*/)/*: GameMaster*/ => {
   const object = toObject(value);
   return {
     id: toGameMasterID(object.id),
-    name: toString(object.id),
+    name: toString(object.name),
   };
 }
 
@@ -43,7 +48,7 @@ const toPlayer = (value/*: mixed*/)/*: Player*/ => {
   const object = toObject(value);
   return {
     id: toPlayerID(object.id),
-    name: toString(object.id),
+    name: toString(object.name),
   };
 }
 
@@ -53,7 +58,19 @@ const toUser = (value/*: mixed*/)/*: User*/ => {
     case 'player':
       return { type: 'player', player: toPlayer(object.player) };
     case 'game-master':
-      return { type: 'game-master', gameMaster: toGameMaster(object.player) };
+      return { type: 'game-master', gameMaster: toGameMaster(object.gameMaster) };
+    default:
+      throw new TypeError();
+  }
+};
+
+const toUserReference = (value/*: mixed*/)/*: UserReference*/ => {
+  const object = toObject(value);
+  switch (object.type) {
+    case 'player':
+      return { type: 'player', playerId: toPlayerID(object.playerId) };
+    case 'game-master':
+      return { type: 'game-master', gameMasterId: toGameMasterID(object.gameMasterId) };
     default:
       throw new TypeError();
   }
@@ -65,4 +82,5 @@ module.exports = {
   toPlayerID,
   toPlayer,
   toUser,
+  toUserReference,
 };

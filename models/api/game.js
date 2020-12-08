@@ -1,12 +1,13 @@
 // @flow strict
 /*:: import type { PlayerID } from '../users'; */
 /*:: import type { Game } from '../game'; */
-const { toObject, toArray } = require('../casting');
+const { toObject, toArray, toString } = require('../casting');
 const { toPlayerID } = require('../users');
 const { toGame } = require('../game');
 
 /*::
 type GameParams = {|
+  name: string,
   players: PlayerID[],
 |};
 
@@ -24,6 +25,7 @@ const toGameParams = (value/*: mixed*/)/*: GameParams*/ => {
   const object = toObject(value);
 
   return {
+    name: toString(object.name),
     players: toArray(object.players).map(toPlayerID),
   };
 };
