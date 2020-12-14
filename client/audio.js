@@ -1,7 +1,7 @@
 // @flow strict
 /*:: import type { BackgroundAudioTrackID, BackgroundAudioTrack, GameID, HTTPAudioSource, ActiveTrackEvent } from '@astral-atlas/wildspace-models'; */
 /*:: import type { RESTClient } from './rest'; */
-/*:: import type { SocketClient } from './socket'; */
+/*:: import type { SocketClient, Connection } from './socket'; */
 
 const { toBackgroundAudioTrack, toHTTPAudioSource, toBackgroundAudioTrackID, toActiveTrackEvent } = require('@astral-atlas/wildspace-models');
 const { toObject, toArray } = require('@astral-atlas/wildspace-models/casting');
@@ -12,10 +12,7 @@ type AudioClient = {
     tracks: BackgroundAudioTrack[],
     sources: HTTPAudioSource[],
   }>,
-  connectActiveTrack: (gameId: GameID, onChange: (event: ActiveTrackEvent) => mixed) => Promise<{
-    set: (trackId: string | null, distanceSeconds: number, fromUnixTime: number) => void,
-    close: () => void,
-  }>
+  connectActiveTrack: (gameId: GameID) => Promise<Connection<ActiveTrackEvent, ActiveTrackEvent>>
 };
 export type {
   AudioClient,
@@ -39,26 +36,8 @@ const createAudioClient = (rest/*: RESTClient*/, socketClient/*: SocketClient*/)
     const audioInfo = toAudioInfo(content);
     return audioInfo;
   };
-  const connectActiveTrack = async (gameId, onChange) => {
-    const connection = await socketClient.connect/*:: <ActiveTrackEvent, ActiveTrackEvent>*/(
-      '/game/tracks/active/events',
-      { gameId },
-      onChange,
-      toActiveTrackEvent
-    );
-    const set = (trackId, distanceSeconds, fromUnixTime) => {
-      connection.send({
-        type: 'update',
-        trackId,
-        distanceSeconds,
-        fromUnixTime,
-      });
-    };
-    const close = (status = 1000, reason) => connection.socket.close(status, reason)
-    return {
-      set,
-      close,
-    };
+  const connectActiveTrack = async (gameId) => {
+    return await socketClient.connect('/game/tracks/active/events', { gameId }, toActiveTrackEvent, true);
   };
   return {
     connectActiveTrack,

@@ -1,10 +1,14 @@
 // @flow strict
 /*:: import type { Node } from 'preact'; */
 /*:: import type { Store } from '@astral-atlas/wildspace-client'; */
+/*:: import type { GameID } from '@astral-atlas/wildspace-models'; */
+import { toActiveTrackEvent, toActiveTrackRow } from '@astral-atlas/wildspace-models';
 import { h } from 'preact';
-import { useWildspaceClient, useAsync } from '../hooks/useWildspace';
+import { useWildspaceClient, useAsync, useActiveGame } from '../hooks/useWildspace';
 import { useEffect, useState } from 'preact/hooks';
-import { toObject } from '@astral-atlas/wildspace-models/casting';
+import { stringify, toObject, toString } from '@lukekaalim/cast';
+import { TableAdmin } from '../components/table';
+import { ConnectionAdmin } from '../components/connection';
 
 const style = `
   .store-page {
@@ -169,46 +173,78 @@ const StoreTable = ({ storeId, fields }/*: StoreTableProps*/) => {
   ]);
 };
 
-const useEventEmitter = (gameId, onEvent) => {
-  useEffect(() => {
-    if (!gameId)
-      return;
-    const connection = new WebSocket(`ws://localhost:8080?gameId=${gameId}`);
-    connection.onmessage = onEvent;
-    return () => {
-      connection.close(1000, 'Done here');
-    };
-  }, [onEvent, gameId]);
+const toGameRow = (value/*: mixed*/) => {
+  const object = toObject(value);
+  return {
+    gameId: toString(object.gameId),
+    creator: toString(object.creator),
+    name: toString(object.name),
+  }
 };
-
-const onEmit = m => console.log(m.data);
-
-const getAudioResource = (audioInfo, activeTrackId) => {
-  if(!audioInfo)
-    return null;
-  if (!activeTrackId)
-    return null;
-  const activeTrack = audioInfo.tracks.find(track => track.id === activeTrackId);
-  if (!activeTrack)
-    return null;
-  const activeSource = audioInfo.sources.find(source => source.id === activeTrack.source);
-  if (!activeSource)
-    return null;
-  return activeSource.resource;
+const toPlayerInGameRow = (value/*: mixed*/) => {
+  const object = toObject(value);
+  return {
+    gameId: toString(object.gameId),
+    playerId: toString(object.playerId),
+  }
 };
 
 const StorePage = ()/*: Node*/ => {
+  const client = useWildspaceClient();
+  const [ids] = useAsync(async () => client.game.getGameIds(), [client]);
+  const [selectedId, setSelectedId] = useState/*:: <?GameID>*/(null);
+  const [connection] = useAsync(async () =>
+    ids && selectedId && client.audio.connectActiveTrack(selectedId), [ids, client, selectedId]);
+
   return h('main', { class: 'store-page' }, [
     h('h2', {}, 'Admin Data Store Page'),
     h('style', {}, style),
+    ids && h('select', { value: selectedId, onChange: e => setSelectedId(e.currentTarget.value) }, [
+      ...ids.map(id => h('option', { value: id }, id))
+    ]),
+    h(ConnectionAdmin, {
+      toEvent: toActiveTrackEvent,
+      connection,
+      eventTypes: {
+        update: {
+          'type': { type: 'literal', value: 'update' },
+          'distanceSeconds': { type: 'number' },
+          'fromUnixTime': { type: 'number' },
+          'trackId': { type: 'text' },
+        },
+      },
+    }),
 
-    h(StoreTable, { storeId: 'game',
-      fields: [
-        { name: 'id' },
-        { name: 'name' },
-        { name: 'players', type: 'array(string)' },
-        { name: 'creator' }
-      ] }),
+    h(TableAdmin, {
+      name: 'games',
+      columnTypes: {
+        'gameId': 'text',
+        'creator': 'text',
+        'name': 'text',
+      },
+      toRow: toGameRow,
+      rowToKey: row => ({ gameId: row.gameId })
+    }),
+    h(TableAdmin, {
+      name: 'playersInGames',
+      columnTypes: {
+        'gameId': 'text',
+        'playerId': 'text'
+      },
+      toRow: toPlayerInGameRow,
+      rowToKey: row => ({ gameId: row.gameId, playerId: row.playerId }),
+    }),
+    h(TableAdmin, {
+      name: 'activeTracks',
+      columnTypes: {
+        'gameId': 'text',
+        'distanceSeconds': 'number',
+        'fromUnixTime': 'number',
+        'trackId': 'text'
+      },
+      toRow: toActiveTrackRow,
+      rowToKey: row => ({ gameId: row.gameId })
+    }),
     h(StoreTable, { storeId: 'character',
       fields: [
         { name: 'id' },

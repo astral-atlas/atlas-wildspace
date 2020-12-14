@@ -1,8 +1,9 @@
 // @flow strict
-/*:: import type { ResourceRequest, RouteResponse, Content, Route as HTTPRoute } from '@lukekaalim/server';*/
+/*:: import type { Readable } from 'stream'; */
+/*:: import type { ResourceRequest, RouteResponse, Route as HTTPRoute } from '@lukekaalim/server';*/
 /*:: import type { APIRoute } from '../routes';*/
 /*:: import type { WSRoute } from '../socket';*/
-const { getResponseForError, BadContentType, BadStructure, BadRequestBodyError } = require('../errors');
+const { getResponseForError } = require('../errors');
 
 const ws = (wsRoute/*: WSRoute*/)/*: APIRoute*/ => ({
   protocol: 'ws',
@@ -38,23 +39,23 @@ type StructureRequest<T> = {
 };
 */
 
-const validateContent = /*::<T>*/(content/*: Content*/, validator/*: mixed => T*/)/*: T*/ => {
-  try {
-    if (content.type !== 'json')
-      throw new BadContentType('application/json');
-
-    const value = validator(content.value);
-
-    return value;
-  } catch (error) {
-    throw new BadRequestBodyError(error.message);
-  }
+const streamToBuffer = (stream/*: Readable*/, length/*: number*/)/*: Promise<Buffer>*/ => {
+  const promise = new Promise((resolve, reject) => {
+    let offset = 0;
+    const buffer = Buffer.alloc(length);
+    stream.on('data', (chunk/*: Buffer*/) => {
+      chunk.copy(buffer, offset);
+      offset += chunk.byteLength;
+    });
+    stream.on('end', () => resolve(buffer))
+  });
+  
+  return promise;
 };
 
 module.exports = {
   withErrorHandling,
-  withErrorHandling,
-  validateContent,
+  streamToBuffer,
   ws,
   http,
 };

@@ -49,7 +49,7 @@ const createAudioService = (
   const getAudioInfo = async (game) => {
     const tracks =  [...trackStore.values]
       .map(([, track]) => track)
-      .filter(track => track.gameId === game.id);
+      .filter(track => track.gameId === game.gameId);
     const sourceIds = tracks.map(track => track.source);
     const sources = [...sourceStore.values]
       .map(([, source]) => source)
@@ -62,18 +62,18 @@ const createAudioService = (
   const listenersByGame/*: Map<GameID, Set<ActiveTrackListener>>*/ = new Map();
 
   const setActiveTrack = async (game, trackState) => {
-    await activeTracks.set(game.id, trackState);
-    const listeners = listenersByGame.get(game.id) || [];
+    await activeTracks.set(game.gameId, trackState);
+    const listeners = listenersByGame.get(game.gameId) || [];
     for (const listener of listeners)
       listener(trackState);
   };
   const getActiveTrack = async (game) => {
-    return (await activeTracks.get(game.id)) || emptyTrackState;
+    return (await activeTracks.get(game.gameId)) || emptyTrackState;
   };
   const onActiveTrackChange = (game, listener) => {
-    const listeners = listenersByGame.get(game.id) || new Set();
+    const listeners = listenersByGame.get(game.gameId) || new Set();
     listeners.add(listener);
-    listenersByGame.set(game.id, listeners);
+    listenersByGame.set(game.gameId, listeners);
     return () => {
       listeners.delete(listener);
     }

@@ -6,6 +6,7 @@ const e = require('../errors');
 
 /*::
 type PlayerService = {
+  validate: (ids: PlayerID[]) => Promise<boolean>,
   read: (id: PlayerID) => Promise<Player>,
   create: (params: PlayerParams, user: User) => Promise<Player>,
   update: (id: PlayerID, params: PlayerParams, user: User) => Promise<Player>,
@@ -64,11 +65,16 @@ const createPlayerService = (store/*: StoreService<PlayerID, Player>*/)/*: Playe
     await store.set(player.id, null);
     return player;
   };
+  const validate = async (ids) => {
+    const players = await Promise.all(ids.map(id => store.get(id)));
+    return players.every(player => player !== null);
+  };
   return {
     read,
     create,
     update,
     destroy,
+    validate,
   };
 };
 

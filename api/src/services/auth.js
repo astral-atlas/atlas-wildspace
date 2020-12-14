@@ -43,15 +43,33 @@ const createAuthService = (
     return gm;
   };
 
-  const getUser = async (auth/*: Authorization*/)/*: Promise<User>*/ => {
-    if (auth.type === 'none')
-      throw new e.MissingAuthenticationError();
-    if (auth.type !== 'bearer')
-      throw new e.UnsupportedAuthorizationError();
+  const getCreds = (auth/*: Authorization*/) => {
+    switch (auth.type) {
+      case 'none':
+        throw new e.MissingAuthenticationError();
+      default:
+        throw new e.UnsupportedAuthorizationError();
+      case 'bearer':
+        return getBearerCreds(auth);
+      case 'basic':
+        return getBasicCreds(auth);
+    }
+  };
 
-    const [type, encodedId, encodedSecret] = auth.token.split(':', 3);
+  const getBearerCreds = (bearer) => {
+    const [type, encodedId, encodedSecret] = bearer.token.split(':', 3);
     const secret = Buffer.from(encodedSecret, 'base64').toString('utf-8');
     const id = Buffer.from(encodedId, 'base64').toString('utf-8');
+    return { type, id, secret };
+  };
+  const getBasicCreds = (basic) => {
+    const { username, password } = basic;
+    return { type: 'game-master', id: username, secret: password };
+  };
+
+
+  const getUser = async (auth/*: Authorization*/)/*: Promise<User>*/ => {
+    const { type, id, secret } = getCreds(auth);
 
     switch (type) {
       case 'player':

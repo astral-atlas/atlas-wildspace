@@ -1,6 +1,6 @@
 // @flow strict
 /*:: import type { GameID, Game, GameParams, User, Player } from '@astral-atlas/wildspace-models'; */ 
-/*:: import type { MemoryStore } from './store'; */ 
+/*:: import type { Tables } from '../tables'; */ 
 /*:: import type { PlayerService } from './player'; */
 const { v4: uuid } = require('uuid');
 const e = require('../errors');
@@ -8,9 +8,9 @@ const e = require('../errors');
 /*::
 type GameService = {
   read: (id: GameID, user: User) => Promise<Game>,
-  create: (params: GameParams, user: User) => Promise<Game>,
-  update: (id: GameID, params: GameParams, user: User) => Promise<Game>,
-  destroy: (id: GameID, user: User) => Promise<Game>,
+  //create: (params: GameParams, user: User) => Promise<Game>,
+  //update: (id: GameID, params: GameParams, user: User) => Promise<Game>,
+  //destroy: (id: GameID, user: User) => Promise<Game>,
   listIds: (user: User) => Promise<GameID[]>,
 };
 
@@ -19,85 +19,52 @@ export type {
 };
 */
 
-const createGameService = (store/*: MemoryStore<GameID, Game>*/, player/*: PlayerService*/)/*: GameService*/ => {
+const createGameService = (tables/*: Tables*/, player/*: PlayerService*/)/*: GameService*/ => {
   const isCreator = (game, user) => (
     user.type === 'game-master'
     && user.gameMaster.id === game.creator
   );
-  const isPlayerInGame = (game, user) => (
-    user.type === 'player'
-    && game.players.includes(user.player.id)
-  );
-  const validateParams = async ({ players: ids }) => {
-    // map every playerId to a real player
-    await Promise.all(ids.map(id => player.read(id)));
-  };
 
-  const read = async (id, user) => {
-    const game = await store.get(id);
+  const read = async (gameId, user) => {
+    const [game] = await tables.games.select({ gameId });
     if (!game)
-      throw new e.NonexistentResourceError(id, `GameID not found`);
-
-    if (!isCreator(game, user) && !isPlayerInGame(game, user))
-      throw new e.InvalidPermissionError(id, `User is not Creator or Player in Game`);
-    
-    return game;
-  };
-  const create = async (gameParams, user) => {
-    if (user.type !== 'game-master')
-      throw new e.InvalidPermissionError('New Game', `Only GM's can create Games`);
-
-    await validateParams(gameParams);
-    const newGame/*: Game*/ = {
-      ...gameParams,
-      id: uuid(),
-      creator: user.gameMaster.id,
-    };
-
-    await store.set(newGame.id, newGame);
-
-    return newGame;
-  };
-  const update = async (id, gameParams, user) => {
-    const game = await store.get(id);
-    if (!game)
-      throw new e.NonexistentResourceError(id, `GameID not found`);
-    if (!isCreator(game, user))
-      throw new e.InvalidPermissionError(id, `Only the game creator can update games`);
-
-    await validateParams(gameParams);
-    await store.set(id, { ...game, ...gameParams });
-
-    return game;
-  };
-  const destroy = async (id, user) => {
-    const game = await store.get(id);
-    if (!game)
-      throw new e.NonexistentResourceError(id, `GameID not found`);
-    if (!isCreator(game, user))
-      throw new e.InvalidPermissionError(id, `Only the game creator can delete games`);
-
-    await store.set(id, null);
-
-    return game;
-  };
-  const listIds = async (user) => {
+      throw new e.NonexistentResourceError(gameId, `GameID not found`);
+    const playersInGame = await tables.playersInGames.select({ gameId });
+    const players = playersInGame.map(p => p.playerId);
     if (user.type === 'game-master')
-      return [...store.values]
-        .map(([, game]) => game.id);
-    else
-      return [...store.values]
-        .map(([, game]) => game)
-        // players can only see games they are a part of
-        .filter(game => game.players.includes(user.player.id))
-        .map(game => game.id);
+      return {
+        ...game,
+        id: game.gameId,
+        players,
+      };
+
+    const isInGame = players.includes(user.player.id);
+
+    if (!isInGame)
+      throw new e.InvalidPermissionError(gameId, `User is not Player in Game`);
+    
+    return {
+      ...game,
+      players,
+    };
+  };
+  const listIds = async (user, offset, limit) => {
+    const options = { offset, limit };
+    switch (user.type) {
+      case 'game-master':
+        return (await tables.games.select({}, options))
+          .map(game => game.gameId);
+      case 'player':
+        return (await tables.playersInGames.select({ playerId: user.player.id }, options))
+          .map(playerInGame => playerInGame.gameId);
+    }
   }
 
   return {
     read,
-    create,
-    update,
-    destroy,
+    //create,
+    //update,
+    //destroy,
     listIds,
   };
 };

@@ -16,7 +16,7 @@ const createCharacterRoutes = (services/*: Services*/, options/*: RestOptions*/)
       throw new MissingParameterError('gameId');
     const user = await services.auth.getUser(auth);
     const game = await services.games.read(gameId, user);
-    const characters = await services.character.getCharactersByGame(game.id);
+    const characters = await services.character.getCharactersByGame(game.gameId);
 
     return ok(characters);
   }

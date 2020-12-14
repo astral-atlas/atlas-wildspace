@@ -4,7 +4,7 @@
 /*:: import type { RouteResponse, ResourceRequest, RestOptions, Route } from '@lukekaalim/server'; */
 const { withAuthenticationRequests, toActiveTrackEvent } = require("@astral-atlas/wildspace-models");
 const { json: { ok }, resource } = require("@lukekaalim/server");
-const { withErrorHandling, validateContent, ws, http } = require("./utils");
+const { withErrorHandling, ws, http } = require("./utils");
 const { createWSRoute } = require('../socket');
 
 /*
@@ -28,6 +28,7 @@ const createAudioRoutes = (services/*: Services*/, options/*: RestOptions*/)/*: 
       game = await services.games.read(gameId, user);
       cleanup = services.audio.onActiveTrackChange(game, onUpdate);
       socket.send(JSON.stringify({ type: 'grant-authentication', user }));
+      socket.send(JSON.stringify(await services.audio.activeTrack.get(game)));
     };
     const update = async (event) => {
       if (user.type !== 'game-master')

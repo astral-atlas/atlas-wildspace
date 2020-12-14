@@ -44,6 +44,7 @@ declare module "preact/hooks" {
   declare var useMemo: <T>(computeExpensiveValue: () => T, dependencies?: mixed[]) => T;
   declare var useRef: <T>(initial: T) => { current: T };
   declare var useReducer: <S, A>(reducer: (state: S, action: A) => S, initialState: S) => [S, (action: A) => void];
+  declare var useErrorBoundary: () => [Error];
 
   declare module.exports: {
     useContext: typeof useContext,
@@ -52,6 +53,7 @@ declare module "preact/hooks" {
     useRef: typeof useRef,
     useMemo: typeof useMemo,
     useReducer: typeof useReducer,
+    useErrorBoundary: typeof useErrorBoundary,
   }
 }
 

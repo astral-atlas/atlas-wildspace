@@ -39,10 +39,13 @@ type ProviderProps = {
 
 const http = createWebClient(window.fetch);
 
+const httpEndpoint = new URL('http://localhost:8080');
+const wsEndpoint = new URL('ws://localhost:8080');
+
 const WildspaceProvider = ({ children }/*: ProviderProps*/)/*: Node*/ => {
   const [state, dispatch] = useStore();
   const auth = useMemo(() => getAuth(state.user.credentials), [state.user.credentials]);
-  const client = useMemo(() => createWildspaceClient(new URL('http://localhost:8080'), http, auth), [
+  const client = useMemo(() => createWildspaceClient(httpEndpoint, wsEndpoint, http, auth), [
     http,
     auth
   ]);

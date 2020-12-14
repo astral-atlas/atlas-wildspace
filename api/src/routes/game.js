@@ -6,7 +6,7 @@
 
 const { resource, json: { ok, created } } = require('@lukekaalim/server');
 const { toGameParams } = require('@astral-atlas/wildspace-models');
-const { withErrorHandling, validateContent } = require('./utils');
+const { withErrorHandling } = require('./utils');
 
 const { MissingParameterError } = require('../errors');
 

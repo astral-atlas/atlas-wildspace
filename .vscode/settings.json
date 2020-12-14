@@ -4,5 +4,9 @@
   "typescript.suggest.autoImports": false,
   "typescript.suggest.includeAutomaticOptionalChainCompletions": false,
   "typescript.suggest.paths": false,
-  "typescript.suggestionActions.enabled": false
+  "typescript.suggestionActions.enabled": false,
+  "cSpell.words": [
+    "Creds",
+    "Hitpoints"
+  ]
 }

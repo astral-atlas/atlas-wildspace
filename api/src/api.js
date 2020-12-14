@@ -7,8 +7,8 @@ const { createRoutes } = require('./routes');
 const { createServices } = require('./services');
 const { createWSListener, createWebSocketServer } = require('./socket');
 
-const createWildspaceAPI = ()/*: [HTTPServer, Websocket.Server]*/ => {
-  const services = createServices();
+const createWildspaceAPI = async ()/*: Promise<[HTTPServer, Websocket.Server]>*/ => {
+  const services = await createServices();
   const routes = createRoutes(services);
 
   const httpRoutes = routes

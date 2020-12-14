@@ -4,7 +4,9 @@
   "description": "Useful models and structures for wildspace",
   "main": "main.js",
   "scripts": {},
-  "dependencies": {},
+  "dependencies": {
+    "@lukekaalim/cast": "file:../cast"
+  },
   "author": "",
   "license": "ISC",
   "devDependencies": {

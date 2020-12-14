@@ -7,7 +7,6 @@ import { useAsync } from '../hooks/useAsync';
 import { CharacterCard } from '../components/cards/character';
 import { useWildspaceClient } from '../hooks/useWildspace';
 import { useSpring, animated } from 'react-spring';
-window.a = true && useSpring && animated;
 
 export const style = `
   .home-page {

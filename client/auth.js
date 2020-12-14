@@ -28,7 +28,7 @@ const createGuestAuthorization = ()/*: RESTAuthorization*/ => {
 
 const createAuthorization = (details/*: ?AuthDetails*/)/*: RESTAuthorization*/ => {
   if (!details)
-    return createAuthorization();
+    return createGuestAuthorization();
   switch (details.user.type) {
     case 'player':
       return createPlayerAuthorization(details.user.playerId, details.secret);

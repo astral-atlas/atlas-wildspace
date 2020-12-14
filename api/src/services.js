@@ -3,19 +3,31 @@
   Game, GameID, PlayerID, Player, Character, CharacterID, GameMasterID, GameMaster,
   HTTPAudioSourceID, HTTPAudioSource,
   BackgroundAudioTrackID, BackgroundAudioTrack,
+  ActiveTrackRow,
+  AudioAsset, AudioAssetID,
+  Asset, AssetID, AssetURL,
 } from '@astral-atlas/wildspace-models'; */
+/*:: import type { Cast } from '@lukekaalim/cast'; */
 /*:: import type { AuthService } from './services/auth'; */
 /*:: import type { StoreService, IndexService, MemoryStore } from './services/store'; */
 /*:: import type { GameService } from './services/game'; */
 /*:: import type { PlayerService } from './services/player'; */
 /*:: import type { CharacterService } from './services/character'; */
 /*:: import type { AudioService, TrackState } from './services/audio'; */
+/*:: import type { Table } from './services/table'; */
+/*:: import type { AssetService } from './services/asset'; */
+/*:: import type { Tables } from './tables'; */
+
 const { createAuthService } = require('./services/auth');
 const { createMemoryStore } = require('./services/store');
 const { createGameService } = require('./services/game');
 const { createPlayerService } = require('./services/player');
 const { createCharacterService } = require('./services/character');
 const { createAudioService } = require('./services/audio');
+const { createMemoryAssetService } = require('./services/asset');
+
+const { createTables } = require('./tables');
+
 
 /*::
 type Services = {
@@ -25,6 +37,8 @@ type Services = {
   stores: Stores,
   character: CharacterService,
   audio: AudioService,
+  assets: AssetService,
+  tables: Tables,
 };
 
 type Stores = {
@@ -41,6 +55,7 @@ type Stores = {
 export type {
   AuthService,
   Services,
+  Stores,
 };
 */
 
@@ -66,22 +81,26 @@ const createStores = ()/*: Stores*/ => {
   };
 };
 
-const createServices = ()/*: Services*/ => {
+const createServices = async ()/*: Promise<Services>*/ => {
   const stores = createStores();
+  const tables = await createTables();
 
   const auth = createAuthService(stores.player, stores.playerSecrets);
   const players = createPlayerService(stores.player);
-  const games = createGameService(stores.game, players);
+  const games = createGameService(tables, players);
   const character = createCharacterService(stores.character);
   const audio = createAudioService(stores.tracks, stores.sources, stores.activeTrackStates);
+  const assets = createMemoryAssetService();
 
   return {
+    tables,
     stores,
     auth,
     games,
     players,
     character,
     audio,
+    assets,
   };
 }
 

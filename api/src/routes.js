@@ -7,6 +7,8 @@ const { createStoreRoutes } = require('./routes/store');
 const { createCharacterRoutes } = require('./routes/character');
 const { createUserRoutes } = require('./routes/user');
 const { createAudioRoutes } = require('./routes/audio');
+const { createAssetRoutes } = require('./routes/asset');
+const { createTableRoutes } = require('./routes/tables');
 
 /*::
 export type APIRoute =
@@ -23,18 +25,22 @@ const options = {
 
 const createRoutes = (services/*: Services*/)/*: APIRoute[]*/ => {
   const gameRoutes = createGameRoutes(services, options);
+  const assetRoutes = createAssetRoutes(services, options);
   const storeRoutes = createStoreRoutes(services, options);
   const characterRoutes = createCharacterRoutes(services, options);
   const userRoutes = createUserRoutes(services, options);
   const audioRoutes = createAudioRoutes(services, options);
+  const tableRoutes = createTableRoutes(services, options);
 
   return [
     ...audioRoutes,
     ...[
+      ...assetRoutes,
       ...userRoutes,
       ...characterRoutes,
       ...gameRoutes,
       ...storeRoutes,
+      ...tableRoutes,
     ].map(httpRoute => ({ protocol: 'http', httpRoute }))
   ];
 };

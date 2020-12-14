@@ -45,6 +45,26 @@ export type {
 };
 */
 
+const getAuthHeader = (auth/*: RESTAuthorization*/)/*: null | [string, string]*/ => {
+  switch (auth.type) {
+    case 'none':
+      return null;
+    case 'basic':
+      const credentials = `${auth.username}:${auth.password}`;
+      return [
+        'Authorization',
+        `Basic ${btoa(credentials)}`
+      ];
+    case 'bearer':
+      return [
+        'Authorization',
+        `Bearer ${auth.token}`
+      ];
+    default:
+      throw new Error(`Unrecognized authorization`);
+  }
+};
+
 const createRESTClient = ({ endpoint, client, auth = { type: 'none' }}/*: RESTOptions*/)/*: RESTClient*/ => {
   const getURL = (resource, params = {}) => {
     const resourceURL = new URL(endpoint.href);
@@ -61,25 +81,6 @@ const createRESTClient = ({ endpoint, client, auth = { type: 'none' }}/*: RESTOp
   const getBody = (content) => {
     return content !== undefined ? stringify(content) : undefined;
   }
-  const getAuthHeader = ()/*: null | [string, string]*/ => {
-    switch (auth.type) {
-      case 'none':
-        return null;
-      case 'basic':
-        const credentials = `${auth.username}:${auth.password}`;
-        return [
-          'Authorization',
-          `Basic ${btoa(credentials)}`
-        ];
-      case 'bearer':
-        return [
-          'Authorization',
-          `Bearer ${auth.token}`
-        ];
-      default:
-        throw new Error(`Unrecognized authorization`);
-    }
-  };
   const getContentHeaders = (content)/*: null | [string, string]*/ => {
     if (content === undefined)
       return null;
@@ -87,7 +88,7 @@ const createRESTClient = ({ endpoint, client, auth = { type: 'none' }}/*: RESTOp
   };
   const getHeaders = (headers = [], content = null) => {
     return [
-      getAuthHeader(),
+      getAuthHeader(auth),
       getContentHeaders(content),
       ...headers,
     ].filter(Boolean);
@@ -165,4 +166,5 @@ const createRESTClient = ({ endpoint, client, auth = { type: 'none' }}/*: RESTOp
 module.exports = {
   UnexpectedResponseError,
   createRESTClient,
+  getAuthHeader,
 };

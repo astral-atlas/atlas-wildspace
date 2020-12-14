@@ -67,13 +67,14 @@ const createStoreRoutes = (services/*: Services*/, options/*: RestOptions*/)/*: 
     const values = [...store.values].map(([key, value]) => ({ key, value }));
     return ok({ id: storeId, values });
   };
-  const updateValue = async ({ query: { storeId, key }, auth, content }) => {
+  const updateValue = async ({ query: { storeId, key }, auth, parseJSON }) => {
     const user = await services.auth.getUser(auth);
     if (user.type !== 'game-master')
       throw new InvalidPermissionError('StoreList', 'Only Game Masters use the /stores endpoints');
     if (!storeId)
       throw new MissingParameterError(`storeId`);
-    if (content.type !== 'json')
+    const content = await parseJSON();
+    if (!content)
       throw new BadContentType('application/json');
     await updateStore(storeId, key, content.value);
     const store = getStoreService(storeId);

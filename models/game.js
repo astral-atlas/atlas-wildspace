@@ -7,7 +7,7 @@ const { toObject, toArray, toString } = require('./casting');
 /*::
 type GameID = UUID;
 type Game = {
-  id: GameID,
+  gameId: GameID,
   name: string,
   creator: GameMasterID,
   players: PlayerID[]
@@ -24,7 +24,7 @@ const toGameID = (value/*: mixed*/)/*: GameID*/ => toUUID(value);
 const toGame = (value/*: mixed*/)/*: Game*/ => {
   const object = toObject(value);
   return {
-    id: toGameID(object.id),
+    gameId: toGameID(object.gameId),
     name: toString(object.name || ''),
     creator: toUUID(object.creator),
     players: toArray(object.players).map(toUUID),
