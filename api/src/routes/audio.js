@@ -4,8 +4,9 @@
 /*:: import type { RouteResponse, ResourceRequest, RestOptions, Route } from '@lukekaalim/server'; */
 const { withAuthenticationRequests, toActiveTrackEvent } = require("@astral-atlas/wildspace-models");
 const { json: { ok }, resource } = require("@lukekaalim/server");
-const { withErrorHandling, ws, http } = require("./utils");
+const { withErrorHandling, ws, http, createChannelRoute, createAPIEndpointHandler } = require("./utils");
 const { createWSRoute } = require('../socket');
+const { activeTrackChannel, getGameAudioEndpoint } = require("@astral-atlas/wildspace-models/api/audio");
 
 /*
 /game/tracks/active/events =>
@@ -14,56 +15,59 @@ const { createWSRoute } = require('../socket');
   GET
 */
 const createAudioRoutes = (services/*: Services*/, options/*: RestOptions*/)/*: APIRoute[]*/ => {
-  const connectActiveTrack = async ({ socket, query: { gameId } }) => {
-    let user;
-    let game;
-    let cleanup;
-  
-    const onUpdate = (trackState) => {
-      socket.send(JSON.stringify(trackState));
-    };
-    const authenticateUser = async (event) => {
-      cleanup && cleanup();
-      user = await services.auth.getUserFromRequest(event);
-      game = await services.games.read(gameId, user);
-      cleanup = services.audio.onActiveTrackChange(game, onUpdate);
-      socket.send(JSON.stringify({ type: 'grant-authentication', user }));
-      socket.send(JSON.stringify(await services.audio.activeTrack.get(game)));
-    };
-    const update = async (event) => {
+  const connectActiveTrack = async ({ query, user, disconnect, send }) => {
+    const onReceiveEvent = async (event) => {
       if (user.type !== 'game-master')
-        return socket.close(1008, 'Only Game Masters can push audio events');
-      await services.audio.activeTrack.set(game, event);
+        return disconnect(1008, 'Only Game Masters can push audio events');
+      await services.audio.setActiveTrack(game, {
+        gameId: game.gameId,
+        distanceSeconds: event.distanceSeconds,
+        trackId: event.trackId,
+        fromUnixTime: event.fromUnixTime,
+      });
     };
-    socket.on('message', async (data) => {
-      try {
-        const event = withAuthenticationRequests(JSON.parse(data), toActiveTrackEvent);
-        switch (event.type) {
-          case 'request-authentication':
-            return await authenticateUser(event);
-          case 'update':
-            return await update(event);
-        }
-      } catch(error) {
-        console.error(error);
-      }
-    });
+    const onDisconnect = async () => {
+      cleanup();
+    };
+    const onTrackChange = async (newTrack) => {
+      send({
+        type: 'update',
+        distanceSeconds: newTrack.distanceSeconds,
+        trackId: newTrack.trackId,
+        fromUnixTime: newTrack.fromUnixTime,
+      });
+    };
+    const game = await services.games.read(query.gameId, user);
+    const cleanup = services.audio.onActiveTrackChange(game, onTrackChange);
+    const onSetupComplete = async () => {
+      const track = await services.audio.getActiveTrack(game);
+      send({
+        type: 'update',
+        distanceSeconds: track.distanceSeconds,
+        trackId: track.trackId,
+        fromUnixTime: track.fromUnixTime,
+      });
+    };
+
+    return {
+      onReceiveEvent,
+      onDisconnect,
+      onSetupComplete,
+    };
   }
 
-
-  const getAudioInfo = async ({ query: { gameId }, auth }) => {
+  const getAudioInfo = createAPIEndpointHandler(getGameAudioEndpoint, async ({ gameId }, _, { auth }) => {
     const user = await services.auth.getUser(auth);
     const game = await services.games.read(gameId, user);
-    return ok(await services.audio.getAudioInfo(game));
-  };
-
-  const activeTrackEvents = createWSRoute('/game/tracks/active/events', connectActiveTrack);
-  const audioInfoResource = resource('/game/tracks', {
+    return [200, await services.audio.getGameAudio(game)];
+  });
+  const activeTrackRoute = createChannelRoute(services, activeTrackChannel, connectActiveTrack);
+  const audioInfoResource = resource(getGameAudioEndpoint.path, {
     get: withErrorHandling(getAudioInfo),
   }, options);
 
   return [
-    ws(activeTrackEvents),
+    ws(activeTrackRoute),
     ...audioInfoResource.map(http),
   ];
 };

@@ -1,21 +1,14 @@
 // @flow strict
-/*:: import type { ActiveTrackEvent } from '../audio'; */
-const { toActiveTrackEvent } = require('../audio');
+/*:: import type { Cast } from '@lukekaalim/cast'; */
+
 // An "Event Channel" is a Bidirectional
 // message protocol, with explicit client and server roles
-
 /*::
-export type Channel<ServerEvent, ClientEvent> = {
-  toClientEvent: mixed => ClientEvent,
-  toServerEvent: mixed => ServerEvent,
+export type Channel<ServerEvent, ClientEvent, Query: {}> = {
+  path: string,
+  toQuery: Cast<Query>,
+  toClientEvent: Cast<ClientEvent>,
+  toServerEvent: Cast<ServerEvent>,
 };
 */
 
-const activeTrackChannel/*: Channel<ActiveTrackEvent, ActiveTrackEvent>*/ = {
-  toClientEvent: toActiveTrackEvent,
-  toServerEvent: toActiveTrackEvent,
-};
-
-module.exports = {
-  activeTrackChannel,
-};

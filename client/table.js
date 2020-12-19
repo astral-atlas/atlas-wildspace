@@ -6,8 +6,8 @@ const { toArray } = require('@lukekaalim/cast');
 export type TableClient = {
   getTable: (name: string) => Promise<$ReadOnlyArray<any>>,
   addRow: (name: string, row: any) => Promise<void>,
-  updateRow: (name: string, key: any, partialRow: any) => Promise<$ReadOnlyArray<any>>,
-  removeRow: (name: string, key: any) => Promise<void>,
+  updateRow: (name: string, where: any, values: any) => Promise<$ReadOnlyArray<any>>,
+  removeRow: (name: string, where: any) => Promise<void>,
 };
 */
 
@@ -19,12 +19,12 @@ const createTableClient = (rest/*: RESTClient*/)/*: TableClient*/ => {
   const addRow = async (name, row) => {
     await rest.post({ content: { row }, resource: '/table/row', params: { name } });
   };
-  const updateRow = async (name, key, row) => {
-    const { content } = await rest.put({ content: { key, row }, resource: '/table/row', params: { name } });
+  const updateRow = async (name, where, values) => {
+    const { content } = await rest.put({ content: { where, values }, resource: '/table/row', params: { name } });
     return toArray(content);
   };
-  const removeRow = async (name, key) => {
-    await rest.delete({ content: { key }, resource: '/table/row', params: { name } });
+  const removeRow = async (name, where) => {
+    await rest.delete({ content: { where }, resource: '/table/row', params: { name } });
   };
 
   return {

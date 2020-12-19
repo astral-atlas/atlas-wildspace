@@ -18,6 +18,9 @@ export type WritableTable<Key, Row> = {|
   update: (key: Key, partialRow: $Shape<Row>) => Promise<Row[]>,
 |};
 
+type KeyOf<T> = $Call<<K, R>(a: Table<K, R>) => K, T>;
+type RowOf<T> = $Call<<K, R>(a: Table<K, R>) => R, T>;
+
 export type Table<Key, Row> = {
   ...ReadableTable<Key, Row>,
   ...WritableTable<Key, Row>,
@@ -29,6 +32,52 @@ export type TableConstraints = {
 
 type ReducerFunc<T> = (acc: T[], curr: T) => T[];
 */
+
+const memoryJoin2 = /*:: <A: Table<{}, {}>, B: Table<{}, {}>>*/(
+  tableA/*: A*/,
+  tableB/*: B*/,
+  joined/*: { a: $Keys<KeyOf<A>>, b: $Keys<KeyOf<B>> }*/,
+)/*: Table<[KeyOf<A>, KeyOf<B>], [RowOf<A>, RowOf<B>]>*/ => {
+  const select = async ([keyA, keyB]) => {
+    const rowsA = await tableA.select(keyA);
+    const rowsB = await tableB.select(keyB);
+
+    const joinedRows/*: [RowOf<A>, RowOf<B>][]*/ = rowsA
+      .map(rowA => rowsB
+        .map((rowB)/*: ([RowOf<A>, RowOf<B>] | null)*/ => {
+          if (rowA[joined.a] === rowB[joined.b])
+            return [rowA, rowB];
+          return null;
+        }).filter(Boolean)
+      ).flat(1);
+    return joinedRows;
+  };
+  const count = async ([keyA, keyB]) => {
+    return (await select([keyA, keyB])).length;
+  }
+
+  const insert = async (row) => {
+    await tableA.insert(row.map(([a, b]) => a));
+    await tableB.insert(row.map(([a, b]) => b));
+  };
+  const remove = async ([a, b]) => {
+    await tableA.remove(a);
+    await tableB.remove(b);
+  };
+  const update = async ([ka, kb], [ra, rb]) => {
+    await tableA.update(ka, ra);
+    await tableB.update(kb, rb);
+    return select([ka, ra]);
+  };
+
+  return {
+    select,
+    count,
+    insert,
+    remove,
+    update,
+  };
+};
 
 const memoryJoin = /*:: <RowA: {}, RowB: {}, KeyA, KeyB, JoinedKey, JoinedRow>*/(
   tableA/*: Table<KeyA, RowA>*/,
@@ -172,8 +221,42 @@ const createFileTable = async /*::<K: {}, R: {}>*/(
   };
 };
 
+const mapTable = /*:: <OK, OR: {}, K, R: {}>*/(
+  table/*: Table<OK, OR>*/,
+  fromKey/*: K => OK*/,
+  toRow/*: OR => R*/,
+  fromRow/*: R => OR*/,
+  toPartialRow/*: (shape: $Shape<R>) => $Shape<OR> */
+)/*: Table<K, R>*/ => {
+  const select = async (key, options) => {
+    return (await table.select(fromKey(key), options)).map(toRow);
+  }
+  const count = async (key, options) => {
+    return await table.count(fromKey(key), options);
+  } 
+  const insert = async (rows) => {
+    return await table.insert(rows.map(fromRow));
+  }
+  const remove = async (key) => {
+    return await table.remove(fromKey(key));
+  };
+  const update = async (key, row) => {
+    const partialRow = toPartialRow(row);
+    return (await table.update(fromKey(key), partialRow)).map(toRow);
+  };
+  return {
+    select,
+    count,
+    insert,
+    remove,
+    update,
+  };
+};
+
 module.exports = {
+  mapTable,
   memoryJoin,
+  memoryJoin2,
   createMemoryTable,
   createFileTable,
 };

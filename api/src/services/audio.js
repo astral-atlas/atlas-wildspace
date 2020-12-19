@@ -1,74 +1,77 @@
 // @flow strict
 /*:: import type {
-  HTTPAudioSourceID, HTTPAudioSource,
+  AudioAssetID, AudioAsset,
+  ActiveTrackRow,
   BackgroundAudioTrackID, BackgroundAudioTrack,
   GameID, Game,
 } from '@astral-atlas/wildspace-models'; */
-/*:: import type { MemoryStore } from './store'; */
+/*:: import type { Tables } from '../tables'; */
 /*:: import type { GameService } from './game'; */
+/*:: import type { AssetServices } from './asset'; */
 
 /*::
-type TrackState = {
-  trackId: BackgroundAudioTrackID | null,
-  fromUnixTime: number,
-  distanceSeconds: number,
-};
-
-type ActiveTrackListener = (track: TrackState) => mixed;
+type ActiveTrackListener = (track: ActiveTrackRow) => mixed;
 type AudioService = {
-  activeTrack: {
-    get: (game: Game) => Promise<TrackState>,
-    set: (game: Game, track: TrackState) => Promise<void>,
-  },
-  getAudioInfo: (game: Game) => Promise<{
+  getActiveTrack: (game: Game) => Promise<ActiveTrackRow>,
+  setActiveTrack: (game: Game, track: ActiveTrackRow) => Promise<void>,
+  getGameAudio: (game: Game) => Promise<{
     tracks: BackgroundAudioTrack[],
-    sources: HTTPAudioSource[],
   }>;
 
   onActiveTrackChange: (game: Game, listener: ActiveTrackListener) => () => void;
 };
 export type {
-  TrackState,
   ActiveTrackListener,
   AudioService,
 };
 */
 
-const emptyTrackState = {
+const defaultActiveTrackRow = {
   trackId: null,
   fromUnixTime: 0,
   distanceSeconds: 0,
 };
 
 const createAudioService = (
-  trackStore/*: MemoryStore<BackgroundAudioTrackID, BackgroundAudioTrack>*/,
-  sourceStore/*: MemoryStore<HTTPAudioSourceID, HTTPAudioSource>*/,
-
-  activeTracks/*: MemoryStore<GameID, TrackState>*/
+  tables/*: Tables*/,
+  gameService/*: GameService*/,
+  assetServices/*: AssetServices*/
 )/*: AudioService*/ => {
-  const getAudioInfo = async (game) => {
-    const tracks =  [...trackStore.values]
-      .map(([, track]) => track)
-      .filter(track => track.gameId === game.gameId);
-    const sourceIds = tracks.map(track => track.source);
-    const sources = [...sourceStore.values]
-      .map(([, source]) => source)
-      .filter(source => sourceIds.includes(source.id))
-    return {
-      tracks,
-      sources,
-    };
-  }
   const listenersByGame/*: Map<GameID, Set<ActiveTrackListener>>*/ = new Map();
 
-  const setActiveTrack = async (game, trackState) => {
-    await activeTracks.set(game.gameId, trackState);
-    const listeners = listenersByGame.get(game.gameId) || [];
+  const getGameAudio = async (game) => {
+    const trackRows = await tables.audio.backgroundTracks.select({ gameId: game.gameId });
+    console.log(trackRows);
+    const tracks = await Promise.all(trackRows.map(async trackRow => ({
+      id: trackRow.id,
+      name: trackRow.name,
+      gameId: trackRow.gameId,
+      asset: await assetServices.database.getAudioAsset(trackRow.audioAssetId),
+    })));
+
+    return {
+      tracks,
+    };
+  }
+
+  const setActiveTrack = async ({ gameId }, newActiveTrackRow) => {
+    if ((await tables.audio.activeTracks.select({ gameId })).length === 0) {
+      await tables.audio.activeTracks.insert([
+        { ...newActiveTrackRow, gameId },
+      ]);
+    } else {
+      await tables.audio.activeTracks.update(
+        { gameId },
+        { ...newActiveTrackRow, gameId },
+      );
+    }
+    const listeners = listenersByGame.get(gameId) || [];
     for (const listener of listeners)
-      listener(trackState);
+      listener(newActiveTrackRow);
   };
   const getActiveTrack = async (game) => {
-    return (await activeTracks.get(game.gameId)) || emptyTrackState;
+    const [activeTrackState] = await tables.audio.activeTracks.select({ gameId: game.gameId });
+    return activeTrackState || { ...defaultActiveTrackRow, gameId: game.gameId };
   };
   const onActiveTrackChange = (game, listener) => {
     const listeners = listenersByGame.get(game.gameId) || new Set();
@@ -80,11 +83,9 @@ const createAudioService = (
   };
 
   return {
-    activeTrack: {
-      set: setActiveTrack,
-      get: getActiveTrack,
-    },
-    getAudioInfo,
+    getGameAudio,
+    getActiveTrack,
+    setActiveTrack,
     onActiveTrackChange,
   };
 };

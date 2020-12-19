@@ -8,6 +8,9 @@ import { renderStyleSheet } from '../lib/style';
 import { pageStyles } from './page';
 import { footerStyles } from './footer';
 import { tableAdminStyle } from './table';
+import { assetStyles } from './admin/assets';
+
+import { backgroundTrackPlayerStyles } from './audio/backgroundTrackPlayer';
 
 import { style as characterCardStyle } from './cards/character';
 
@@ -32,6 +35,8 @@ const Style = ()/*: Node*/ => {
       pageStyles,
       footerStyles,
       tableAdminStyle,
+      assetStyles,
+      backgroundTrackPlayerStyles,
     ].map(renderStyleSheet)
   }, []);
   return [

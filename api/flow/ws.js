@@ -10,7 +10,9 @@ declare module "ws" {
     constructor({ server: HTTPServer }): Server;
   }
   declare class WebSocket {
+    once(event: 'message', (data: string) => mixed): void;
     on(event: 'message', (data: string) => mixed): void;
+    on(event: 'close', () => mixed): void;
     on(event: 'open', () => mixed): void;
     send(data: any): void;
     close(code: number, message: string): void;

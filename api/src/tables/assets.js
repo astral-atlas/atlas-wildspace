@@ -1,67 +1,54 @@
 // @flow strict
 /*:: import type { Cast } from '@lukekaalim/cast'; */
+/*:: import type { ReadWriteTable, JoinedTable } from '@astral-atlas/table'; */
 /*:: import type {
   Asset, AssetID,
   AudioAsset, AudioAssetID,
+  AudioAssetRow, AssetRow,
 } from '@astral-atlas/wildspace-models'; */
-/*:: import type { Table, ReadableTable, WritableTable } from '../services/table'; */
-const { toAsset, toAssetId, toAudioAssetId } = require("@astral-atlas/wildspace-models");
+const { toAsset, toAssetId, toAudioAsset, toAssetRow, toAudioAssetRow } = require("@astral-atlas/wildspace-models");
+const { createFileTable, createMemoryJoinTable } = require('@astral-atlas/table')
 const { toObject, toString, toNumber } = require("@lukekaalim/cast");
-const { createFileTable, memoryJoin } = require("../services/table");
 
 /*::
 export type AssetTables = {
-  assets: Table<{ assetId?: AssetID }, Asset>,
-  assetPushTokens: Table<{ assetId?: AssetID }, { assetId: AssetID, expires: number, token: string }>,
-  audioAssets: Table<{ audioAssetId?: AudioAssetID }, AudioAsset>,
+  assets: ReadWriteTable<AssetRow>,
+  assetPushTokens: ReadWriteTable<AssetPushToken>,
+  audioAssets: ReadWriteTable<AudioAssetRow>,
+
+  joinedAudioAssets: JoinedTable<{| ...AssetRow, ...AudioAssetRow |}>
 };
 */
 
-/*:: type AudioAssetRef = {| assetId: AssetID, audioAssetId: AudioAssetID |}; */
-const toAudioAssetRef/*: Cast<AudioAssetRef>*/ = (value) => {
+/*:: export type AssetPushToken = { assetId: AssetID, expires: number, tokenSecret: string }; */
+const toAssetPushToken/*: Cast<AssetPushToken>*/ = (value) => {
   const object = toObject(value);
   return {
     assetId: toAssetId(object.assetId),
-    audioAssetId: toAudioAssetId(object.audioAssetId),
-  }
+    expires: toNumber(object.expires),
+    tokenSecret: toString(object.tokenSecret),
+  };
 };
 
 const createAssetTables = async ()/*: Promise<AssetTables>*/ => {
   // generic assets
-  const assets = await createFileTable(
-    './data/assets.json',
-    toAsset,
-    (a, b) => a.assetId === b.assetId
-  );
+  const assets = await createFileTable('assets', './data/assets.json', toAssetRow);
+  const assetPushTokens = await createFileTable('assetPushTokens', './data/assets/tokens.json', toAssetPushToken);
+  
   // specific audio asset
-  const audioAssetRefs/*: Table<{ audioAssetId?: AudioAssetID }, AudioAssetRef>*/ = await createFileTable(
-    './data/assets/audio.json',
-    toAudioAssetRef,
-    (a, b) => (a.audioAssetId === b.audioAssetId) || (a.assetId === b.assetId),
-  );
-  const audioAssets = memoryJoin(assets, audioAssetRefs,
-    () => ({}), k => ({ audioAssetId: k.audioAssetId }),
-    (a, b) => ({ ...a, ...b }),
-    j => ({ ...j }), j => ({ assetId: j.assetId, audioAssetId: j.audioAssetId })
-  );
+  const audioAssets = await createFileTable('audioAssets', './data/assets/audio.json', toAudioAssetRow);
 
-  const assetPushTokens = await createFileTable(
-    './data/assets/tokens.json',
-    (value) => {
-      const object = toObject(value);
-      return {
-        assetId: toAssetId(object.assetId),
-        token: toString(object.token),
-        expires: toNumber(object.expires),
-      };
-    },
-    (a, b) => a.assetId === b.assetId,
+  const joinedAudioAssets = createMemoryJoinTable(
+    assets,
+    audioAssets,
+    (a, b) => a.assetId === b.assetId ? ({ ...a, ...b }) : null,
   );
 
   return {
     assets,
-    audioAssets,
     assetPushTokens,
+    audioAssets,
+    joinedAudioAssets,
   };
 };
 

@@ -31,7 +31,6 @@ const useConnection = /*::<ServerEvent, ClientEvent, T>*/(
     if (!connector)
       return;
     const onEvent = (event/*: ServerEvent*/) => {
-      console.log(event);
       dispatch(event);
     }
     const { remove } = connector.addEventListener(onEvent);

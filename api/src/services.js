@@ -1,7 +1,6 @@
 // @flow strict
 /*:: import type {
   Game, GameID, PlayerID, Player, Character, CharacterID, GameMasterID, GameMaster,
-  HTTPAudioSourceID, HTTPAudioSource,
   BackgroundAudioTrackID, BackgroundAudioTrack,
   ActiveTrackRow,
   AudioAsset, AudioAssetID,
@@ -13,9 +12,9 @@
 /*:: import type { GameService } from './services/game'; */
 /*:: import type { PlayerService } from './services/player'; */
 /*:: import type { CharacterService } from './services/character'; */
-/*:: import type { AudioService, TrackState } from './services/audio'; */
+/*:: import type { AudioService } from './services/audio'; */
 /*:: import type { Table } from './services/table'; */
-/*:: import type { AssetService } from './services/asset'; */
+/*:: import type { AssetServices } from './services/asset'; */
 /*:: import type { Tables } from './tables'; */
 
 const { createAuthService } = require('./services/auth');
@@ -24,7 +23,7 @@ const { createGameService } = require('./services/game');
 const { createPlayerService } = require('./services/player');
 const { createCharacterService } = require('./services/character');
 const { createAudioService } = require('./services/audio');
-const { createMemoryAssetService } = require('./services/asset');
+const { createAssetServices } = require('./services/asset');
 
 const { createTables } = require('./tables');
 
@@ -37,7 +36,7 @@ type Services = {
   stores: Stores,
   character: CharacterService,
   audio: AudioService,
-  assets: AssetService,
+  asset: AssetServices,
   tables: Tables,
 };
 
@@ -46,10 +45,6 @@ type Stores = {
   player: MemoryStore<PlayerID, Player>,
   playerSecrets: MemoryStore<PlayerID, { secret: string }>,
   character: MemoryStore<CharacterID, Character>,
-
-  sources: MemoryStore<HTTPAudioSourceID, HTTPAudioSource>,
-  tracks: MemoryStore<BackgroundAudioTrackID, BackgroundAudioTrack>,
-  activeTrackStates: MemoryStore<GameID, TrackState>,
 };
 
 export type {
@@ -65,19 +60,11 @@ const createStores = ()/*: Stores*/ => {
   const character = createMemoryStore/*:: <CharacterID, Character>*/();
   const playerSecrets = createMemoryStore/*::<PlayerID, { secret: string }>*/();
 
-  const sources = createMemoryStore/*::<HTTPAudioSourceID, HTTPAudioSource>*/();
-  const tracks = createMemoryStore/*::<BackgroundAudioTrackID, BackgroundAudioTrack>*/();
-  const activeTrackStates = createMemoryStore/*::<GameID, TrackState>*/();
-
   return {
     game,
     player,
     character,
     playerSecrets,
-
-    sources,
-    tracks,
-    activeTrackStates,
   };
 };
 
@@ -89,8 +76,8 @@ const createServices = async ()/*: Promise<Services>*/ => {
   const players = createPlayerService(stores.player);
   const games = createGameService(tables, players);
   const character = createCharacterService(stores.character);
-  const audio = createAudioService(stores.tracks, stores.sources, stores.activeTrackStates);
-  const assets = createMemoryAssetService();
+  const asset = createAssetServices(tables);
+  const audio = createAudioService(tables, games, asset);
 
   return {
     tables,
@@ -100,7 +87,7 @@ const createServices = async ()/*: Promise<Services>*/ => {
     players,
     character,
     audio,
-    assets,
+    asset,
   };
 }
 

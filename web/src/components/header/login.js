@@ -2,7 +2,7 @@
 /*:: import type { Node } from 'preact'; */
 import { h } from 'preact';
 import { useState } from 'preact/hooks';
-import { useSpring, animated, useTransition } from 'react-spring';
+import { useSpring, animated } from 'react-spring';
 import { useStore } from '../../context/appContext';
 
 export const style = `

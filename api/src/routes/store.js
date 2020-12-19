@@ -5,7 +5,7 @@
 const { resource, json: { ok } } = require("@lukekaalim/server");
 const { InvalidPermissionError, MissingParameterError, NonexistentResourceError, BadContentType } = require("../errors");
 const { withErrorHandling } = require("./utils");
-const { toGame, toPlayer, toCharacter, toBackgroundAudioTrack, toHTTPAudioSource } = require('@astral-atlas/wildspace-models');
+const { toGame, toPlayer, toCharacter, toBackgroundAudioTrack } = require('@astral-atlas/wildspace-models');
 const { toString, toObject } = require("@astral-atlas/wildspace-models/casting");
 
 const stores = [
@@ -18,8 +18,6 @@ const stores = [
   } },
   { id: 'game', cast: toGame },
   { id: 'character', cast: toCharacter },
-  { id: 'tracks', cast: toBackgroundAudioTrack },
-  { id: 'sources', cast: toHTTPAudioSource },
 ];
 
 /*

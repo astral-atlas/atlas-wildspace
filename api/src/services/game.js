@@ -26,10 +26,10 @@ const createGameService = (tables/*: Tables*/, player/*: PlayerService*/)/*: Gam
   );
 
   const read = async (gameId, user) => {
-    const [game] = await tables.games.select({ gameId });
+    const [game] = await tables.game.games.select({ gameId });
     if (!game)
       throw new e.NonexistentResourceError(gameId, `GameID not found`);
-    const playersInGame = await tables.playersInGames.select({ gameId });
+    const playersInGame = await tables.game.playersInGames.select({ gameId });
     const players = playersInGame.map(p => p.playerId);
     if (user.type === 'game-master')
       return {
@@ -52,10 +52,10 @@ const createGameService = (tables/*: Tables*/, player/*: PlayerService*/)/*: Gam
     const options = { offset, limit };
     switch (user.type) {
       case 'game-master':
-        return (await tables.games.select({}, options))
+        return (await tables.game.games.select({}, options))
           .map(game => game.gameId);
       case 'player':
-        return (await tables.playersInGames.select({ playerId: user.player.id }, options))
+        return (await tables.game.playersInGames.select({ playerId: user.player.id }, options))
           .map(playerInGame => playerInGame.gameId);
     }
   }

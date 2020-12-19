@@ -8,6 +8,7 @@
 /*:: export type * from './auth'; */
 /*:: export type * from './asset'; */
 
+/*:: export type * from './api'; */
 /*:: export type * from './api/game'; */
 /*:: export type * from './api/player'; */
 
@@ -21,6 +22,7 @@ module.exports = {
   ...require('./auth'),
   ...require('./asset'),
 
+  ...require('./api'),
   ...require('./api/game'),
   ...require('./api/player'),
 

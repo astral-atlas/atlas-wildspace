@@ -15,8 +15,6 @@ const gms = new Map/*:: <GameMasterID, GameMaster>*/([
 export type AuthService = {
   getUser: Authorization => Promise<User>,
   getUserFromRequest: AuthenticationRequest => Promise<User>,
-  getPlayer: (id: string, secret: string) => Promise<Player>,
-  getGameMaster: (id: string, secret: string) => Promise<GameMaster>,
 };
 */
 

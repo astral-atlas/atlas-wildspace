@@ -3,7 +3,7 @@
 /*:: import type { GameID } from '@astral-atlas/wildspace-models'; */
 import { Fragment, h } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
-import { useSpring, animated, useTransition } from 'react-spring';
+import { useSpring, animated } from 'react-spring';
 
 import { useStore } from '../../context/appContext';
 import { useWildspaceClient } from '../../hooks/useWildspace';

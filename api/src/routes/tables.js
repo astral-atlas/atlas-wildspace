@@ -1,8 +1,9 @@
 // @flow strict
 /*:: import type { Services } from '../services'; */
 /*:: import type { RestOptions, Route } from '@lukekaalim/server'; */
-/*:: import type { Table } from '../services/table'; */
-const { toObject } = require("@lukekaalim/cast");
+/*:: import type { ReadWriteTable } from '@astral-atlas/table'; */
+const { toObject, toNullable, toString, toArray } = require("@lukekaalim/cast");
+const { toColumnMap } = require('@astral-atlas/table');
 const { resource, json: { ok, created, noContent } } = require("@lukekaalim/server");
 const { withErrorHandling } = require("./utils");
 
@@ -15,22 +16,26 @@ const toPOSTTableRowBody = (value) => {
 const toPATCHTableRowBody = (value) => {
   const object = toObject(value);
   return {
-    key: toObject(object.key),
-    row: toObject(object.row),
+    where: toColumnMap(object.where),
+    values: toColumnMap(object.values),
   };
 }
 const toDELETETableRowBody = (value) => {
   const object = toObject(value);
   return {
-    key: toObject(object.key),
+    where: toColumnMap(object.where),
   };
 }
 
 const createTableRoutes = (services/*: Services*/, options/*: RestOptions*/)/*: Route[]*/ => {
-  const tables/*: { +[string]: Table<any, any> }*/ = {
-    games: services.tables.games,
-    playersInGames: services.tables.playersInGames,
-    activeTracks: services.tables.activeTracks,
+  const tables/*: { +[string]: ReadWriteTable<any> }*/ = {
+    games: services.tables.game.games,
+    playersInGames: services.tables.game.playersInGames,
+    activeTracks: services.tables.audio.activeTracks,
+    backgroundTracks: services.tables.audio.backgroundTracks,
+    audioAssets: services.tables.asset.audioAssets,
+    assets: services.tables.asset.assets,
+    assetPushTokens: services.tables.asset.assetPushTokens,
   };
   const getTable = async ({ query: { name } }) => {
     const table = tables[name];
@@ -44,15 +49,15 @@ const createTableRoutes = (services/*: Services*/, options/*: RestOptions*/)/*: 
     return created();
   };
   const patchTableRow = async ({ query: { name }, parseJSON }) => {
-    const { key, row } = toPATCHTableRowBody((await parseJSON()).value);
+    const { where, values } = toPATCHTableRowBody((await parseJSON()).value);
     const table = tables[name];
-    const updatedRows = await table.update(key, row);
+    const updatedRows = await table.update(where, values);
     return ok(updatedRows);
   };
   const removeTableRow = async ({ query: { name }, parseJSON }) => {
-    const { key } = toDELETETableRowBody((await parseJSON()).value);
+    const { where } = toDELETETableRowBody((await parseJSON()).value);
     const table = tables[name];
-    await table.remove(key);
+    await table.remove(where);
     return noContent();
   };
   const tableResource = resource('/table', {

@@ -2,13 +2,17 @@
 /*:: import type { Node } from 'preact'; */
 /*:: import type { Store } from '@astral-atlas/wildspace-client'; */
 /*:: import type { GameID } from '@astral-atlas/wildspace-models'; */
-import { toActiveTrackEvent, toActiveTrackRow } from '@astral-atlas/wildspace-models';
+import { toActiveTrackEvent, toActiveTrackRow, toAsset, toAudioAsset } from '@astral-atlas/wildspace-models';
 import { h } from 'preact';
 import { useWildspaceClient, useAsync, useActiveGame } from '../hooks/useWildspace';
 import { useEffect, useState } from 'preact/hooks';
 import { stringify, toObject, toString } from '@lukekaalim/cast';
 import { TableAdmin } from '../components/table';
 import { ConnectionAdmin } from '../components/connection';
+import { ActiveTrackSelector } from '../components/audio/backgroundTrackSelector';
+import { toAssetId, toAudioAssetId } from '@astral-atlas/wildspace-models/asset';
+import { toBackgroundAudioTrackID } from '@astral-atlas/wildspace-models/audio';
+import { toGameID } from '@astral-atlas/wildspace-models/game';
 
 const style = `
   .store-page {
@@ -199,6 +203,7 @@ const StorePage = ()/*: Node*/ => {
   return h('main', { class: 'store-page' }, [
     h('h2', {}, 'Admin Data Store Page'),
     h('style', {}, style),
+    h(ActiveTrackSelector),
     ids && h('select', { value: selectedId, onChange: e => setSelectedId(e.currentTarget.value) }, [
       ...ids.map(id => h('option', { value: id }, id))
     ]),
@@ -245,6 +250,51 @@ const StorePage = ()/*: Node*/ => {
       toRow: toActiveTrackRow,
       rowToKey: row => ({ gameId: row.gameId })
     }),
+    h(TableAdmin, {
+      name: 'assets',
+      columnTypes: {
+        'assetId': 'text',
+        'name': 'text',
+        'contentType': 'text',
+        'lastModified': 'number',
+      },
+      toRow: toAsset,
+      rowToKey: asset => ({ id: asset.id })
+    }),
+    h(TableAdmin, {
+      name: 'backgroundTracks',
+      columnTypes: {
+        'id': 'text',
+        'name': 'text',
+        'gameId': 'text',
+        'audioAssetId': 'text',
+      },
+      toRow: (value) => {
+        const object = toObject(value);
+        return {
+          id: toBackgroundAudioTrackID(object.id),
+          name: toString(object.name),
+          gameId: toGameID(object.gameId),
+          audioAssetId: toAudioAssetId(object.audioAssetId),
+        };
+      },
+      rowToKey: track => ({ id: track.id })
+    }),
+    h(TableAdmin, {
+      name: 'audioAssets',
+      columnTypes: {
+        'assetId': 'text',
+        'audioAssetId': 'text',
+      },
+      toRow: (value) => {
+        const object = toObject(value);
+        return {
+          assetId: toAssetId(object.assetId),
+          audioAssetId: toAudioAssetId(object.audioAssetId),
+        }
+      },
+      rowToKey: audioAsset => ({ audioAssetId: audioAsset.audioAssetId })
+    }),
     h(StoreTable, { storeId: 'character',
       fields: [
         { name: 'id' },
@@ -265,19 +315,6 @@ const StorePage = ()/*: Node*/ => {
     h(StoreTable, { storeId: 'playerSecrets',
       fields: [
         { name: 'secret' },
-      ] }),
-    h(StoreTable, { storeId: 'sources',
-      fields: [
-        { name: 'id' },
-        { name: 'resource' },
-      ] }),
-
-    h(StoreTable, { storeId: 'tracks',
-      fields: [
-        { name: 'id' },
-        { name: 'name' },
-        { name: 'source' },
-        { name: 'gameId' },
       ] }),
   ]);
 };

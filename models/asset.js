@@ -6,18 +6,27 @@ const { toUUID } = require('./id');
 /*::
 export type AssetURL = string;
 export type AssetID = UUID;
-export type Asset = {
+export type Asset = {|
   assetId: string,
   name: string,
   lastModified: number,
   contentType: string,
-};
+|};
+
+export type AssetParams = {|
+  contentType?: string,
+  name?: string,
+|};
 
 export type AudioAssetID = UUID;
-export type AudioAsset = {
-  ...Asset,
+export type AudioAsset = {|
+  name: string,
+  lastModified: number,
+  contentType: string,
+  assetId: AssetID,
   audioAssetId: AudioAssetID,
-};
+  url: AssetURL,
+|};
 */
 const toAssetURL/*: Cast<AssetURL>*/ = toString;
 
@@ -37,9 +46,21 @@ const toAudioAssetId/*: Cast<AudioAssetID>*/ = toUUID;
 const toAudioAsset/*: Cast<AudioAsset>*/ = (value) => {
   const object = toObject(value);
   return {
-    ...toAsset(object),
-    audioAssetId: toAudioAssetId(object.audioId),
+    assetId: toAssetId(object.assetId),
+    name: toString(object.name),
+    lastModified: toNumber(object.lastModified),
+    contentType: toString(object.contentType),
+    audioAssetId: toAudioAssetId(object.audioAssetId),
+    url: toAssetURL(object.url),
   };
+};
+
+const toAssetParams/*: Cast<AssetParams>*/ = (value) => {
+  const object = toObject(value);
+  return {
+    name: toString(object.name),
+    contentType: toString(object.contentType),
+  }
 };
 
 module.exports ={
@@ -47,6 +68,7 @@ module.exports ={
 
   toAssetId,
   toAsset,
+  toAssetParams,
 
   toAudioAssetId,
   toAudioAsset,
