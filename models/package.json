@@ -3,18 +3,13 @@
   "version": "1.0.0",
   "description": "Useful models and structures for wildspace",
   "main": "main.js",
-  "scripts": {
-    "build": "node scripts/buildTypes.js",
-    "prepare": "npm run build",
-    "dev": "nodemon --ignore build --exec npm run build"
-  },
+  "scripts": {},
   "dependencies": {
-    "@lukekaalim/schema": "^0.6.2",
-    "case": "^1.6.3"
+    "@lukekaalim/cast": "file:../cast"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "flow-bin": "^0.133.0"
+    "flow-bin": "^0.138.0"
   }
 }

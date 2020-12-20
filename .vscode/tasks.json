@@ -1,0 +1,37 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "dev",
+			"path": "api/",
+			"problemMatcher": [],
+			"label": "dev",
+			"detail": "nodemon src/cli 8080",
+			"runOptions": {
+				"runOn": "folderOpen"
+			},
+			"isBackground": true,
+			"presentation": {
+				"group": "cool",
+				"reveal": "silent"
+			}
+		},
+		{
+			"type": "npm",
+			"script": "dev",
+			"path": "web/",
+			"problemMatcher": [],
+			"label": "dev",
+			"detail": "concurrently npm:build npm:serve",
+			"runOptions": {
+				"runOn": "folderOpen"
+			},
+			"isBackground": true,
+			"presentation": {
+				"group": "cool",
+				"reveal": "silent"
+			}
+		}
+	]
+}

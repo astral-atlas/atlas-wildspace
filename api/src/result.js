@@ -8,7 +8,7 @@ type Failure<F> = {
   failure: F,
   type: 'failure',
 };
-type Result<S, F> =
+type Result<S, F = null> =
   | Success<S>
   | Failure<F>
 
@@ -18,11 +18,11 @@ export type {
   Result,
 };
 */
-const succeed = /*:: <T>*/(success/*: T*/)/*: Result<T, empty>*/ => ({
+const succeed = /*:: <T>*/(success/*: T*/)/*: Success<T>*/ => ({
   success,
   type: 'success',
 });
-const fail = /*:: <T>*/(failure/*: T*/)/*: Result<empty, T>*/ => ({
+const fail = /*:: <T>*/(failure/*: T*/)/*: Failure<T>*/ => ({
   failure,
   type: 'failure',
 });

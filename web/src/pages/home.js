@@ -1,106 +1,94 @@
-import { h } from 'preact';
-import { CreateRoomForm, EditRoomForm, EditExistingRoomForm } from '../components/entry/referee';
-import { JoinRoomForm } from '../components/entry/player';
-import { useAppContext } from '../context/appContext';
-import { usePageContext } from '../context/pageContext';
-import { useWildspaceClient } from '../context/wildspaceContext';
+// @flow strict
+/*:: import type { Node } from 'preact'; */
+/*:: import type { Character } from '@astral-atlas/wildspace-models'; */
+import { Fragment, h } from 'preact';
+import { useStore } from '../context/appContext';
+import { useAsync } from '../hooks/useAsync';
+import { CharacterCard } from '../components/cards/character';
+import { useWildspaceClient } from '../hooks/useWildspace';
+import { useSpring, animated } from 'react-spring';
 
-const style = `
-main.home {
-  display: flex;
-  flex-direction: row;
-}
-main.home section {
-  padding: 24px;
-  border-radius: 2px;
-  min-width: 300px;
-}
-main.home section.left {
-  margin-right: 10px;
-}
-main.home section.right {
-  margin-left: 10px;
-}
-main.home h2 {
-  font-family: sans-serif;
-  text-align: center;
-}
-main.home section.player {
-  background-color: #c5e3e8;
-}
-main.home section.referee {
-  background-color: #f78781;
-}
+export const style = `
+  .home-page {
+    position: relative;
+    width: 100%;
+    padding: 25px;
+    box-sizing: border-box;
+  }
+  .rail {
+    width: 100%;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+
+    display: flex;
+    flex-direction: row;
+  }
+  .rail-element {
+    margin-left: 25px;
+    margin-right: 25px;
+  }
+  .rail-element:first-child {
+    margin-left: 0px;
+  }
+  .rail-element:last-child {
+    margin-right: 0px;
+  }
 `;
 
+const Rail = ({ elements }) => {
+  return h('ul', { class: 'rail' }, [
+    ...elements.map(element => h('li', { class: 'rail-element' }, [element]))
+  ]);
+};
 
-const HomePage = () => {
-  const [appState, setAppState] = useAppContext();
-  const [,, navigate] = usePageContext();
-  const wildspaceClient = useWildspaceClient();
+const CharacterRails = () => {
+  const [store] = useStore();
+  const client = useWildspaceClient();
+  const self = store.user.selfDetails;
 
-  const editRoom = async (invitationToEdit) => {
-    setAppState({
-      ...appState,
-      refereeInvitations: [
-        ...appState.refereeInvitations.filter(invitation => invitation.roomId !== invitationToEdit.roomId),
-        invitationToEdit,
-      ],
-    });
-    navigate('/room-editor', { roomId: invitationToEdit.roomId });
-  };
-  const createRoom = async (roomId) => {
-    const createdRoom = await wildspaceClient.rooms.referee.create(roomId);
-    const invitation = { roomId, refereeSecret: createdRoom.refereeSecret };
-    setAppState({
-      ...appState,
-      refereeInvitations: [
-        ...appState.refereeInvitations,
-        invitation,
-      ],
-    });
-    navigate('/room-editor', { roomId });
-  };
-  const forgetRoom = (invitationToForget) => () => {
-    setAppState({
-      ...appState,
-      refereeInvitations: appState.refereeInvitations.filter(invitation => invitation.roomId !== invitationToForget.roomId),
-    });
-  };
-  const joinRoom = (invitation) => {
-    setAppState({
-      ...appState,
-      playerInvitations: [
-        ...appState.playerInvitations,
-        invitation,
-      ],
-    });
-    navigate('/room', { roomId : invitation.roomId });
-  };
+  const [characters] = useAsync/*:: <Character[]>*/(async () => {
+    if (self.type !== 'logged-in')
+      return [];
+    if (!store.game.activeGameId)
+      return [];
+    return await client.game.getCharactersInGame(store.game.activeGameId);
+  }, [client, store.game.activeGameId]);
 
-  return [
-    h('style', {} , style),
-    h('h1', {}, 'Wildspace'),
-    h('main', { class: 'home' }, [
-      h('section', { class: 'left player' }, [
-        h('h2', {}, 'Play'),
-        h(JoinRoomForm, { joinRoom }),
-        //h(RejoinRoomForm, { existingRoomId: 'exampleId', existingSecret: 'existingSecret' }),
-      ]),
-      h('section', { class: 'right referee '}, [
-        h('h2', {}, 'Referee'),
-        h(CreateRoomForm, { createRoom }),
-        h(EditRoomForm, { editRoom }),
-        ...(appState.refereeInvitations.length > 0 ? ([
-          h('hr'),
-          h('h2', {}, 'Previous Rooms'),
-          ...appState.refereeInvitations.map(invitation =>
-            h(EditExistingRoomForm, { forgetRoom: forgetRoom(invitation), editRoom, invitation })
-          ),
-        ]) : []),
-      ]),
-    ]),
-  ]
+  if (self.type !== 'logged-in')
+    return null;
+  const user = self.user;
+
+  if (!characters)
+    return null;
+
+  if (user.type === 'player') {
+    const player = user.player;
+    const myCharacters = characters.filter(c => c.player === player.id);
+    const otherCharacters = characters.filter(c => c.player !== player.id);
+    
+    return h(Fragment, {}, [
+      myCharacters.length > 0 && h('h2', {}, 'My Characters'),
+      myCharacters.length > 0 && h(Rail, { elements: myCharacters.map(character =>
+        h(CharacterCard, { character })) } ),
+      otherCharacters.length > 0 && h('h2', {}, 'Other Characters'),
+      otherCharacters.length > 0 && h(Rail, { elements: otherCharacters.map(character =>
+        h(CharacterCard, { character })) } ),
+    ]);
+  } else {
+    return h(Fragment, {}, [
+      characters.length > 0 && h('h2', {}, 'Characters'),
+      characters.length > 0 && h(Rail, { elements: characters.map(character =>
+        h(CharacterCard, { character })) } ),
+    ]);
+  }
+}
+
+const HomePage = ()/*: Node*/ => {
+
+  return h('main', { class: 'home-page' }, [
+    h(CharacterRails),
+  ])
 };
 
 export {

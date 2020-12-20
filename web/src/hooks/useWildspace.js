@@ -1,70 +1,51 @@
+// @flow strict
+/*:: import type { Game } from '@astral-atlas/wildspace-models'; */
+/*:: import type { WildspaceClient, Store } from '@astral-atlas/wildspace-client'; */
 import { useEffect, useState } from 'preact/hooks';
 import { useWildspaceClient } from '../context/wildspaceContext';
+import { useStore } from '../context/appContext';
 
-const useRefereeRoom = (roomId, refereeSecret, updateInterval) => {
-  const [room, setLocalRoom] = useState(null);
+const useAsync = /*::<T>*/(getData/*: () => Promise<T>*/, deps/*: mixed[]*/)/*: [?T, ?Error]*/ => {
+  const [state, setState] = useState(null);
   const [error, setError] = useState(null);
-  const client = useWildspaceClient();
 
-  useEffect(() => {
-    const updateRoom = async () => {
-      try {
-        const room = await client.rooms.referee.read(roomId, refereeSecret);
-        setError(null);
-        setLocalRoom(room);
-      } catch (error) {
-        console.error(error);
-        setError(error);
-        setLocalRoom(null);
-      }
-    }
-    updateRoom();
-    const intervalId = setInterval(updateRoom, updateInterval);
-    return () => clearInterval(intervalId);
-  }, [roomId, refereeSecret, updateInterval]);
-
-  const setRoom = async (newRoom) => {
-    setError(null);
-    setLocalRoom(newRoom);
+  useEffect(() => void (async () => {
     try {
-      const updatedRoom = await client.rooms.referee.update(roomId, refereeSecret, newRoom);
-      setLocalRoom(updatedRoom);
-    } catch (error) {
-      console.error(error);
-      setError(error);
-      setLocalRoom(null);
+      setState(await getData());
+      setError(null);
+    } catch (thrownError) {
+      setState(null);
+      setError(thrownError);
     }
-  };
+  })(), deps);
 
-  return [room, setRoom, error];
+  return [state, error];
 };
 
-const useRoom = (roomId, playerSecret, updateInterval) => {
-  const [room, setLocalRoom] = useState(null);
-  const [error, setError] = useState(null);
+const useActiveGame = ()/*: ?Game*/ => {
   const client = useWildspaceClient();
+  const [store] = useStore();
+  const activeGameId = store.game.activeGameId;
 
-  useEffect(() => {
-    const updateRoom = async () => {
-      try {
-        const room = await client.rooms.player.read(roomId, playerSecret);
-        setError(null);
-        setLocalRoom(room);
-      } catch (error) {
-        console.error(error);
-        setError(error);
-        setLocalRoom(null);
-      }
-    }
-    updateRoom();
-    const intervalId = setInterval(updateRoom, updateInterval);
-    return () => clearInterval(intervalId);
-  }, [roomId, playerSecret, updateInterval]);
+  const [gameIds] = useAsync(async () => {
+    return client.game.getGameIds();
+  }, [client]);
+  const [activeGame] = useAsync(async () => {
+    if (!gameIds)
+      return null;
+    if (!activeGameId)
+      return null;
+    if (!gameIds.includes(activeGameId))
+      return null;
+    return await client.game.getGame(activeGameId);
+  }, [client, gameIds, activeGameId])
 
-  return [room, error];
-};
+  return activeGame;
+}
 
 export {
-  useRoom,
-  useRefereeRoom,
+  useActiveGame,
+  useAsync,
+  useStore,
+  useWildspaceClient,
 };

@@ -1,0 +1,14 @@
+{
+  "name": "@lukekaalim/act-example",
+  "version": "1.0.0",
+  "description": "Test project for ACT",
+  "main": "cli.js",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@lukekaalim/act": "file:.."
+  },
+  "devDependencies": {
+    "flow-bin": "^0.138.0"
+  }
+}

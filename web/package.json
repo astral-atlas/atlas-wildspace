@@ -5,22 +5,32 @@
   "main": "index.js",
   "scripts": {
     "build": "rollup -c -w",
-    "serve": "serve -s public",
+    "serve": "serve -s -p 60018 public",
     "dev": "concurrently npm:build npm:serve"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@rollup/plugin-alias": "^3.1.1",
     "@rollup/plugin-commonjs": "^13.0.0",
-    "@rollup/plugin-node-resolve": "^8.1.0",
-    "concurrently": "^5.2.0",
-    "flow-bin": "^0.129.0",
-    "rollup": "^2.18.2",
+    "@rollup/plugin-node-resolve": "^10.0.0",
+    "@rollup/plugin-replace": "^2.3.4",
+    "concurrently": "^5.3.0",
+    "flow-bin": "^0.138.0",
+    "rollup": "^2.33.3",
+    "rollup-plugin-terser": "^7.0.2",
     "serve": "^11.3.2"
   },
   "dependencies": {
     "@astral-atlas/wildspace-client": "file:../client",
+    "@astral-atlas/wildspace-models": "file:../models",
+    "@lukekaalim/act": "file:../act",
+    "@lukekaalim/cast": "file:../cast",
+    "@lukekaalim/http-client": "^2.2.0",
+    "change-case": "^4.1.2",
     "preact": "^10.4.5",
+    "react-spring": "^8.0.27",
+    "three": "^0.123.0",
     "uuid": "^8.2.0"
   }
 }

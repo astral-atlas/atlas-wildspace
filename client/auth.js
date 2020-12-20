@@ -1,27 +1,45 @@
 // @flow strict
-/*:: import type { User } from '@astral-atlas/wildspace-models'; */
-/*:: import type { Authorization } from './rest'; */
+/*:: import type { UserReference, PlayerID, GameMasterID } from '@astral-atlas/wildspace-models'; */
+/*:: import type { RESTAuthorization } from './rest'; */
 const { fromBase64, toBase64 } = require('./base64');
+const { createGameClient } = require('./game');
 
-const createGMToken = (gm, secret) => {
-  return ['game-master', toBase64(gm.id), toBase64(secret)].join(':');
+/*::
+export type AuthDetails = {
+  user: UserReference,
+  secret: string,
+}
+*/
+
+const createPlayerAuthorization = (id/*: PlayerID*/, secret/*: string*/)/*: RESTAuthorization*/ => {
+  const token = ['player', toBase64(id), toBase64(secret)].join(':')
+  const auth = { type: 'bearer', token };
+  return auth;
+}
+const createGMAuthorization = (id/*: GameMasterID*/, secret/*: string*/)/*: RESTAuthorization*/ => {
+  const token = ['game-master', toBase64(id), toBase64(secret)].join(':');
+  const auth = { type: 'bearer', token };
+  return auth;
 }
 
-const createPlayerToken = (player, secret) => {
-  return ['player', toBase64(player.id), toBase64(secret)].join(':');
+const createGuestAuthorization = ()/*: RESTAuthorization*/ => {
+  return { type: 'none' };
 }
 
-const createAuthorization = (user/*: User*/, secret/*: string*/)/*: Authorization*/ => {
-  switch (user.type) {
+const createAuthorization = (details/*: ?AuthDetails*/)/*: RESTAuthorization*/ => {
+  if (!details)
+    return createGuestAuthorization();
+  switch (details.user.type) {
     case 'player':
-      return { type: 'bearer', token: createPlayerToken(user.player, secret) };
+      return createPlayerAuthorization(details.user.playerId, details.secret);
     case 'game-master':
-      return { type: 'bearer', token: createGMToken(user.gameMaster, secret) };
-    default:
-      throw new Error(`Unknown User type`);
+      return createGMAuthorization(details.user.gameMasterId, details.secret);
   }
-};
+}
 
 module.exports = {
+  createPlayerAuthorization,
+  createGMAuthorization,
+  createGuestAuthorization,
   createAuthorization,
 };

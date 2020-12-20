@@ -1,18 +1,65 @@
+// @flow strict
+/*:: import type { Node } from 'preact'; */
+/*:: import type { WildspaceClient } from '@astral-atlas/wildspace-client'; */
 import { h, createContext } from 'preact';
-import { useContext } from 'preact/hooks';
+import { useContext, useEffect, useMemo } from 'preact/hooks';
 
-import { createWildspaceClient } from '@astral-atlas/wildspace-client';
+import { createGMAuthorization, createGuestAuthorization, createPlayerAuthorization, createWildspaceClient,  } from '@astral-atlas/wildspace-client';
+import { createWebClient } from '@lukekaalim/http-client';
+import { useStore } from './appContext';
+import { useAsync } from '../hooks/useAsync';
 
-const WildspaceContext = createContext();
+const secret = 'bothways';
+const user = {
+  type: 'game-master',
+  gameMaster: {
+    name: 'Luke Kaalim',
+    id: 'luke',
+  },
+};
 
-const WildspaceProvider = ({ children }) => {
-  //const client = createWildspaceClient('http://localhost:8080');
-  const client = createWildspaceClient('http://atlaswildspace-production.eba-4xfcvy37.ap-southeast-2.elasticbeanstalk.com/');
+const WildspaceContext = createContext/*:: <?WildspaceClient>*/();
+
+const getAuth = (creds) => {
+  if (!creds)
+    return null;
+  switch (creds.type) {
+    case 'player':
+      return { secret: creds.secret, user: { type: 'player', playerId: creds.id }}
+    case 'game-master':
+      return { secret: creds.secret, user: { type: 'game-master', gameMasterId: creds.id }}
+  }
+}
+
+/*::
+type ProviderProps = {
+  children: Node,
+}
+*/
+
+const http = createWebClient(window.fetch);
+
+const httpEndpoint = new URL('http://localhost:8080');
+const wsEndpoint = new URL('ws://localhost:8080');
+
+const WildspaceProvider = ({ children }/*: ProviderProps*/)/*: Node*/ => {
+  const [state, dispatch] = useStore();
+  const auth = useMemo(() => getAuth(state.user.credentials), [state.user.credentials]);
+  const client = useMemo(() => createWildspaceClient(httpEndpoint, wsEndpoint, http, auth), [
+    http,
+    auth
+  ]);
+  useAsync(async () => {
+    dispatch({ type: 'update-self', self: await client.user.getSelf() })
+  }, [state.user.credentials]);
+  //const client = createWildspaceClient('http://atlaswildspace-production.eba-4xfcvy37.ap-southeast-2.elasticbeanstalk.com/');
   return h(WildspaceContext.Provider, { value: client }, children);
 };
 
-const useWildspaceClient = () => {
+const useWildspaceClient = ()/*: WildspaceClient*/ => {
   const client = useContext(WildspaceContext);
+  if (!client)
+    throw new Error(`No client is present in this tree`);
   return client;
 }
 

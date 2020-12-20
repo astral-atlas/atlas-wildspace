@@ -1,63 +1,39 @@
 // @flow strict
-/*:: import type { Game, GameID } from '@astral-atlas/wildspace-models'; */
+/*:: import type { Game, GameID, User } from '@astral-atlas/wildspace-models'; */
 /*:: import type { Services } from '../services'; */
-const { v4: uuid } = require('uuid');
-const { resource, ok, created } = require('@lukekaalim/server');
-const {
-  getResponseForError,
-  MissingParameterError,
-  NonexistentResourceError,
-  InvalidPermissionError
-} = require('../errors');
+/*:: import type { RouteResponse, ResourceRequest, RestOptions, Route } from '@lukekaalim/server'; */
+/*:: import type { Handler } from './utils'; */
 
-const createGameRoutes = (services/*: Services*/) => {
-  const getGame = async (gameId, user) => {
-    const game = await services.games.get(gameId);
+const { resource, json: { ok, created } } = require('@lukekaalim/server');
+const { toGameParams } = require('@astral-atlas/wildspace-models');
+const { withErrorHandling } = require('./utils');
 
-    if (!game)
-      throw new NonexistentResourceError('game', `no game with gameId: ${gameId}`);
+const { MissingParameterError } = require('../errors');
 
-    if (user.type === 'player' && !game.players.includes(user.player.id))
-      throw new InvalidPermissionError('game', 'user is not a player in game');
-    if (user.type === 'game-master' && !game.gms.includes(user.gameMaster.id))
-      throw new InvalidPermissionError('game', 'user is not a game master in game');
-
-    return game;
+const createGameRoutes = (services/*: Services*/, options/*: RestOptions*/)/*: Route[] */ => {
+  const read = async ({ query: { gameId }, auth }) => {
+    if (!gameId)
+      throw new MissingParameterError('gameId');
+    const user = await services.auth.getUser(auth);
+    const game = await services.games.read(gameId, user);
+    return ok(game);
+  };
+  const listIds = async ({ auth }) => {
+    const user = await services.auth.getUser(auth);
+    return ok(await services.games.listIds(user));
   }
 
-  return resource('/game', {
-    async read({ params: { gameId }, auth }) {
-      try {
-        if (!gameId)
-          throw new MissingParameterError('gameId');
-  
-        const user = services.auth.getUser(auth);
-        const game = await getGame(gameId, user);
+  const gameRoutes = resource('/game', {
+    get: withErrorHandling(read),
+  }, options);
+  const gameIdRoutes = resource('/game/ids', {
+    get: withErrorHandling(listIds),
+  }, options);
 
-        return ok(game);
-      } catch (error) {
-        return getResponseForError(error);
-      }
-    },
-    async create({ auth, content }) {
-      const user = services.auth.getUser(auth);
-      if (user.type !== 'game-master')
-        throw new InvalidPermissionError('game', 'user is not a gm, only gms can create games');
-
-      const newGame/*: Game*/ = {
-        id: uuid(),
-        gms: [user.gameMaster.id],
-        players: [],
-        grids: [],
-        characters: [],
-        monsters: [],
-      };
-
-      await services.games.set(newGame.id, newGame);
-
-      return created(newGame);
-    }
-  })
+  return [
+    ...gameRoutes,
+    ...gameIdRoutes,
+  ];
 };
 
 module.exports = {

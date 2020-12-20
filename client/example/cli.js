@@ -1,7 +1,12 @@
 // @flow strict
 const { request } = require('http');
-const { createWildspaceClient } = require('../main');
+const { createInterface } = require('readline');
+const { createWildspaceClient } = require('@astral-atlas/wildspace-client');
 const { createNodeClient } = require('@lukekaalim/http-client');
+
+const { readFile } = require('fs').promises;
+
+global.WebSocket = require('isomorphic-ws')
 
 const user = {
   type: 'game-master',
@@ -16,31 +21,20 @@ const cli = async () => {
   const [command, ...commandArgs] = args;
 
   const http = createNodeClient(request);
-  const client = createWildspaceClient(new URL('http://localhost:8080'), http, user, 'bothways');
-
-  const getGame = async (gameId/*: string*/) => {
-    const game = await client.game.getGame(gameId);
-    console.log(game);
+  const authDetails = {
+    user: { type: 'game-master', gameMasterId: 'luke' },
+    secret: 'bothways',
   };
-  const createGame = async () => {
-    const game = await client.game.createGame();
-    console.log(game);
-  }
-
-  const gameCommands = async (command, ...commandArgs) => {
-    switch (command) {
-      case 'create':
-        return await createGame();
-      case 'read':
-        return await getGame(...commandArgs);
-    }
-  }
+  const client = createWildspaceClient(
+    new URL('http://localhost:8080'),
+    new URL('ws://localhost:8080'),
+    http, authDetails
+  );
   
   try {
-    switch (command) {
-      case 'game':
-        return await gameCommands(...commandArgs);
-    }
+    await client.table.addRow('games', { gameId: '002', name: 'cool game', creator: 'luke' })
+    console.log(await client.table.getTable('games'));
+    console.log(await client.table.getTable('playersInGames'));
   } catch (error) {
     console.error(error);
   }

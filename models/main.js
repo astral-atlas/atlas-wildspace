@@ -1,54 +1,30 @@
 // @flow strict
-/*:: export type * from './build/types.flow.js'; */
-/*:: import type { SuperStructLib } from '@lukekaalim/schema'; */
-const { toJSONSchemaDocument, createStruct } = require('@lukekaalim/schema');
+/*:: export type * from './id'; */
 
-const g = require('./game');
-const c = require('./character');
-const u = require('./users');
-const a = require('./actions');
-const h = require('./aspects');
-const api = require('./api');
-const audio = require('./audio');
+/*:: export type * from './users'; */
+/*:: export type * from './game'; */
+/*:: export type * from './character'; */
+/*:: export type * from './audio'; */
+/*:: export type * from './auth'; */
+/*:: export type * from './asset'; */
 
-const models = [
-  g.game, g.gameId,
-  g.grid, g.gridId,
-  c.character, c.characterId,
-  c.monster, c.monsterId,
-  u.player, u.playerId,
-  u.gameMaster, u.gameMasterId,
-  u.user,
-  a.playerAction,
-  h.fateAspect,
-  api.errorResponse,
-  audio.audioSource,
-  audio.httpSource,
-  audio.youtubeSource,
-];
+/*:: export type * from './api'; */
+/*:: export type * from './api/game'; */
+/*:: export type * from './api/player'; */
 
-const jsonSchemas = {
-  game: toJSONSchemaDocument(g.game),
-  grid: toJSONSchemaDocument(g.grid),
-  character: toJSONSchemaDocument(c.character),
-  monster: toJSONSchemaDocument(c.monster),
-  player: toJSONSchemaDocument(u.player),
-  gameMaster: toJSONSchemaDocument(u.gameMaster),
-  user: toJSONSchemaDocument(u.user),
-  playerAction: toJSONSchemaDocument(a.playerAction),
-  fateAspect: toJSONSchemaDocument(h.fateAspect)
-};
-
-const createStructures = (superstruct/*: SuperStructLib*/) => {
-  return {
-    game: createStruct(superstruct, g.game),
-    fateAspect: createStruct(superstruct, h.fateAspect),
-    error: createStruct(superstruct, api.errorResponse),
-  };
-}
+/*:: export type * from './tables'; */
 
 module.exports = {
-  models,
-  createStructures,
-  jsonSchemas,
+  ...require('./users'),
+  ...require('./game'),
+  ...require('./character'),
+  ...require('./audio'),
+  ...require('./auth'),
+  ...require('./asset'),
+
+  ...require('./api'),
+  ...require('./api/game'),
+  ...require('./api/player'),
+
+  ...require('./tables'),
 };

@@ -1,28 +1,40 @@
 // @flow strict
-const s = require('@lukekaalim/schema');
-const { string } = require('@lukekaalim/schema/primitives');
+/*:: import type { UUID } from './id'; */
+/*:: import type { GameID } from './game'; */
+/*:: import type { AudioAssetID, AudioAsset } from './asset'; */
 
-const youtubeSource = s.define('YoutubeSource', 'A audio track from youtube', s.object(s.props({
-  id: s.define('YoutubeSourceID', 'Globally Unique ID for Youtube Sources', s.string()),
-  title: s.string(),
-  artist: string(),
-  videoId: s.define('YoutubeVideoID', 'Globally Unique ID for Youtube', s.string()),
-})));
+const { toAudioAsset } = require("./asset");
+const { toObject, toString } = require("./casting");
+const { toGameID } = require("./game");
+const { toUUID } = require("./id");
 
-const httpSource = s.define('HTTPSource', 'A audio track from a HTTP URL', s.object(s.props({
-  id: s.define('HTTPSourceID', 'Globally Unique ID for HTTP URL', s.string()),
-  title: s.string(),
-  artist: string(),
-  url: s.define('URL', 'Uniform Resource Locator', s.string()),
-})));
+/*::
+type BackgroundAudioTrackID = UUID;
+type BackgroundAudioTrack = {
+  id: BackgroundAudioTrackID,
+  name: string,
+  gameId: GameID,
+  asset: AudioAsset,
+};
 
-const audioSource = s.define('AudioSource', 'An audio track', s.taggedUnion({
-  'http': s.object(s.props({ http: httpSource })),
-  'youtube': s.object(s.props({ youtube: youtubeSource })),
-}));
+export type {
+  BackgroundAudioTrackID,
+  BackgroundAudioTrack,
+};
+*/
+
+const toBackgroundAudioTrackID = (value/*: mixed*/)/*: BackgroundAudioTrackID*/ => toUUID(value);
+const toBackgroundAudioTrack = (value/*: mixed*/)/*: BackgroundAudioTrack*/ => {
+  const object = toObject(value);
+  return {
+    id: toBackgroundAudioTrackID(object.id),
+    name: toString(object.name),
+    gameId: toGameID(object.gameId),
+    asset: toAudioAsset(object.asset),
+  }
+}
 
 module.exports = {
-  youtubeSource,
-  httpSource,
-  audioSource,
+  toBackgroundAudioTrackID,
+  toBackgroundAudioTrack,
 };

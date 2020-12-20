@@ -1,0 +1,18 @@
+{
+  "name": "@astral-atlas/table",
+  "version": "1.0.0",
+  "description": "Row/Column based data store abstraction",
+  "main": "main.js",
+  "scripts": {
+    "test": "node main.test.js"
+  },
+  "type": "commonjs",
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@lukekaalim/test": "^8.0.2"
+  },
+  "dependencies": {
+    "@lukekaalim/cast": "file:../cast"
+  }
+}
