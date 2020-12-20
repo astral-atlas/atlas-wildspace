@@ -5,6 +5,7 @@
   "main": "src/cli.js",
   "type": "commonjs",
   "scripts": {
+    "build": "zip api.zip ./**/*",
     "start": "node src/cli 8080",
     "dev": "nodemon src/cli 8080"
   },

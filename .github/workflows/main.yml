@@ -1,0 +1,31 @@
+name: Deploy TEST Environment
+
+on:
+  push:
+    branches:
+      - canon
+
+jobs:
+  build-api:
+    name: "Build API"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - run: npm install
+        working-directory: api
+      - run: npm run build
+        working-directory: api
+  deploy-api:
+    name: "Deploy API"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          cli_config_credentials_token: ${{ secrets.TERRAFORM_TOKEN }}
+      - run: terraform init
+        working-directory: infra/test
+      - run: terraform plan -no-color
+        working-directory: infra/test
