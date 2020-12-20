@@ -26,7 +26,5 @@ jobs:
       - uses: hashicorp/setup-terraform@v1
         with:
           cli_config_credentials_token: ${{ secrets.TERRAFORM_TOKEN }}
-      - run: terraform init
-        working-directory: infra/test
-      - run: terraform plan -no-color
-        working-directory: infra/test
+      - run: terraform -chdir=infra/test init
+      - run: terraform -chdir=infra/test plan -no-color
