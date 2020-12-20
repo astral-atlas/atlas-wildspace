@@ -2,7 +2,7 @@ terraform {
   required_providers {
     elastic-beanstalk = {
       source = "registry.terraform.io/lukekaalim/elastic-beanstalk"
-      version = ">= 1.4.0"
+      version = ">= 1.5.0"
     }
   }
   backend "remote" {
