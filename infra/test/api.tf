@@ -1,5 +1,5 @@
 locals {
-  api_zip_path = "${path.module}/../../artifacts/api.zip"
+  api_zip_path = "${path.module}/wildspace-api-artefact.zip"
 }
 
 /*

@@ -18,13 +18,24 @@ jobs:
         working-directory: api
       - run: npm run build
         working-directory: api
+      - uses: actions/upload-artifact@v2
+        with:
+          name: wildspace-api-artefact
+          path: api/wildspace-api-artefact.zip
   deploy-api:
     name: "Deploy API"
     runs-on: ubuntu-latest
     needs: "build-api"
     steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: wildspace-api-artefact
+          path: infra/test
       - uses: hashicorp/setup-terraform@v1
         with:
           cli_config_credentials_token: ${{ secrets.TERRAFORM_TOKEN }}
-      - run: terraform -chdir=./infra/test init
-      - run: terraform -chdir=./infra/test plan -no-color
+      - run: terraform init
+        working-directory: infra/test
+      - run: terraform plan -no-color
+        working-directory: infra/test
