@@ -19,7 +19,7 @@
     "aws-sdk": "^2.758.0",
     "crypto-random-string": "^3.3.0",
     "uuid": "^8.2.0",
-    "ws": "^7.4.0"
+    "ws": "^7.4.6"
   },
   "devDependencies": {
     "flow-bin": "^0.140.0"
