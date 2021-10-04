@@ -1,8 +1,0 @@
-{
-  "name": "@lukekaalim/cast",
-  "version": "1.0.0",
-  "description": "Lightweight flow-type casting utility functions",
-  "main": "main.js",
-  "author": "Luke Kaalim",
-  "license": "ISC"
-}

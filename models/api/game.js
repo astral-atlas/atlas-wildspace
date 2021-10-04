@@ -1,36 +1,32 @@
 // @flow strict
-/*:: import type { PlayerID } from '../users'; */
-/*:: import type { Game } from '../game'; */
-const { toObject, toArray, toString } = require('../casting');
-const { toPlayerID } = require('../users');
-const { toGame } = require('../game');
+/*:: import type { ResourceDescription } from "@lukekaalim/net-description"; */
+/*:: import type { GameID, Game } from '../game.js'; */
+/*:: import type { CharacterID, MonsterID, Character, Monster } from '../character.js'; */
+
+import {
+  createObjectCaster as obj, castString as str,
+  createConstantCaster as lit, createArrayCaster as arr
+} from '@lukekaalim/cast';
+import { castGameId, castGame } from '../game.js';
+import { castCharacter } from '../character.js';
 
 /*::
-type GameParams = {|
-  name: string,
-  players: PlayerID[],
-|};
-
-export type {
-  GameParams,
+export type GameAPI = {
+  '/game': {|
+    GET: {
+      query: { gameId: GameID },
+      request: empty,
+      response: { type: 'found', game: Game, characters: $ReadOnlyArray<Character> },
+    },
+  |},
 };
 */
 
-const toGameArray = (value/*: mixed*/)/*: Game[]*/ => {
-  const array = toArray(value);
-  return array.map(toGame);
-};
+export const gameResourceDescription/*: ResourceDescription<GameAPI['/game']>*/ = {
+  path: '/users',
 
-const toGameParams = (value/*: mixed*/)/*: GameParams*/ => {
-  const object = toObject(value);
-
-  return {
-    name: toString(object.name),
-    players: toArray(object.players).map(toPlayerID),
-  };
-};
-
-module.exports = {
-  toGameParams,
-  toGameArray,
+  GET: {
+    toQuery: obj({ gameId: castGameId }),
+    toResponseBody: obj({ type: lit('found'), game: castGame, characters: arr(castCharacter) }),
+  },
 };

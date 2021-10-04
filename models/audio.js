@@ -1,40 +1,71 @@
 // @flow strict
-/*:: import type { UUID } from './id'; */
-/*:: import type { GameID } from './game'; */
-/*:: import type { AudioAssetID, AudioAsset } from './asset'; */
+/*:: import type { Cast } from "@lukekaalim/cast"; */
+/*:: import type { GameID } from './game.js'; */
+/*:: import type { AssetID } from "./asset.js"; */
 
-const { toAudioAsset } = require("./asset");
-const { toObject, toString } = require("./casting");
-const { toGameID } = require("./game");
-const { toUUID } = require("./id");
+import { castString, createObjectCaster, createArrayCaster, castNumber, createConstantUnionCaster, createNullableCaster } from "@lukekaalim/cast";
+import { castGameId } from "./game.js";
+import { castAssetID } from "./asset.js";
 
 /*::
-type BackgroundAudioTrackID = UUID;
-type BackgroundAudioTrack = {
-  id: BackgroundAudioTrackID,
-  name: string,
+export type AudioTrackID = string;
+export type AudioTrack = {
+  id: AudioTrackID,
+  title: string,
+  artist: ?string,
+
+  trackLengthMs: number,
+
   gameId: GameID,
-  asset: AudioAsset,
+  trackAudioAssetId: AssetID,
+  coverImageAssetId: ?AssetID
 };
 
-export type {
-  BackgroundAudioTrackID,
-  BackgroundAudioTrack,
+export type AudioPlaylistID = string;
+export type AudioPlaylist = {
+  id: AudioPlaylistID,
+
+  title: string,
+  gameId: GameID,
+  trackIds: $ReadOnlyArray<AudioTrackID>,
+};
+
+export type AudioPlaylistState = {
+  playlistId: AudioPlaylistID,
+  trackId: AudioTrackID,
+  // the Unix Time when the first track would have started
+  playlistStartTime: number,
+  playState: 'paused' | 'stopped' | 'playing',
+  globalVolume: number,
 };
 */
 
-const toBackgroundAudioTrackID = (value/*: mixed*/)/*: BackgroundAudioTrackID*/ => toUUID(value);
-const toBackgroundAudioTrack = (value/*: mixed*/)/*: BackgroundAudioTrack*/ => {
-  const object = toObject(value);
-  return {
-    id: toBackgroundAudioTrackID(object.id),
-    name: toString(object.name),
-    gameId: toGameID(object.gameId),
-    asset: toAudioAsset(object.asset),
-  }
-}
+export const castAudioTrackId/*: Cast<AudioTrackID>*/ = castString;
+export const castAudioTrack/*: Cast<AudioTrack>*/ = createObjectCaster({
+  id: castAudioTrackId,
+  title: castString,
+  artist: createNullableCaster(castString),
 
-module.exports = {
-  toBackgroundAudioTrackID,
-  toBackgroundAudioTrack,
-};
+  trackLengthMs: castNumber,
+
+  gameId: castGameId,
+  trackAudioAssetId: castAssetID,
+  coverImageAssetId: createNullableCaster(castAssetID),
+});
+
+export const castAudioPlaylistId/*: Cast<AudioPlaylistID>*/ = castString;
+export const castAudioPlaylist/*: Cast<AudioPlaylist>*/ = createObjectCaster({
+  id: castAudioTrackId,
+  title: castString,
+  
+  gameId: castGameId,
+  trackIds: createArrayCaster(castAudioTrackId),
+});
+
+export const castAudioPlaylistState/*: Cast<AudioPlaylistState>*/ = createObjectCaster({
+  playlistId: castAudioPlaylistId,
+  trackId: castAudioTrackId,
+  playlistStartTime: castNumber,
+  playState: createConstantUnionCaster(['paused', 'stopped', 'playing']),
+  globalVolume: castNumber,
+});

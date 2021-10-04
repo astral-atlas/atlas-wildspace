@@ -1,99 +1,159 @@
 // @flow strict
 /*:: import type { Cast } from '@lukekaalim/cast'; */
-/*:: import type { BackgroundAudioTrack, BackgroundAudioTrackID } from '../audio'; */
-/*:: import type { AudioAsset } from '../asset'; */
-/*:: import type { GameID } from '../game'; */
-/*:: import type { Channel } from './channel'; */
-/*:: import type { APIEndpoint } from './endpoint'; */
-const { toObject, toArray, toNumber, toConstant, toNullable } = require('@lukekaalim/cast');
-const { toAudioAsset } = require('../asset');
-const { toBackgroundAudioTrack, toBackgroundAudioTrackID } = require('../audio');
-const { toGameID } = require('../game');
+/*:: import type { IdentityProof } from '@astral-atlas/sesame-models'; */
+/*:: import type { Connection, Resource, ResourceDescription, ConnectionDescription } from '@lukekaalim/net-description'; */
+/*:: import type { AudioPlaylistState, AudioPlaylistID, AudioPlaylist, AudioTrack, AudioTrackID } from "../audio.js" */
+/*:: import type { GameID } from "../game.js" */
+/*:: import type { AssetID } from "../asset.js" */
+
+import {
+  createObjectCaster, createConstantCaster,
+  createConstantUnionCaster, createNullableCaster,
+  createArrayCaster,
+  castString, castNumber
+} from "@lukekaalim/cast";
+import { castIdentityProof } from "@astral-atlas/sesame-models";
+
+import { castGameId } from "../game.js";
+import { castAudioTrack, castAudioTrackId, castAudioPlaylistId, castAudioPlaylistState, castAudioPlaylist } from "../audio.js";
+import { castAssetID } from "../asset.js";
 
 /*::
-// Update active
-export type ActiveTrackUpdateEvent = {
-  type: 'update',
-  distanceSeconds: number,
-  trackId: null | BackgroundAudioTrackID,
-  fromUnixTime: number,
-};
+export type AudioPlaylistStateConnection = Connection<
+  { type: 'update', state: AudioPlaylistState },
+  { type: 'identify', proof: IdentityProof },
+  { gameId: GameID, audioPlaylistId: AudioPlaylistID },
+>;
 
-export type ActiveTrackEvent =
-  | ActiveTrackUpdateEvent
+export type AudioPlaylistStateResource = {|
+  GET: {
+    query: { gameId: GameID, audioPlaylistId: AudioPlaylistID },
+    request: empty,
+    response: { type: 'found', state: AudioPlaylistState }
+  },
+  PUT: {
+    query: { gameId: GameID, audioPlaylistId: AudioPlaylistID },
+    request: { state: AudioPlaylistState },
+    response: { type: 'updated' }
+  }
+|};
 
-export type ActiveTrackQuery = {
-  gameId: GameID,
-};
+export type AudioPlaylistResource = {|
+  GET: {
+    query: { gameId: GameID, audioPlaylistId: AudioPlaylistID },
+    request: empty,
+    response: { type: 'found', playlist: AudioPlaylist }
+  },
+  POST: {
+    query: { gameId: GameID },
+    request: { title: string, tracks: AudioTrackID[] },
+    response: { type: 'created', playlist: AudioPlaylist }
+  },
+  PUT: {
+    query: { gameId: GameID, audioPlaylistId: AudioPlaylistID },
+    request: { title: string, tracks: AudioTrackID[] },
+    response: { type: 'updated', playlist: AudioPlaylist }
+  }
+|}
+
+export type AudioTrackResource = {|
+  GET: {
+    query: { gameId: GameID, trackId: AudioTrackID },
+    request: empty,
+    response: { type: 'found', track: AudioTrack }
+  },
+  POST: {
+    query: empty,
+    request: {
+      title: string, artist: ?string,
+      trackLengthMs: number, gameId: GameID,
+      trackAudioAssetId: AssetID, coverImageAssetId: ?AssetID
+    },
+    response: { type: 'created', track: AudioTrack }
+  }
+|}
+
+export type AllAudioTracksResource = {|
+  GET: {
+    query: { gameId: GameID },
+    request: empty,
+    response: { type: 'found', tracks: $ReadOnlyArray<AudioTrack> }
+  },
+|}
+
+export type AudioAPI = {
+  '/tracks': AudioTrackResource,
+  '/tracks/all': AllAudioTracksResource,
+  '/playlist': AudioPlaylistResource,
+  '/playlist/state': {
+    connection: AudioPlaylistStateConnection,
+    resource: AudioPlaylistStateResource,
+  }
+}
 */
 
-const toActiveTrackUpdateEvent = (value/*: mixed*/)/*: ActiveTrackUpdateEvent*/ => {
-  const object = toObject(value);
-  return {
-    type: toConstant(object.type, 'update'),
-    distanceSeconds: toNumber(object.distanceSeconds),
-    fromUnixTime: toNumber(object.fromUnixTime),
-    trackId: toNullable(object.trackId, toBackgroundAudioTrackID),
-  };
-};
+export const audioTrackResourceDescription/*: ResourceDescription<AudioTrackResource> */ = {
+  path: '/tracks',
 
-const toActiveTrackEvent = (value/*: mixed*/)/*: ActiveTrackEvent*/ => {
-  const object = toObject(value);
-  switch (object.type) {
-    case 'update':
-      return toActiveTrackUpdateEvent(object);
-    default:
-      throw new TypeError();
+  GET: {
+    toQuery: createObjectCaster({ gameId: castGameId, trackId: castAudioTrackId }),
+    toResponseBody: createObjectCaster({ type: createConstantCaster('found'), track: castAudioTrack }),
+  },
+  POST: {
+    toRequestBody: createObjectCaster({
+      title: castString,
+      artist: createNullableCaster(castString),
+      trackLengthMs: castNumber,
+      gameId: castGameId,
+      trackAudioAssetId: castAssetID,
+      coverImageAssetId: createNullableCaster(castAssetID)
+    }),
+    toResponseBody: createObjectCaster({ type: createConstantCaster('created'), track: castAudioTrack }),
   }
 };
 
-const toActiveTrackQuery/*: Cast<ActiveTrackQuery>*/ = (value) => {
-  const object = toObject(value);
-  return {
-    gameId: toGameID(object.gameId),
-  };
+export const allSudioTracksResourceDescription/*: ResourceDescription<AllAudioTracksResource> */ = {
+  path: '/tracks/all',
+
+  GET: {
+    toQuery: createObjectCaster({ gameId: castGameId}),
+    toResponseBody: createObjectCaster({ type: createConstantCaster('found'), tracks: createArrayCaster(castAudioTrack) }),
+  },
 }
- 
-const activeTrackChannel/*: Channel<ActiveTrackEvent, ActiveTrackEvent, ActiveTrackQuery>*/ = {
-  path: '/game/tracks/active/events',
-  toQuery: toActiveTrackQuery,
-  toClientEvent: toActiveTrackEvent,
-  toServerEvent: toActiveTrackEvent,
+
+export const playlistStateConnectionDescription/*: ConnectionDescription<AudioPlaylistStateConnection>*/ = {
+  path: '/playlist/state',
+  subprotocol: 'JSON.wildspace.playlist_state.v1.0.0',
+  castQuery: createObjectCaster({ gameId: castGameId, audioPlaylistId: castAudioPlaylistId }),
+  castServerMessage: createObjectCaster({ type: createConstantCaster('update'), state: castAudioPlaylistState }),
+  castClientMessage: createObjectCaster({ type: createConstantCaster('identify'), proof: castIdentityProof }),
 };
 
-/*::
-export type APIGameAudioGetResponse = {
-  tracks: BackgroundAudioTrack[],
-};
-export type APIGameAudioGetQuery = {
-  gameId: GameID,
-};
-*/
-const toAPIGameAudioGetResponse/*: Cast<APIGameAudioGetResponse>*/ = (value) => {
-  const object = toObject(value);
-  return {
-    tracks: toArray(object.tracks).map(toBackgroundAudioTrack)
-  };
-};
-const toAPIGameAudioGetQuery/*: Cast<APIGameAudioGetQuery>*/ = (value) => {
-  const object = toObject(value);
-  return {
-    gameId: toGameID(object.gameId),
-  };
+export const playlistStateResourceDescription/*: ResourceDescription<AudioPlaylistStateResource>*/ = {
+  path: '/playlist/state',
+
+  PUT: {
+    toQuery: createObjectCaster({ gameId: castGameId, audioPlaylistId: castAudioPlaylistId }),
+    toRequestBody: createObjectCaster({ state: castAudioPlaylistState  }),
+    toResponseBody: createObjectCaster({ type: createConstantCaster('updated') }),
+  }
 };
 
-const getGameAudioEndpoint/*: APIEndpoint<null, APIGameAudioGetResponse, APIGameAudioGetQuery>*/ = {
-  path: '/game/audio',
-  method: 'GET',
-  toQuery: toAPIGameAudioGetQuery,
-  toResponseBody: toAPIGameAudioGetResponse,
-  toRequestBody: () => null,
+export const playlistResourceDescription/*: ResourceDescription<AudioPlaylistResource>*/ = {
+  path: '/playlist',
+
+  GET: {
+    toQuery: createObjectCaster({ gameId: castGameId, audioPlaylistId: castAudioPlaylistId }),
+    toResponseBody: createObjectCaster({ type: createConstantCaster('found'), playlist: castAudioPlaylist }),
+  }
 };
 
-module.exports = {
-  activeTrackChannel,
-  getGameAudioEndpoint,
-
-  toActiveTrackEvent,
-  toActiveTrackUpdateEvent,
-}
+export const audioAPI = {
+  '/tracks': audioTrackResourceDescription,
+  '/tracks/all': allSudioTracksResourceDescription,
+  '/playlist': playlistResourceDescription,
+  '/playlist/state': {
+    connection: playlistStateConnectionDescription,
+    resource: playlistStateResourceDescription,
+  }
+};

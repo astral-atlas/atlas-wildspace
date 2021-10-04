@@ -2,14 +2,14 @@
   "name": "@astral-atlas/wildspace-models",
   "version": "1.0.0",
   "description": "Useful models and structures for wildspace",
-  "main": "main.js",
+  "main": "entry.js",
+  "type": "module",
   "scripts": {},
-  "dependencies": {
-    "@lukekaalim/cast": "file:../cast"
-  },
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "flow-bin": "^0.138.0"
+  "dependencies": {
+    "@astral-atlas/sesame-models": "^8.0.1",
+    "@lukekaalim/cast": "^4.0.0",
+    "@lukekaalim/net-description": "^1.3.0"
   }
 }

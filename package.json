@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "workspaces": [
+    "models",
+    "client2",
+    "api2",
+    "www2",
+    "data",
+    "cli"
+  ],
+  "devDependencies": {
+    "flow-bin": "^0.161.0"
+  }
+}

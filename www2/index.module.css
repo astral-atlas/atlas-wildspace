@@ -1,0 +1,27 @@
+.postAudioTrackForm {
+  display: flex;
+  flex-direction: column;
+
+  max-width: 480px;
+  border: 1px solid black;
+  padding: 8px
+}
+
+.postAudioTrackForm > h2 {
+  margin: 0;
+}
+
+.postAudioTrackForm > label {
+  margin: 8px 0 8px 0px;
+  display: flex;
+  flex-direction: column;
+}
+
+.postAudioTrackForm > label > input {
+  box-sizing: border-box;
+  margin: 0 16px 0 16px;
+}
+
+audio.audioTrackPreview {
+  margin: 12px;
+}

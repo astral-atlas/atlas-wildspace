@@ -1,0 +1,25 @@
+{
+  "name": "@astral-atlas/wildspace-client2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "entry.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/astral-atlas/wildspace.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/astral-atlas/wildspace/issues"
+  },
+  "homepage": "https://github.com/astral-atlas/wildspace#readme",
+  "dependencies": {
+    "@astral-atlas/wildspace-models": "^1.0.0",
+    "@lukekaalim/http-client": "^6.0.0",
+    "@lukekaalim/ws-client": "^2.0.1"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "name": "@astral-atlas/wildspace-www2",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@astral-atlas/sesame-components": "^2.0.2",
+    "@astral-atlas/wildspace-client2": "^1.0.0",
+    "@lukekaalim/act": "^2.2.2",
+    "@lukekaalim/act-web": "^0.4.1",
+    "@lukekaalim/ws-client": "^2.1.0"
+  },
+  "devDependencies": {
+    "vite": "^2.6.2"
+  },
+  "scripts": {
+    "dev": "vite"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/astral-atlas/wildspace.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/astral-atlas/wildspace/issues"
+  },
+  "homepage": "https://github.com/astral-atlas/wildspace#readme"
+}

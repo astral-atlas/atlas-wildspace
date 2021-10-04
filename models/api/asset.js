@@ -1,58 +1,78 @@
 // @flow strict
 /*:: import type { Cast } from '@lukekaalim/cast'; */
-/*:: import type { AssetURL, Asset, AssetID, AudioAsset } from '../asset'; */
-/*:: import type { APIEndpoint } from './endpoint'; */
+/*:: import type { IdentityProof } from '@astral-atlas/sesame-models'; */
+/*:: import type { Connection, Resource, ResourceDescription, ConnectionDescription } from '@lukekaalim/net-description'; */
+/*:: import type { AssetID, AssetDescription, AssetGroupID, AssetGroup } from "../asset.js"; */
 
-const { toAsset, toAssetURL, toAudioAsset, toAssetId } = require("../asset");
-const { toObject, toString, toArray } = require("@lukekaalim/cast");
-const { createEndpoint } = require("./endpoint");
+import { createObjectCaster, createConstantCaster, createConstantUnionCaster, castString, castNumber } from "@lukekaalim/cast";
+import { castIdentityProof } from "@astral-atlas/sesame-models";
+import { castAssetID, castAssetDescription } from "../asset.js";
 
 /*::
-export type APIAudioAssetPostResponse = {
-  postURL: AssetURL,
-  audioAsset: AudioAsset
+export type AssetResource = {|
+  GET: {
+    query: { assetId: AssetID },
+    request: empty,
+    response: { type: 'found', downloadURL: string, description: AssetDescription }
+  },
+  POST: {
+    query: empty,
+    request: { name: string, MIMEType: string, bytes: number },
+    response: { type: 'created', uploadURL: string, downloadURL: string, description: AssetDescription }
+  }
+|}
+
+export type AssetDataResource = {|
+  GET: {
+    query: { assetId: AssetID },
+    request: empty,
+    response: Uint8Array
+  },
+  PUT: {
+    query: { assetId: AssetID },
+    request: Uint8Array,
+    response: { type: 'uploaded' }
+  }
+|}
+
+export type AssetGroupResource = {|
+  GET: {
+    query: { assetGroupId: AssetGroupID },
+    request: empty,
+    response: { type: 'found', assetGroup: AssetGroup }
+  },
+  POST: {
+    query: empty,
+    request: { name: string, assetIds: $ReadOnlyArray<AssetID> },
+    response: { type: 'created', assetGroup: AssetGroup }
+  },
+  PUT: {
+    query: { assetGroupId: AssetGroupID },
+    request: { name: ?string, assetIds: ?$ReadOnlyArray<AssetID> },
+    response: { type: 'updated', assetGroup: AssetGroup }
+  }
+|}
+
+export type AssetAPI = {
+  '/asset': AssetResource,
+  '/asset/data': AssetDataResource,
+  '/asset/groups': AssetGroupResource,
 };
-export type APIAudioAssetPostRequest = {
-  name: string,
-  contentType: string,
-};
-export type APIAudioAssetGetResponse = AudioAsset[];
 */
 
-const toAPIAudioAssetPostResponse/*: Cast<APIAudioAssetPostResponse>*/ = (value) => {
-  const object = toObject(value);
-  return {
-    postURL: toAssetURL(object.postURL),
-    audioAsset: toAudioAsset(object.audioAsset),
-  };
+export const assetResourceDescription/*: ResourceDescription<AssetResource>*/ = {
+  path: '/asset',
+
+  GET: {
+    toQuery: createObjectCaster({ assetId: castAssetID }),
+    toResponseBody: createObjectCaster({ type: createConstantCaster('found'), downloadURL: castString, description: castAssetDescription }) 
+  },
+  POST: {
+    toRequestBody: createObjectCaster({ name: castString, MIMEType: castString, bytes: castNumber }),
+    toResponseBody: createObjectCaster({ type: createConstantCaster('created'), uploadURL: castString, downloadURL: castString, description: castAssetDescription }) 
+  }
 };
 
-const toAPIAudioAssetPostRequest/*: Cast<APIAudioAssetPostRequest>*/ = (value) => {
-  const object = toObject(value);
-  return {
-    name: toString(object.name),
-    contentType: toString(object.contentType),
-  };
-};
-
-const toAPIAudioAssetGetResponse/*: Cast<APIAudioAssetGetResponse>*/ = (value) => {
-  return toArray(value).map(toAudioAsset);
-};
-
-const postAudioAssetEndpoint/*: APIEndpoint<APIAudioAssetPostRequest, APIAudioAssetPostResponse, {}>*/ = createEndpoint(
-  'POST', '/assets/audio',
-  () => ({}),
-  toAPIAudioAssetPostRequest, toAPIAudioAssetPostResponse,
-);
-const getAudioAssetEndpoint/*: APIEndpoint<null, APIAudioAssetGetResponse, {}>*/ = createEndpoint(
-  'GET', '/assets/audio',
-  () => ({}),
-  () => null, toAPIAudioAssetGetResponse,
-);
-
-module.exports = {
-  toAPIAudioAssetPostResponse,
-  toAPIAudioAssetPostRequest,
-  postAudioAssetEndpoint,
-  getAudioAssetEndpoint,
+export const assetAPI = {
+  '/asset': assetResourceDescription,
 };

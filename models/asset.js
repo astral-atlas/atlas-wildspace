@@ -1,75 +1,45 @@
 // @flow strict
-/*:: import type { UUID } from './id'; */
 /*:: import type { Cast } from '@lukekaalim/cast'; */
-const { toObject, toString, toNumber } = require('@lukekaalim/cast');
-const { toUUID } = require('./id');
+/*:: import type { UserID } from '@astral-atlas/sesame-models'; */
+import { createObjectCaster, castString, createArrayCaster, castNumber } from '@lukekaalim/cast';
+import { castUserId } from '@astral-atlas/sesame-models';
+
+// An "asset" is a binary blob with metadata
 /*::
-export type AssetURL = string;
-export type AssetID = UUID;
-export type Asset = {|
-  assetId: string,
+export type AssetID = string;
+export type AssetDescription = {
+  id: AssetID,
   name: string,
-  lastModified: number,
-  contentType: string,
-|};
+  uploaded: number,
+  MIMEType: string,
+  bytes: number,
 
-export type AssetParams = {|
-  contentType?: string,
-  name?: string,
-|};
+  creator: UserID,
+};
 
-export type AudioAssetID = UUID;
-export type AudioAsset = {|
+export type AssetGroupID = string;
+export type AssetGroup = {
+  id: AssetGroupID,
+
+  assetIds: $ReadOnlyArray<AssetID>,
   name: string,
-  lastModified: number,
-  contentType: string,
-  assetId: AssetID,
-  audioAssetId: AudioAssetID,
-  url: AssetURL,
-|};
+};
 */
-const toAssetURL/*: Cast<AssetURL>*/ = toString;
 
-const toAssetId/*: Cast<AssetID>*/ = toUUID;
-const toAsset/*: Cast<Asset>*/ = (value) => {
-  const object = toObject(value);
-  return {
-    assetId: toAssetId(object.assetId),
-    name: toString(object.name),
-    lastModified: toNumber(object.lastModified),
-    contentType: toString(object.contentType),
-  };
-};
+export const castAssetID/*: Cast<AssetID>*/ = castString;
+export const castAssetDescription/*: Cast<AssetDescription>*/ = createObjectCaster({
+  id: castAssetID,
+  name: castString,
+  uploaded: castNumber,
+  MIMEType: castString,
+  bytes: castNumber,
+  creator: castUserId,
+});
 
+export const castAssetGroupId/*: Cast<AssetGroupID>*/ = castString;
+export const castAssetGroup/*: Cast<AssetGroup>*/ = createObjectCaster({
+  id: castAssetGroupId,
 
-const toAudioAssetId/*: Cast<AudioAssetID>*/ = toUUID;
-const toAudioAsset/*: Cast<AudioAsset>*/ = (value) => {
-  const object = toObject(value);
-  return {
-    assetId: toAssetId(object.assetId),
-    name: toString(object.name),
-    lastModified: toNumber(object.lastModified),
-    contentType: toString(object.contentType),
-    audioAssetId: toAudioAssetId(object.audioAssetId),
-    url: toAssetURL(object.url),
-  };
-};
-
-const toAssetParams/*: Cast<AssetParams>*/ = (value) => {
-  const object = toObject(value);
-  return {
-    name: toString(object.name),
-    contentType: toString(object.contentType),
-  }
-};
-
-module.exports ={
-  toAssetURL,
-
-  toAssetId,
-  toAsset,
-  toAssetParams,
-
-  toAudioAssetId,
-  toAudioAsset,
-};
+  assetIds: createArrayCaster(castAssetID),
+  name: castString,
+});

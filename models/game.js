@@ -1,37 +1,24 @@
 // @flow strict
-/*:: import type { UUID } from './id'; */
-/*:: import type { GameMasterID, PlayerID } from './users'; */
-const { toUUID } = require('./id');
-const { toObject, toArray, toString } = require('./casting');
+/*:: import type { UserID } from '@astral-atlas/sesame-models'; */
+/*:: import type { Cast } from "@lukekaalim/cast/main"; */
+
+import { castString, createObjectCaster, createArrayCaster } from "@lukekaalim/cast"; 
+import { castUserId } from '@astral-atlas/sesame-models';
 
 /*::
-type GameID = UUID;
-type Game = {
+export type GameID = string;
+export type Game = {
   gameId: GameID,
   name: string,
-  creator: GameMasterID,
-  players: PlayerID[]
-};
-
-export type {
-  GameID,
-  Game,
+  gameMasterId: UserID,
+  playerIds: $ReadOnlyArray<UserID>
 };
 */
 
-const toGameID = (value/*: mixed*/)/*: GameID*/ => toUUID(value);
-
-const toGame = (value/*: mixed*/)/*: Game*/ => {
-  const object = toObject(value);
-  return {
-    gameId: toGameID(object.gameId),
-    name: toString(object.name || ''),
-    creator: toUUID(object.creator),
-    players: toArray(object.players).map(toUUID),
-  };
-}
-
-module.exports = {
-  toGameID,
-  toGame,
-};
+export const castGameId/*: Cast<GameID>*/ = castString;
+export const castGame/*: Cast<Game>*/ = createObjectCaster({
+  gameId: castGameId,
+  name: castString,
+  gameMasterId: castUserId,
+  playerIds: createArrayCaster(castUserId),
+});
