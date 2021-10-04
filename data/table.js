@@ -79,7 +79,7 @@ export const createFileTable = /*::<V>*/(
     const table = await loadTable();
     const updatedEntry = { key, value }
     const updatedTable = [
-      ...table.filter(e => e.key === key),
+      ...table.filter(e => e.key !== key),
       updatedEntry
     ];
     await writeFile(filePath, JSON.stringify(updatedTable, null, 2), 'utf-8');

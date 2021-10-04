@@ -8,7 +8,7 @@ import { HTTP_STATUS } from "@lukekaalim/net-description";
 
 
 import { audioAPI } from '@astral-atlas/wildspace-models';
-import { createMemoryData } from "@astral-atlas/wildspace-data";
+import { createMemoryData, createFileData } from "@astral-atlas/wildspace-data";
 
 import { createRoutes } from './routes.js';
 
@@ -31,26 +31,6 @@ const createWildspaceServer = () => {
     }
   }
 
-  let trackA = {
-    id: 'a',
-    artist: 'who knows',
-    title: 'track A',
-    gameId: '0',
-    lengthMs: 1000,
-
-    coverImageAssetId: 'a',
-    trackAudioAssetId: 'a'
-  };
-  let trackB = {
-    id: 'b',
-    artist: 'who knows',
-    title: 'track B',
-    gameId: '0',
-    lengthMs: 2000,
-
-    coverImageAssetId: 'b',
-    trackAudioAssetId: 'b'
-  };
   let playlist = {
     id: '0',
     gameId: '0',
@@ -89,7 +69,6 @@ const createWildspaceServer = () => {
       return { status: HTTP_STATUS.ok, body: { type: 'updated' } };
     }
   })
-
   const playlistResourceRoutes = createJSONResourceRoutes(audioAPI['/playlist'], {
     access: { origins: { type: 'wildcard' }, methods: ['GET'], headers: ['content-type'] },
 
@@ -97,8 +76,8 @@ const createWildspaceServer = () => {
       return { status: HTTP_STATUS.ok, body: { type: 'found', playlist } };
     }
   });
-
-  const { ws, http } = createRoutes(createMemoryData()); 
+  console.log(process.cwd())
+  const { ws, http } = createRoutes(createFileData('./data')); 
   const httpRoutes = [
     ...playlistStateResourceRoutes,
     ...playlistResourceRoutes,
@@ -108,17 +87,11 @@ const createWildspaceServer = () => {
     playlistStateConnectionRoute,
     ...ws,
   ];
-  //console.log(`Loaded http routes`, httpRoutes.map(r => `${r.method}:${r.path}`))
-  //console.log(`Loaded ws routes`, wsRoutes.map(r => r.path))
 
   const httpServer = createServer();
   const wsServer = new WebSocketServer({ server: httpServer });
 
-  httpServer.addListener('request', createRouteListener(httpRoutes, (req, res) => {
-    console.log('What, huh?', req.url);
-    res.statusCode = 404;
-    res.end();
-  }));
+  httpServer.addListener('request', createRouteListener(httpRoutes, createFixedListener({ status: 404, body: `Page not found`, headers: {} })));
   wsServer.addListener('connection', createWebSocketListener(wsRoutes));
 
   return [httpServer, wsServer]
