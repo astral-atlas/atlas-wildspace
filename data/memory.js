@@ -7,6 +7,9 @@ export const createMemoryData = ()/*: WildspaceData*/ => {
   const assets = createMemoryTable();
   const assetData = createMemoryTable();
   const game = createMemoryTable();
+  const room = createCompositeKeyTable(createMemoryTable());
+  const roomState = createCompositeKeyTable(createMemoryTable());
+  const roomUpdates = createMemoryChannel();
 
   const playlists = createCompositeKeyTable(createMemoryTable());
   const playlistStates = createCompositeKeyTable(createMemoryTable());
@@ -18,6 +21,9 @@ export const createMemoryData = ()/*: WildspaceData*/ => {
     assets,
     assetData,
     game,
+    room,
+    roomState,
+    roomUpdates,
   
     playlists,
     playlistStates,

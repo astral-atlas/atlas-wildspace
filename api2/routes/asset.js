@@ -60,7 +60,6 @@ export const createAssetRoutes = (data/*: WildspaceData*/)/*: { ws: WebSocketRou
 
         const contentHeaders = {
           'content-type': description.MIMEType,
-          'content-length': description.bytes.toString(),
         };
         const { status: rangeStatus, headers: rangeHeaders, slice } = getRangeResponseHead(range, description.bytes);
 

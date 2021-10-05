@@ -29,15 +29,6 @@ export type AudioPlaylist = {
   gameId: GameID,
   trackIds: $ReadOnlyArray<AudioTrackID>,
 };
-
-export type AudioPlaylistState = {
-  playlistId: AudioPlaylistID,
-  trackId: AudioTrackID,
-  // the Unix Time when the first track would have started
-  playlistStartTime: number,
-  playState: 'paused' | 'stopped' | 'playing',
-  globalVolume: number,
-};
 */
 
 export const castAudioTrackId/*: Cast<AudioTrackID>*/ = castString;
@@ -60,12 +51,4 @@ export const castAudioPlaylist/*: Cast<AudioPlaylist>*/ = createObjectCaster({
   
   gameId: castGameId,
   trackIds: createArrayCaster(castAudioTrackId),
-});
-
-export const castAudioPlaylistState/*: Cast<AudioPlaylistState>*/ = createObjectCaster({
-  playlistId: castAudioPlaylistId,
-  trackId: castAudioTrackId,
-  playlistStartTime: castNumber,
-  playState: createConstantUnionCaster(['paused', 'stopped', 'playing']),
-  globalVolume: castNumber,
 });

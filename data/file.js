@@ -3,7 +3,11 @@
 import { join } from 'path';
 import { createArrayCaster, createTupleCaster } from '@lukekaalim/cast';
 
-import { castAssetDescription, castGame, castAudioPlaylist, castAudioTrack, castAudioTrackId, castAudioPlaylistId } from '@astral-atlas/wildspace-models';
+import {
+  castAssetDescription, castGame, castAudioPlaylist,
+  castAudioTrack, castAudioTrackId, castAudioPlaylistId,
+  castRoomId, castRoom, castRoomState
+} from '@astral-atlas/wildspace-models';
 
 import { createMemoryChannel } from './channel.js';
 import { createFileStreamBufferStore } from './buffer.js';
@@ -12,6 +16,8 @@ import { createCompositeKeyTable, createFileTable } from './table.js';
 export const getDataFilePaths = (directory/*: string*/)/*: { [string]: string } */ => ({
   assets:     join(directory, 'assets.json'),
   game:       join(directory, 'game.json'),
+  room:       join(directory, 'room.json'),
+  roomState:  join(directory, 'roomState.json'),
 
   playlists:  join(directory, 'playlists.json'),
   tracks:     join(directory, 'tracks.json'),
@@ -31,6 +37,11 @@ export const createFileData = (directory/*: string*/)/*: WildspaceData*/ => {
   const assets =    createFileTable(paths.assets, castAssetDescription);
   const assetData = createFileStreamBufferStore(paths.assetData);
   const game =      createFileTable(paths.game, castGame);
+  const room = createCompositeKeyTable(createFileTable(paths.room,
+    createArrayCaster(createTupleCaster([castRoomId, castRoom]))));
+  const roomState = createCompositeKeyTable(createFileTable(paths.roomState,
+    createArrayCaster(createTupleCaster([castRoomId, castRoomState]))));
+  const roomUpdates = createMemoryChannel();
 
   const playlists = createCompositeKeyTable(createFileTable(paths.playlists,
     createArrayCaster(createTupleCaster([castAudioPlaylistId, castAudioPlaylist]))));
@@ -43,6 +54,9 @@ export const createFileData = (directory/*: string*/)/*: WildspaceData*/ => {
     assets,
     assetData,
     game,
+    room,
+    roomState,
+    roomUpdates,
   
     playlists,
     tracks,

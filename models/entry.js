@@ -5,3 +5,4 @@ export * from './character.js';
 export * from './api.js';
 export * from './audio.js';
 export * from './asset.js';
+export * from './room.js';

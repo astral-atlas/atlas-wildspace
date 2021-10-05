@@ -20,7 +20,7 @@
   "dependencies": {
     "@astral-atlas/wildspace-data": "^1.0.0",
     "@astral-atlas/wildspace-models": "^1.0.0",
-    "@lukekaalim/http-server": "^13.4.1",
+    "@lukekaalim/http-server": "^13.5.1",
     "@lukekaalim/ws-server": "^2.0.1",
     "uuid": "^8.3.2",
     "ws": "^8.2.2"

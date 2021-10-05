@@ -20,7 +20,7 @@ export const createMemoryChannel = /*:: <K, V>*/()/*: Channel<K, V>*/ => {
     }
   };
   const publish = (key, value) => {
-    for (const { listener } of subscribers.filter(s => s.key !== key))
+    for (const { listener } of subscribers.filter(s => s.key === key))
       try {
         listener(value);
       } catch (error) { console.warn(error); }

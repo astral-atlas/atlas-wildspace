@@ -8,11 +8,12 @@ import { HTTP_STATUS } from "@lukekaalim/net-description";
 import { createJSONResourceRoutes } from "@lukekaalim/http-server";
 
 import { audioAPI } from '@astral-atlas/wildspace-models'; 
+import { defaultOptions } from './meta.js';
 
 export const createAudioRoutes = (data/*: WildspaceData*/)/*: { ws: WebSocketRoute[], http: HTTPRoute[] }*/ => {
 
   const trackResourceRoutes = createJSONResourceRoutes(audioAPI['/tracks'], {
-    access: { origins: { type: 'wildcard' }, methods: ['GET'], headers: ['content-type'] },
+    ...defaultOptions,
 
     GET: async ({ query: { gameId, trackId }}) => {
       const { result: track } = await data.tracks.get({ partition: gameId, sort: trackId });
@@ -35,16 +36,74 @@ export const createAudioRoutes = (data/*: WildspaceData*/)/*: { ws: WebSocketRou
       await data.tracks.set({ partition: gameId, sort: track.id }, track);
       
       return { status: HTTP_STATUS.ok, body: { type: 'created', track } };
-    }
+    },
+    DELETE: async ({ query: { gameId, trackId }}) => {
+      await data.tracks.set({ partition: gameId, sort: trackId }, null);
+      
+      return { status: HTTP_STATUS.ok, body: { type: 'deleted' } };
+    },
   })
 
   const allTracksResourceRoutes = createJSONResourceRoutes(audioAPI['/tracks/all'], {
-    access: { origins: { type: 'wildcard' }, methods: ['GET'], headers: ['content-type'] },
+    ...defaultOptions,
 
     GET: async ({ query: { gameId }}) => {
       const { result: tracks } = await data.tracks.query(gameId);
       
       return { status: HTTP_STATUS.ok, body: { type: 'found', tracks } };
+    },
+  })
+
+  const playlistResourceRoutes = createJSONResourceRoutes(audioAPI['/playlist'], {
+    ...defaultOptions,
+
+    GET: async ({ query: { gameId, audioPlaylistId }}) => {
+      const { result: playlist } = await data.playlists.get({ partition: gameId, sort: audioPlaylistId });
+      if (!playlist)
+        return { status: HTTP_STATUS.not_found }
+      
+      return { status: HTTP_STATUS.ok, body: { type: 'found', playlist } };
+    },
+    POST: async ({ body: { gameId, title, trackIds }}) => {
+      const playlist = {
+        id: uuid(),
+        gameId,
+        title,
+        trackIds,
+      };
+
+      await data.playlists.set({ partition: gameId, sort: playlist.id }, playlist);
+      
+      return { status: HTTP_STATUS.created, body: { type: 'created', playlist } };
+    },
+    PUT: async ({ query: { audioPlaylistId, gameId }, body: { title, trackIds }}) => {
+      const { result: prevPlaylist } = await data.playlists.get({ partition: gameId, sort: audioPlaylistId });
+      if (!prevPlaylist)
+        return { status: HTTP_STATUS.not_found }
+      const nextPlaylist = {
+        ...prevPlaylist,
+        trackIds: trackIds || prevPlaylist.trackIds,
+        title: title || prevPlaylist.title,
+      };
+
+      await data.playlists.set({ partition: gameId, sort: nextPlaylist.id }, nextPlaylist);
+      
+      return { status: HTTP_STATUS.ok, body: { type: 'updated', playlist: nextPlaylist } };
+    },
+    DELETE: async ({ query: { gameId, audioPlaylistId }}) => {
+      await data.playlists.set({ partition: gameId, sort: audioPlaylistId }, null);
+      
+      return { status: HTTP_STATUS.ok, body: { type: 'deleted' } };
+    },
+  })
+
+  const allPlaylistsResourceRoutes = createJSONResourceRoutes(audioAPI['/playlist/all'], {
+    ...defaultOptions,
+
+    GET: async ({ query: { gameId }}) => {
+      const { result: playlists } = await data.playlists.query(gameId);
+      
+      return { status: HTTP_STATUS.ok, body: { type: 'found', playlists } };
     },
   })
 
@@ -54,6 +113,8 @@ export const createAudioRoutes = (data/*: WildspaceData*/)/*: { ws: WebSocketRou
   const http = [
     ...trackResourceRoutes,
     ...allTracksResourceRoutes,
+    ...playlistResourceRoutes,
+    ...allPlaylistsResourceRoutes,
   ]
 
   return { ws, http };

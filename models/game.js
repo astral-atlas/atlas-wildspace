@@ -8,7 +8,7 @@ import { castUserId } from '@astral-atlas/sesame-models';
 /*::
 export type GameID = string;
 export type Game = {
-  gameId: GameID,
+  id: GameID,
   name: string,
   gameMasterId: UserID,
   playerIds: $ReadOnlyArray<UserID>
@@ -17,7 +17,7 @@ export type Game = {
 
 export const castGameId/*: Cast<GameID>*/ = castString;
 export const castGame/*: Cast<Game>*/ = createObjectCaster({
-  gameId: castGameId,
+  id: castGameId,
   name: castString,
   gameMasterId: castUserId,
   playerIds: createArrayCaster(castUserId),

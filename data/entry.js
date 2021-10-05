@@ -8,7 +8,7 @@
   Game, GameID,
   AudioPlaylist, AudioPlaylistID,
   AudioTrack, AudioTrackID,
-  AudioPlaylistState
+  Room, RoomID, RoomState
 } from "@astral-atlas/wildspace-models"; */
 
 /*::
@@ -17,6 +17,9 @@ export type WildspaceData = {
   assetData: BufferStore<AssetID>,
 
   game: Table<GameID, Game>,
+  room: CompositeTable<GameID, RoomID, Room>,
+  roomState: CompositeTable<GameID, RoomID, RoomState>,
+  roomUpdates: Channel<RoomID, void>,
 
   playlists: CompositeTable<GameID, AudioPlaylistID, AudioPlaylist>,
   tracks: CompositeTable<GameID, AudioTrackID, AudioTrack>,

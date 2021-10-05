@@ -1,0 +1,34 @@
+.userListEditor {
+  display: flex;
+  flex-direction: column;
+}
+
+.userListEditor .addNewPlayer {
+  display: flex;
+  flex-direction: row;
+}
+
+.simpleEditorForm {
+  display: flex;
+  flex-direction: column;
+
+  width: 420px;
+}
+.simpleEditorForm > label {
+  display: flex;
+  flex-direction: column;
+}
+.simpleEditorForm > label, .simpleEditorForm > input {
+  margin: 4px 0 4px 0;
+}
+
+.playlistEditorRow {
+  display: flex;
+  flex-direction: row;
+}
+.playlistEditorRow > select {
+  flex-grow: 1;
+}
+.playlistEditorRow > p {
+  margin: 0;
+}

@@ -2,7 +2,7 @@
 /*:: import type { Cast } from '@lukekaalim/cast'; */
 /*:: import type { IdentityProof } from '@astral-atlas/sesame-models'; */
 /*:: import type { Connection, Resource, ResourceDescription, ConnectionDescription } from '@lukekaalim/net-description'; */
-/*:: import type { AudioPlaylistState, AudioPlaylistID, AudioPlaylist, AudioTrack, AudioTrackID } from "../audio.js" */
+/*:: import type { AudioPlaylistID, AudioPlaylist, AudioTrack, AudioTrackID } from "../audio.js" */
 /*:: import type { GameID } from "../game.js" */
 /*:: import type { AssetID } from "../asset.js" */
 
@@ -15,29 +15,10 @@ import {
 import { castIdentityProof } from "@astral-atlas/sesame-models";
 
 import { castGameId } from "../game.js";
-import { castAudioTrack, castAudioTrackId, castAudioPlaylistId, castAudioPlaylistState, castAudioPlaylist } from "../audio.js";
+import { castAudioTrack, castAudioTrackId, castAudioPlaylistId, castAudioPlaylist } from "../audio.js";
 import { castAssetID } from "../asset.js";
 
 /*::
-export type AudioPlaylistStateConnection = Connection<
-  { type: 'update', state: AudioPlaylistState },
-  { type: 'identify', proof: IdentityProof },
-  { gameId: GameID, audioPlaylistId: AudioPlaylistID },
->;
-
-export type AudioPlaylistStateResource = {|
-  GET: {
-    query: { gameId: GameID, audioPlaylistId: AudioPlaylistID },
-    request: empty,
-    response: { type: 'found', state: AudioPlaylistState }
-  },
-  PUT: {
-    query: { gameId: GameID, audioPlaylistId: AudioPlaylistID },
-    request: { state: AudioPlaylistState },
-    response: { type: 'updated' }
-  }
-|};
-
 export type AudioPlaylistResource = {|
   GET: {
     query: { gameId: GameID, audioPlaylistId: AudioPlaylistID },
@@ -45,16 +26,28 @@ export type AudioPlaylistResource = {|
     response: { type: 'found', playlist: AudioPlaylist }
   },
   POST: {
-    query: { gameId: GameID },
-    request: { title: string, tracks: AudioTrackID[] },
+    query: empty,
+    request: { gameId: GameID, title: string, trackIds: $ReadOnlyArray<AudioTrackID> },
     response: { type: 'created', playlist: AudioPlaylist }
   },
   PUT: {
     query: { gameId: GameID, audioPlaylistId: AudioPlaylistID },
-    request: { title: string, tracks: AudioTrackID[] },
+    request: { title: ?string, trackIds: ?$ReadOnlyArray<AudioTrackID> },
     response: { type: 'updated', playlist: AudioPlaylist }
+  },
+  DELETE: {
+    query: { gameId: GameID, audioPlaylistId: AudioPlaylistID },
+    request: empty,
+    response: { type: 'deleted' }
   }
 |}
+export type AllAudioPlaylistsResource = {|
+  GET: {
+    query: { gameId: GameID},
+    request: empty,
+    response: { type: 'found', playlists: $ReadOnlyArray<AudioPlaylist> }
+  },
+|};
 
 export type AudioTrackResource = {|
   GET: {
@@ -70,6 +63,11 @@ export type AudioTrackResource = {|
       trackAudioAssetId: AssetID, coverImageAssetId: ?AssetID
     },
     response: { type: 'created', track: AudioTrack }
+  },
+  DELETE: {
+    query: { gameId: GameID, trackId: AudioTrackID },
+    request: empty,
+    response: { type: 'deleted' }
   }
 |}
 
@@ -85,10 +83,7 @@ export type AudioAPI = {
   '/tracks': AudioTrackResource,
   '/tracks/all': AllAudioTracksResource,
   '/playlist': AudioPlaylistResource,
-  '/playlist/state': {
-    connection: AudioPlaylistStateConnection,
-    resource: AudioPlaylistStateResource,
-  }
+  '/playlist/all': AllAudioPlaylistsResource,
 }
 */
 
@@ -109,10 +104,14 @@ export const audioTrackResourceDescription/*: ResourceDescription<AudioTrackReso
       coverImageAssetId: createNullableCaster(castAssetID)
     }),
     toResponseBody: createObjectCaster({ type: createConstantCaster('created'), track: castAudioTrack }),
+  },
+  DELETE: {
+    toQuery: createObjectCaster({ gameId: castGameId, trackId: castAudioTrackId }),
+    toResponseBody: createObjectCaster({ type: createConstantCaster('deleted') }),
   }
 };
 
-export const allSudioTracksResourceDescription/*: ResourceDescription<AllAudioTracksResource> */ = {
+export const allAudioTracksResourceDescription/*: ResourceDescription<AllAudioTracksResource> */ = {
   path: '/tracks/all',
 
   GET: {
@@ -121,39 +120,39 @@ export const allSudioTracksResourceDescription/*: ResourceDescription<AllAudioTr
   },
 }
 
-export const playlistStateConnectionDescription/*: ConnectionDescription<AudioPlaylistStateConnection>*/ = {
-  path: '/playlist/state',
-  subprotocol: 'JSON.wildspace.playlist_state.v1.0.0',
-  castQuery: createObjectCaster({ gameId: castGameId, audioPlaylistId: castAudioPlaylistId }),
-  castServerMessage: createObjectCaster({ type: createConstantCaster('update'), state: castAudioPlaylistState }),
-  castClientMessage: createObjectCaster({ type: createConstantCaster('identify'), proof: castIdentityProof }),
-};
-
-export const playlistStateResourceDescription/*: ResourceDescription<AudioPlaylistStateResource>*/ = {
-  path: '/playlist/state',
-
-  PUT: {
-    toQuery: createObjectCaster({ gameId: castGameId, audioPlaylistId: castAudioPlaylistId }),
-    toRequestBody: createObjectCaster({ state: castAudioPlaylistState  }),
-    toResponseBody: createObjectCaster({ type: createConstantCaster('updated') }),
-  }
-};
-
 export const playlistResourceDescription/*: ResourceDescription<AudioPlaylistResource>*/ = {
   path: '/playlist',
 
   GET: {
     toQuery: createObjectCaster({ gameId: castGameId, audioPlaylistId: castAudioPlaylistId }),
     toResponseBody: createObjectCaster({ type: createConstantCaster('found'), playlist: castAudioPlaylist }),
+  },
+  POST: {
+    toRequestBody: createObjectCaster({ gameId: castGameId, title: castString, trackIds: createArrayCaster(castAudioTrackId) }),
+    toResponseBody: createObjectCaster({ type: createConstantCaster('created'), playlist: castAudioPlaylist }),
+  },
+  PUT: {
+    toQuery: createObjectCaster({ gameId: castGameId, audioPlaylistId: castAudioPlaylistId }),
+    toRequestBody: createObjectCaster({ title: createNullableCaster(castString), trackIds: createNullableCaster(createArrayCaster(castAudioTrackId)) }),
+    toResponseBody: createObjectCaster({ type: createConstantCaster('updated'), playlist: castAudioPlaylist }),
+  },
+  DELETE: {
+    toQuery: createObjectCaster({ gameId: castGameId, audioPlaylistId: castAudioPlaylistId }),
+    toResponseBody: createObjectCaster({ type: createConstantCaster('deleted') }),
   }
 };
+export const allAudioPlaylistsResourceDescription/*: ResourceDescription<AllAudioPlaylistsResource> */ = {
+  path: '/playlist/all',
+
+  GET: {
+    toQuery: createObjectCaster({ gameId: castGameId }),
+    toResponseBody: createObjectCaster({ type: createConstantCaster('found'), playlists: createArrayCaster(castAudioPlaylist) }),
+  },
+}
 
 export const audioAPI = {
   '/tracks': audioTrackResourceDescription,
-  '/tracks/all': allSudioTracksResourceDescription,
+  '/tracks/all': allAudioTracksResourceDescription,
   '/playlist': playlistResourceDescription,
-  '/playlist/state': {
-    connection: playlistStateConnectionDescription,
-    resource: playlistStateResourceDescription,
-  }
+  '/playlist/all': allAudioPlaylistsResourceDescription,
 };
