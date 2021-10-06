@@ -13,12 +13,12 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '16'
-      - run: npm ci -w api2 --production
+      - run: npm ci -w api --production
       - name: Archive
         uses: thedoctor0/zip-release@master
         with:
           filename: wildspace-api.zip
-          directory: api2 node_modules
+          directory: api node_modules
           exclusions: '*.git*'
       - name: Release
         uses: softprops/action-gh-release@v1
