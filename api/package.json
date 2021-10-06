@@ -8,6 +8,10 @@
     "type": "git",
     "url": "git+https://github.com/astral-atlas/wildspace.git"
   },
+  "scripts": {
+    "dev": "npx nodemon entry.js",
+    "postversion": "../scripts/postversion.sh"
+  },
   "author": "",
   "license": "ISC",
   "bugs": {
