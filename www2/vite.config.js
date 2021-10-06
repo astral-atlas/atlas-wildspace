@@ -9,6 +9,8 @@ export default {
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
+        admin: resolve(__dirname, 'admin/index.html'),
+        room: resolve(__dirname, 'room/index.html'),
       },
     }
   },

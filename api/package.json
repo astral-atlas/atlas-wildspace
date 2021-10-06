@@ -1,27 +1,25 @@
 {
   "name": "@astral-atlas/wildspace-api",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "",
-  "main": "src/cli.js",
-  "type": "commonjs",
-  "scripts": {
-    "build": "zip wildspace-api-artefact.zip ./**/*",
-    "start": "node src/cli 8080",
-    "dev": "nodemon src/cli 8080"
+  "main": "entry.js",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/astral-atlas/wildspace.git"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "@astral-atlas/table": "file:../table",
-    "@astral-atlas/wildspace-models": "file:../models",
-    "@lukekaalim/cast": "file:../cast",
-    "@lukekaalim/server": "^7.1.0",
-    "aws-sdk": "^2.758.0",
-    "crypto-random-string": "^3.3.0",
-    "uuid": "^8.2.0",
-    "ws": "^7.4.0"
+  "bugs": {
+    "url": "https://github.com/astral-atlas/wildspace/issues"
   },
-  "devDependencies": {
-    "flow-bin": "^0.140.0"
+  "homepage": "https://github.com/astral-atlas/wildspace#readme",
+  "dependencies": {
+    "@astral-atlas/wildspace-data": "^1.0.0",
+    "@astral-atlas/wildspace-models": "^1.0.0",
+    "@lukekaalim/http-server": "^13.5.1",
+    "@lukekaalim/ws-server": "^2.0.1",
+    "uuid": "^8.3.2",
+    "ws": "^8.2.2"
   }
 }

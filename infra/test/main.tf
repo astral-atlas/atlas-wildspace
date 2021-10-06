@@ -1,21 +1,27 @@
 terraform {
   required_providers {
-    elastic-beanstalk = {
-      source = "registry.terraform.io/lukekaalim/elastic-beanstalk"
-      version = ">= 1.5.0"
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 3.0"
+    }
+    immutable-elastic-beanstalk = {
+      source = "registry.terraform.io/lukekaalim/immutable-elastic-beanstalk"
+      version = "2.0.4"
     }
   }
   backend "remote" {
-    organization = "luke"
+    organization = "astral-atlas"
 
     workspaces {
       name = "wildspace"
     }
   }
 }
-provider "aws" {
+
+provider "immutable-elastic-beanstalk" {
   region = "ap-southeast-2"
 }
-provider "elastic-beanstalk" {
-  aws_region = "ap-southeast-2"
+
+provider "aws" {
+  region = "ap-southeast-2"
 }

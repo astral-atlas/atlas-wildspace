@@ -3,7 +3,7 @@
   "workspaces": [
     "models",
     "client2",
-    "api2",
+    "api",
     "www2",
     "data",
     "cli"

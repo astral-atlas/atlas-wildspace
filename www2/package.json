@@ -18,7 +18,8 @@
     "vite": "^2.6.2"
   },
   "scripts": {
-    "dev": "vite"
+    "dev": "vite",
+    "build": "vite build"
   },
   "repository": {
     "type": "git",

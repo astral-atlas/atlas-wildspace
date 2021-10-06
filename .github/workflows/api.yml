@@ -1,0 +1,29 @@
+name: "Publish @astral-atlas/wildspace-api"
+
+on:
+  push:
+    tags:
+      - '@astral-atlas/wildspace-api@*'
+
+jobs:
+  release-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - run: npm ci -w api2 --production
+      - name: Archive
+        uses: thedoctor0/zip-release@master
+        with:
+          filename: wildspace-api.zip
+          directory: api2 node_modules
+          exclusions: '*.git*'
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          files: wildspace-api.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
