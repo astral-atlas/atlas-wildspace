@@ -14,12 +14,7 @@ jobs:
         with:
           node-version: '16'
       - run: npm ci -w api --production
-      - name: Archive
-        uses: thedoctor0/zip-release@master
-        with:
-          filename: wildspace-api.zip
-          directory: api node_modules
-          exclusions: '*.git*'
+      - run: zip wildspace-api.zip -r api node_modules
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
