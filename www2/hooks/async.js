@@ -8,9 +8,13 @@ export const useAsync = /*:: <T>*/(func/*: () => Promise<T>*/, memo/*: mixed[]*/
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    func()
-      .then(setData)
-      .catch(setError)
+    (async () => {
+      try {
+        setData(await func());
+      } catch (error) {
+        setError(error);
+      }
+    })()
   }, memo)
 
   return [data, error];

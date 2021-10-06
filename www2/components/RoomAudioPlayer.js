@@ -73,13 +73,15 @@ export const usePlaybackData = (
 export type RoomAudioPlayerProps = {
   audio: RoomAudioState,
   tracksData: TrackData[],
+  volume?: number,
   controls?: boolean,
   onTrackChange?: ?AudioTrack => void
 };
 */
 
-export const RoomAudioPlayer/*: Component<RoomAudioPlayerProps>*/ = ({ tracksData, audio, controls = false, onTrackChange = _ => {} }) => {
-  //const tracksData = useCurrentRoomTrackData(gameId, audio);
+export const RoomAudioPlayer/*: Component<RoomAudioPlayerProps>*/ = ({
+  tracksData, audio, controls = false, onTrackChange = _ => {}, volume = 1
+}) => {
   const getPlaybackData = usePlaybackData(audio, tracksData);
   const audioRef = useRef/*:: <?HTMLAudioElement>*/();
 
@@ -111,7 +113,15 @@ export const RoomAudioPlayer/*: Component<RoomAudioPlayerProps>*/ = ({ tracksDat
     };
   }, [getPlaybackData, tracksData])
 
+  useEffect(() => {
+    const playback = getPlaybackData();
+    const { current: audioElement } = audioRef;
+    if (audioElement && playback && playback.trackIndex !== -1) {
+      audioElement.play();
+    }
+  }, [getPlaybackData, volume])
+
   return [
-    h('audio', { ref: audioRef, controls })
+    h('audio', { ref: audioRef, controls, volume })
   ];
 };
