@@ -20,7 +20,7 @@
   "dependencies": {
     "@astral-atlas/wildspace-models": "^1.0.0",
     "@aws-sdk/client-s3": "^3.34.0",
-    "@lukekaalim/cast": "^4.0.0",
+    "@lukekaalim/cast": "^4.1.1",
     "ioredis": "^4.27.9"
   }
 }
