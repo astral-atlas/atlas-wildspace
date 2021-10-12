@@ -1,18 +1,21 @@
 // @flow strict
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
+import { promises } from 'fs';
 
 import { createWebSocketListener, createJSONConnectionRoute } from "@lukekaalim/ws-server";
 import { createRouteListener, createJSONResourceRoutes, createFixedListener, listenServer } from "@lukekaalim/http-server";
 import { HTTP_STATUS } from "@lukekaalim/net-description";
 
 
-import { audioAPI } from '@astral-atlas/wildspace-models';
+import { audioAPI, castAPIConfig } from '@astral-atlas/wildspace-models';
 import { createMemoryData, createFileData } from "@astral-atlas/wildspace-data";
 
 import { createRoutes } from './routes.js';
+import { createServices } from "./services.js";
+import { loadConfigFromFile } from "./config.js";
 
-const createWildspaceServer = () => {
+const createWildspaceServer = (config, services) => {
   const middleware = (r) => {
     const handler = async (request) => {
       try {
@@ -31,7 +34,7 @@ const createWildspaceServer = () => {
   }
   
   console.log(process.cwd())
-  const { ws, http } = createRoutes(createFileData('./data')); 
+  const { ws, http } = createRoutes(services); 
   const httpRoutes = [
     ...http,
   ].map(middleware);
@@ -48,10 +51,17 @@ const createWildspaceServer = () => {
   return [httpServer, wsServer]
 };
 
-const main = async () => {
-  const [httpServer, wsServer] = createWildspaceServer();
-  const { httpOrigin, wsOrigin } = await listenServer(httpServer, 5567, 'localhost');
-  console.log(`Listening on ${httpOrigin} & ${wsOrigin}`)
+const main = async (configPath) => {
+  try {
+    const config = await loadConfigFromFile(configPath);
+    const services = createServices(config);
+    
+    const [httpServer, wsServer] = createWildspaceServer(config, services);
+    const { httpOrigin, wsOrigin } = await listenServer(httpServer, config.port, 'localhost');
+    console.log(`Listening on ${httpOrigin} & ${wsOrigin}`)
+  } catch (error) {
+    console.error(error);
+  }
 };
 
-main();
+main(...process.argv.slice(2));

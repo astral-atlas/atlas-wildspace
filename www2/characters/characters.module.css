@@ -1,0 +1,145 @@
+@import url("../index.module.css");
+
+.characterSheet {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  text-align: start;
+
+  color: black;
+  font-family: 'Crimson Text', serif;
+}
+
+.characterSheetNameLabel {
+  display: flex;
+  flex-direction: column;
+}
+
+.characterSheetNameInput {
+  background-color: #f2f2f2;
+  border: 0;
+      border-bottom-color: currentcolor;
+      border-bottom-style: none;
+      border-bottom-width: 0px;
+  border-bottom: 2px solid black;
+  padding: 8px;
+  border-radius: 5px;
+  font-size: 22px;
+  font-family: 'Crimson Text', serif;
+}
+.characterSheetNameInput::placeholder {
+  font-style: italic;
+  font-size: 22px;
+}
+
+.characterPageBackground {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.characterPageContent {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  font-size: 22px;
+  font-family: 'Crimson Text', serif;
+  text-align: center;
+  align-items: center;
+  overflow: auto;
+}
+.characterPage {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  align-items: center;
+  color: white;
+  flex-grow: 1;
+  width: 100%;
+}
+
+.characterPagePlayerList, .characterPageCharacterList {
+  display: flex;
+  flex-direction: row;
+  margin: 0;
+  list-style: none;
+  padding: 0;
+  border-bottom: 1px solid white;
+  justify-content: flex-start;
+  align-items: flex-end;
+  height: 60px;
+  margin-bottom: 16px;
+}
+
+.characterPagePlayerListEntry, .characterPageCharacterListEntry {
+  margin: 0 8px 0 8px;
+  padding: 4px 16px 8px 16px;
+  background-color: #fdfdfd1c;
+  color: white;
+  border-radius: 4px 4px 0 0;
+  border: 1px solid white;
+  border-bottom: 0;
+  transition: background-color 0.2s, padding 0.2s;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.characterPagePlayerListEntry:hover, .characterPageCharacterListEntry:hover {
+  background-color: #fdfdfd79;
+  padding: 8px 16px 8px 16px;
+}
+
+.characterPagePlayerListEntrySelected, .characterPagePlayerListEntrySelected:hover {
+  background-color:rgb(146, 146, 146);
+  padding: 12px 16px 8px 16px;
+}
+.characterPagePlayerListEntrySelected:hover {
+  padding: 14px 16px 8px 16px;
+  background-color:rgb(199, 199, 199);
+}
+
+.characterPageCharacters {
+}
+
+.tabsList {
+  display: flex;
+  flex-direction: row;
+  margin: 0;
+  list-style: none;
+  padding: 0;
+  border-bottom: 1px solid white;
+  justify-content: flex-start;
+  align-items: flex-end;
+  height: 60px;
+  margin-bottom: 16px;
+}
+.tabsListOption {
+  margin: 0 8px 0 8px;
+  padding: 4px 16px 8px 16px;
+  background-color: #fdfdfd1c;
+  color: white;
+  border-radius: 4px 4px 0 0;
+  border: 1px solid white;
+  border-bottom: 0;
+  transition: background-color 0.2s, padding 0.2s;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.tabsListOption:hover {
+  padding: 6px 16px 8px 16px;
+  background-color:rgba(129, 129, 129, 0.575);
+}
+.tabsListOptionSelected, .tabsListOptionSelected:hover {
+  background-color:rgb(146, 146, 146);
+  padding: 8px 16px 8px 16px;
+}
+
+.characteSheetActions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}

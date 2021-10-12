@@ -1,8 +1,8 @@
 // @flow strict
-/*:: import type { IdentityProof } from '@astral-atlas/sesame-models'; */
+/*:: import type { LinkProof } from '@astral-atlas/sesame-models'; */
 /*:: import type { RoomID, GameID } from '@astral-atlas/wildspace-models'; */
 /*:: import type { Cast } from '@lukekaalim/cast'; */
-import { castIdentityProof } from '@astral-atlas/sesame-models';
+import { castIdentityProof, castLinkProof } from '@astral-atlas/sesame-models';
 import { createNullableCaster, createObjectCaster } from '@lukekaalim/cast'
 import { castRoomId, castGameId } from '@astral-atlas/wildspace-models';
 
@@ -33,9 +33,9 @@ export const createStoredValue = /*:: <T>*/(
   };
 };
 
-export const identityStore/*: StoredValue<?{ proof: IdentityProof }>*/ = createStoredValue(
+export const identityStore/*: StoredValue<?{ proof: LinkProof }>*/ = createStoredValue(
   'wildspace_identity',
-  createNullableCaster(createObjectCaster({ proof: castIdentityProof })),
+  createNullableCaster(createObjectCaster({ proof: castLinkProof })),
   null
 );
 

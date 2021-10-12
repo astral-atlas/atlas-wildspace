@@ -1,17 +1,24 @@
 // @flow strict
 /*:: import type { UserID } from '@astral-atlas/sesame-models'; */
-/*:: import type { ResourceDescription } from "@lukekaalim/net-description"; */
-/*:: import type { GameID, Game } from '../game.js'; */
+/*:: import type { ResourceDescription, ConnectionDescription } from "@lukekaalim/net-description"; */
+/*:: import type { GameID, Game, GameUpdate, GameMaster, Player } from '../game.js'; */
 /*:: import type { CharacterID, MonsterID, Character, Monster } from '../character.js'; */
+/*:: import type { CharactersAPI } from './game/characters.js'; */
+/*:: import type { PlayersAPI } from './game/players.js'; */
 
 import {
   createObjectCaster as obj, castString as str,
   createConstantCaster as lit, createArrayCaster as arr,
   createNullableCaster as maybe,
+  c,
 } from '@lukekaalim/cast';
-import { castGameId, castGame } from '../game.js';
-import { castCharacter } from '../character.js';
 import { castUserId } from '@astral-atlas/sesame-models';
+import { castGameId, castGame, castGameUpdate, } from '../game.js';
+import { castCharacter } from '../character.js';
+import { castGameMaster, castPlayer } from "../game.js";
+import { charactersAPI } from './game/characters.js';
+import { playersAPI } from './game/players.js';
+
 
 /*::
 export type GameAPI = {
@@ -23,22 +30,22 @@ export type GameAPI = {
     },
     POST: {
       query: empty,
-      request: { name: string, playerIds: $ReadOnlyArray<UserID> },
+      request: { name: string },
       response: { type: 'created', game: Game },
     },
     PUT: {
       query: { gameId: GameID },
-      request: { name: ?string, playerIds: ?$ReadOnlyArray<UserID> },
+      request: { name: ?string },
       response: { type: 'updated' },
     }
   |},
-  '/games/join': {|
-    POST: {
-      query: empty,
-      request: { gameId: GameID },
-      response: { type: 'joined' },
-    }
+  '/games/updates': {|
+    query: { gameId: GameID },
+    client: empty,
+    server: { type: 'updated', update: GameUpdate },
   |},
+  ...CharactersAPI,
+  ...PlayersAPI,
   '/games/all': {|
     GET: {
       query: empty,
@@ -57,24 +64,25 @@ export const gameResourceDescription/*: ResourceDescription<GameAPI['/games']>*/
     toResponseBody: obj({ type: lit('found'), game: castGame }),
   },
   POST: {
-    toRequestBody: obj({ name: str, playerIds: arr(castUserId) }),
+    toRequestBody: obj({ name: str }),
     toResponseBody: obj({ type: lit('created'), game: castGame }),
   },
   PUT: {
     toQuery: obj({ gameId: castGameId }),
-    toRequestBody: obj({ name: maybe(str), playerIds: maybe(arr(castUserId)) }),
+    toRequestBody: obj({ name: maybe(str) }),
     toResponseBody: obj({ type: lit('updated') }),
   },
 };
 
-export const joinGameResourceDescription/*: ResourceDescription<GameAPI['/games/join']>*/ = {
-  path: '/games/join',
+export const roomStateConnectionDescription/*: ConnectionDescription<GameAPI['/games/updates']>*/ = {
+  path: '/games/updates',
+  subprotocol: 'JSON.wildspace.game_updates.v1.0.0',
 
-  POST: {
-    toRequestBody: obj({ gameId: castGameId }),
-    toResponseBody: obj({ type: lit('joined') }),
-  },
-};
+  castQuery: c.obj({ gameId: castGameId }),
+  castServerMessage:  c.or('type', {
+    'updated': c.obj({ type: c.lit('updated'), update: castGameUpdate }),
+  })
+}
 
 export const allGamesResourceDescription/*: ResourceDescription<GameAPI['/games/all']>*/ = {
   path: '/games/all',
@@ -85,7 +93,11 @@ export const allGamesResourceDescription/*: ResourceDescription<GameAPI['/games/
 };
 
 export const gameAPI = {
+  ...charactersAPI,
+  ...playersAPI,
   '/games': gameResourceDescription,
   '/games/all': allGamesResourceDescription,
-  '/games/join': joinGameResourceDescription,
+  '/games/updates': roomStateConnectionDescription,
 }
+export * from './game/characters.js';
+export * from './game/players.js';

@@ -1,0 +1,75 @@
+@import url("../index.module.css");
+
+.wildspaceHeader {
+  display: flex;
+  flex-direction: row;
+  font-family: 'Crimson Text', serif;
+  background-color: #e6e7f0;
+  font-size: 22px;
+  position: sticky;
+  top: 0px;
+}
+.wildspaceHeaderLeft {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  flex-grow: 1;
+  flex-basis: 100%;
+}
+.wildspaceHeaderLeft > .wildspaceHeaderTitle {
+  font-family: 'Josefin Slab', serif;
+  font-weight: 400;
+  margin: 0;
+  text-transform: uppercase;
+  position: relative;
+  top: 3px;
+  font-size: 38px;
+}
+.wildspaceHeaderLeft > .wildspaceHeaderIcon {
+  height: 32px;
+  padding: 16px;
+}
+
+.wildspaceHeaderGameSeperator {
+  height: 75%;
+  border: 0;
+  border-right: 1px solid black;
+  margin-left: 12px;
+}
+
+.wildspaceHeaderCenter {
+  flex-grow: 1;
+  flex-basis: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.wildspaceHeaderPageTitle {
+  text-align: center;
+  width: 300px;
+  margin: 0;
+  text-decoration: underline;
+  color: black;
+}
+
+.wildspaceHeaderRight {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  flex-basis: 100%;
+}
+
+.wildspaceHeaderRight > .wildspaceHeaderIdentity {
+  margin: 32px;
+}
+
+.wildspaceHeaderGameSelector {
+  margin: 32px;
+  padding: 8px;
+}

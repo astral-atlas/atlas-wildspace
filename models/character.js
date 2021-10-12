@@ -10,8 +10,8 @@ import { castGameId } from './game.js';
 export type CharacterID = string;
 export type Character = {
   id: CharacterID,
-  player: UserID,
-  game: GameID,
+  playerId: UserID,
+  gameId: GameID,
 
   name: string,
   shortDescription: string,
@@ -25,7 +25,7 @@ export type Character = {
 export type MonsterID = string;
 export type Monster = {
   id: MonsterID,
-  game: GameID,
+  gameId: GameID,
 
   name: string,
   shortDescription: string,
@@ -39,8 +39,8 @@ export type Monster = {
 export const castCharacterId/*: Cast<CharacterID>*/ = castString;
 export const castCharacter/*: Cast<Character>*/ = createObjectCaster({
   id: castCharacterId,
-  player: castUserId,
-  game: castGameId,
+  playerId: castUserId,
+  gameId: castGameId,
 
   name: castString,
   shortDescription: castString,
@@ -54,7 +54,7 @@ export const castCharacter/*: Cast<Character>*/ = createObjectCaster({
 export const castMonsterId/*: Cast<MonsterID>*/ = castString;
 export const castMonster/*: Cast<Monster>*/ = createObjectCaster({
   id: castCharacterId,
-  game: castGameId,
+  gameId: castGameId,
 
   name: castString,
   shortDescription: castString,

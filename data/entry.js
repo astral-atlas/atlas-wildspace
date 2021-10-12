@@ -1,5 +1,6 @@
 // @flow strict
 /*:: import type { S3 } from '@aws-sdk/client-s3'; */
+/*:: import type { UserID } from '@astral-atlas/sesame-models'; */
 /*:: import type { Table, CompositeTable } from './sources/table.js'; */
 /*:: import type { BufferStore, BufferDB } from './sources/buffer.js'; */
 /*:: import type { Channel } from './sources/channel.js'; */
@@ -16,10 +17,13 @@ import {
 /*::
 import type {
   AssetDescription, AssetID,
-  Game, GameID,
+  Game, GameID, GameUpdate,
   AudioPlaylist, AudioPlaylistID,
   AudioTrack, AudioTrackID,
-  Room, RoomID, RoomState
+  Room, RoomID, RoomState,
+  CharacterID, Character,
+  EncounterID, Encounter,
+  MonsterID, Monster,
 } from "@astral-atlas/wildspace-models";
 */
 import { createBufferWildspaceData } from "./data.js";
@@ -29,7 +33,15 @@ export type WildspaceData = {
   assets: Table<AssetID, AssetDescription>,
   assetData: BufferDB<AssetID>,
 
-  game: Table<GameID, Game>,
+  game: Table<GameID, { id: GameID, name: string, gameMasterId: UserID }>,
+  gameUpdates: Channel<GameID, GameUpdate>,
+  gameParticipation: CompositeTable<UserID, GameID, { gameId: GameID, joined: boolean }>,
+  gamePlayers: CompositeTable<GameID, UserID, { userId: UserID, joined: boolean }>,
+
+  characters: CompositeTable<GameID, CharacterID, Character>,
+  encounters: CompositeTable<GameID, EncounterID, Encounter>,
+  monsters: CompositeTable<GameID, MonsterID, Monster>,
+
   room: CompositeTable<GameID, RoomID, Room>,
   roomState: CompositeTable<GameID, RoomID, RoomState>,
   roomUpdates: Channel<RoomID, void>,

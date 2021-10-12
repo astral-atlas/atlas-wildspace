@@ -4,12 +4,12 @@
   "private": true,
   "dependencies": {
     "@astral-atlas/sesame-client": "^2.0.4",
-    "@astral-atlas/sesame-components": "^2.1.0",
-    "@astral-atlas/sesame-models": "^8.0.1",
+    "@astral-atlas/sesame-components": "^3.1.0",
+    "@astral-atlas/sesame-models": "^11.6.0",
     "@astral-atlas/wildspace-client2": "^1.0.0",
     "@lukekaalim/act": "^2.2.3",
-    "@lukekaalim/act-three": "^2.0.2",
-    "@lukekaalim/act-web": "^0.4.1",
+    "@lukekaalim/act-three": "^3.9.4",
+    "@lukekaalim/act-web": "^0.4.3",
     "@lukekaalim/cast": "^4.0.0",
     "@lukekaalim/http-client": "^5.2.0",
     "@lukekaalim/ws-client": "^2.1.0"

@@ -1,0 +1,86 @@
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap');
+
+.copperButton {
+  border-image: url('/2d/5e_box.png') calc(16 * 4);
+  border-style: solid;
+  border-width: 32px;
+
+  background: none;
+  cursor: pointer;
+
+  margin: 0 -16px 0 -16px;
+
+  font-family: 'Crimson Text', serif;
+  font-size: 22px;
+  padding: 0 16px 0 16px;
+
+  position: relative;
+}
+.copperButton:hover > .hoverHighlight {
+  opacity: 1;
+}
+.hoverHighlight {
+  opacity: 0;
+  transition: opacity 0.3s;
+  position: absolute;
+  border-image: url('/2d/5e_box_selected.png') calc(16 * 4);
+  border-style: solid;
+  border-width: 32px;
+  box-sizing: border-box;
+  top: -32px;
+  bottom: -32px;
+  left: -32px;
+  right: -32px;
+}
+
+.featureContainer {
+  border-width: 80px;
+  border-image-slice: 30% 30% 30% 30% fill;
+  border-image-source: url('/2d/5e_feature_box.png');
+  border-style: solid;
+}
+.featureContainer > .featureContainerBorderReclaim {
+  margin: -50px;
+}
+
+.backgroundBox {
+  border-width: 70px;
+  border-image-slice: 33% 33% 33% 33% fill;
+  border-image-source: url('/2d/5e_background_box.png');
+  border-style: solid;
+}
+.backgroundBox > .backgroundBoxBorderReclaim {
+  margin: -60px;
+}
+
+.smallTextInput {
+  display: flex;
+  flex-direction: column;
+  margin: 16px 0 16px 0;
+  width: 420px;
+}
+.smallTextInputLabelText {
+  font-size: 18px;
+}
+.smallTextInputField {
+  background-color: #f2f2f2;
+  border: 0;
+      border-bottom-color: currentcolor;
+      border-bottom-style: none;
+      border-bottom-width: 0px;
+  border-bottom: 2px solid black;
+  padding: 8px;
+  border-radius: 5px;
+  font-size: 22px;
+  font-family: 'Crimson Text', serif;
+}
+.smallTextInputField:disabled {
+  text-align: center;
+  color: rgb(124, 135, 159);
+  border: 1px solid black;
+  border-bottom: 2px solid black;
+}
+.smallTextInputField::placeholder {
+  font-size: 22px;
+  position: relative;
+}

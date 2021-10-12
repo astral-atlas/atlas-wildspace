@@ -10,5 +10,10 @@
   ],
   "devDependencies": {
     "flow-bin": "^0.161.0"
+  },
+  "scripts": {
+    "dev:api": "npm run dev -w api",
+    "dev:www": "npm run dev -w www2",
+    "dev": "npx concurrently npm:dev:*"
   }
 }

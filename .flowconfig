@@ -1,5 +1,4 @@
 [ignore]
-<PROJECT_ROOT>/api/.*
 <PROJECT_ROOT>/web/.*
 <PROJECT_ROOT>/client/.*
 [include]

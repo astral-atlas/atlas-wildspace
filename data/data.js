@@ -5,11 +5,12 @@
 
 /*:: import type { WildspaceData } from "./entry"; */
 
+import * as m from '@astral-atlas/wildspace-models';
+import * as sm from '@astral-atlas/sesame-models';
+import { c } from '@lukekaalim/cast';
+
 import { createBufferTable, createBufferCompositeTable } from "./sources/table.js";
 import { createMemoryChannel } from "./sources/channel.js";
-import * as m from '@astral-atlas/wildspace-models';
-
-
 
 /*::
 type DataConstructors = {
@@ -22,7 +23,15 @@ export const createBufferWildspaceData = ({ createBufferStore, createBufferDB }/
   const assets = createBufferTable(createBufferStore('assets'), m.castAssetDescription);
   const assetData = createBufferDB('assetData');
 
-  const game = createBufferTable(createBufferStore('game'), m.castGame);
+  const game = createBufferTable(createBufferStore('game'), c.obj({ id: m.castGameId, name: c.str, gameMasterId: sm.castUserId }));
+  const gameUpdates = createMemoryChannel();
+  const gameParticipation = createBufferCompositeTable(createBufferStore('game_participation'), c.obj({ gameId: m.castGameId, joined: c.bool }));
+  const gamePlayers = createBufferCompositeTable(createBufferStore('game_players'), c.obj({ userId: sm.castUserId, joined: c.bool }));
+
+  const characters = createBufferCompositeTable(createBufferStore('characters'), m.castCharacter);
+  const encounters = createBufferCompositeTable(createBufferStore('encounters'), m.castEncounter);
+  const monsters = createBufferCompositeTable(createBufferStore('monsters'), m.castMonster);
+
   const room = createBufferCompositeTable(createBufferStore('room'), m.castRoom);
   const roomState = createBufferCompositeTable(createBufferStore('roomState'), m.castRoomState);
   const roomUpdates = createMemoryChannel();
@@ -35,6 +44,14 @@ export const createBufferWildspaceData = ({ createBufferStore, createBufferDB }/
     assetData,
 
     game,
+    gameUpdates,
+    gameParticipation,
+    gamePlayers,
+
+    characters,
+    encounters,
+    monsters,
+
     room,
     roomState,
     roomUpdates,

@@ -1,4 +1,5 @@
 // @flow strict
+/*:: import type { SetValue } from '@lukekaalim/act'; */
 /*:: import type { JSONValue, Cast } from '@lukekaalim/cast'; */
 /*:: import type { StoredValue } from '../lib/storage.js'; */
 import { useMemo, useState } from '@lukekaalim/act';
@@ -32,12 +33,12 @@ export const useLocalStorage = /*:: <T: JSONValue>*/(
   return [storedValue, setValue];
 };
 
-export const useStoredValue = /*:: <T>*/(store/*: StoredValue<T>*/)/*: [T, (v: (T => T)) => void]*/ => {
+export const useStoredValue = /*:: <T>*/(store/*: StoredValue<T>*/)/*: [T, SetValue<T>]*/ => {
   const initialValue = useMemo(() => store.get(), [])
   const [storedValue, setStoredValue] = useState(initialValue);
 
   const setValue = updater => {
-    const value = updater(storedValue);
+    const value = typeof updater === 'function' ? (updater/*: any*/)(storedValue) : updater;
     store.set(value);
     setStoredValue(value);
   };

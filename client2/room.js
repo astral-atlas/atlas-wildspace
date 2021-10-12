@@ -16,9 +16,9 @@ export type RoomClient = {
 };
 */
 
-export const createRoomClient = (httpClient/*: HTTPClient*/, baseURL/*: string*/)/*: RoomClient*/ => {
-  const roomResource = createJSONResourceClient(roomAPI['/room'], httpClient, `http://${baseURL}`);
-  const allTracksResource = createJSONResourceClient(roomAPI['/room/all'], httpClient, `http://${baseURL}`);
+export const createRoomClient = (httpClient/*: HTTPClient*/, httpOrigin/*: string*/, wsOrigin/*: string*/)/*: RoomClient*/ => {
+  const roomResource = createJSONResourceClient(roomAPI['/room'], httpClient, httpOrigin);
+  const allTracksResource = createJSONResourceClient(roomAPI['/room/all'], httpClient, httpOrigin);
 
   const read = async (gameId, roomId) => {
     const { body: { room }} = await roomResource.GET({ query: { roomId, gameId }});
@@ -46,9 +46,9 @@ export type RoomStateClient = {
   connect: (gameId: GameID, roomId: string, onUpdate: (state: RoomState) => mixed) => Promise<{ close: () => Promise<void> }>,
 };
 */
-export const createRoomStateClient = (httpClient/*: HTTPClient*/, baseURL/*: string*/)/*: RoomStateClient*/ => {
-  const roomStateResource = createJSONResourceClient(roomAPI['/room/state'].resource, httpClient, `http://${baseURL}`);
-  const roomStateConnection = createJSONConnectionClient(WebSocket, roomAPI['/room/state'].connection, `ws://${baseURL}`);
+export const createRoomStateClient = (httpClient/*: HTTPClient*/, httpOrigin/*: string*/, wsOrigin/*: string*/)/*: RoomStateClient*/ => {
+  const roomStateResource = createJSONResourceClient(roomAPI['/room/state'].resource, httpClient, httpOrigin);
+  const roomStateConnection = createJSONConnectionClient(WebSocket, roomAPI['/room/state'].connection, wsOrigin);
 
   const read = async (gameId, roomId) => {
     const { body: { state }} = await roomStateResource.GET({ query: { roomId, gameId }});

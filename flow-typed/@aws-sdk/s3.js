@@ -51,17 +51,27 @@ declare module '@aws-sdk/client-s3' {
     Key: string,
     VersionId?: string,
   };
-
   declare export type GetObjectCommandOutput = {
     Body: Readable,
     ContentType: string,
-    ContentLength: number,
+    ContentLength: string,
+  };
+
+  declare export type DeleteObjectCommandInput = {
+    Bucket: string,
+    Key: string,
+    VersionId?: string,
+  };
+
+  declare export type DeleteObjectCommandOutput = {
+    DeleteMarker: boolean,
   };
 
   declare export class S3 {
     constructor(config: S3ClientConfig): S3,
     putObject(args: PutObjectCommandInput): Promise<PutObjectCommandOutput>,
     getObject(args: GetObjectCommandInput): Promise<GetObjectCommandOutput>,
+    deleteObject(args: DeleteObjectCommandInput): Promise<DeleteObjectCommandOutput>,
   }
 
   declare export type S3ClientConfig = {

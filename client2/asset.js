@@ -13,8 +13,8 @@ export type AssetClient = {
 };
 */
 
-export const createAssetClient = (httpClient/*: HTTPClient*/, baseURL/*: string*/)/*: AssetClient*/ => {
-  const assetResource = createJSONResourceClient(assetAPI["/asset"], httpClient, `http://${baseURL}`);
+export const createAssetClient = (httpClient/*: HTTPClient*/, httpOrigin/*: string*/, wsOrigin/*: string*/)/*: AssetClient*/ => {
+  const assetResource = createJSONResourceClient(assetAPI["/asset"], httpClient, httpOrigin);
 
   const create = async (name, MIMEType, content) => {
     const bytes = content.byteLength;

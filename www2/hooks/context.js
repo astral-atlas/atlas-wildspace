@@ -1,5 +1,5 @@
 // @flow strict
-/*:: import type { Context } from '@lukekaalim/act'; */
+/*:: import type { Context, Component } from '@lukekaalim/act'; */
 /*:: import type { SesameClient } from '@astral-atlas/sesame-client'; */
 /*:: import type { WildspaceClient } from '@astral-atlas/wildspace-client2'; */
 import { h, useMemo, useEffect, useState, useContext, createContext, useRef } from "@lukekaalim/act";

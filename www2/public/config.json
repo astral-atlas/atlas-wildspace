@@ -1,0 +1,16 @@
+{
+  "www": {
+    "sesame": {
+      "httpOrigin": "http://sesame.astral-atlas.com"
+    }
+  },
+  "api": {
+    "wildspace": {
+      "httpOrigin": "http://localhost:5567",
+      "wsOrigin": "ws://localhost:5567"
+    },
+    "sesame": {
+      "httpOrigin": "http://api.sesame.astral-atlas.com"
+    }
+  }
+}

@@ -2,7 +2,8 @@
 import { S3 } from '@aws-sdk/client-s3';
 import { promises } from 'fs';
 import { join } from 'path';
-const { readFile, writeFile, unlink, mkdir } = promises;
+import { createLockFunction } from './lock.js';
+const { readFile, writeFile, unlink, mkdir, truncate } = promises;
 
 /*::
 export type BufferStore = {
@@ -10,6 +11,13 @@ export type BufferStore = {
   set: Buffer => Promise<void>
 }
 */
+
+export const createMemoryLockingStore = (store/*: BufferStore*/)/*: BufferStore*/ => {
+  return {
+    ...store,
+    set: createLockFunction(store.set),
+  }
+};
 
 export const createMemoryBufferStore = ()/*: BufferStore*/ => {
   let buffer = Buffer.alloc(0);
@@ -22,7 +30,7 @@ export const createMemoryBufferStore = ()/*: BufferStore*/ => {
     }
   }
 };
-export const createFileBufferStore = (path/*: string*/)/*: BufferStore*/ => ({
+export const createFileBufferStore = (path/*: string*/)/*: BufferStore*/ => createMemoryLockingStore({
   async get() {
     return await readFile(path);
   },
@@ -30,7 +38,7 @@ export const createFileBufferStore = (path/*: string*/)/*: BufferStore*/ => ({
     await writeFile(path, newBuffer);
   }
 });
-export const createS3BufferStore = (s3/*: S3*/, bucket/*: string*/, key/*: string*/)/*: BufferStore*/ => ({
+export const createS3BufferStore = (s3/*: S3*/, bucket/*: string*/, key/*: string*/)/*: BufferStore*/ => createMemoryLockingStore({
   async get() {
     const { Body } = await s3.getObject({ Bucket: bucket, Key: key });
     const buffers = [];

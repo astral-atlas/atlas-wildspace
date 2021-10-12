@@ -2,6 +2,7 @@
 /*:: import type { Route as HTTPRoute } from "@lukekaalim/http-server"; */
 /*:: import type { WebSocketRoute } from "@lukekaalim/ws-server"; */
 /*:: import type { WildspaceData } from "@astral-atlas/wildspace-data"; */
+/*:: import type { Services } from "../services.js"; */
 
 import { v4 as uuid } from 'uuid';
 import { HTTP_STATUS } from "@lukekaalim/net-description";
@@ -10,16 +11,13 @@ import {
   readBufferBody, getRequestRange,
   getRangeResponseHead, readStreamBytes
 } from "@lukekaalim/http-server";
+import { defaultOptions } from './meta.js';
 
 import { assetAPI } from '@astral-atlas/wildspace-models'; 
 
-export const createAssetRoutes = (data/*: WildspaceData*/)/*: { ws: WebSocketRoute[], http: HTTPRoute[] }*/ => {
-  const options = {
-    access: { origins: { type: 'wildcard' }, methods: ['GET', 'PUT', 'POST'], headers: ['content-type'] },
-  };
-
+export const createAssetRoutes = ({ data }/*: Services*/)/*: { ws: WebSocketRoute[], http: HTTPRoute[] }*/ => {
   const assetResourceRoutes = createJSONResourceRoutes(assetAPI['/asset'], {
-    ...options,
+    ...defaultOptions,
     GET: async ({ query: { assetId } }) => {
       const { result: description } = await data.assets.get(assetId);
       if (!description)
@@ -45,7 +43,7 @@ export const createAssetRoutes = (data/*: WildspaceData*/)/*: { ws: WebSocketRou
   });
   const assetDataResoureRoutes = createResourceRoutes({
     path: '/assets/data',
-    ...options,
+    ...defaultOptions,
 
     methods: {
       GET: async ({ query, headers }) => {

@@ -2,6 +2,7 @@
 /*:: import type { Route as HTTPRoute } from "@lukekaalim/http-server"; */
 /*:: import type { WebSocketRoute } from "@lukekaalim/ws-server"; */
 /*:: import type { WildspaceData } from "@astral-atlas/wildspace-data"; */
+/*:: import type { Services } from "../services.js"; */
 
 import { v4 as uuid } from 'uuid';
 import { HTTP_STATUS } from "@lukekaalim/net-description";
@@ -11,24 +12,33 @@ import { createJSONConnectionRoute } from "@lukekaalim/ws-server";
 import { roomAPI } from '@astral-atlas/wildspace-models'; 
 import { defaultOptions } from './meta.js';
 
-export const createRoomRoutes = (data/*: WildspaceData*/)/*: { ws: WebSocketRoute[], http: HTTPRoute[] }*/ => {
+export const createRoomRoutes = ({ data, ...s }/*: Services*/)/*: { ws: WebSocketRoute[], http: HTTPRoute[] }*/ => {
+
+  const { assertWithinScope: assertPlayer } = s.game.createScopeAssertion({ type: 'player-in-game' });
+  const { assertWithinScope: assertGameMaster } = s.game.createScopeAssertion({ type: 'game-master-in-game' });
+
   const roomResourceRoutes = createJSONResourceRoutes(roomAPI['/room'], {
     ...defaultOptions,
 
-    GET: async ({ query: { gameId, roomId }}) => {
-      const { result: room } = await data.room.get({ partition: gameId, sort: roomId });
+    GET: async ({ query: { gameId, roomId }, headers: { authorization } }) => {
+      const identity = await s.auth.getAuthFromHeader(authorization);
+      const { game } = await assertPlayer(gameId, identity);
+      const { result: room } = await data.room.get(game.id, roomId);
       if (!room)
         return { status: HTTP_STATUS.not_found };
       return { status: HTTP_STATUS.ok, body: { type: 'found', room } };
     },
-    POST: async ({ body: { title, gameId }}) => {
+    POST: async ({ body: { title, gameId }, headers: { authorization } }) => {
+      const identity = await s.auth.getAuthFromHeader(authorization);
+      const { game } = await assertGameMaster(gameId, identity);
+      
       const room = {
         id: uuid(),
         title,
         gameId,
       };
 
-      await data.room.set({ partition: gameId, sort: room.id }, room);
+      await data.room.set(gameId, room.id, room);
 
       return { status: HTTP_STATUS.created, body: { type: 'created', room } };
     },
@@ -49,15 +59,16 @@ export const createRoomRoutes = (data/*: WildspaceData*/)/*: { ws: WebSocketRout
     };
     connection.addRecieveListener(onClientMessage);
     const onRoomUpdate = async (update) => {
-      const { result: state } = await data.roomState.get({ partition: gameId, sort: roomId });
+      const { result: state } = await data.roomState.get(gameId, roomId);
       connection.send({ type: 'update', state: state || { audio: null } })
     };
 
     const start = async () => {
-      const { result: state } = await data.roomState.get({ partition: gameId, sort: roomId })
-      if (!state)
+      const { result: room } = await data.room.get(gameId, roomId)
+      if (!room)
         return socket.close(1001, 'fuck you');
-      connection.send({ type: 'update', state })
+      const { result: state } = await data.roomState.get(gameId, roomId)
+      connection.send({ type: 'update', state: state || { audio: null } });
       data.roomUpdates.subscribe(roomId, onRoomUpdate);
     };
 
@@ -66,7 +77,7 @@ export const createRoomRoutes = (data/*: WildspaceData*/)/*: { ws: WebSocketRout
   const roomStateResourceRoutes = createJSONResourceRoutes(roomAPI['/room/state'].resource, {
     ...defaultOptions,
     GET: async ({ query: { roomId, gameId }, headers: { connection, upgrade } }) => {
-      const { result: state } = await data.roomState.get({ partition: gameId, sort: roomId });
+      const { result: state } = await data.roomState.get(gameId, roomId);
       if (!state)
         return { status: HTTP_STATUS.created, body: { type: 'found', state: { audio: null } } };
 
@@ -76,11 +87,11 @@ export const createRoomRoutes = (data/*: WildspaceData*/)/*: { ws: WebSocketRout
       return { status: HTTP_STATUS.ok, body: { type: 'found', state } };
     },
     PUT: async ({ query: { roomId, gameId }, body: { state: nextState }}) => {
-      const { result: room } = await data.room.get({ partition: gameId, sort: roomId });
+      const { result: room } = await data.room.get(gameId, roomId);
       if (!room)
         return { status: HTTP_STATUS.not_found };
         
-      await data.roomState.set({ partition: gameId, sort: roomId }, nextState);
+      await data.roomState.set(gameId, roomId, nextState);
       data.roomUpdates.publish(roomId);
 
       return { status: HTTP_STATUS.ok, body: { type: 'updated' } };

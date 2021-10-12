@@ -18,9 +18,9 @@ export type PlaylistClient = {
 };
 */
 
-export const createPlaylistClient = (httpClient/*: HTTPClient*/, baseURL/*: string*/)/*: PlaylistClient*/ => {
-  const playlistsResource = createJSONResourceClient(audioAPI['/playlist'], httpClient, `http://${baseURL}`);
-  const allPlaylistsResource = createJSONResourceClient(audioAPI['/playlist/all'], httpClient, `http://${baseURL}`);
+export const createPlaylistClient = (httpClient/*: HTTPClient*/, httpOrigin/*: string*/, wsOrigin/*: string*/)/*: PlaylistClient*/ => {
+  const playlistsResource = createJSONResourceClient(audioAPI['/playlist'], httpClient, httpOrigin);
+  const allPlaylistsResource = createJSONResourceClient(audioAPI['/playlist/all'], httpClient, httpOrigin);
 
   const create = async (gameId, title, trackIds) => {
     const { body: { playlist }} = await playlistsResource.POST({ body: { trackIds, gameId, title }});
@@ -65,9 +65,9 @@ export type AudioClient = {
 };
 */
 
-export const createAudioTracksClient = (httpClient/*: HTTPClient*/, assetClient/*: AssetClient*/, baseURL/*: string*/)/*: AudioClient['tracks']*/ => {
-  const tracksResource = createJSONResourceClient(audioAPI['/tracks'], httpClient, `http://${baseURL}`);
-  const allTracksResource = createJSONResourceClient(audioAPI['/tracks/all'], httpClient, `http://${baseURL}`);
+export const createAudioTracksClient = (httpClient/*: HTTPClient*/, assetClient/*: AssetClient*/, httpOrigin/*: string*/, wsOrigin/*: string*/)/*: AudioClient['tracks']*/ => {
+  const tracksResource = createJSONResourceClient(audioAPI['/tracks'], httpClient, httpOrigin);
+  const allTracksResource = createJSONResourceClient(audioAPI['/tracks/all'], httpClient, httpOrigin);
 
   const create = async (gameId, title, artist, MIMEType, trackLengthMs, data) => {
     const { description: asset, downloadURL:trackDownloadURL  } = await assetClient.create(`${gameId}/audio/${MIMEType}/${title}`, MIMEType, data);
@@ -99,9 +99,9 @@ export const createAudioTracksClient = (httpClient/*: HTTPClient*/, assetClient/
   };
 };
 
-export const createAudioClient = (httpClient/*: HTTPClient*/, assetClient/*: AssetClient*/, baseURL/*: string*/)/*: AudioClient*/ => {
+export const createAudioClient = (httpClient/*: HTTPClient*/, assetClient/*: AssetClient*/, httpOrigin/*: string*/, wsOrigin/*: string*/)/*: AudioClient*/ => {
   return {
-    playlist: createPlaylistClient(httpClient, baseURL),
-    tracks: createAudioTracksClient(httpClient, assetClient, baseURL),
+    playlist: createPlaylistClient(httpClient, httpOrigin, wsOrigin),
+    tracks: createAudioTracksClient(httpClient, assetClient, httpOrigin, wsOrigin),
   }
 };

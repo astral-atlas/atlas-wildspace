@@ -3,6 +3,7 @@
 
 /*:: import type { BufferStore } from './buffer.js'; */
 import { c } from '@lukekaalim/cast';
+import { createLockFunction } from './lock.js';
 
 /*::
 export type Page<Key, Value> = { result: Value[], next: Key | null };
@@ -20,6 +21,21 @@ export type CompositeTable<PartitionKey, SortKey, Value> = {
   query: (partition: PartitionKey) => Promise<Page<SortKey, Value>>
 };
 */
+
+export const createMemoryTableLock = /*:: <K, V>*/(table/*: Table<K, V>*/)/*: Table<K, V>*/ => {
+  const lockedSet = createLockFunction(({ k, v }) => table.set(k, v));
+  return {
+    ...table,
+    set: (k, v) => lockedSet({ k, v})
+  }
+};
+export const createMemoryCompositeTableLock = /*:: <P, S, V>*/(table/*: CompositeTable<P, S, V>*/)/*: CompositeTable<P, S, V>*/ => {
+  const lockedSet = createLockFunction(({ p, s, v }) => table.set(p, s, v));
+  return {
+    ...table,
+    set: (p, s, v) => lockedSet({ p, s, v })
+  }
+};
 
 export const createBufferTable = /*:: <T>*/(store/*: BufferStore*/, castValue/*: Cast<T>*/)/*: Table<string, T>*/ => {
   const castTable = c.arr(c.obj({ key: c.str, value: castValue }));
@@ -49,12 +65,8 @@ export const createBufferTable = /*:: <T>*/(store/*: BufferStore*/, castValue/*:
     // TODO: this is broken!
     return { result: table.map(e => e.value), next: null };
   }
-  return {
-    get,
-    set,
-    scan,
-  };
-}
+  return createMemoryTableLock({ get, set, scan, });
+};
 export const createBufferCompositeTable = /*:: <T>*/(store/*: BufferStore*/, castValue/*: Cast<T>*/)/*: CompositeTable<string, string, T>*/ => {
   const castTable = c.arr(c.obj({ partition: c.str, sort: c.str, value: castValue }));
   const matchEntry = (partition, sort, e) => (e.partition === partition && e.sort === sort);
@@ -95,5 +107,5 @@ export const createBufferCompositeTable = /*:: <T>*/(store/*: BufferStore*/, cas
       .map(e => e.value);
     return { result: entries, next: null };
   };
-  return { get, set, scan, query };
+  return createMemoryCompositeTableLock({ get, set, scan, query });
 };

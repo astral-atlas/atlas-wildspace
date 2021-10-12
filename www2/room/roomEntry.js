@@ -1,9 +1,11 @@
 // @flow strict
 /*:: import type { GameID, RoomID } from '@astral-atlas/wildspace-models'; */
+/*:: import type { AuthorizerFrameProps } from '@astral-atlas/sesame-components'; */
+/*:: import type { Component } from "@lukekaalim/act"; */
 import { h, useMemo, useEffect, useState, useContext, createContext, useRef } from "@lukekaalim/act";
 import { render } from '@lukekaalim/act-three';
 import { AuthorizerFrame } from '@astral-atlas/sesame-components';
-import { createClient } from '@astral-atlas/sesame-client';
+import { createWildspaceClient } from '@astral-atlas/wildspace-client2';
 
 import { usePlaylistTrackData, RoomAudioPlayer } from "../components/RoomAudioPlayer.js";
 import { useConnection } from "../hooks/connect.js";
@@ -13,6 +15,8 @@ import { identityStore, roomStore } from "../lib/storage.js";
 
 import styles from './room.module.css';
 import { useAsync } from "../hooks/async.js";
+import { loadConfig } from "../config";
+import { IdentityProvider, useIdentity, useMessenger } from "../hooks/identity.js";
 
 const RoomAudio = ({ gameId, audio }) => {
   const [volume, setVolume] = useState(0);
@@ -29,9 +33,16 @@ const RoomAudio = ({ gameId, audio }) => {
 
 const Room = ({ gameId, roomId, exit }) => {
   const client = useContext(clientContext)
-  const [room] = useAsync(() => client.room.read(gameId, roomId), [client, roomId]);
+  const [room, roomError] = useAsync(() => client.room.read(gameId, roomId), [client, roomId]);
 
   const { audio = null } = useConnection(async (u) => (await client.room.state.connect(gameId, roomId, u)).close, { audio: null });
+
+  if (roomError) {
+    return [
+      h('h1', {}, 'oops!'),
+      h('button', { onClick: () => exit() }, 'back to home'),
+    ]
+  }
 
   if (!room)
     return null;
@@ -45,16 +56,25 @@ const Room = ({ gameId, roomId, exit }) => {
   ];
 };
 
-const RoomSelection = ({ onRoomSelect, identity, setIdentity }) => {
+const RoomSelection = ({ onRoomSelect, identity }) => {
   const client = useContext(clientContext)
   const sesame = useContext(sesameContext);
   const [gameId, setGameId] = useState/*:: <?GameID>*/(null);
   const [roomId, setRoomId] = useState/*:: <?RoomID>*/(null);
 
-  const [games] = useAsync(() => client.game.list(), [client]);
-  const [rooms] = useAsync(async () => gameId && client.room.list(gameId), [client, gameId]);
+  const [games, gameError] = useAsync(() => client.game.list(), [client]);
+  const [rooms, roomError] = useAsync(async () => gameId && client.room.list(gameId), [client, gameId]);
 
-  const [user] = useAsync(async () => identity && sesame.user.get(identity.proof.userId), [sesame, identity]);
+  const [user, userError] = useAsync(async () => identity && sesame.user.get(identity.proof.userId), [sesame, identity]);
+
+  const messenger = useMessenger();
+
+  if (gameError || roomError || userError) {
+    return [
+      h('h1', {}, 'oops!'),
+      h('button', { onClick: () => (setGameId(null), setRoomId(null)) }, 'back to home'),
+    ]
+  }
 
   const onSubmit = (e) => {
     e.preventDefault();
@@ -62,16 +82,21 @@ const RoomSelection = ({ onRoomSelect, identity, setIdentity }) => {
       onRoomSelect({ gameId, roomId });
   };
 
+  const onLoginClick = () => {
+    if (!messenger)
+      return;
+    messenger.send({ type: 'sesame:prompt-link-grant' });
+  }
+
   return [
     h('form', { onSubmit, class: styles.roomSelectForm }, [
       !identity && h('section', { class: styles.roomSelectLogin }, [
-        h('p', {}, 'Authorize to join Wildspace'),
-        h((AuthorizerFrame/*: any*/), {
-          containerStyle: {},
-          frameStyle: {},
-          identityOrigin: 'http://sesame.astral-atlas.com',
-          onIdentityGrant: ({ proof }) => setIdentity(v => ({ proof }))
-        }),
+        h('p', {}, [
+          'You need to be logged into ',
+          h('a', { href: 'http://sesame.astral-atlas.com', target: '_blank' }, 'Astral Atlas'),
+          ' to proceed.'
+        ]),
+        messenger && h('button', { onClick: onLoginClick }, 'Try Again'),
       ]),
       !!identity && h('section', { class: styles.roomSelecIds }, [
         user  && h('p', {}, `Welcome, ${user.name}`) || null,
@@ -89,25 +114,30 @@ const RoomSelection = ({ onRoomSelect, identity, setIdentity }) => {
   ]
 };
 
-const RoomPage = () => {
-  const [identity, setIdentity] = useStoredValue(identityStore);
+const RoomPage = ({ config }) => {
+  const [identity, setIdentity] = useIdentity();
   const [roomData, setRoomData] = useStoredValue(roomStore);
 
+  const client = createWildspaceClient(identity && identity.proof, config.api.wildspace.httpOrigin);
+
   return [
-    h('section', { class: styles.roomPage }, [
-      !roomData && h('section', { class: styles.roomPageWall }, [
-        h(RoomSelection, { onRoomSelect: d => setRoomData(v => d), identity, setIdentity })
+    h(clientContext.Provider, { value: client }, [
+      h('section', { class: styles.roomPage }, [
+        !roomData && h('section', { class: styles.roomPageWall }, [
+          h(RoomSelection, { onRoomSelect: d => setRoomData(v => d), identity, setIdentity })
+        ]),
+        roomData && h(Room, { roomId: roomData.roomId, gameId: roomData.gameId, exit: () => setRoomData(v => null) }) || null
       ]),
-      roomData && h(Room, { roomId: roomData.roomId, gameId: roomData.gameId, exit: () => setRoomData(v => null) }) || null
     ]),
   ]
 };
 
-const main = () => {
+const main = async () => {
   const { body } = document;
   if (!body)
     throw new Error();
-  render(h(RoomPage), body);
+  const config = await loadConfig()
+  render(h(IdentityProvider, {}, h(RoomPage, { config })), body);
 };
 
 main();

@@ -2,6 +2,7 @@
 /*:: import type { Route as HTTPRoute } from "@lukekaalim/http-server"; */
 /*:: import type { WebSocketRoute } from "@lukekaalim/ws-server"; */
 /*:: import type { WildspaceData } from "@astral-atlas/wildspace-data"; */
+/*:: import type { Services } from "../services.js"; */
 
 import { v4 as uuid } from 'uuid';
 import { HTTP_STATUS } from "@lukekaalim/net-description";
@@ -10,13 +11,13 @@ import { createJSONResourceRoutes } from "@lukekaalim/http-server";
 import { audioAPI } from '@astral-atlas/wildspace-models'; 
 import { defaultOptions } from './meta.js';
 
-export const createAudioRoutes = (data/*: WildspaceData*/)/*: { ws: WebSocketRoute[], http: HTTPRoute[] }*/ => {
+export const createAudioRoutes = ({ data }/*: Services*/)/*: { ws: WebSocketRoute[], http: HTTPRoute[] }*/ => {
 
   const trackResourceRoutes = createJSONResourceRoutes(audioAPI['/tracks'], {
     ...defaultOptions,
 
     GET: async ({ query: { gameId, trackId }}) => {
-      const { result: track } = await data.tracks.get({ partition: gameId, sort: trackId });
+      const { result: track } = await data.tracks.get(gameId, trackId);
       if (!track)
         return { status: HTTP_STATUS.not_found }
       
@@ -33,12 +34,12 @@ export const createAudioRoutes = (data/*: WildspaceData*/)/*: { ws: WebSocketRou
         coverImageAssetId,
       };
 
-      await data.tracks.set({ partition: gameId, sort: track.id }, track);
+      await data.tracks.set(gameId, track.id, track);
       
       return { status: HTTP_STATUS.ok, body: { type: 'created', track } };
     },
     DELETE: async ({ query: { gameId, trackId }}) => {
-      await data.tracks.set({ partition: gameId, sort: trackId }, null);
+      await data.tracks.set(gameId, trackId, null);
       
       return { status: HTTP_STATUS.ok, body: { type: 'deleted' } };
     },
@@ -58,7 +59,7 @@ export const createAudioRoutes = (data/*: WildspaceData*/)/*: { ws: WebSocketRou
     ...defaultOptions,
 
     GET: async ({ query: { gameId, audioPlaylistId }}) => {
-      const { result: playlist } = await data.playlists.get({ partition: gameId, sort: audioPlaylistId });
+      const { result: playlist } = await data.playlists.get(gameId, audioPlaylistId);
       if (!playlist)
         return { status: HTTP_STATUS.not_found }
       
@@ -72,12 +73,12 @@ export const createAudioRoutes = (data/*: WildspaceData*/)/*: { ws: WebSocketRou
         trackIds,
       };
 
-      await data.playlists.set({ partition: gameId, sort: playlist.id }, playlist);
+      await data.playlists.set(gameId, playlist.id, playlist);
       
       return { status: HTTP_STATUS.created, body: { type: 'created', playlist } };
     },
     PUT: async ({ query: { audioPlaylistId, gameId }, body: { title, trackIds }}) => {
-      const { result: prevPlaylist } = await data.playlists.get({ partition: gameId, sort: audioPlaylistId });
+      const { result: prevPlaylist } = await data.playlists.get(gameId, audioPlaylistId);
       if (!prevPlaylist)
         return { status: HTTP_STATUS.not_found }
       const nextPlaylist = {
@@ -86,12 +87,12 @@ export const createAudioRoutes = (data/*: WildspaceData*/)/*: { ws: WebSocketRou
         title: title || prevPlaylist.title,
       };
 
-      await data.playlists.set({ partition: gameId, sort: nextPlaylist.id }, nextPlaylist);
+      await data.playlists.set(gameId, nextPlaylist.id, nextPlaylist);
       
       return { status: HTTP_STATUS.ok, body: { type: 'updated', playlist: nextPlaylist } };
     },
     DELETE: async ({ query: { gameId, audioPlaylistId }}) => {
-      await data.playlists.set({ partition: gameId, sort: audioPlaylistId }, null);
+      await data.playlists.set(gameId, audioPlaylistId, null);
       
       return { status: HTTP_STATUS.ok, body: { type: 'deleted' } };
     },

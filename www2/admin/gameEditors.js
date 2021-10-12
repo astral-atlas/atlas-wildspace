@@ -10,6 +10,7 @@ import { StringListEditor } from './genericEditors.js';
 import { TracksEditor } from './trackEditors.js';
 import { RoomEditor } from "./roomEditors.js";
 import { PlaylistEditor } from "./playlistEditors.js";
+import { useAPI } from "../hooks/api";
 
 
 const NewGameEditor = ({ onCreate }) => {
@@ -18,35 +19,50 @@ const NewGameEditor = ({ onCreate }) => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    onCreate(await client.game.create(newGame.name, newGame.playerIds));
+    onCreate(await client.game.create(newGame.name));
   }
 
   return [
     h('form', { class: styles.simpleEditorForm, onSubmit }, [
       h('label', {}, ['Name', h('input', { type: 'text', onChange: e => setNewGame(v => ({ ...v, name: e.target.value })), value: newGame.name })]),
-      h('label', {}, ['PlayerIds',
-        h(StringListEditor, { values: newGame.playerIds, onChange: playerIds => setNewGame(v => ({ ...v, playerIds })), valueName: 'Player ID' }),
-      ]),
+      //h('label', {}, ['PlayerIds',
+      //  h(StringListEditor, { values: newGame.playerIds, onChange: playerIds => setNewGame(v => ({ ...v, playerIds })), valueName: 'Player ID' }),
+      //]),
       h('input', { type: 'submit', value: 'Add New game' }),
     ])
   ]
 };
 
 const ExistingGameEditor = ({ gameId, onGameUpdate, u }) => {
-  const client = useContext(clientContext);
-  const [game] = useAsync(() => client.game.read(gameId), [client, u, gameId])
+  const api = useAPI();
+  const [game] = useAsync(() => api.game.read(gameId), [api, u, gameId])
+  const [players] = useAsync(() => api.game.players.list(gameId), [api, u, gameId])
 
   const subEditors = ['tracks', 'playlists', 'rooms'];
   const [subEditor, setSubEditor] = useState('tracks');
 
-  if (!game)
+  console.log('rendering', game, players);
+
+  if (!game || !players)
     return null;
 
   const onSubmit = async (e) => {
     e.preventDefault();
   }
   const updateGame = async (updatedGame) => {
-    await client.game.update(game.id, updatedGame);
+    await api.game.update(game.id, updatedGame);
+    onGameUpdate();
+  };
+  const onPlayersChange = async (newPlayers) => {
+    const oldPlayerIds = players.map(p => p.userId);
+
+    const addedPlayers = newPlayers.filter(p => !oldPlayerIds.includes(p));
+    const removedPlayers = oldPlayerIds.filter(p => !newPlayers.includes(p));
+
+    for (const removedPlayer of removedPlayers)
+      await api.game.players.remove(game.id, removedPlayer);
+    for (const addedPlayer of addedPlayers)
+      await api.game.players.add(game.id, addedPlayer);
     onGameUpdate();
   };
 
@@ -55,7 +71,7 @@ const ExistingGameEditor = ({ gameId, onGameUpdate, u }) => {
       h('label', {}, ['Game ID', h('input', { type: 'text', disabled: true, value: JSON.stringify(gameId) })]),
       h('label', {}, ['Name', h('input', { type: 'text', onChange: e => updateGame({ name: e.target.value }), value: game.name })]),
       h('label', {}, ['PlayerIds',
-        h(StringListEditor, { values: game.playerIds, onChange: playerIds => updateGame({ playerIds }), valueName: 'Player ID' }),
+        h(StringListEditor, { values: players.map(p => p.userId), onChange: onPlayersChange, valueName: 'Player ID' }),
       ]),
     ]),
     h('div', {}, subEditors.map(s => h('button', { onClick: () => setSubEditor(s), disabled: s === subEditor }, s))),
@@ -66,7 +82,7 @@ const ExistingGameEditor = ({ gameId, onGameUpdate, u }) => {
 };
 
 export const GamesEditor/*: Component<{ u: number, setU: number => void }>*/ = ({ u, setU }) => {
-  const client = useContext(clientContext);
+  const client = useAPI();
   const [gameId, setGameId] = useState(null);
   const [allGames] = useAsync(() => client.game.list(), [client, u])
 
