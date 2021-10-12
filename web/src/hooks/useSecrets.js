@@ -1,7 +1,0 @@
-const useSecrets = () => {
-
-};
-
-const useRefereeSecrets = () => {
-
-};
