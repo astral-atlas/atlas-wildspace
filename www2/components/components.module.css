@@ -56,7 +56,6 @@
 .smallTextInput {
   display: flex;
   flex-direction: column;
-  margin: 16px 0 16px 0;
   width: 420px;
 }
 .smallTextInputLabelText {
@@ -65,9 +64,6 @@
 .smallTextInputField {
   background-color: #f2f2f2;
   border: 0;
-      border-bottom-color: currentcolor;
-      border-bottom-style: none;
-      border-bottom-width: 0px;
   border-bottom: 2px solid black;
   padding: 8px;
   border-radius: 5px;
@@ -83,4 +79,28 @@
 .smallTextInputField::placeholder {
   font-size: 22px;
   position: relative;
+}
+
+.wordInput {
+  width: 150px;
+  margin: 0 4px 0 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.wordInputField {
+  background-color: #f2f2f2;
+  border: 0;
+  border-bottom: 2px solid black;
+  width: 150px;
+  font-size: 22px;
+  padding: 8px;
+  box-sizing: border-box;
+  border-radius: 5px;
+  font-family: 'Crimson Text', serif;
+}
+
+.wordInputLabelText {
+  font-size: 18px;
 }

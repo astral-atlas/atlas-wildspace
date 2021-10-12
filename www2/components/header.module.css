@@ -6,8 +6,6 @@
   font-family: 'Crimson Text', serif;
   background-color: #e6e7f0;
   font-size: 22px;
-  position: sticky;
-  top: 0px;
 }
 .wildspaceHeaderLeft {
   display: flex;

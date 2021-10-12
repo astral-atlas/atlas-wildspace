@@ -17,6 +17,7 @@ import { WildspaceHeader } from '../components/Header.js';
 import { StarfieldScene } from './starfieldScene.js';
 import { useNavigation, useURLParam } from '../hooks/navigation.js';
 import { useConnection } from "../hooks/connect";
+import { CharacterSheet } from './CharacterSheet.js';
 
 const CharacterPreview = ({ character }) => {
   return [
@@ -27,38 +28,6 @@ const CharacterPreview = ({ character }) => {
     ])),
   ];
 };
-
-const ExistingCharacterEditor = ({ game, identity, player, character }) => {
-  const api = useAPI();
-
-  const onSubmit = async (e) => {
-    e.preventDefault();
-  }
-  const onChange = async (newProperties) => {
-    const nextCharacter = { ...character, ...newProperties };
-    await api.game.character.update(game.id, character.id, nextCharacter);
-  }
-  const onDeleteClick = async () => {
-    await api.game.character.remove(game.id, character.id);
-  }
-
-  return [
-    h(BackgroundBox, {}, h(FeatureSection, { contentClassName: styles.characterSheet }, [
-      h('form', { onSubmit }, [
-        h(SmallTextInput, { label: `Name`, value: character.name, onChange: name => onChange({ name }), placeholder: `e.g. Torpus the Glib` }),
-
-        //h(SmallTextInput, { label: `Character ID`, value: character.id, disabled: true }),
-        //h(SmallTextInput, { label: `Player ID`, value: character.playerId, disabled: true }),
-        //h(SmallTextInput, { label: `Game ID`, value: character.gameId, disabled: true }),
-
-        //h(SmallTextInput, { label: `Description`, value: character.shortDescription, onChange: shortDescription => onChange({ shortDescription }) }),
-        h('div', { className: styles.characteSheetActions }, [
-          h(CopperButton, { type: 'button', onClick: () => onDeleteClick() }, 'Delete Character')
-        ]),
-      ]),
-    ])),
-  ];
-}
 
 const NewCharacterEditor = ({ game, identity, player }) => {
   const api = useAPI();
@@ -110,42 +79,51 @@ const CharacterSelector = ({ game }) => {
   const ownsNoCharacters = isSelectedPlayerMe && selectedPlayer && (characters.filter(c => c.playerId === selectedPlayer.userId).length < 1)
 
   return [
-    !selectedPlayer && h('p', {}, `Select a Player to view their characters`),
-    h(TabList, {
-      options: players
-        .filter(p => (characters.filter(c => c.playerId === p.userId).length > 0) || isGameMaster || p.userId === identity.proof.userId)
-        .map(p => ({ label: identity.proof.userId === p.userId ? `${p.name} (Self)` :  p.name, value: p.userId })),
-      selected: selectedPlayer && selectedPlayer.userId,
-      onChange: (id) => {
-        setSelectedPlayerId(id);
-        const firstCharacter = characters.find(c => c.playerId === id)
-        setSelectedCharacterId(firstCharacter ? firstCharacter.id : null)
-      },
-    }),
-    selectedPlayer && [
-      ownsNoCharacters ? h('p', {}, `You don't have any characters at the moment. Create a new one to get started!`) : null,
+    h('nav', { className: styles.charactersPageNavigation }, [
       h(TabList, {
-        options: [
-          ...characters
-            .filter(c => c.playerId === selectedPlayer.userId)
-            .map(c => ({ label: c.name, value: c.id })),
-          isPlayerEditable ? { value: null, label: '<New Character>' } : null
-        ].filter(Boolean),
-        selected: selectedCharacter && selectedCharacter.id,
-        onChange: (v) => setSelectedCharacterId(v || null)
+        options: players
+          .filter(p => (characters.filter(c => c.playerId === p.userId).length > 0) || isGameMaster || p.userId === identity.proof.userId)
+          .map(p => ({ label: identity.proof.userId === p.userId ? `${p.name} (Self)` :  p.name, value: p.userId })),
+        selected: selectedPlayer && selectedPlayer.userId,
+        onChange: (id) => {
+          setSelectedPlayerId(id);
+          const firstCharacter = characters.find(c => c.playerId === id)
+          setSelectedCharacterId(firstCharacter ? firstCharacter.id : null)
+        },
       }),
-      selectedCharacter && [
-        isPlayerEditable && [
-          h(ExistingCharacterEditor, { game, character: selectedCharacter, identity, player: selectedPlayer })
-        ],
-        !isPlayerEditable && [
-          h(CharacterPreview, { character: selectedCharacter }),
-        ],
-      ],
-      !selectedCharacter && isPlayerEditable && [
-        h(NewCharacterEditor, { game, identity, player: selectedPlayer })
+      !selectedPlayer && h('p', {}, `Select a Player to view their characters`),
+      selectedPlayer && [
+        ownsNoCharacters ? h('p', {}, `You don't have any characters at the moment. Create a new one to get started!`) : null,
+        h(TabList, {
+          options: [
+            ...characters
+              .filter(c => c.playerId === selectedPlayer.userId)
+              .map(c => ({ label: c.name, value: c.id })),
+            isPlayerEditable ? { value: null, label: '<New Character>' } : null
+          ].filter(Boolean),
+          selected: selectedCharacter && selectedCharacter.id,
+          onChange: (v) => {
+            setSelectedPlayerId(selectedPlayer.userId);
+            setSelectedCharacterId(v || null);
+          },
+        }),
       ]
-    ]
+    ]),
+    selectedPlayer && h('div', { className: styles.charactersPageSheetWorkspace }, [
+      h('div', { className: styles.charactersPageSheetContainer }, [
+        selectedCharacter && [
+          isPlayerEditable && [
+            h(CharacterSheet, { game, character: selectedCharacter, identity, player: selectedPlayer })
+          ],
+          !isPlayerEditable && [
+            h(CharacterSheet, { game, character: selectedCharacter, identity, player: selectedPlayer, readOnly: true }),
+          ],
+        ],
+        !selectedCharacter && isPlayerEditable && [
+          h(NewCharacterEditor, { game, identity, player: selectedPlayer })
+        ]
+      ]),
+    ]),
   ];
 };
 

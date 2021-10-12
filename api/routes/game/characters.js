@@ -31,14 +31,24 @@ export const createCharacterRoutes/*: RoutesConstructor*/ = (services) => {
         }
         const newCharacter = {
           id: uuid(),
-          name,
           playerId,
-          armorClass: 0,
-          conditions: [],
           gameId: game.id,
-          hitPoints: 0,
-          iconURL: '',
-          shortDescription: ''
+          name,
+          
+          pronouns: { enabled: false },
+          levels: [],
+          backgroundDescription: '',
+          maxHitpoints: 0,
+          hitDice: [],
+          sizeCategory: 'medium',
+          speed: 30,
+
+          baseAC: 0,
+          baseACReason: '',
+          acBonuses: [],
+
+          initiativeIconAssetId: null,
+          alive: null,
         };
 
         await services.data.characters.set(game.id, newCharacter.id, newCharacter);

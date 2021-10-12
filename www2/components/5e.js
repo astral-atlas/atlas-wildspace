@@ -16,7 +16,7 @@ export type TextInputProps = {
 
   disabled?: boolean,
   value: string,
-  label: string,
+  label?: ?string,
   onChange?: string => mixed,
   onInput?: string => mixed,
   placeholder?: string,
@@ -43,7 +43,7 @@ export const SmallTextInput/*: Component<TextInputProps>*/ = ({ className, disab
     styles.smallTextInput,
     className
   ].filter(Boolean).join(' ')}, [
-    h('span', { className: styles.smallTextInputLabelText,}, label),
+    h('span', { className: styles.smallTextInputLabelText }, disabled ? `${label}(🔒)` : label),
     h('input', {
       className: styles.smallTextInputField,
       type: 'text',
@@ -54,4 +54,22 @@ export const SmallTextInput/*: Component<TextInputProps>*/ = ({ className, disab
       disabled
     }),
   ])
-}
+};
+
+export const WordInput/*: Component<TextInputProps>*/ = ({ className, disabled = false, value, label, onChange, onInput, placeholder }) => {
+  return h('label', { className: [
+    styles.wordInput,
+    className
+  ].filter(Boolean).join(' ')}, [
+    label ? h('span', { className: styles.wordInputLabelText }, disabled ? `${label}(🔒)` : label) : null,
+    h('input', {
+      className: styles.wordInputField,
+      type: 'text',
+      placeholder,
+      onChange: e => onChange && onChange(e.target.value),
+      onInput: e => onInput && onInput(e.target.value),
+      value,
+      disabled
+    }),
+  ]);
+};
