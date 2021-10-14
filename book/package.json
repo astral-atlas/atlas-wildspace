@@ -1,0 +1,26 @@
+{
+  "name": "@astral-atlas/wildspace-book",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/astral-atlas/wildspace.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/astral-atlas/wildspace/issues"
+  },
+  "homepage": "https://github.com/astral-atlas/wildspace#readme",
+  "dependencies": {
+    "@astral-atlas/wildspace-components": "*",
+    "@lukekaalim/act": "^2.2.3",
+    "@lukekaalim/act-web": "^0.4.5",
+    "vite": "^2.6.7"
+  }
+}

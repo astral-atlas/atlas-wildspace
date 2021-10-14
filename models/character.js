@@ -11,26 +11,32 @@ import { castAssetID } from "./asset.js";
 
 /*::
 export type CharacterID = string;
+export type CharacterPronoun =
+  | { enabled: false }
+  | { enabled: true, object: string, possessive: string };
+export type CharacterHitDie = { size: number, count: number };
+export type CharacterClass = { class: string, subclass: ?string, count: number };
+export type CharacterACBonus = { reason: string, bonus: number };
 export type Character = {
   id: CharacterID,
   playerId: UserID,
   gameId: GameID,
 
   name: string,
-  pronouns: { enabled: false } | { enabled: true, object: string, possessive: string },
+  pronouns: CharacterPronoun,
 
-  levels: $ReadOnlyArray<{ class: string, subclass: ?string, count: number }>,
+  levels: $ReadOnlyArray<CharacterClass>,
   backgroundDescription: string,
 
   maxHitpoints: number,
-  hitDice: $ReadOnlyArray<{ size: number, count: number }>,
+  hitDice: $ReadOnlyArray<CharacterHitDie>,
 
   sizeCategory: 'small' | 'medium',
   speed: number,
 
   baseAC: number,
   baseACReason: string,
-  acBonuses: $ReadOnlyArray<{ reason: string, bonus: number }>,
+  acBonuses: $ReadOnlyArray<CharacterACBonus>,
 
   initiativeIconAssetId: ?AssetID,
 
