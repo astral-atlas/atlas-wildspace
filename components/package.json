@@ -1,0 +1,23 @@
+{
+  "name": "@astral-atlas/wildspace-components",
+  "version": "0.0.0",
+  "description": "Front end @lukekaalim/act components for wildspace",
+  "main": "entry.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/astral-atlas/wildspace.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/astral-atlas/wildspace/issues"
+  },
+  "homepage": "https://github.com/astral-atlas/wildspace#readme",
+  "dependencies": {
+    "@lukekaalim/act": "^2.2.3",
+    "@astral-atlas/wildspace-models": "^1.0.0"
+  }
+}

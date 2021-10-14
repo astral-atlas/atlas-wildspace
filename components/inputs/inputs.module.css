@@ -1,0 +1,150 @@
+
+label.inspiration {
+  background-image: url('../assets/inspiration_input.svg');
+}
+label.proficency {
+  background-image: url('../assets/proficency_input.svg');
+}
+label.passive {
+  background-image: url('../assets/passive_input.svg');
+}
+label.armor {
+  background-image: url('../assets/armor_input.svg');
+}
+
+label.inspiration,
+label.proficency,
+label.passive,
+label.armor,
+input.branded {
+  background-size: cover;
+  position: relative;
+  margin: 0;
+}
+
+label.inspiration {
+  width: calc(var(--scale, 1.5) * 154px);
+  height: calc(var(--scale, 1.5) * 40px);
+}
+label.proficency {
+  width: calc(var(--scale, 1.5) * 152px);
+  height: calc(var(--scale, 1.5) * 46px);
+}
+label.passive {
+  width: calc(var(--scale, 1.5) * 239px);
+  height: calc(var(--scale, 1.5) * 36px);
+}
+label.armor {
+  width: calc(var(--scale, 1.5) * 80px);
+  height: calc(var(--scale, 1.5) * 80px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+label.inspiration > input ,
+label.proficency > input,
+label.passive > input,
+label.armor > input
+{
+  min-width: 44px;
+  border: 0;
+  background: none;
+  text-align: center;
+  font: inherit;
+}
+
+label.proficency > input {
+  position: absolute;
+  left: calc(var(--scale, 1.5) * 6px);
+  top: calc(var(--scale, 1.5) * 8px);
+  width: calc(var(--scale, 1.5) * 30px);
+  height: calc(var(--scale, 1.5) * 30px);
+  border-radius: 50%;
+}
+label.inspiration > input {
+  position: absolute;
+  left: calc(var(--scale, 1.5) * 5px);
+  top: calc(var(--scale, 1.5) * 5px);
+  width: calc(var(--scale, 1.5) * 30px);
+  height: calc(var(--scale, 1.5) * 30px);
+}
+label.passive > input {
+  position: absolute;
+  left: calc(var(--scale, 1.5) * 6px);
+  top: calc(var(--scale, 1.5) * 2px);
+  width: calc(var(--scale, 1.5) * 30px);
+  height: calc(var(--scale, 1.5) * 31px);
+  border-radius: 50%;
+}
+label.armor > input {
+  position: relative;
+  top: calc(var(--scale, 1.5) * -10px);
+  width: calc(var(--scale, 1.5) * 30px);
+  height: calc(var(--scale, 1.5) * 31px);
+}
+
+label.inspiration > span,
+label.proficency > span,
+label.passive > span,
+label.armor > span
+{
+  position: absolute;
+  text-align: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+label.proficency > span {
+  top: calc(var(--scale, 1.5) * 10px);
+  left: calc(var(--scale, 1.5) * 45px);
+  right: calc(var(--scale, 1.5) * 10px);
+  height: calc(var(--scale, 1.5) * 25px);
+}
+label.inspiration > span {
+  top: calc(var(--scale, 1.5) * 10px);
+  left: calc(var(--scale, 1.5) * 43px);
+  right: calc(var(--scale, 1.5) * 5px);
+  height: calc(var(--scale, 1.5) * 20px);
+}
+label.passive > span {
+  top: calc(var(--scale, 1.5) * 5px);
+  left: calc(var(--scale, 1.5) * 50px);
+  right: calc(var(--scale, 1.5) * 10px);
+  height: calc(var(--scale, 1.5) * 26px);
+}
+label.armor > span {
+  align-items: flex-end;
+  line-height: 1em;
+  bottom: calc(var(--scale, 1.5) * 13px);
+  width: calc(var(--scale, 1.5) * 30px);
+  height: calc(var(--scale, 1.5) * 20px);
+}
+
+input.branded {
+  background-image: url('../assets/branded_input.svg');
+  height: calc(var(--scale, 1.5) * 132px);
+  width: calc(var(--scale, 1.5) * 519px);
+  border: none;
+  box-sizing: border-box;
+  text-align: center;
+  padding:
+    calc(var(--scale, 1.5) * 55px)
+    calc(var(--scale, 1.5) * 140px)
+    calc(var(--scale, 1.5) * 35px)
+    calc(var(--scale, 1.5) * 125px);
+  font: inherit;
+}
+
+input.plain {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  border-bottom: 1px solid black;
+  color: black;
+}
