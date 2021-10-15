@@ -6,7 +6,9 @@
     "api",
     "www2",
     "data",
-    "cli"
+    "cli",
+    "components",
+    "book"
   ],
   "devDependencies": {
     "flow-bin": "^0.161.0"
