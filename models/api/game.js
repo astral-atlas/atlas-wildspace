@@ -5,6 +5,8 @@
 /*:: import type { CharacterID, MonsterID, Character, Monster } from '../character.js'; */
 /*:: import type { CharactersAPI } from './game/characters.js'; */
 /*:: import type { PlayersAPI } from './game/players.js'; */
+/*:: import type { MonstersAPI } from "./game/monsters.js"; */
+/*:: import type { EncounterAPI } from "./game/encounters.js"; */
 
 import {
   createObjectCaster as obj, castString as str,
@@ -18,6 +20,8 @@ import { castCharacter } from '../character.js';
 import { castGameMaster, castPlayer } from "../game.js";
 import { charactersAPI } from './game/characters.js';
 import { playersAPI } from './game/players.js';
+import { monstersAPI } from './game/monsters.js';
+import { encountersAPI } from './game/encounters.js';
 
 
 /*::
@@ -45,6 +49,8 @@ export type GameAPI = {
     server: { type: 'updated', update: GameUpdate },
   |},
   ...CharactersAPI,
+  ...MonstersAPI,
+  ...EncounterAPI,
   ...PlayersAPI,
   '/games/all': {|
     GET: {
@@ -95,9 +101,13 @@ export const allGamesResourceDescription/*: ResourceDescription<GameAPI['/games/
 export const gameAPI = {
   ...charactersAPI,
   ...playersAPI,
+  ...monstersAPI,
+  ...encountersAPI,
   '/games': gameResourceDescription,
   '/games/all': allGamesResourceDescription,
   '/games/updates': roomStateConnectionDescription,
 }
 export * from './game/characters.js';
 export * from './game/players.js';
+export * from './game/monsters.js';
+export * from './game/encounters.js';

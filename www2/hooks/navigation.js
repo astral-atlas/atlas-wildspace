@@ -20,15 +20,16 @@ export const useNavigation = ()/*: Navigation*/ => {
 
 export const useURLParam = (paramName/*: string*/)/*: [string | null, (v: string | null) => mixed]*/ => {
   const { url, navigate } = useNavigation();
-  
-  const paramValue = useMemo(() => url.searchParams.get("characterId"), [paramName, url.href]);
+  const paramValue = url.searchParams.get(paramName);
 
   const setParamValue = (id) => {
+    const url = new URL(document.location.href);
+
     const nextUrl = new URL(url.href);
     if (id !== null)
-      nextUrl.searchParams.set("characterId", id);
+      nextUrl.searchParams.set(paramName, id);
     else
-      nextUrl.searchParams.delete("characterId");
+      nextUrl.searchParams.delete(paramName);
     navigate(nextUrl);
   }
 

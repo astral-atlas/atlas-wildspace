@@ -10,11 +10,13 @@ import { StringListEditor } from './genericEditors.js';
 import { TracksEditor } from './trackEditors.js';
 import { RoomEditor } from "./roomEditors.js";
 import { PlaylistEditor } from "./playlistEditors.js";
-import { useAPI } from "../hooks/api";
+import { useAPI, useGame } from "../hooks/api";
+import { useNavigation, useURLParam } from "../hooks/navigation.js";
+import { EncounterEditor } from "./encounterEditor.js";
 
 
 const NewGameEditor = ({ onCreate }) => {
-  const client = useContext(clientContext);
+  const client = useAPI();
   const [newGame, setNewGame] = useState({ name: '', playerIds: [] })
 
   const onSubmit = async (e) => {
@@ -35,13 +37,25 @@ const NewGameEditor = ({ onCreate }) => {
 
 const ExistingGameEditor = ({ gameId, onGameUpdate, u }) => {
   const api = useAPI();
+  const nav = useNavigation();
   const [game] = useAsync(() => api.game.read(gameId), [api, u, gameId])
-  const [players] = useAsync(() => api.game.players.list(gameId), [api, u, gameId])
+  const gameData = useGame(gameId)
+  const { players, encounters, characters } = gameData;
 
-  const subEditors = ['tracks', 'playlists', 'rooms'];
-  const [subEditor, setSubEditor] = useState('tracks');
+  const subEditors = ['tracks', 'playlists', 'rooms', 'encounters', 'monsters', 'characters'];
+  const [subEditor] = useURLParam('editor');
 
-  console.log('rendering', game, players);
+  const changeEditor = (newEditor) => {
+    const nextURL = new URL(nav.url.href);
+    nextURL.searchParams.delete('trackId');
+    nextURL.searchParams.delete('playlistId');
+    nextURL.searchParams.delete('roomId');
+    nextURL.searchParams.delete('encounterId');
+    nextURL.searchParams.delete('monstersId');
+    nextURL.searchParams.delete('charactersId');
+    nextURL.searchParams.set('editor', newEditor);
+    nav.navigate(nextURL);
+  }
 
   if (!game || !players)
     return null;
@@ -74,16 +88,17 @@ const ExistingGameEditor = ({ gameId, onGameUpdate, u }) => {
         h(StringListEditor, { values: players.map(p => p.userId), onChange: onPlayersChange, valueName: 'Player ID' }),
       ]),
     ]),
-    h('div', {}, subEditors.map(s => h('button', { onClick: () => setSubEditor(s), disabled: s === subEditor }, s))),
+    h('div', {}, subEditors.map(s => h('button', { onClick: () => changeEditor(s), disabled: s === subEditor }, s))),
     subEditor === 'tracks' && h(TracksEditor, { game, u, onGameUpdate }),
-    subEditor === 'rooms' && h(RoomEditor, { game, u, onGameUpdate }),
+    subEditor === 'rooms' && h(RoomEditor, { game, gameData, onGameUpdate }),
     subEditor === 'playlists' && h(PlaylistEditor, { game, u, onGameUpdate }),
+    subEditor === 'encounters' && h(EncounterEditor, { game, encounters, characters }),
   ]
 };
 
 export const GamesEditor/*: Component<{ u: number, setU: number => void }>*/ = ({ u, setU }) => {
   const client = useAPI();
-  const [gameId, setGameId] = useState(null);
+  const [gameId, setGameId] = useURLParam('gameId');
   const [allGames] = useAsync(() => client.game.list(), [client, u])
 
   return [

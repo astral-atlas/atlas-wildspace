@@ -1,11 +1,11 @@
 // @flow strict
 /*:: import type { ResourceDescription, ConnectionDescription } from "@lukekaalim/net-description"; */
 /*:: import type { GameID } from "../game.js"; */
-/*:: import type { Room, RoomID, RoomState, RoomAudioState } from "../room.js"; */
+/*:: import type { Room, RoomID, RoomState } from "../room.js"; */
 
 import { c } from "@lukekaalim/cast";
 import { castGameId } from "../game.js";
-import { castRoom, castRoomId, castRoomAudioState, castRoomState } from "../room.js";
+import { castRoom, castRoomId, castRoomState } from "../room.js";
 
 /*::
 export type SelfAPI = {|

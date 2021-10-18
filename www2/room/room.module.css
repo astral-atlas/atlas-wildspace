@@ -1,4 +1,43 @@
 @import url("../index.module.css");
+@import url('https://fonts.googleapis.com/css2?family=Martel+Sans:wght@200;300;400;600;700;900&display=swap');
+
+
+menu.roomViewSwitcher {
+  display: flex;
+  flex-direction: row;
+
+  border: 1px solid black;
+  border-radius: 8px;
+  overflow: hidden;
+
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.roomViewSwitcher li {
+}
+.roomViewSwitcher button {
+  font-family: 'Martel Sans', serif;
+  font-size: 16px;
+  border-width: 0 1px 0 0;
+  background: white;
+  box-sizing: border-box;
+  display: flex;
+  padding: 8px 16px 8px 16px;
+  box-shadow: 0 0 0 0 black inset;
+  transition: box-shadow 0.1s;
+}
+.roomViewSwitcher li:last-child button {
+  border-width: 0 0 0 0;
+}
+.roomViewSwitcher button:active {
+  box-shadow: 0 0 10px 0 rgba(122, 122, 122, 0.479) inset;
+}
+.roomViewSwitcher button:disabled {
+  box-shadow: 0 0 5px 0 rgba(122, 122, 122, 0.479) inset;
+  text-decoration: underline;
+}
 
 .roomPage {
   background-color: rgb(28, 42, 70);
@@ -62,15 +101,63 @@
   left: 32px;
 }
 
+
+.room {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.roomViewContainer {
+  width: calc(100vw + 75vw + 75vw);
+  height: 100%;
+  transition: transform 0.4s ease;
+  display: flex;
+  flex-direction: row;
+}
+
+.mapView {
+  width: calc(100vw);
+  
+  height: 100%;
+}
+.trackerView {
+  width: calc(75vw);
+  background-color: red;
+  height: 100%;
+}
+.referenceView {
+  width: calc(75vw);
+  background-color: blue;
+  height: 100%;
+}
+
+.initiative {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.initiative .tracker {
+  width: 100%;
+  flex-basis: 66%;
+  flex-shrink: 0;
+}
+.initiative .controls {
+  flex-basis: 34%;
+  flex-shrink: 0;
+}
+
+.mapScene {
+  position: fixed;
+  height: 100%;
+  width: 100%;
+}
+
 .volumeControls {
   display: flex;
   padding: 16px;
 }
-
-.volumeControls > button {
-  width: 100px;
-}
-
 .volumeControls > input[type="range"] {
   margin-left: 8px;
   opacity: 0.1;
@@ -78,4 +165,19 @@
 }
 .volumeControls:hover > input[type="range"] {
   opacity: 1;
+}
+.volumeControlsMuteToggle {
+  border: none;
+  background-color: transparent;
+  background-image: url('/2d/volume_loud_black.svg');
+  background-size: contain;
+  background-position: center center;
+  height: 24px;
+  width: 24px;
+}
+.volumeControlsMuteToggle > span {
+   display: none;
+}
+.volumeControlsMuteToggle.muted {
+  background-image: url('/2d/volume_mute_black.svg');
 }

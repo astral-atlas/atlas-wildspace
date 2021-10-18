@@ -12,23 +12,15 @@ import { loadConfig } from "../config.js";
 import { useIdentity } from "../hooks/identity.js";
 import { IdentityProvider } from "../hooks/identity";
 
-import { renderAppPage } from '../app.js';
+import { renderDocument, WildspaceApp } from '../app.js';
 
-const AdminPage = ({ config }) => {
-  const [identity] = useIdentity();
+const AdminPage = () => {
   const [u, setU] = useState(Date.now());
 
-  if (!identity)
-    return h('h1', {}, `You need to log in!`);
-
-  const client = createWildspaceClient(identity && identity.proof, config.api.wildspace.httpOrigin, config.api.wildspace.wsOrigin);
-
   return [
-    h(clientContext.Provider, { value: client }, [
-      h('h1', {},'Wildspace Admin'),
-      h(GamesEditor, { u, setU }),
-    ]),
+    h('h1', {},'Wildspace Admin'),
+    h(GamesEditor, { u, setU }),
   ]
 };
 
-renderAppPage(AdminPage);
+renderDocument(h(WildspaceApp, { initialURL: new URL(document.location.href) }, h(AdminPage)));

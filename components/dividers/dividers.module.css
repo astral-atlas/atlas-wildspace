@@ -1,5 +1,6 @@
 
 div.beveled {
+  border-style: solid;
   border-image: url('../assets/beveled_border.svg');
   border-image-slice: 25%;
   border-image-width: calc(var(--scale, 1.5) * 22px);
@@ -10,6 +11,7 @@ div.beveled {
 }
 
 div.banner {
+  border-style: solid;
   border-image: url('../assets/banner_border.svg');
   border-image-slice: 27 70 27 70 fill;
   border-image-width:
@@ -23,6 +25,7 @@ div.banner {
   min-width: calc(var(--scale, 1.5) * 115px);
 }
 div.square {
+  border-style: solid;
   border-image: url('../assets/square_border.svg');
   border-image-slice: 33%;
   border-image-width: calc(var(--scale, 1.5) * 18px);
@@ -31,6 +34,7 @@ div.square {
   min-width: calc(var(--scale, 1.5) * 44px);
 }
 div.plain {
+  border-style: solid;
   border-image: url('../assets/plain_border.svg');
   border-image-slice: 20% 10% 20% 10% fill;
   border-image-width: calc(var(--scale, 1.5) * 4px);
@@ -41,6 +45,7 @@ div.plain {
 }
 
 div.skillSave {
+  border-style: solid;
   border-image: url('../assets/skill_save_border.svg');
   border-image-slice: 60 20 60 20 fill;
   border-image-width:
@@ -56,6 +61,7 @@ div.skillSave {
 }
 
 div.health {
+  border-style: solid;
   border-image: url('../assets/health_border.svg');
   border-image-slice: 30 105 30 105 fill;
   border-image-width:
@@ -71,6 +77,7 @@ div.health {
 }
 
 div.feature {
+  border-style: solid;
   border-image: url('../assets/feature_border.svg');
   border-image-slice: 40 30 40 30 fill;
   border-image-width:
@@ -85,6 +92,7 @@ div.feature {
   min-width: calc(var(--scale, 1.5) * 30px);
 }
 div.segmentedTop {
+  border-style: solid;
   border-image: url('../assets/segmented_top_border.svg');
   border-image-slice: 27 fill;
   border-image-width: calc(var(--scale, 1.5) * 40px);

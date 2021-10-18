@@ -3,11 +3,12 @@
 /*:: import type { AuthorizerFrameProps } from '@astral-atlas/sesame-components'; */
 /*:: import type { Component } from "@lukekaalim/act"; */
 import { h, useMemo, useEffect, useState, useContext, createContext, useRef } from "@lukekaalim/act";
-import { render } from '@lukekaalim/act-three';
+import { C, render } from '@lukekaalim/act-three';
 import { AuthorizerFrame } from '@astral-atlas/sesame-components';
 import { createWildspaceClient } from '@astral-atlas/wildspace-client2';
+import { EncounterInitiativeControls, EncounterInitiativeTracker } from "@astral-atlas/wildspace-components";
 
-import { usePlaylistTrackData, RoomAudioPlayer } from "../components/RoomAudioPlayer.js";
+import { usePlaylistTrackData, RoomAudioPlayer, PlaylistPlayer } from "../components/RoomAudioPlayer.js";
 import { useConnection } from "../hooks/connect.js";
 import { clientContext, sesameContext } from "../hooks/context.js";
 import { useStoredValue } from "../hooks/storage.js";
@@ -17,127 +18,169 @@ import styles from './room.module.css';
 import { useAsync } from "../hooks/async.js";
 import { loadConfig } from "../config";
 import { IdentityProvider, useIdentity, useMessenger } from "../hooks/identity.js";
+import { WildspaceApp, renderDocument } from "../app.js";
+import { useAPI, useGame, useRoom } from "../hooks/api.js";
+import { useNavigation } from "../hooks/navigation.js";
+import { WildspaceHeader } from "../components/Header.js";
+import { useURLParam } from "../hooks/navigation";
+import { SpinningZeroCube } from "./RoomMapScene.js";
 
-const RoomAudio = ({ gameId, audio }) => {
-  const [volume, setVolume] = useState(0);
-  const tracksData = usePlaylistTrackData(gameId, audio.playlistId);
+const RoomAudio = ({ volume, onVolumeChange }) => {
+  const buttonClassNames = [
+    volume === 0 && styles.muted,
+    styles.volumeControlsMuteToggle,
+  ].filter(Boolean).join(' ');
 
   return [
-    h('form', { class: styles.volumeControls, onSubmit: e => e.preventDefault() }, [
-      h('button', { onClick: e => setVolume(volume === 0 ? 0.5 : 0) }, volume === 0 ? 'unmute' : 'mute'),
-      h('input', { type: 'range', value: volume, onInput: e => setVolume(e.target.value), max: 1, min: 0, step: 0.001 }),
+    h('div', { className: styles.volumeControls }, [
+      h('button', { className: buttonClassNames, onClick: e => onVolumeChange(volume === 0 ? 0.5 : 0) }, h('span', {}, volume === 0 ? 'unmute' : 'mute')),
+      h('input', { type: 'range', value: volume, onInput: e => onVolumeChange(e.target.value), max: 1, min: 0, step: 0.001 }),
     ]),
-    h(RoomAudioPlayer, { tracksData, audio, volume })
   ];
 };
 
-const Room = ({ gameId, roomId, exit }) => {
-  const client = useContext(clientContext)
-  const [room, roomError] = useAsync(() => client.room.read(gameId, roomId), [client, roomId]);
-
-  const { audio = null } = useConnection(async (u) => (await client.room.state.connect(gameId, roomId, u)).close, { audio: null });
-
-  if (roomError) {
-    return [
-      h('h1', {}, 'oops!'),
-      h('button', { onClick: () => exit() }, 'back to home'),
-    ]
+const getOffset = (view) => {
+  switch (view) {
+    case 'tracker':
+      return '0vw';
+    case 'map':
+      return '-75vw'
+    case 'reference':
+      return '-150vw';
   }
+}
 
-  if (!room)
+const RoomTracker = ({ gameData, state }) => {
+  const { encounters, characters } = gameData;
+  const selectedMinis = [];
+
+  if (!state)
+    return null;
+  const encounter = encounters.find(e => e.id === state.encounterId);
+  if (!encounter)
     return null;
 
   return [
-    h('h1', {}, room.title),
-    h('button', { onClick: exit }, 'Exit'),
-    h('section', { class: styles.floatingLeftCorner }, [
-      audio && h(RoomAudio, { gameId, audio })
+    h('div', { className: styles.initiative }, [
+      h(EncounterInitiativeTracker, { className: styles.tracker, characters, selectedMinis, encounter, encounterState: state }),
+      h(EncounterInitiativeControls, { className: styles.controls, selectedMinis, encounter, encounterState: state }),
+    ])
+  ]
+};
+
+const Room = ({ view, game, room, gameData, volume }) => {
+  const api = useAPI();
+
+  const { audio, encounter } = useRoom(game.id, room.id);
+  const { playlists, tracks } = gameData;
+
+  const playlist = audio && playlists.find(p => p.id === audio.playlistId);
+  const playlistTracks = playlist && playlist.trackIds
+    .map(trackId => tracks.find(track => track.id === trackId))
+    .filter(Boolean);
+
+  const offset = getOffset(view)
+
+  return [
+    h('div', { className: styles.room }, [
+      h('div', { className: styles.mapScene }, h(C.three, { height: 512, width: 512 }, h(SpinningZeroCube))),
+      h('div', { className: styles.roomViewContainer, style: { transform: `translateX(${offset})`} }, [
+        h('div', { className: styles.trackerView }, h(RoomTracker, { game, room, gameData, state: encounter })),
+        h('div', { className: styles.mapView }, [
+          audio && playlistTracks && h(PlaylistPlayer, { state: audio, tracks: playlistTracks, volume }) || null
+        ]),
+        h('div', { className: styles.referenceView }, 'right'),
+      ])
     ])
   ];
 };
 
-const RoomSelection = ({ onRoomSelect, identity }) => {
-  const client = useContext(clientContext)
-  const sesame = useContext(sesameContext);
-  const [gameId, setGameId] = useState/*:: <?GameID>*/(null);
-  const [roomId, setRoomId] = useState/*:: <?RoomID>*/(null);
-
-  const [games, gameError] = useAsync(() => client.game.list(), [client]);
-  const [rooms, roomError] = useAsync(async () => gameId && client.room.list(gameId), [client, gameId]);
-
-  const [user, userError] = useAsync(async () => identity && sesame.user.get(identity.proof.userId), [sesame, identity]);
-
-  const messenger = useMessenger();
-
-  if (gameError || roomError || userError) {
-    return [
-      h('h1', {}, 'oops!'),
-      h('button', { onClick: () => (setGameId(null), setRoomId(null)) }, 'back to home'),
-    ]
+const getCodeDelta = (e) => {
+  if (!e.ctrlKey)
+    return 0;
+  switch (e.code) {
+    case 'ArrowLeft':
+      return -1;
+    case 'ArrowRight':
+      return +1;
+    default:
+      return 0;
   }
+}
 
-  const onSubmit = (e) => {
-    e.preventDefault();
-    if (roomId && gameId)
-      onRoomSelect({ gameId, roomId });
-  };
+const RoomPageViewSwitcher = ({ view, onViewChange }) => {
+  useEffect(() => {
+    const listener = (e/*: KeyboardEvent*/) => {
+      const viewIndex = views.findIndex(v => v.value === view);
+      const delta = getCodeDelta(e);
+      if (delta === 0)
+        return;
+      const nextViewIndex = Math.abs((views.length + (viewIndex + delta)) % views.length);
+      onViewChange(views[nextViewIndex].value);
+    };
+    document.addEventListener('keyup', listener);
+    return () => {
+      document.removeEventListener('keyup', listener);
+    };
+  }, [view]);
 
-  const onLoginClick = () => {
-    if (!messenger)
-      return;
-    messenger.send({ type: 'sesame:prompt-link-grant' });
-  }
+  const views = [
+    { value: 'tracker', label: 'Tracker' },
+    { value: 'map', label: 'Map' },
+    { value: 'reference', label: 'Reference' },
+  ];
 
   return [
-    h('form', { onSubmit, class: styles.roomSelectForm }, [
-      !identity && h('section', { class: styles.roomSelectLogin }, [
-        h('p', {}, [
-          'You need to be logged into ',
-          h('a', { href: 'http://sesame.astral-atlas.com', target: '_blank' }, 'Astral Atlas'),
-          ' to proceed.'
-        ]),
-        messenger && h('button', { onClick: onLoginClick }, 'Try Again'),
-      ]),
-      !!identity && h('section', { class: styles.roomSelecIds }, [
-        user  && h('p', {}, `Welcome, ${user.name}`) || null,
-        h('select', { onChange: e => setGameId(e.target.value) }, games && [
-          !gameId && h('option', { selected: true }, 'Select Game'),
-          ...games.map(game => h('option', { value: game.id }, game.name))
-        ]),
-        h('select', { onChange: e => setRoomId(e.target.value), disabled: !rooms }, rooms && [
-          !roomId && h('option', { selected: true }, 'Select Room'),
-          ...rooms.map(room => h('option', { value: room.id }, room.title))
-        ]),
-        h('input', { type: 'submit', value: 'Join Room', disabled: !gameId || !roomId })
-      ])
-    ]),
+    h('menu', { className: styles.roomViewSwitcher }, [
+      ...views.map(v => h('li', {}, h('button', { disabled: v.value === view, onClick: () => onViewChange(v.value) }, v.label)))
+    ])
   ]
 };
 
-const RoomPage = ({ config }) => {
-  const [identity, setIdentity] = useIdentity();
-  const [roomData, setRoomData] = useStoredValue(roomStore);
+const RoomPage = () => {
+  const api = useAPI();
+  const [view, setView] = useState('map');
+  const [gameId, setGameId] = useURLParam('gameId');
+  const [roomId, setRoomId] = useURLParam('roomId');
 
-  const client = createWildspaceClient(identity && identity.proof, config.api.wildspace.httpOrigin);
+  const [volume, setVolume] = useState(0);
+
+  const [games] = useAsync(async () => api.game.list(), [api]);
+  const { rooms, ...gameData } = useGame(gameId);
+
+  if (!games)
+    return null;
+
+  const game = games && games.find(g => g.id === gameId);
+  const room = rooms && rooms.find(r => r.id === roomId);
 
   return [
-    h(clientContext.Provider, { value: client }, [
-      h('section', { class: styles.roomPage }, [
-        !roomData && h('section', { class: styles.roomPageWall }, [
-          h(RoomSelection, { onRoomSelect: d => setRoomData(v => d), identity, setIdentity })
-        ]),
-        roomData && h(Room, { roomId: roomData.roomId, gameId: roomData.gameId, exit: () => setRoomData(v => null) }) || null
-      ]),
+    h('section', { class: styles.roomPage }, [
+      h(WildspaceHeader, {
+        left: [
+          h('div', { style: { display: 'flex', flexDirection: 'column' }}, [
+            h('select', { value: gameId, onChange: e => (setGameId(e.target.value), setRoomId(null)) },
+              games.map(g => h('option', { value: g.id, selected: g.id === gameId }, g.name))),
+            h('select', { value: roomId, onChange: e => (setRoomId(e.target.value))}, [
+              h('option', { selected: roomId === null, value: null }, '<No Room>'),
+              rooms ? rooms.map(r => h('option', { value: r.id, selected: r.id === roomId }, r.title)) : null
+            ]),
+          ])
+        ],
+        center: [
+          game && room && h('nav', {},h(RoomPageViewSwitcher, { view, onViewChange: setView })) || null,
+        ],
+        right: [
+          h(RoomAudio, { volume, onVolumeChange: setVolume })
+        ]
+      }),
+      //!roomData && h('section', { class: styles.roomPageWall }, [
+        //h(RoomSelection, { onRoomSelect: d => setRoomData(v => d), identity, setIdentity })
+      //]),
+      game && room && h(Room, { view, game, room, gameData, volume }) || null,
     ]),
-  ]
+  ];
 };
 
-const main = async () => {
-  const { body } = document;
-  if (!body)
-    throw new Error();
-  const config = await loadConfig()
-  render(h(IdentityProvider, {}, h(RoomPage, { config })), body);
-};
 
-main();
+renderDocument(h(WildspaceApp, { initialURL: new URL(document.location.href) }, h(RoomPage)));

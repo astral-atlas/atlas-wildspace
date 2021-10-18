@@ -55,12 +55,12 @@ export const InspirationInput/*: Component<NumberInputProps>*/ = (props) => {
     ])
   ]
 }
-export const ProficencyInput/*: Component<NumberInputProps>*/ = (props) => {
+export const ProficiencyInput/*: Component<NumberInputProps>*/ = (props) => {
   const { style: { scale = 1.5, ...style } = {}, onChange = _ => {}, onInput = _ => {} } = props;
   const getValue = e => e.target.valueAsNumber;
   const className = [inputStyles.proficency, props.class, props.className].filter(Boolean).join(' ');
   return [
-    h('label', { className, style: { '--scale': style.scale || 1.5 } }, [
+    h('label', { className, style: { '--scale': scale } }, [
       h('span', {}, props.label || props.children),
       h('input', {
         type: 'number',

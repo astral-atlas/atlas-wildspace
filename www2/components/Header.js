@@ -1,5 +1,5 @@
 // @flow strict
-/*:: import type { Component } from '@lukekaalim/act'; */
+/*:: import type { Component, ElementNode } from '@lukekaalim/act'; */
 import { h, useState } from '@lukekaalim/act';
 import { createClient } from '@astral-atlas/sesame-client';
 
@@ -37,7 +37,15 @@ const GameSelector = () => {
   ]
 };
 
-export const WildspaceHeader/*: Component<{ title: string }>*/ = ({ title }) => {
+/*::
+export type WildspaceHeaderProps = {
+  left?: ElementNode,
+  right?: ElementNode,
+  center?: ElementNode,
+};
+*/
+
+export const WildspaceHeader/*: Component<WildspaceHeaderProps>*/ = ({ left, right, center }) => {
   const api = useAPI();
 
   const [user] = useAsync(() => api.self(), [api])
@@ -48,15 +56,13 @@ export const WildspaceHeader/*: Component<{ title: string }>*/ = ({ title }) => 
         h('img', { class: styles.wildspaceHeaderIcon, src: "/2d/bi_atlas.svg" }),
         h('h1', { class: styles.wildspaceHeaderTitle }, "Wildspace"),
         h('div', { class: styles.wildspaceHeaderGameSeperator }),
-        h(GameSelector),
+        h('span', {}, left),
       ]),
       h('div', { class: styles.wildspaceHeaderCenter }, [
-        h('h2', { class: styles.wildspaceHeaderPageTitle }, title),
-        h('nav', { }, [
-          //h('a', { href: '/characters/' }, `Characters`)
-        ])
+        h('span', {}, center),
       ]),
       h('div', { class: styles.wildspaceHeaderRight }, [
+        h('span', {}, right),
         user ? h('p', { class: styles.wildspaceHeaderIdentity }, ['Welcome, ', h('a', { href: `http://sesame.astral-atlas.com` }, user.name)]) : null,
       ]),
     ]),

@@ -11,6 +11,7 @@ export type StyleCustomizationProps = {|
     scale?: number,
     ...
   },
+  ref?: { +current: ?HTMLInputElement },
   class?: string,
   className?: string,
 |};
@@ -30,18 +31,20 @@ export type LabeledInputProps<T> = {|
 
 /*::
 export type TextInputProps = {|
+  datalistId?: string,
   ...StyleCustomizationProps,
   ...LabeledInputProps<string>,
 |}
 */
 
 export const BrandedTextInput/*: Component<TextInputProps>*/ = (props) => {
-  const { style: { scale = 1.5, ...style } = {}, onChange = _ => {}, onInput = _ => {} } = props;
+  const { style: { scale = 1.5, ...style } = {}, onChange = _ => {}, onInput = _ => {}, ref } = props;
   const getValue = e => e.target.value;
   const className = [inputStyles.branded, props.class, props.className].filter(Boolean).join(' ');
   return [
     h('input', {
       className,
+      ref,
       type: 'text',
       value: props.value || '',
       style: { ...style, '--scale': scale },
@@ -51,13 +54,14 @@ export const BrandedTextInput/*: Component<TextInputProps>*/ = (props) => {
   ]
 }
 export const PlainTextInput/*: Component<TextInputProps>*/ = (props) => {
-  const { style: { scale = 1.5, ...style } = {}, onChange = _ => {}, onInput = _ => {} } = props;
+  const { style: { scale = 1.5, ...style } = {}, onChange = _ => {}, onInput = _ => {}, ref } = props;
   const getValue = e => e.target.value;
   const className = [inputStyles.plain, props.class, props.className].filter(Boolean).join(' ');
   return [
     h(PlainDivider, { scale },
       h('input', {
         className,
+        ref,
         type: 'text',
         value: props.value || '',
         style: { ...style, '--scale': scale },

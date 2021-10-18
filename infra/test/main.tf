@@ -25,3 +25,7 @@ provider "immutable-elastic-beanstalk" {
 provider "aws" {
   region = "ap-southeast-2"
 }
+
+data "aws_route53_zone" "root" {
+  name         = "astral-atlas.com."
+}

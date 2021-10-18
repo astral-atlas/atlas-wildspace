@@ -1,7 +1,8 @@
 // @flow strict
 /*:: import type { Component } from '@lukekaalim/act'; */
-/*:: import type { AudioTrack, RoomAudioState, GameID, AssetDescription, AudioPlaylistID } from '@astral-atlas/wildspace-models'; */
-import { h, useContext, useMemo, useEffect, useRef } from '@lukekaalim/act';
+/*:: import type { AudioTrack, AudioPlaylist, AudioPlaylistState, GameID, AssetDescription, AudioPlaylistID, AssetID } from '@astral-atlas/wildspace-models'; */
+import { h, useContext, useMemo, useEffect, useRef, useState } from '@lukekaalim/act';
+import { useAPI } from '../hooks/api.js';
 
 import { useAsync } from '../hooks/async.js'; 
 import { clientContext } from '../hooks/context.js';
@@ -28,7 +29,7 @@ export const usePlaylistTrackData = (
   gameId/*: ?GameID*/ = null,
   playlistId/*: ?AudioPlaylistID*/ = null,
 )/*: TrackData[]*/ => {
-  const client = useContext(clientContext);
+  const client = useAPI();
 
   const [playlist] = useAsync(async () => gameId && playlistId && client.audio.playlist.read(gameId, playlistId), [client, gameId, playlistId]);
   const [tracksData] = useAsync(async () => gameId && playlist && await Promise.all(playlist.trackIds.map(id => client.audio.tracks.read(gameId, id))), [playlist, gameId]);
@@ -37,7 +38,7 @@ export const usePlaylistTrackData = (
 }
 
 export const usePlaybackData = (
-  audio/*: RoomAudioState*/,
+  audio/*: AudioPlaylistState*/,
   tracksData/*: TrackData[]*/ = [],
 )/*: () => ?PlaybackData*/ => {
   const getPlaybackData = useMemo(() => {
@@ -69,9 +70,91 @@ export const usePlaybackData = (
   return getPlaybackData
 };
 
+export const AssetPlayer/*: Component<{
+  assetId: AssetID,
+  currentTime: number,
+  isPaused?: boolean,
+  controls?: boolean,
+  volume?: number,
+}>*/ = ({ assetId, currentTime, isPaused = false, controls = false, volume = 1 }) => {
+  const api = useAPI();
+  const [asset] = useAsync(() => api.asset.peek(assetId), [assetId]);
+  const audioRef = useRef/*::<?HTMLAudioElement>*/(null);
+
+  if (!asset)
+    return null;
+  const timeLastUpdated = useMemo(() => Date.now(), [currentTime]);
+  useEffect(() => {
+    const { current: audioElement } = audioRef;
+    if (!audioElement)
+      return;
+
+    if (audioElement.src !== asset.downloadURL.href);
+      audioElement.src = asset.downloadURL.href;
+    if (audioElement.paused && !isPaused && volume !== 0) {
+      audioElement.play();
+    } else if((!audioElement.paused && isPaused) || (volume === 0))
+      audioElement.pause();
+
+    const targetTime = currentTime + ((Date.now() - timeLastUpdated) / 1000);
+    if (Math.abs(audioElement.currentTime - targetTime) > 2) {
+      console.log('setting time', targetTime);
+      audioElement.currentTime = targetTime;
+    }
+  }, [isPaused, asset.downloadURL.href, volume === 0, currentTime])
+  
+  return [
+    h('audio', { ref: audioRef, controls, volume })
+  ]
+};
+
+export const calculateTrackIntervals = (tracks/*: AudioTrack[]*/)/*: number[]*/ => {
+  const trackLengths = tracks.map(t => t.trackLengthMs);
+  const trackIntervals = trackLengths.reduce((intervals, length, index) => [...intervals, (intervals[index - 1] || 0) + length], []);
+  return trackIntervals;
+}
+
+export const usePlaybackData2 = (tracks/*: AudioTrack[]*/, state/*: AudioPlaylistState*/)/*: { trackIndex: number, currentTime: number }*/ => {
+  const trackIntervals = calculateTrackIntervals(tracks);
+  const [playback, setPlayback] = useState({ currentTime: 0, trackIndex: -1 });
+
+  useEffect(() => {
+    const calculatePlayback = () => {
+      const totalPlaytime = Date.now() - state.playlistStartTime;
+      const trackIndex = trackIntervals.findIndex(interval => interval >= totalPlaytime) || 0;
+      const currentTime = totalPlaytime - (trackIntervals[trackIndex - 1] || 0);
+      return { currentTime, trackIndex };
+    };
+    setPlayback(calculatePlayback());
+    const now = Date.now();
+    const trackTimeouts = trackIntervals
+      .map(interval => interval + (state.playlistStartTime - now))
+      .filter(trackEndTime => trackEndTime >= 0)
+      .map(trackEndTime => setTimeout(() => setPlayback(calculatePlayback()), trackEndTime + 100))
+    return () => {
+      trackTimeouts.map(clearTimeout);
+    };
+  }, [state, tracks.map(t => t.id).join()])
+
+  return playback;
+};
+
+export const PlaylistPlayer/*: Component<{ tracks: AudioTrack[], state: AudioPlaylistState, volume?: number }>*/ = ({ state, tracks, volume }) => {
+  const { trackIndex, currentTime } = usePlaybackData2(tracks, state);
+
+  console.log(trackIndex, currentTime);
+
+  return [tracks.map((track, index) => h(AssetPlayer, {
+    assetId: track.trackAudioAssetId,
+    isPaused: trackIndex !== index,
+    volume,
+    controls: true,
+    currentTime: trackIndex !== index ? 0 : (currentTime / 1000),
+  }))]};
+
 /*::
 export type RoomAudioPlayerProps = {
-  audio: RoomAudioState,
+  audio: AudioPlaylistState,
   tracksData: TrackData[],
   volume?: number,
   controls?: boolean,
@@ -99,8 +182,12 @@ export const RoomAudioPlayer/*: Component<RoomAudioPlayerProps>*/ = ({
         audioElement.pause();
         onTrackChange(null);
       } else {
-        audioElement.src = trackData.trackDownloadURL.href;
-        audioElement.currentTime = playback.progress / 1000;
+        if (audioElement.src !== trackData.trackDownloadURL.href)
+          audioElement.src = trackData.trackDownloadURL.href;
+
+        if (Math.abs(audioElement.currentTime - (playback.progress / 1000)) > 1)
+          audioElement.currentTime = playback.progress / 1000;
+          
         audioElement.play();
         onTrackChange(trackData.track);
         timeoutId = setTimeout(update, trackData.track.trackLengthMs - playback.progress);
@@ -111,7 +198,7 @@ export const RoomAudioPlayer/*: Component<RoomAudioPlayerProps>*/ = ({
       if (timeoutId)
         clearTimeout(timeoutId);
     };
-  }, [getPlaybackData, tracksData])
+  }, [getPlaybackData, tracksData.map(t => t.asset.id).join(' ')])
 
   useEffect(() => {
     const playback = getPlaybackData();

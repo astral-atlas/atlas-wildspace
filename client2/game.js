@@ -7,6 +7,7 @@
 
 /*:: import type { CharacterClient } from './game/characters.js'; */
 /*:: import type { PlayersClient } from './game/players.js'; */
+/*:: import type { EncounterClient } from './game/encounter.js'; */
 
 import { createJSONResourceClient } from '@lukekaalim/http-client';
 import { createJSONConnectionClient } from '@lukekaalim/ws-client';
@@ -14,6 +15,7 @@ import { createJSONConnectionClient } from '@lukekaalim/ws-client';
 import { gameAPI } from "@astral-atlas/wildspace-models";
 import { createCharacterClient } from './game/characters.js';
 import { createPlayersClient } from './game/players.js';
+import { createEncounterClient } from './game/encounter.js';
 
 /*::
 export type GameClient = {
@@ -22,10 +24,11 @@ export type GameClient = {
   create: (name: string) => Promise<Game>,
 
   update: (gameId: GameID, updatedGame: { name?: string }) => Promise<void>,
-  addUpdateListener: (gameId: GameID, onUpdate: (state: GameUpdate) => mixed) => Promise<{ close: () => Promise<void> }>,
+  connectUpdates: (gameId: GameID, onUpdate: (state: GameUpdate) => mixed) => { close: () => Promise<void> },
 
   character: CharacterClient,
-  players: PlayersClient
+  players: PlayersClient,
+  encounter: EncounterClient,
 };
 */
 
@@ -49,14 +52,18 @@ export const createGameClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceCli
   const update = async (gameId, { name = null, }) => {
     await gameResource.PUT({ query: { gameId },  body: { name }});
   }
-  const addUpdateListener = async(gameId, onUpdate) => {
+  const connectUpdates = (gameId, onUpdate) => {
     const recieve = (event) => {
       onUpdate(event.update);
     };
-    const { close, send, socket } = await updates.connect({ query: { gameId }, recieve });
-    return {
-      close,
-    }
+    const connectionPromise = updates.connect({ query: { gameId }, recieve });
+
+    const close = async () => {
+      const { close } = await connectionPromise;
+      close();
+    };
+
+    return { close };
   }
 
   return {
@@ -64,9 +71,10 @@ export const createGameClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceCli
     list,
     create,
     update,
-    addUpdateListener,
+    connectUpdates,
     
     character: createCharacterClient(http),
     players: createPlayersClient(http),
+    encounter: createEncounterClient(http),
   };
 }

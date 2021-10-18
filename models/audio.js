@@ -52,3 +52,22 @@ export const castAudioPlaylist/*: Cast<AudioPlaylist>*/ = createObjectCaster({
   gameId: castGameId,
   trackIds: createArrayCaster(castAudioTrackId),
 });
+
+/*:: 
+export type AudioPlaylistState = {
+  playlistId: AudioPlaylistID,
+  trackIndex: number,
+  // the Unix Time when the first track would have started
+  playlistStartTime: number,
+  playState: 'paused' | 'stopped' | 'playing',
+  globalVolume: number,
+};
+*/
+
+export const castAudioPlaylistState/*: Cast<AudioPlaylistState>*/ = createObjectCaster({
+  playlistId: castAudioPlaylistId,
+  trackIndex: castNumber,
+  playlistStartTime: castNumber,
+  playState: createConstantUnionCaster(['paused', 'stopped', 'playing']),
+  globalVolume: castNumber,
+});

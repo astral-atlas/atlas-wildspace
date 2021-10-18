@@ -92,8 +92,7 @@ export type Monster = {
   shortDescription: string,
   iconURL: string,
 
-  healthDescription: string,
-  conditions:  $ReadOnlyArray<string>,
+  maxHitpoints: number,
 };
 */
 
@@ -106,6 +105,5 @@ export const castMonster/*: Cast<Monster>*/ = createObjectCaster({
   shortDescription: castString,
   iconURL: castString,
 
-  healthDescription: castString,
-  conditions:createArrayCaster(castString),
+  maxHitpoints: c.num,
 });

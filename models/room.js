@@ -2,12 +2,14 @@
 
 /*:: import type { Cast } from "@lukekaalim/cast"; */
 /*:: import type { GameID } from "./game.js"; */
-/*:: import type { AudioPlaylistID, AudioTrackID } from "./audio.js"; */
+/*:: import type { AudioPlaylistID, AudioTrackID, AudioPlaylistState } from "./audio.js"; */
+/*:: import type { EncounterState, EncounterID } from "./encounter.js"; */
 
-import { castString, createObjectCaster, castNumber, createConstantUnionCaster, createNullableCaster } from "@lukekaalim/cast";
+import { castString, createObjectCaster, c } from "@lukekaalim/cast";
 
-import { castAudioPlaylistId, castAudioTrackId } from './audio.js'; 
 import { castGameId } from "./game.js";
+import { castAudioPlaylistState } from "./audio.js";
+import { castEncounterState } from "./encounter.js";
 
 /*::
 export type RoomID = string;
@@ -18,18 +20,13 @@ export type Room = {
   title: string,
 };
 
-export type RoomAudioState = {
-  playlistId: AudioPlaylistID,
-  trackIndex: number,
-  // the Unix Time when the first track would have started
-  playlistStartTime: number,
-  playState: 'paused' | 'stopped' | 'playing',
-  globalVolume: number,
+export type RoomState = {
+  roomId: RoomID,
 };
 
-export type RoomState = {
-  audio: ?RoomAudioState
-};
+export type RoomUpdate =
+  | { type: 'encounter', encounter: ?EncounterState }
+  | { type: 'audio', audio: ?AudioPlaylistState }
 */
 
 export const castRoomId/*: Cast<RoomID>*/ = castString;
@@ -40,14 +37,11 @@ export const castRoom/*: Cast<Room>*/ = createObjectCaster({
   title: castString,
 });
 
-export const castRoomAudioState/*: Cast<RoomAudioState>*/ = createObjectCaster({
-  playlistId: castAudioPlaylistId,
-  trackIndex: castNumber,
-  playlistStartTime: castNumber,
-  playState: createConstantUnionCaster(['paused', 'stopped', 'playing']),
-  globalVolume: castNumber,
-});
-
 export const castRoomState/*: Cast<RoomState>*/ = createObjectCaster({
-  audio: createNullableCaster(castRoomAudioState),
+  roomId: castRoomId,
 })
+
+export const castRoomUpdate/*: Cast<RoomUpdate> */ = c.or('type', {
+  'encounter': c.obj({ type: (c.lit('encounter')/*: Cast<'encounter'>*/), encounter: c.maybe(castEncounterState) }),
+  'audio': c.obj({ type: (c.lit('audio')/*: Cast<'audio'>*/), audio: c.maybe(castAudioPlaylistState) }),
+});

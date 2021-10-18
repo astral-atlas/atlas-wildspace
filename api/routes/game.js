@@ -13,6 +13,7 @@ import { createPlayersRoutes } from './game/players.js';
 
 import { gameAPI } from '@astral-atlas/wildspace-models'; 
 import { defaultOptions } from './meta.js';
+import { createEncounterRoutes } from './game/encounters.js';
 
 export const createGameRoutes = ({ data, auth, ...s }/*: Services*/)/*: { ws: WebSocketRoute[], http: HTTPRoute[] }*/ => {
   const gameResourceRoutes = createJSONResourceRoutes(gameAPI['/games'], {
@@ -65,8 +66,10 @@ export const createGameRoutes = ({ data, auth, ...s }/*: Services*/)/*: { ws: We
 
   const characterRoutes = createCharacterRoutes({ ...s, auth, data });
   const playersRoutes= createPlayersRoutes({ ...s, auth, data });
+  const encounterRoutes= createEncounterRoutes({ ...s, auth, data });
   const http = [
     ...playersRoutes.http,
+    ...encounterRoutes.http,
     ...characterRoutes.http,
     ...gameResourceRoutes,
     ...allGamesResource,
@@ -74,6 +77,7 @@ export const createGameRoutes = ({ data, auth, ...s }/*: Services*/)/*: { ws: We
   ];
   const ws = [
     ...characterRoutes.ws,
+    ...encounterRoutes.ws,
     gameUpdates,
   ];
   return { http, ws };

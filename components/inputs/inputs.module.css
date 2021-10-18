@@ -17,6 +17,7 @@ label.proficency,
 label.passive,
 label.armor,
 input.branded {
+  display: inline-block;
   background-size: cover;
   position: relative;
   margin: 0;
@@ -80,7 +81,7 @@ label.passive > input {
 label.armor > input {
   position: relative;
   top: calc(var(--scale, 1.5) * -10px);
-  width: calc(var(--scale, 1.5) * 30px);
+  width: calc(var(--scale, 1.5) * 50px);
   height: calc(var(--scale, 1.5) * 31px);
 }
 
@@ -147,4 +148,29 @@ input.plain {
   font: inherit;
   border-bottom: 1px solid black;
   color: black;
+  box-sizing: border-box;
+}
+.plain > select {
+  appearance: none;
+  padding: 8px 16px 8px 16px;
+  border: none;
+  background: none;
+  text-decoration: underline;
+}
+
+input.circle {
+  appearance: none;
+  height: calc(var(--scale, 1.5) * 9px);
+  width: calc(var(--scale, 1.5) * 9px);
+  position: relative;
+  background-size: cover;
+  opacity: 1;
+  background-image: url('../assets/circle_checkbox_input.svg');
+}
+input.circle:checked {
+  background-image: url('../assets/circle_checked_checkbox_input.svg');
+}
+
+input.circle:disabled {
+  opacity: 0.5
 }

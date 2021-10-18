@@ -1,6 +1,6 @@
 // @flow strict
 /*:: import type { WWWConfig } from "@astral-atlas/wildspace-models"; */
-/*:: import type { Component } from '@lukekaalim/act'; */
+/*:: import type { Component, Element } from '@lukekaalim/act'; */
 import { h, useMemo, useState, useEffect } from '@lukekaalim/act';
 import { render } from '@lukekaalim/act-three';
 import { useConsumerMessenger } from '@astral-atlas/sesame-components';
@@ -15,17 +15,19 @@ import { useStoredValue } from './hooks/storage.js';
 import { navigationContext } from "./hooks/navigation.js";
 
 import { identityStore } from "./lib/storage.js";
+import { Login } from './pages/login.js';
+import { wildspaceStateContext } from './hooks/app.js';
 
 /*::
 export type WildspaceAppProps = {
-  config: WWWConfig,
   initialURL: URL,
 };
 */
 
-export const WildspaceApp/*: Component<WildspaceAppProps>*/ = ({ config, children, initialURL }) => {
+export const WildspaceApp/*: Component<WildspaceAppProps>*/ = ({ children, initialURL }) => {
   const [identity, setIdentity] = useStoredValue(identityStore);
   const [url, setURL] = useState(initialURL)
+  const [config] = useAsync(() => loadConfigFromURL(), []);
 
   const onGrant = ({ proof }) => {
     setIdentity(v => ({ proof }));
@@ -42,8 +44,8 @@ export const WildspaceApp/*: Component<WildspaceAppProps>*/ = ({ config, childre
   });
   
   const api = useMemo(
-    () =>  createWildspaceClient(identity && identity.proof, config.api.wildspace.httpOrigin, config.api.wildspace.wsOrigin),
-    [identity && identity.proof]
+    () =>  config && createWildspaceClient(identity && identity.proof, config.api.wildspace.httpOrigin, config.api.wildspace.wsOrigin),
+    [config, identity && identity.proof]
   );
 
   const navigation = useMemo(() => ({
@@ -60,11 +62,28 @@ export const WildspaceApp/*: Component<WildspaceAppProps>*/ = ({ config, childre
   }, [])
   const identityContextValue = useMemo(() => ({ identity, messenger, setIdentity }), [identity, messenger, setIdentity]);
 
+  if (!config || !api || !navigation)
+    return h('p', {}, `Loading`);
+
+  if (!identity)
+    return h(Login)
+  const { proof } = identity;
+
+  const wildspaceState = useMemo(() => ({ config, proof }), [config, proof])
+
   return (
-    h(identityContext.Provider, { value: identityContextValue },
+    h(wildspaceStateContext.Provider, { value:wildspaceState },
       h(apiContext.Provider, { value: api },
         h(navigationContext.Provider, { value: navigation }, children)))
   );
+};
+
+export const renderDocument = (root/*: Element*/) => {
+  const { body } = document;
+  if (!body)
+    throw new Error();
+
+  render(root, body);
 };
 
 export const renderAppPage = async (PageComponent/*: Component<{ config: WWWConfig }>*/) => {

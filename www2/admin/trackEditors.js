@@ -2,6 +2,8 @@
 /*:: import type { Game } from '@astral-atlas/wildspace-models'; */
 /*:: import type { Component } from '@lukekaalim/act'; */
 import { h, useMemo, useEffect, useState, useContext, createContext, useRef } from "@lukekaalim/act";
+import { useAPI } from "../hooks/api.js";
+import { useURLParam } from "../hooks/navigation.js";
 import { clientContext, useAsync } from './hooks.js';
 
 import styles from './index.module.css';
@@ -16,7 +18,7 @@ const getValidAudioType = (type) => {
 }
 
 const NewTrackEditor = ({ game, u, onCreate }) => {
-  const client = useContext(clientContext);
+  const client = useAPI();
   const [newTrack, setNewTrack] = useState({ file: null, title: '', artist: '', });
 
   const onSubmit = async (e) => {
@@ -49,7 +51,7 @@ const NewTrackEditor = ({ game, u, onCreate }) => {
   ];
 };
 const ExistingTrackEditor = ({ game, trackId, u, onGameUpdate }) => {
-  const client = useContext(clientContext);
+  const client = useAPI();
   const [trackData] = useAsync(() => client.audio.tracks.read(game.id, trackId), [client, u, trackId])
 
   if (!trackData)
@@ -79,8 +81,8 @@ const ExistingTrackEditor = ({ game, trackId, u, onGameUpdate }) => {
 }
 
 export const TracksEditor/*: Component<{ game: Game, onGameUpdate: () => mixed, u: number }>*/ = ({ game, onGameUpdate, u }) => {
-  const client = useContext(clientContext);
-  const [trackId, setTrackId] = useState(null);
+  const client = useAPI();
+  const [trackId, setTrackId] = useURLParam("trackId");
   const [tracks] = useAsync(() => client.audio.tracks.list(game.id), [client, u, game.id])
 
   if (!tracks)

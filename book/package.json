@@ -18,9 +18,9 @@
   },
   "homepage": "https://github.com/astral-atlas/wildspace#readme",
   "dependencies": {
-    "@astral-atlas/wildspace-components": "*",
+    "@astral-atlas/wildspace-components": "^0.0.0",
     "@lukekaalim/act": "^2.2.3",
-    "@lukekaalim/act-web": "^0.4.5",
+    "@lukekaalim/act-web": "^0.4.6",
     "vite": "^2.6.7"
   }
 }

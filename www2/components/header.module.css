@@ -1,11 +1,18 @@
 @import url("../index.module.css");
+@import url('https://fonts.googleapis.com/css2?family=Martel+Sans:wght@200;300;400;600;700;900&display=swap');
+
 
 .wildspaceHeader {
   display: flex;
   flex-direction: row;
   font-family: 'Crimson Text', serif;
   background-color: #e6e7f0;
+  color: black;
   font-size: 22px;
+  height: 80px;
+  flex-basis: 80px;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 .wildspaceHeaderLeft {
   display: flex;
@@ -22,7 +29,7 @@
   text-transform: uppercase;
   position: relative;
   top: 3px;
-  font-size: 38px;
+  font-size: 28px;
 }
 .wildspaceHeaderLeft > .wildspaceHeaderIcon {
   height: 32px;
@@ -34,6 +41,7 @@
   border: 0;
   border-right: 1px solid black;
   margin-left: 12px;
+  margin-right: 12px;
 }
 
 .wildspaceHeaderCenter {
@@ -64,10 +72,12 @@
 }
 
 .wildspaceHeaderRight > .wildspaceHeaderIdentity {
-  margin: 32px;
+  margin: 0 16px 0 0 ;
+  font-size: 18px;
+  text-align: right;
+  width: 124px;
 }
 
 .wildspaceHeaderGameSelector {
-  margin: 32px;
-  padding: 8px;
+  padding: 2px;
 }

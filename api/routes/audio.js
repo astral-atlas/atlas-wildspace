@@ -35,11 +35,13 @@ export const createAudioRoutes = ({ data }/*: Services*/)/*: { ws: WebSocketRout
       };
 
       await data.tracks.set(gameId, track.id, track);
+      data.gameUpdates.publish(gameId, { type: 'tracks' });
       
       return { status: HTTP_STATUS.ok, body: { type: 'created', track } };
     },
     DELETE: async ({ query: { gameId, trackId }}) => {
       await data.tracks.set(gameId, trackId, null);
+      data.gameUpdates.publish(gameId, { type: 'tracks' });
       
       return { status: HTTP_STATUS.ok, body: { type: 'deleted' } };
     },
@@ -74,6 +76,7 @@ export const createAudioRoutes = ({ data }/*: Services*/)/*: { ws: WebSocketRout
       };
 
       await data.playlists.set(gameId, playlist.id, playlist);
+      data.gameUpdates.publish(gameId, { type: 'playlists' });
       
       return { status: HTTP_STATUS.created, body: { type: 'created', playlist } };
     },
@@ -88,11 +91,13 @@ export const createAudioRoutes = ({ data }/*: Services*/)/*: { ws: WebSocketRout
       };
 
       await data.playlists.set(gameId, nextPlaylist.id, nextPlaylist);
+      data.gameUpdates.publish(gameId, { type: 'playlists' });
       
       return { status: HTTP_STATUS.ok, body: { type: 'updated', playlist: nextPlaylist } };
     },
     DELETE: async ({ query: { gameId, audioPlaylistId }}) => {
       await data.playlists.set(gameId, audioPlaylistId, null);
+      data.gameUpdates.publish(gameId, { type: 'playlists' });
       
       return { status: HTTP_STATUS.ok, body: { type: 'deleted' } };
     },

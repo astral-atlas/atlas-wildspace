@@ -12,7 +12,7 @@ export const defaultOptions/*: {| access?: AccessOptions, cache?: CacheOptions |
   access: {
     origins: { type: 'wildcard' },
     methods: ['GET', 'PUT', 'POST', 'DELETE'],
-    cache: 500,
+    cache: 600,
     headers: ['content-type', 'authorization']
   },
 };

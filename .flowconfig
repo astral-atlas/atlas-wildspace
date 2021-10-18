@@ -1,6 +1,5 @@
 [ignore]
-<PROJECT_ROOT>/web/.*
-<PROJECT_ROOT>/client/.*
+
 [include]
 
 [libs]

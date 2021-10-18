@@ -2,12 +2,13 @@
 /*:: import type { Game } from '@astral-atlas/wildspace-models'; */
 /*:: import type { Component } from '@lukekaalim/act'; */
 import { h, useMemo, useEffect, useState, useContext, createContext, useRef } from "@lukekaalim/act";
+import { useAPI } from "../hooks/api.js";
 import { clientContext, useAsync } from './hooks.js';
 
 import styles from './index.module.css';
 
 const TrackListEditor = ({ u, game, trackIds, onChange }) => {
-  const client = useContext(clientContext);
+  const client = useAPI();
   const [tracks] = useAsync(() => client.audio.tracks.list(game.id), [client, u, game.id])
 
   if (!tracks)
@@ -46,7 +47,7 @@ const TrackListEditor = ({ u, game, trackIds, onChange }) => {
 };
 
 const NewPlaylistEditor = ({ game, onCreate, u }) => {
-  const client = useContext(clientContext);
+  const client = useAPI();
   const [newPlaylist, setNewPlaylist] = useState({ title: '', trackIds: [] })
 
   const onSubmit = async (e) => {
@@ -71,7 +72,7 @@ const NewPlaylistEditor = ({ game, onCreate, u }) => {
 };
 
 const ExistingPlaylistEditor = ({ game, playlistId, u, onGameUpdate }) => {
-  const client = useContext(clientContext);
+  const client = useAPI();
   const [playlist] = useAsync(() => client.audio.playlist.read(game.id, playlistId), [client, u, game.id, playlistId])
 
   if (!playlist)
@@ -108,7 +109,7 @@ const ExistingPlaylistEditor = ({ game, playlistId, u, onGameUpdate }) => {
 };
 
 export const PlaylistEditor/*: Component<{ u: number, game: Game, onGameUpdate: () => mixed }>*/ = ({ u, game, onGameUpdate }) => {
-  const client = useContext(clientContext);
+  const client = useAPI();
   const [playlistId, setPlaylistId] = useState(null);
   const [playlists] = useAsync(() => client.audio.playlist.list(game.id), [client, u, game.id])
 

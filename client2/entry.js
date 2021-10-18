@@ -67,7 +67,7 @@ export const createWildspaceClient = (proof/*: ?LinkProof*/, httpOrigin/*: strin
   const asset = createAssetClient(authorizedClient, httpOrigin, wsOrigin);
   const audio = createAudioClient(authorizedClient, asset, httpOrigin, wsOrigin);
   const room = {
-    ...createRoomClient(authorizedClient, httpOrigin, wsOrigin),
+    ...createRoomClient(httpService, wsService),
     state: createRoomStateClient(authorizedClient, httpOrigin, wsOrigin)
   };
   const game = createGameClient(httpService, wsService);

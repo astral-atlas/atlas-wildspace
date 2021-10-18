@@ -1,0 +1,47 @@
+
+.round {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table.round > caption {
+  text-transform: uppercase;
+  font-size: 24px;
+}
+
+.round th {
+  text-transform: uppercase;
+}
+
+tr.turn {
+  background-color: rgb(219, 201, 243);
+  height: 64px;
+}
+tr.turn:nth-child(3n+1) {
+  background-color: rgb(241, 241, 204);
+}
+tr.turn:nth-child(3n+2) {
+  background-color: rgb(204, 241, 206);
+}
+
+tr.turn > td > .name {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.turn td {
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+.turn > td > .icon {
+  height: 64px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
