@@ -1,5 +1,6 @@
 
 .round {
+  user-select: none;
   border-collapse: collapse;
   width: 100%;
 }

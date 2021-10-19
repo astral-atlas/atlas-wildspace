@@ -1,21 +1,12 @@
 // @flow strict
-/*:: import type { S3 } from '@aws-sdk/client-s3'; */
 /*:: import type { UserID } from '@astral-atlas/sesame-models'; */
 /*:: import type { Table, CompositeTable } from './sources/table.js'; */
 /*:: import type { BufferStore, BufferDB } from './sources/buffer.js'; */
 /*:: import type { Channel } from './sources/channel.js'; */
 
-import { join, resolve } from 'path';
-
-import {
-  createMemoryBufferStore, createMemoryBufferDB,
-  createFileBufferStore, createFileStreamBufferDB,
-  createAWSS3BufferDB,
-  createS3BufferStore
-} from "./sources/buffer.js";
-
 /*::
 import type {
+  APIConfig,
   AssetDescription, AssetID,
   Game, GameID, GameUpdate,
   AudioPlaylist, AudioPlaylistID, AudioPlaylistState,
@@ -26,6 +17,16 @@ import type {
   MonsterID, Monster,
 } from "@astral-atlas/wildspace-models";
 */
+import { join, resolve } from 'path';
+import { S3 } from "@aws-sdk/client-s3";
+
+import {
+  createMemoryBufferStore, createMemoryBufferDB,
+  createFileBufferStore, createFileStreamBufferDB,
+  createAWSS3BufferDB,
+  createS3BufferStore
+} from "./sources/buffer.js";
+
 import { createBufferWildspaceData } from "./data.js";
 
 /*::
@@ -51,6 +52,19 @@ export type WildspaceData = {
   tracks: CompositeTable<GameID, AudioTrackID, AudioTrack>,
 };
 */
+
+export const createData = (config/*: APIConfig*/)/*: { data: WildspaceData }*/ => {
+  const dataConfig = config.data;
+  switch (dataConfig.type) {
+    case 'memory':
+      return createMemoryData();
+    case 'file':
+      return createFileData(dataConfig.directory);
+    case 'awsS3':
+      const s3 = new S3({ region: dataConfig.region })
+      return createAWSS3Data(s3, dataConfig.bucket, dataConfig.keyPrefix);
+  }
+}
 
 export const createMemoryData = ()/*: { data: WildspaceData }*/ => {
   const { data } = createBufferWildspaceData({

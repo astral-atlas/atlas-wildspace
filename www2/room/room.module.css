@@ -1,5 +1,4 @@
 @import url("../index.module.css");
-@import url('https://fonts.googleapis.com/css2?family=Martel+Sans:wght@200;300;400;600;700;900&display=swap');
 
 
 menu.roomViewSwitcher {
@@ -47,6 +46,8 @@ menu.roomViewSwitcher {
   position: relative;
 
   color: white;
+
+  height: 100%;
 }
 
 .roomPageWall {
@@ -123,8 +124,13 @@ menu.roomViewSwitcher {
 }
 .trackerView {
   width: calc(75vw);
-  background-color: red;
+  color: black;
+
+  font-family: 'Martel Sans', serif;
+  font-size: 18px;
+  background-color: rgb(231, 180, 156);
   height: 100%;
+  overflow: auto;
 }
 .referenceView {
   width: calc(75vw);
@@ -139,13 +145,17 @@ menu.roomViewSwitcher {
 }
 
 .initiative .tracker {
+  box-sizing: border-box;
   width: 100%;
   flex-basis: 66%;
   flex-shrink: 0;
+  overflow: auto;
 }
 .initiative .controls {
+  box-sizing: border-box;
   flex-basis: 34%;
   flex-shrink: 0;
+  overflow: auto;
 }
 
 .mapScene {

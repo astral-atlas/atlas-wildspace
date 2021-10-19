@@ -2,6 +2,7 @@
 
 /*:: import type { HTTPClient } from '@lukekaalim/http-client'; */
 /*:: import type { AssetID, AssetDescription } from "@astral-atlas/wildspace-models"; */
+/*:: import type { HTTPServiceClient, WSServiceClient } from './entry.js'; */
 import { assetAPI } from '@astral-atlas/wildspace-models';
 import { createJSONResourceClient } from '@lukekaalim/http-client';
 
@@ -13,13 +14,15 @@ export type AssetClient = {
 };
 */
 
-export const createAssetClient = (httpClient/*: HTTPClient*/, httpOrigin/*: string*/, wsOrigin/*: string*/)/*: AssetClient*/ => {
-  const assetResource = createJSONResourceClient(assetAPI["/asset"], httpClient, httpOrigin);
+export const createAssetClient = (http/*: HTTPServiceClient*/, unauthorizedClient/*: HTTPClient*/)/*: AssetClient*/ => {
+  const assetResource = http.createResource(assetAPI["/asset"]);
 
   const create = async (name, MIMEType, content) => {
     const bytes = content.byteLength;
     const { body: { description, uploadURL, downloadURL } } = await assetResource.POST({ body: { name, MIMEType, bytes }});
-    await httpClient.sendRequest({ url: uploadURL, headers: {}, method: 'PUT', body: content });
+    
+    await unauthorizedClient.sendRequest({ url: uploadURL, headers: {}, method: 'PUT', body: content });
+
     return { description, downloadURL: new URL(downloadURL) };
   };
   const peek = async (assetId) => {

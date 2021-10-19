@@ -7,7 +7,6 @@
   "bin": {
     "wildspace": "entry.js"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -20,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/astral-atlas/wildspace/issues"
   },
-  "homepage": "https://github.com/astral-atlas/wildspace#readme"
+  "homepage": "https://github.com/astral-atlas/wildspace#readme",
+  "dependencies": {
+    "json5": "^2.2.0"
+  }
 }

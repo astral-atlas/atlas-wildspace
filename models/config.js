@@ -11,9 +11,16 @@ export type DataConfig =
   | {| type: 'memory' |}
   | {| type: 'awsS3', bucket: string, keyPrefix: string, region: string |}
 
+export type FileAssetConfig = { type: 'file', directory: string };
+export type AWSS3AssetConfig = { type: 'awsS3', bucket: string, keyPrefix: string, region: string };
+export type AssetConfig = 
+  | FileAssetConfig
+  | AWSS3AssetConfig
+
 export type APIConfig = {
   port: number,
   data: DataConfig,
+  asset: AssetConfig,
   api: {
     sesame: {
       origin: string,
@@ -28,10 +35,18 @@ export const castDataConfig/*: Cast<DataConfig>*/ = c.or('type', {
   'awsS3': c.obj({ type: c.lit('awsS3'), bucket: c.str, keyPrefix: c.str, region: c.str }),
   'memory': c.obj({ type: c.lit('memory') }),
 })
+export const castFileAssetConfig/*: Cast<FileAssetConfig>*/ = c.obj({ type: c.lit('file'), directory: c.str, });
+export const castAWSS3AssetConfig/*: Cast<AWSS3AssetConfig>*/ = c.obj({ type: c.lit('awsS3'), bucket: c.str, keyPrefix: c.str, region: c.str });
+
+export const castAssetConfig/*: Cast<AssetConfig>*/ = c.or('type', {
+  'file': castFileAssetConfig,
+  'awsS3': castAWSS3AssetConfig,
+});
 
 export const castAPIConfig/*: Cast<APIConfig>*/ = createObjectCaster({
   port: castNumber,
   data: castDataConfig,
+  asset: castAssetConfig,
   api: c.obj({
     sesame: c.obj({
       origin: c.str,

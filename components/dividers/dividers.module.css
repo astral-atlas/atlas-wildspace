@@ -102,3 +102,14 @@ div.segmentedTop {
   min-height: calc(var(--scale, 1.5) * 45px);
   min-width: calc(var(--scale, 1.5) * 45px);
 }
+div.segmentedBottom {
+  border-style: solid;
+  border-image: url('../assets/segmented_bottom_border.svg');
+  border-image-slice: 27 fill;
+  border-image-width: calc(var(--scale, 1.5) * 40px);
+  border-image-outset: 0px 0px 0px 0px;
+  border-image-repeat: stretch stretch; 
+  padding: calc(var(--scale, 1.5) * 15px);
+  min-height: calc(var(--scale, 1.5) * 45px);
+  min-width: calc(var(--scale, 1.5) * 45px);
+}

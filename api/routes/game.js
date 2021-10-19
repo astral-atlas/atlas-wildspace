@@ -61,7 +61,12 @@ export const createGameRoutes = ({ data, auth, ...s }/*: Services*/)/*: { ws: We
     const { unsubscribe } = data.gameUpdates.subscribe(gameId, update => {
       send({ type: 'updated', update });
     });
-    socket.addEventListener('close', () => unsubscribe());
+
+    const interval = setInterval(() => socket.ping(Date.now()), 1000)
+    socket.addEventListener('close', () => {
+      clearInterval(interval)
+      unsubscribe()
+    });
   });
 
   const characterRoutes = createCharacterRoutes({ ...s, auth, data });

@@ -20,7 +20,7 @@ const createWildspaceServer = (config, services) => {
     const handler = async (request) => {
       try {
         const response = await r.handler(request);
-        console.log(request.method, request.path, Object.fromEntries(request.query.entries()), response.status);
+        console.log(request.method, request.path, response.status);
         return response;
       } catch (error) {
         console.error(error);

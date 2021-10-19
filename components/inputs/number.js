@@ -38,7 +38,7 @@ export type NumberInputProps = {|
 */
 
 export const InspirationInput/*: Component<NumberInputProps>*/ = (props) => {
-  const { style: { scale = 1.5, ...style } = {}, onChange = _ => {}, onInput = _ => {} } = props;
+  const { style: { scale = 1.5, ...style } = {}, onChange = _ => {}, onInput = _ => {}, disabled } = props;
   const getValue = e => e.target.valueAsNumber;
   const className = [inputStyles.inspiration, props.class, props.className].filter(Boolean).join(' ');
   return [
@@ -47,6 +47,7 @@ export const InspirationInput/*: Component<NumberInputProps>*/ = (props) => {
       h('input', {
         type: 'number',
         value: props.value,
+        disabled,
         onChange: e => onChange(getValue(e)),
         onInput: e => onInput(getValue(e)),
         min: props.min,
@@ -56,13 +57,14 @@ export const InspirationInput/*: Component<NumberInputProps>*/ = (props) => {
   ]
 }
 export const ProficiencyInput/*: Component<NumberInputProps>*/ = (props) => {
-  const { style: { scale = 1.5, ...style } = {}, onChange = _ => {}, onInput = _ => {} } = props;
+  const { style: { scale = 1.5, ...style } = {}, onChange = _ => {}, onInput = _ => {}, disabled } = props;
   const getValue = e => e.target.valueAsNumber;
   const className = [inputStyles.proficency, props.class, props.className].filter(Boolean).join(' ');
   return [
     h('label', { className, style: { '--scale': scale } }, [
       h('span', {}, props.label || props.children),
       h('input', {
+        disabled,
         type: 'number',
         value: props.value,
         onChange: e => onChange(getValue(e)),
@@ -113,13 +115,14 @@ export const ArmorInput/*: Component<NumberInputProps>*/ = (props) => {
 }
 
 export const PlainNumberInput/*: Component<NumberInputProps>*/ = (props) => {
-  const { style: { scale = 1.5, ...style } = {}, onChange = _ => {}, onInput = _ => {} } = props;
+  const { style: { scale = 1.5, ...style } = {}, onChange = _ => {}, onInput = _ => {}, disabled } = props;
   const getValue = e => e.target.valueAsNumber;
   const className = [inputStyles.plain, props.class, props.className].filter(Boolean).join(' ');
   return [
     h(PlainDivider, { scale, style },
       h('input', {
         type: 'number',
+        disabled,
         className,
         value: props.value,
         onChange: e => onChange(getValue(e)),

@@ -98,13 +98,27 @@ export const AssetPlayer/*: Component<{
 
     const targetTime = currentTime + ((Date.now() - timeLastUpdated) / 1000);
     if (Math.abs(audioElement.currentTime - targetTime) > 2) {
-      console.log('setting time', targetTime);
       audioElement.currentTime = targetTime;
     }
   }, [isPaused, asset.downloadURL.href, volume === 0, currentTime])
   
+  const refresh = () => {
+    const { current: audioElement } = audioRef;
+    if (!audioElement)
+      return;
+
+    const targetTime = currentTime + ((Date.now() - timeLastUpdated) / 1000);
+    if (Math.abs(audioElement.currentTime - targetTime) > 2) {
+      audioElement.currentTime = targetTime;
+    if (audioElement.paused && !isPaused && volume !== 0) {
+      audioElement.play();
+    } else if((!audioElement.paused && isPaused) || (volume === 0))
+      audioElement.pause();
+    }
+  }
+
   return [
-    h('audio', { ref: audioRef, controls, volume })
+    h('audio', { ref: audioRef, controls, volume, onProgress: refresh, onLoadStart: refresh })
   ]
 };
 
@@ -142,13 +156,11 @@ export const usePlaybackData2 = (tracks/*: AudioTrack[]*/, state/*: AudioPlaylis
 export const PlaylistPlayer/*: Component<{ tracks: AudioTrack[], state: AudioPlaylistState, volume?: number }>*/ = ({ state, tracks, volume }) => {
   const { trackIndex, currentTime } = usePlaybackData2(tracks, state);
 
-  console.log(trackIndex, currentTime);
-
   return [tracks.map((track, index) => h(AssetPlayer, {
+    key: `${track.id}${index}`,
     assetId: track.trackAudioAssetId,
     isPaused: trackIndex !== index,
     volume,
-    controls: true,
     currentTime: trackIndex !== index ? 0 : (currentTime / 1000),
   }))]};
 

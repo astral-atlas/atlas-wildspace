@@ -46,6 +46,7 @@ export const createCharacterRoutes/*: RoutesConstructor*/ = (services) => {
           baseAC: 0,
           baseACReason: '',
           acBonuses: [],
+          initiativeBonus: 0,
 
           initiativeIconAssetId: null,
           alive: null,

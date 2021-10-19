@@ -2,6 +2,7 @@
 /*:: import type { Route as HTTPRoute } from "@lukekaalim/http-server"; */
 /*:: import type { WebSocketRoute } from "@lukekaalim/ws-server"; */
 /*:: import type { WildspaceData } from "@astral-atlas/wildspace-data"; */
+/*:: import type { GameIdentityScope } from "../services/game.js"; */
 /*:: import type { Services } from "../services.js"; */
 
 import { v4 as uuid } from 'uuid';
@@ -10,7 +11,7 @@ import { HTTP_STATUS } from "@lukekaalim/net-description";
 import { createJSONResourceRoutes, createResourceRoutes } from "@lukekaalim/http-server";
 import { createJSONConnectionRoute } from "@lukekaalim/ws-server";
 
-import { roomAPI } from '@astral-atlas/wildspace-models'; 
+import { encountersAPI, getRoundedMonsterHealthPercentage, reduceEncounterState, roomAPI } from '@astral-atlas/wildspace-models'; 
 import * as m from '@astral-atlas/wildspace-models'; 
 import { createMetaRoutes, defaultOptions } from './meta.js';
 
@@ -87,67 +88,78 @@ export const createRoomRoutes = ({ data, ...s }/*: Services*/)/*: { ws: WebSocke
       return { status: HTTP_STATUS.ok, body: { type: 'updated' } };
     }
   });
-  const roomEncounterRoutes = createJSONResourceRoutes(roomAPI['/room/encounter'], {
+  const formatMonsterMini = (monsterMini, game, identity) => {
+    if (identity.type === 'link' && identity.grant.identity === game.gameMasterId)
+      return monsterMini;
+    return {
+      ...monsterMini,
+      maxHitpoints: 100,
+      hitpoints: getRoundedMonsterHealthPercentage(monsterMini),
+      tempHitpoints: 0,
+    };
+  };
+  const formatEncounter = async (encounter, game, identity) => {
+    if (!encounter)
+      return;
+    const { result: characters } = await data.characters.query(game.id);
+    const minis = encounter.minis
+      .filter(mini => mini.type !== 'character' || characters.find(c => c.id === mini.characterId))
+      .map(mini => mini.type === 'monster' ? formatMonsterMini(mini, game, identity) : mini)
+    const turnOrder = encounter.turnOrder
+      .filter(turn => minis.find(mini => mini.id === turn.miniId))
+      .sort((a, b) => b.initiativeResult - a.initiativeResult)
+      .map((a, index) => ({ ...a, index }))
+    const turnIndex = (turnOrder.length + encounter.turnIndex) % turnOrder.length || 0;
+  
+    return {
+      ...encounter,
+      minis,
+      turnOrder,
+      turnIndex,
+    };
+  };
+  const roomEncounterRoutes = createAuthorizedResource(roomAPI['/room/encounter'], {
     ...defaultOptions,
 
-    GET: async ({ query: { gameId, roomId }}) => {
-      const { result: encounter } = await data.roomEncounter.get(gameId, roomId);
-      return { status: HTTP_STATUS.ok, body: { type: 'found', encounter } };
+    GET: {
+      scope: { type: 'player-in-game' },
+      getGameId: r => r.query.gameId,
+      handler: async ({ game, query: { roomId }, identity}) => {
+        const { result: encounter } = await data.roomEncounter.get(game.id, roomId);
+        return { status: HTTP_STATUS.ok, body: { type: 'found', encounter: await formatEncounter(encounter, game, identity) } };
+      }
     },
-    PUT: async ({ query: { gameId, roomId }, body: { encounter }}) => {
-      await data.roomEncounter.set(gameId, roomId, encounter || null);
-      data.roomUpdates.publish(roomId, { type: 'encounter', encounter });
-      return { status: HTTP_STATUS.ok, body: { type: 'updated' } };
+    PUT: {
+      scope: { type: 'game-master-in-game' },
+      getGameId: r => r.query.gameId,
+      handler: async ({ game, query: { roomId }, body: { encounter }, identity }) => {
+        await data.roomEncounter.set(game.id, roomId, encounter || null);
+        data.roomUpdates.publish(roomId, { type: 'encounter', encounter });
+        return { status: HTTP_STATUS.ok, body: { type: 'updated' } };
+      }
     }
   });
-  /*
-  const roomStateConnectionRoute = createJSONConnectionRoute(roomAPI['/room/state'].connection, (connection, socket) => {
-    const { gameId, roomId } = connection.query;
-
-    const onClientMessage = (message) => {
-      // nothing!
-    };
-    connection.addRecieveListener(onClientMessage);
-    const onRoomUpdate = async (update) => {
-      const { result: state } = await data.roomState.get(gameId, roomId);
-      connection.send({ type: 'update', state: state || { audio: null } })
-    };
-
-    const start = async () => {
-      const { result: room } = await data.room.get(gameId, roomId)
-      if (!room)
-        return socket.close(1001, 'fuck you');
-      const { result: state } = await data.roomState.get(gameId, roomId)
-      connection.send({ type: 'update', state: state || { audio: null } });
-      data.roomUpdates.subscribe(roomId, onRoomUpdate);
-    };
-
-    start();
-  });
-  const roomStateResourceRoutes = createJSONResourceRoutes(roomAPI['/room/state'].resource, {
+  const roomEncounterActionsRoutes = createAuthorizedResource(roomAPI['/room/encounter/actions'], {
     ...defaultOptions,
-    GET: async ({ query: { roomId, gameId }, headers: { connection, upgrade } }) => {
-      const { result: state } = await data.roomState.get(gameId, roomId);
-      if (!state)
-        return { status: HTTP_STATUS.created, body: { type: 'found', state: { audio: null } } };
 
-      if (connection && upgrade && connection.toLocaleLowerCase() == 'upgrade' && upgrade.toLocaleLowerCase() == 'websocket')
-        return { status: HTTP_STATUS.switching_protocols };
-
-      return { status: HTTP_STATUS.ok, body: { type: 'found', state } };
-    },
-    PUT: async ({ query: { roomId, gameId }, body: { state: nextState }}) => {
-      const { result: room } = await data.room.get(gameId, roomId);
-      if (!room)
-        return { status: HTTP_STATUS.not_found };
+    POST: {
+      scope: { type: 'player-in-game' },
+      getGameId: r => r.query.gameId,
+      handler: async ({ game, query: { roomId }, body: { actions }, identity }) => {
+        const { result: state } = await data.roomEncounter.get(game.id, roomId);
+        const { result: characters } = await data.characters.query(game.id);
+        if (!state)
+          return { status: HTTP_STATUS.not_found };
         
-      await data.roomState.set(gameId, roomId, nextState);
-      data.roomUpdates.publish(roomId);
+        const finalState = actions.reduce((state, action) => reduceEncounterState(state, characters, action), state);
+        await data.roomEncounter.set(game.id, roomId, finalState);
+        data.roomUpdates.publish(roomId, { type: 'encounter', encounter: finalState });
 
-      return { status: HTTP_STATUS.ok, body: { type: 'updated' } };
-    },
+        return { status: HTTP_STATUS.accepted, body: { type: 'accepted' } };
+      }
+    }
   });
-  */
+  
 
   const roomUpdateResourceRoute = createJSONResourceRoutes({ path: '/room/updates', GET: { toQuery: c.obj({ gameId: m.castGameId, roomId: m.castRoomId }) }}, {
     ...defaultOptions,
@@ -159,14 +171,36 @@ export const createRoomRoutes = ({ data, ...s }/*: Services*/)/*: { ws: WebSocke
       return { status: HTTP_STATUS.switching_protocols };
     }
   });
-  const roomUpdateConnectionRoute = createJSONConnectionRoute(roomAPI['/room/updates'], (con, socket) => {
-    const { query: { roomId, gameId }} = con;
-    const onUpdate = (update) => {
-      con.send(update);
+  const roomUpdateConnectionRoute = createJSONConnectionRoute(roomAPI['/room/updates'], async (con, socket) => {
+    const { query: { roomId, gameId }, addRecieveListener } = con;
+    let identity = { type: 'guest' };
+    const onRecieve = async (message) => {
+      const grant = await s.auth.sdk.validateProof(message.proof);
+      if (!grant)
+        return socket.close(4001, `Proof isn't valid`);
+      identity = { type: 'link', grant };
     };
-    const s = data.roomUpdates.subscribe(roomId, onUpdate)
+    const { removeListener } = addRecieveListener(m => void onRecieve(m));
+    
+    const onUpdate = async (update) => {
+      if (identity.type === 'guest')
+        return;
+      switch (update.type) {
+        case 'encounter':
+          const { result: game } = await data.game.get(gameId);
+          if (!game)
+            return socket.close(4004, `Game does not exist`);
+          return con.send({ ...update, encounter: await formatEncounter(update.encounter, game, identity) })
+        default:
+          return con.send(update);
+      }
+    };
+    const interval = setInterval(() => socket.ping(Date.now()), 1000)
+    const { unsubscribe } = data.roomUpdates.subscribe(roomId, onUpdate)
     socket.addEventListener('close', () => {
-      s.unsubscribe();
+      removeListener();
+      unsubscribe();
+      clearInterval(interval);
     });
   });
   const http = [
@@ -176,6 +210,7 @@ export const createRoomRoutes = ({ data, ...s }/*: Services*/)/*: { ws: WebSocke
     ...roomUpdateResourceRoute,
     //...roomStateResourceRoutes,
     ...allRoomsResourceRoute,
+    ...roomEncounterActionsRoutes,
   ];
   const ws = [
     roomUpdateConnectionRoute,

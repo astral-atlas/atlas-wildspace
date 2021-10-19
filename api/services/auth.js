@@ -26,7 +26,7 @@ export const createAuthService = (config/*: APIConfig*/)/*: AuthService*/ => {
   const getAuthFromHeader = async (authorizationHeader) => {
     if (!authorizationHeader)
       return { type: 'guest' };
-    const authorization = await sdk.authorize(authorizationHeader);
+    const authorization = await sdk.validateHeader(authorizationHeader);
     if (authorization.type === 'invalid')
       throw new Error();
     const { grant } = authorization;

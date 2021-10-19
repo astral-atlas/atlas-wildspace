@@ -3,7 +3,7 @@
 /*:: import type { ResourceClient, HTTPClient } from '@lukekaalim/http-client'; */
 /*:: import type { ClientConnection } from '@lukekaalim/ws-client'; */
 /*:: import type { IdentityProof, UserID, LinkProof } from '@astral-atlas/sesame-models'; */
-/*:: import type { AudioPlaylistID, AudioPlaylist, GameID, AudioTrackID, AudioTrack } from '@astral-atlas/wildspace-models'; */
+/*:: import type { AudioPlaylistID, AudioPlaylist, GameID, AudioTrackID, AudioTrack, AuthorizedConnection } from '@astral-atlas/wildspace-models'; */
 
 /*:: import type { AssetClient } from "./asset.js"; */
 /*:: import type { AudioClient } from "./audio.js"; */
@@ -22,24 +22,39 @@ import { encodeProofToken } from "@astral-atlas/sesame-models";
 
 /*::
 export type HTTPServiceClient = {
-  createResource: <T: Resource>(desc: ResourceDescription<T>) => ResourceClient<T>
+  createResource: <T: Resource>(desc: ResourceDescription<T>) => ResourceClient<T>,
+  httpClient: HTTPClient,
 };
 export type WSServiceClient = {
-  createConnection: <T: Connection<>>(desc: ConnectionDescription<T>) => ClientConnection<T>
+  createConnection: <T: Connection<>>(desc: ConnectionDescription<T>) => ClientConnection<T>,
+  createAuthorizedConnection: <T: Connection<any>>(desc: ConnectionDescription<AuthorizedConnection<T>>) => ClientConnection<T>,
 }
 */
 
-export const createHTTPServiceJSONClient = (httpOrigin/*: string*/, httpClient/*: HTTPClient*/)/*: HTTPServiceClient*/ => {
+export const createHTTPServiceJSONClient = (httpOrigin/*: string*/, httpClient/*: HTTPClient*/, proof/*: ?LinkProof*/)/*: HTTPServiceClient*/ => {
+  const token = proof ? encodeProofToken(proof) : null;
+  const authorizedClient = createAuthorizedClient(httpClient, token ? { type: 'bearer', token } : null)
   const createResource = /*:: <T>*/(desc) => {
-    return createJSONResourceClient(desc, httpClient, httpOrigin);
+    return createJSONResourceClient(desc, authorizedClient, httpOrigin);
   };
-  return { createResource };
+  return { createResource, httpClient: authorizedClient };
 }
-export const createWSServiceJSONClient  = (wsOrigin/*: string*/, websocket/*: Class<WebSocket>*/)/*: WSServiceClient*/ => {
+export const createWSServiceJSONClient  = (wsOrigin/*: string*/, websocket/*: Class<WebSocket>*/, proof/*: ?LinkProof*/)/*: WSServiceClient*/ => {
   const createConnection = /*:: <T>*/(desc) => {
     return createJSONConnectionClient(websocket, desc, wsOrigin);
   };
-  return { createConnection };
+  const createAuthorizedConnection =  /*:: <T>*/(desc) => {
+    const connection = createJSONConnectionClient(websocket, desc, wsOrigin);
+    const connect = async (options) => {
+      const c = await connection.connect(options);
+      c.socket.addEventListener('error', console.log);
+      if (proof)
+        c.send({ type: 'proof', proof });
+      return c;
+    };
+    return { connect }
+  }
+  return { createConnection, createAuthorizedConnection };
 
 }
 
@@ -61,10 +76,10 @@ export const createWildspaceClient = (proof/*: ?LinkProof*/, httpOrigin/*: strin
   const httpClient = createWebClient(fetch);
   const authorizedClient = createAuthorizedClient(httpClient, token ? { type: 'bearer', token } : null)
 
-  const httpService = createHTTPServiceJSONClient(httpOrigin, authorizedClient);
-  const wsService = createWSServiceJSONClient(wsOrigin, WebSocket);
+  const httpService = createHTTPServiceJSONClient(httpOrigin, httpClient, proof);
+  const wsService = createWSServiceJSONClient(wsOrigin, WebSocket, proof);
 
-  const asset = createAssetClient(authorizedClient, httpOrigin, wsOrigin);
+  const asset = createAssetClient(httpService, httpClient);
   const audio = createAudioClient(authorizedClient, asset, httpOrigin, wsOrigin);
   const room = {
     ...createRoomClient(httpService, wsService),

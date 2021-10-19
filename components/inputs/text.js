@@ -38,11 +38,12 @@ export type TextInputProps = {|
 */
 
 export const BrandedTextInput/*: Component<TextInputProps>*/ = (props) => {
-  const { style: { scale = 1.5, ...style } = {}, onChange = _ => {}, onInput = _ => {}, ref } = props;
+  const { style: { scale = 1.5, ...style } = {}, onChange = _ => {}, onInput = _ => {}, ref, disabled } = props;
   const getValue = e => e.target.value;
   const className = [inputStyles.branded, props.class, props.className].filter(Boolean).join(' ');
   return [
     h('input', {
+      disabled,
       className,
       ref,
       type: 'text',
@@ -54,12 +55,13 @@ export const BrandedTextInput/*: Component<TextInputProps>*/ = (props) => {
   ]
 }
 export const PlainTextInput/*: Component<TextInputProps>*/ = (props) => {
-  const { style: { scale = 1.5, ...style } = {}, onChange = _ => {}, onInput = _ => {}, ref } = props;
+  const { style: { scale = 1.5, ...style } = {}, onChange = _ => {}, onInput = _ => {}, ref, disabled } = props;
   const getValue = e => e.target.value;
   const className = [inputStyles.plain, props.class, props.className].filter(Boolean).join(' ');
   return [
     h(PlainDivider, { scale },
       h('input', {
+        disabled,
         className,
         ref,
         type: 'text',

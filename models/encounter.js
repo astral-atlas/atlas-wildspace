@@ -1,48 +1,57 @@
 // @flow strict
 /*:: import type { Cast } from '@lukekaalim/cast'; */
 /*:: import type { UserID } from '@astral-atlas/sesame-models'; */
-/*:: import type { Monster, MonsterID, CharacterID } from "./character.js"; */
+/*:: import type { Monster, MonsterID, CharacterID, Character } from "./character.js"; */
 /*:: import type { GameID } from './game.js'; */
+/*:: import type { Vector3D } from './encounter/map.js'; */
+/*:: import type { Mini, MiniID, MonsterMini, CharacterMini } from './encounter/mini.js'; */
+/*:: import type { EncounterAction } from './encounter/actions.js'; */
 import { c } from '@lukekaalim/cast';
 import { castMonsterId, castMonster, castCharacterId } from './character.js';
+import { castMini, castMonsterMini, castCharacterMini, castMiniId } from './encounter/mini.js';
 import { castGameId } from './game.js';
 
 /*::
 export type EncounterID = string;
-export type Vector3D = { x: number, y: number, z: number };
 */
 
-export const castVector3D/*: Cast<Vector3D>*/ = c.obj({ x: c.num, y: c.num, z: c.num });
+
+export const getRoundedMonsterHealthPercentage = (monster/*: MonsterMini*/)/*: number*/ => {
+  const healthPercentage = (monster.hitpoints + monster.tempHitpoints) / monster.maxHitpoints * 100;
+  switch (true) {
+    case healthPercentage <= 0:
+      return 0;
+    case monster.hitpoints < 10:
+      return 5;
+    case healthPercentage > 99:
+      return 100;
+    case healthPercentage > 50:
+      return 75;
+    case healthPercentage > 0:
+      return 25;
+  }
+  return -1;
+}
+export const getMonsterHealthDescription = (monster/*: MonsterMini*/)/*: string*/ => {
+  const healthPercentage = (monster.hitpoints + monster.tempHitpoints) / monster.maxHitpoints * 100;
+
+  switch (true) {
+    case healthPercentage <= 0:
+      return `🪦 Dead`;
+    case monster.hitpoints < 10:
+      return `🌶️ uh oh`;
+    case healthPercentage > 99:
+      return `💚 Untouched`;
+    case healthPercentage > 50:
+      return `💙 Healthy`;
+    case healthPercentage > 10:
+      return `🧡 Bloody`;
+  }
+  return 'Unknown';
+};
 
 /*::
-export type MiniID = string;
-export type MonsterMini = {
-  type: 'monster',
-  id: MiniID,
-  position: Vector3D,
-  visible: boolean,
-  monsterId: MonsterID,
-
-  conditions: $ReadOnlyArray<string>,
-  hitpoints: number,
-  tempHitpoints: number,
-};
-export type CharacterMini = {
-  type: 'character',
-  id: MiniID,
-  position: Vector3D,
-  characterId: CharacterID,
-
-  conditions: $ReadOnlyArray<string>,
-  hitpoints: number,
-  tempHitpoints: number,
-};
-export type Mini =
-  | MonsterMini
-  | CharacterMini
-export type Turn =
-  | { type: 'monster', monsterId: MonsterID, initiativeResult: number, index: number, }
-  | { type: 'character', characterId: CharacterID, initiativeResult: number, index: number, }
+export type Turn = { miniId: MiniID, initiativeResult: number, index: number, }
 
 export type Encounter = {
   id: EncounterID,
@@ -64,49 +73,10 @@ export type EncounterState = {
 };
 */
 
-const castMonsterTurn = c.obj({
-  type: c.lit('monster'),
-  monsterId: castMonsterId,
+export const castTurn/*: Cast<Turn>*/ = c.obj({
+  miniId: castMiniId,
   initiativeResult: c.num,
   index: c.num,
-})
-const castCharacterTurn = c.obj({
-  type: c.lit('character'),
-  characterId: castCharacterId,
-  initiativeResult: c.num,
-  index: c.num,
-})
-
-export const castTurn/*: Cast<Turn>*/ = c.or('type', {
-  'monster': castMonsterTurn,
-  'character': castCharacterTurn,
-});
-
-export const castMiniId/*: Cast<MiniID>*/ = c.str;
-export const castMonsterMini/*: Cast<MonsterMini>*/ = c.obj({
-  type: c.lit('monster'),
-  id: castMiniId,
-  position: castVector3D,
-  visible: c.bool,
-  monsterId: castMonsterId,
-
-  conditions: c.arr(c.str),
-  hitpoints: c.num,
-  tempHitpoints: c.num,
-});
-export const castCharacterMini/*: Cast<CharacterMini>*/ = c.obj({
-  type: c.lit('character'),
-  id: castMiniId,
-  position: castVector3D,
-  characterId: castCharacterId,
-
-  conditions: c.arr(c.str),
-  hitpoints: c.num,
-  tempHitpoints: c.num,
-});
-export const castMini/*: Cast<Mini>*/ = c.or('type', {
-  character: castCharacterMini,
-  monster: castMonsterMini,
 });
 
 export const castEncounterId/*: Cast<EncounterID>*/ = c.str;
@@ -127,3 +97,8 @@ export const castEncounterState/*: Cast<EncounterState>*/ = c.obj({
   turnIndex: c.num,
   turnOrder: c.arr(castTurn),
 });
+
+export * from './encounter/actions.js';
+export * from './encounter/map.js';
+export * from './encounter/reducer.js';
+export * from './encounter/mini.js';

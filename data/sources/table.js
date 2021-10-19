@@ -2,7 +2,7 @@
 /*:: import type { JSONValue, Cast } from '@lukekaalim/cast'; */
 
 /*:: import type { BufferStore } from './buffer.js'; */
-import { c } from '@lukekaalim/cast';
+import { c, castArray } from '@lukekaalim/cast';
 import { createLockFunction } from './lock.js';
 
 /*::
@@ -22,6 +22,19 @@ export type CompositeTable<PartitionKey, SortKey, Value> = {
 };
 */
 
+const createFaultTolerantArrayCaster = /*:: <T>*/(castRow/*: Cast<T>*/)/*: Cast<T[]>*/ => {
+  const castFaultTolerantArray = (value) => {
+    const array = castArray(value);
+    const values = [];
+    for (const element of array)
+      try {
+        values.push(castRow(element));
+      } catch (error) { console.warn(error.message) }
+    return values;
+  };
+  return castFaultTolerantArray
+};
+
 export const createMemoryTableLock = /*:: <K, V>*/(table/*: Table<K, V>*/)/*: Table<K, V>*/ => {
   const lockedSet = createLockFunction(({ k, v }) => table.set(k, v));
   return {
@@ -38,7 +51,7 @@ export const createMemoryCompositeTableLock = /*:: <P, S, V>*/(table/*: Composit
 };
 
 export const createBufferTable = /*:: <T>*/(store/*: BufferStore*/, castValue/*: Cast<T>*/)/*: Table<string, T>*/ => {
-  const castTable = c.arr(c.obj({ key: c.str, value: castValue }));
+  const castTable = createFaultTolerantArrayCaster(c.obj({ key: c.str, value: castValue }));
   const loadTable = async () => {
     try {
       const buffer = await store.get()
@@ -68,7 +81,7 @@ export const createBufferTable = /*:: <T>*/(store/*: BufferStore*/, castValue/*:
   return createMemoryTableLock({ get, set, scan, });
 };
 export const createBufferCompositeTable = /*:: <T>*/(store/*: BufferStore*/, castValue/*: Cast<T>*/)/*: CompositeTable<string, string, T>*/ => {
-  const castTable = c.arr(c.obj({ partition: c.str, sort: c.str, value: castValue }));
+  const castTable = createFaultTolerantArrayCaster(c.obj({ partition: c.str, sort: c.str, value: castValue }));
   const matchEntry = (partition, sort, e) => (e.partition === partition && e.sort === sort);
   const loadTable = async () => {
     try {
@@ -96,7 +109,7 @@ export const createBufferCompositeTable = /*:: <T>*/(store/*: BufferStore*/, cas
     const table = await loadTable();
     // TODO: this is broken!
     const entries = table
-      .filter(e => e.partition === partition)
+      .filter(e => !partition || e.partition === partition)
       .map(e => e.value)
     return { result: entries, next: null };
   };

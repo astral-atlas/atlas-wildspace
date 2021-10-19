@@ -20,11 +20,12 @@ export type PlainLabelProps = {
 }
 */
 
-export const PlainLabel/*: Component<PlainLabelProps>*/ = ({ label, children, style: { direction = 'left' } = {} }) => {
+export const PlainLabel/*: Component<PlainLabelProps>*/ = ({ label, children, style: { direction = 'left', ...style } = {} }) => {
   const vertical = direction === 'above' || direction === 'below';
   const reverse = direction === 'right' || direction == 'below';
   return [
     h('label', { style: {
+      ...style,
       display: 'flex',
       flexDirection: vertical ? 'column' : 'row',
       alignItems: reverse ? 'flex-end' : 'flex-start',

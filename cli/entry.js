@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 // @flow strict
 
-import { initFileData } from "./init.js";
+import { handleCharacterCommand } from "./characters.js";
 
 
-const main = (command, ...params) => {
+const main = (command, ...subcommands) => {
   switch (command) {
-    case 'init':
-      return initFileData(...params);
+    case 'character':
+      return handleCharacterCommand(...subcommands);
     default:
       return console.log('No idea, boss');
   }

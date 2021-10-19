@@ -38,7 +38,7 @@ declare module '@aws-sdk/client-s3' {
 
   declare export type PutObjectCommandInput = {
     ...PutObjectRequest,
-    Body: Uint8Array | Buffer | string
+    Body?: Uint8Array | Buffer | string
   };
   declare export type PutObjectCommandOutput = {
     ETag: string,
@@ -72,6 +72,10 @@ declare module '@aws-sdk/client-s3' {
     putObject(args: PutObjectCommandInput): Promise<PutObjectCommandOutput>,
     getObject(args: GetObjectCommandInput): Promise<GetObjectCommandOutput>,
     deleteObject(args: DeleteObjectCommandInput): Promise<DeleteObjectCommandOutput>,
+  }
+
+  declare export class PutObjectCommand {
+    constructor(input: PutObjectCommandInput): PutObjectCommand,
   }
 
   declare export type S3ClientConfig = {

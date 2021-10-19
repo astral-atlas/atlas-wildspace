@@ -18,7 +18,8 @@
   },
   "homepage": "https://github.com/astral-atlas/wildspace#readme",
   "dependencies": {
+    "@astral-atlas/wildspace-models": "^1.0.0",
     "@lukekaalim/act": "^2.2.3",
-    "@astral-atlas/wildspace-models": "^1.0.0"
+    "uuid": "^8.3.2"
   }
 }

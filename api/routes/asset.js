@@ -15,29 +15,15 @@ import { defaultOptions } from './meta.js';
 
 import { assetAPI } from '@astral-atlas/wildspace-models'; 
 
-export const createAssetRoutes = ({ data }/*: Services*/)/*: { ws: WebSocketRoute[], http: HTTPRoute[] }*/ => {
+export const createAssetRoutes = ({ data, asset }/*: Services*/)/*: { ws: WebSocketRoute[], http: HTTPRoute[] }*/ => {
   const assetResourceRoutes = createJSONResourceRoutes(assetAPI['/asset'], {
     ...defaultOptions,
     GET: async ({ query: { assetId } }) => {
-      const { result: description } = await data.assets.get(assetId);
-      if (!description)
-        return { status: HTTP_STATUS.not_found };
-      const downloadURL = `http://127.0.0.1:5567/assets/data?assetId=${assetId}`
+      const { downloadURL, description } = await asset.peek(assetId);
       return { status: HTTP_STATUS.ok, body: { type: 'found', description, downloadURL } };
     },
     POST: async ({ body: { MIMEType, bytes, name } }) => {
-      const description = {
-        id: uuid(),
-        name,
-        bytes,
-        MIMEType,
-        creator: '',
-        uploaded: Date.now(),
-      };
-      const url = `http://127.0.0.1:5567/assets/data?assetId=${description.id}`;
-      const uploadURL = url;
-      const downloadURL = url;
-      await data.assets.set(description.id, description);
+      const { downloadURL, description, uploadURL } = await asset.put(MIMEType, bytes, name);
       return { status: HTTP_STATUS.created, body: { type: 'created', uploadURL, downloadURL, description }};
     }
   });

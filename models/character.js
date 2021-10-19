@@ -38,6 +38,8 @@ export type Character = {
   baseACReason: string,
   acBonuses: $ReadOnlyArray<CharacterACBonus>,
 
+  initiativeBonus: number,
+
   initiativeIconAssetId: ?AssetID,
 
   alive: ?('yes' | 'no' | 'maybe'),
@@ -76,6 +78,8 @@ export const castCharacter/*: Cast<Character>*/ = createObjectCaster({
   baseAC: c.num,
   baseACReason: c.str,
   acBonuses: c.arr(c.obj({ reason: c.str, bonus: c.num })),
+
+  initiativeBonus: c.num,
   
   initiativeIconAssetId: c.maybe(castAssetID),
 

@@ -1,6 +1,9 @@
 data "aws_iam_role" "beanstalk_service" {
   name = "aws-elasticbeanstalk-service-role"
 }
+resource "aws_s3_bucket" "api_data" {
+  bucket_prefix = "wildspace-test-data"
+}
 
 resource "aws_elastic_beanstalk_application" "api" {
   name        = "wildspace-api"
@@ -16,10 +19,11 @@ resource "aws_elastic_beanstalk_application" "api" {
 
 locals {
   api_config = {
-    "md5_breaker": 10
+    "md5_breaker": 16
     "port": 8080 // this is the default port elastic beanstalk will listen to
     // This is used for the SDK
-    "data": { type: "memory", directory: "./data" },
+    "data": { type: "awsS3", bucket: aws_s3_bucket.api_data.bucket, keyPrefix: "/wildspace", region: "ap-southeast-2" },
+    "asset": { type: "awsS3", bucket: aws_s3_bucket.assets.bucket, keyPrefix: "/wildspace/assets", region: "ap-southeast-2" }
     "api": {
       "sesame": {
         "origin": "http://api.sesame.astral-atlas.com",
@@ -72,9 +76,28 @@ data "aws_iam_policy" "elastic_beanstalk_docker_policy" {
 data "aws_iam_policy" "ec2_contanier_read_only_policy" {
   name = "AmazonEC2ContainerRegistryReadOnly"
 }
+data "aws_iam_policy_document" "api_role_policy" {
+  // Sesame Data Access
+  statement {
+    sid = "DataAccess"
+    actions   = ["s3:Get*", "s3:List*", "s3:PutObject*"]
+    resources = [
+      aws_s3_bucket.api_data.arn,
+      "${aws_s3_bucket.api_data.arn}/*",
+      aws_s3_bucket.assets.arn,
+      "${aws_s3_bucket.assets.arn}/*"
+    ]
+    effect = "Allow"
+  }
+}
 resource "aws_iam_role" "api_role" {
   name = "wildspace_api_role"
   assume_role_policy = data.aws_iam_policy_document.ec2_assume_role_policy.json
+
+  inline_policy {
+    name = "api_role_policy"
+    policy = data.aws_iam_policy_document.api_role_policy.json
+  }
 
   managed_policy_arns = [
     data.aws_iam_policy.elastic_beanstalk_web_policy.arn,
@@ -134,4 +157,11 @@ output "api-origin-name" {
 }
 output "api-public-name" {
   value = aws_route53_record.api.fqdn
+}
+
+output "api-data-bucket" {
+  value = aws_s3_bucket.api_data.bucket
+}
+output "assets-bucket" {
+  value = aws_s3_bucket.assets.bucket
 }

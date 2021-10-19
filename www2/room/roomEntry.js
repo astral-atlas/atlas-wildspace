@@ -24,6 +24,8 @@ import { useNavigation } from "../hooks/navigation.js";
 import { WildspaceHeader } from "../components/Header.js";
 import { useURLParam } from "../hooks/navigation";
 import { SpinningZeroCube } from "./RoomMapScene.js";
+import { useWildspaceState } from "../hooks/app.js";
+import { GameMasterEncounterInitiativeControls } from "../../components/initiative/controls";
 
 const RoomAudio = ({ volume, onVolumeChange }) => {
   const buttonClassNames = [
@@ -50,9 +52,11 @@ const getOffset = (view) => {
   }
 }
 
-const RoomTracker = ({ gameData, state }) => {
+const RoomTracker = ({ gameData, state, game, room }) => {
+  const api = useAPI();
+  const { proof: { userId } } = useWildspaceState();
   const { encounters, characters } = gameData;
-  const selectedMinis = [];
+  const [selectedMinis, setSelectedMinis] = useState([]);
 
   if (!state)
     return null;
@@ -60,10 +64,32 @@ const RoomTracker = ({ gameData, state }) => {
   if (!encounter)
     return null;
 
+  const isGM = userId === game.gameMasterId;
+
   return [
     h('div', { className: styles.initiative }, [
-      h(EncounterInitiativeTracker, { className: styles.tracker, characters, selectedMinis, encounter, encounterState: state }),
-      h(EncounterInitiativeControls, { className: styles.controls, selectedMinis, encounter, encounterState: state }),
+      h(EncounterInitiativeTracker, {
+        className: styles.tracker,
+        characters, selectedMinis,
+        encounter,
+        encounterState: state,
+        onSelectedMinisChange: setSelectedMinis,
+        gameMaster: isGM,
+      }),
+      isGM ?
+        h(GameMasterEncounterInitiativeControls, {
+          className: styles.controls,
+          characters, monsters: [], selectedMinis, state,
+          onStateUpdate: encounter => api.room.setEncounter(game.id, room.id, encounter),
+          onSubmitActions: actions => api.room.performEncounterActions(game.id, room.id, actions)
+        }) :
+        h(EncounterInitiativeControls, {
+          className: styles.controls,
+          selectedMinis,
+          encounter,
+          encounterState: state,
+          onSubmitActions: actions => api.room.performEncounterActions(game.id, room.id, actions)
+        }),
     ])
   ]
 };
@@ -159,8 +185,10 @@ const RoomPage = () => {
       h(WildspaceHeader, {
         left: [
           h('div', { style: { display: 'flex', flexDirection: 'column' }}, [
-            h('select', { value: gameId, onChange: e => (setGameId(e.target.value), setRoomId(null)) },
-              games.map(g => h('option', { value: g.id, selected: g.id === gameId }, g.name))),
+            h('select', { value: gameId, onChange: e => (setGameId(e.target.value), setRoomId(null)) }, [
+              h('option', { selected: gameId === null, value: null }, '<No Game>'),
+              games.map(g => h('option', { value: g.id, selected: g.id === gameId }, g.name)),
+            ]),
             h('select', { value: roomId, onChange: e => (setRoomId(e.target.value))}, [
               h('option', { selected: roomId === null, value: null }, '<No Room>'),
               rooms ? rooms.map(r => h('option', { value: r.id, selected: r.id === roomId }, r.title)) : null

@@ -55,7 +55,8 @@ export const StarfieldScene/*: Component<{}>*/ = () => {
       const { material } = mesh;
       if (material instanceof PointsMaterial) {
         material.size = b * 0.1;
-        material.color = new Color(b, b, b);
+        if (material.color instanceof Color)
+            material.color.setRGB(b, b, b);
       }
       mesh.position.z = (t * 40) - 20;
     }

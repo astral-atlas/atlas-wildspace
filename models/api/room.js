@@ -3,13 +3,15 @@
 /*:: import type { GameID } from "../game.js"; */
 /*:: import type { Room, RoomID, RoomState, RoomUpdate } from "../room.js"; */
 /*:: import type { AudioPlaylistState } from "../audio.js"; */
-/*:: import type { EncounterState } from "../encounter.js"; */
+/*:: import type { EncounterState, EncounterAction } from "../encounter.js"; */
+/*:: import type { AuthorizedConnection } from "./meta.js"; */
 
 import { createObjectCaster, createConstantCaster, castString, createKeyedUnionCaster, createArrayCaster, c } from "@lukekaalim/cast";
 import { castGameId } from "../game.js";
 import { castRoom, castRoomId, castRoomState, castRoomUpdate } from "../room.js";
 import { castAudioPlaylistState } from "../audio.js";
-import { castEncounterState } from "../encounter.js";
+import { castEncounterAction, castEncounterState } from "../encounter.js";
+import { createAuthorizedConnectionDescription } from './meta.js';
 
 /*::
 export type RoomResource = {|
@@ -49,11 +51,11 @@ export type RoomStateResource = {|
     response: { type: 'updated' },
   }
 |};
-export type RoomUpdateConnection = {|
+export type RoomUpdateConnection = AuthorizedConnection<{|
   query: { roomId: RoomID, gameId: GameID },
   client: empty,
   server: RoomUpdate,
-|};
+|}>;
 
 export type RoomStateConnection = {|
   query: { roomId: RoomID, gameId: GameID },
@@ -86,6 +88,13 @@ export type RoomEncounter = {|
     response: { type: 'updated' }
   },
 |};
+export type RoomEncounterActions = {|
+  POST: {
+    query: { roomId: RoomID, gameId: GameID },
+    request: { actions: $ReadOnlyArray<EncounterAction> },
+    response: { type: 'accepted' }
+  },
+|};
 
 export type RoomAPI = {
   '/room': RoomResource,
@@ -93,6 +102,7 @@ export type RoomAPI = {
   '/room/updates': RoomUpdateConnection,
   '/room/audio': RoomAudio,
   '/room/encounter': RoomEncounter,
+  '/room/encounter/actions': RoomEncounterActions,
 
   '/room/state': { connection: RoomStateConnection, resource: RoomStateResource },
 
@@ -136,13 +146,13 @@ export const roomStateConnectionDescription/*: ConnectionDescription<RoomAPI['/r
     'update': createObjectCaster({ type: createConstantCaster('update'), state: castRoomState }),
   })
 }
-export const roomUpdatesConnectionDescription/*: ConnectionDescription<RoomAPI['/room/updates']>*/ = {
+export const roomUpdatesConnectionDescription/*: ConnectionDescription<RoomAPI['/room/updates']>*/ = createAuthorizedConnectionDescription({
   path: '/room/updates',
   subprotocol: 'JSON.wildspace.room_updates.v1.0.0',
 
   castQuery: createObjectCaster({ roomId: castRoomId, gameId: castGameId }),
   castServerMessage: castRoomUpdate,
-}
+});
 
 export const roomAudio/*: ResourceDescription<RoomAudio>*/ = {
   path: '/room/audio',
@@ -171,6 +181,15 @@ export const roomEncounter/*: ResourceDescription<RoomEncounter>*/ = {
     toResponseBody: c.obj({ type: c.lit('updated') }),
   }
 };
+export const roomEncounterActions/*: ResourceDescription<RoomEncounterActions>*/ = {
+  path: '/room/encounter/actions',
+
+  POST: {
+    toQuery: c.obj({ roomId: castRoomId, gameId: castGameId }),
+    toRequestBody: c.obj({ actions: c.arr(castEncounterAction) }),
+    toResponseBody: c.obj({ type: c.lit('accepted') }),
+  }
+};
 
 export const roomStateResourceDescription/*: ResourceDescription<RoomAPI['/room/state']['resource']> */ = {
   path: '/room/state',
@@ -191,6 +210,7 @@ export const roomAPI = {
   '/room/updates': roomUpdatesConnectionDescription,
   '/room/audio': roomAudio,
   '/room/encounter': roomEncounter,
+  '/room/encounter/actions': roomEncounterActions,
   '/room/state': { connection: roomStateConnectionDescription, resource: roomStateResourceDescription },
   '/room/all': allRoomsResourceDescription,
 };

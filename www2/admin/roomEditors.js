@@ -173,7 +173,7 @@ export const RoomEditor/*: Component<{ game: Game, gameData: GameData }>*/ = ({ 
       h('button', { onClick: () => setRoomId(null), disabled: roomId === null }, 'Create New Room'),
       ...rooms.map(room => h('button', { onClick: () => setRoomId(room.id), disabled: roomId === room.id }, `Edit ${room.title}`))
     ]),
-    room === null && h(NewRoomEditor, { game, onCreate }),
-    room !== null && h(ExistingRoomEditor, { room, game, gameData })
+    !room && h(NewRoomEditor, { game, onCreate }),
+    room && h(ExistingRoomEditor, { room, game, gameData }) || null
   ];
 };

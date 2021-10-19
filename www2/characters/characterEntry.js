@@ -5,9 +5,9 @@
 import { h, useState, useEffect, useMemo } from '@lukekaalim/act';
 import { C } from '@lukekaalim/act-three';
 
-import { renderAppPage } from "../app.js";
+import { renderAppPage, renderDocument } from "../app.js";
 import { CopperButton, FeatureSection, SmallTextInput } from '../components/5e.js';
-import { useAPI } from "../hooks/api.js";
+import { useAPI, useGame } from "../hooks/api.js";
 import { useAsync } from '../hooks/async.js';
 import { useIdentity } from '../hooks/identity.js';
 import { BackgroundBox } from "../components/5e";
@@ -18,6 +18,9 @@ import { StarfieldScene } from './starfieldScene.js';
 import { useNavigation, useURLParam } from '../hooks/navigation.js';
 import { useConnection } from "../hooks/connect";
 import { CharacterSheet } from './CharacterSheet.js';
+import { WildspaceApp } from "../app";
+import { useWildspaceState } from '../hooks/app.js';
+import { CharacterSheet2 } from "./CharacterSheet2.js";
 
 const CharacterPreview = ({ character }) => {
   return [
@@ -57,81 +60,69 @@ const NewCharacterEditor = ({ game, identity, player }) => {
   ];
 };
 
-const CharacterSelector = ({ game }) => {
+const CharacterSelector = ({ game, gameData }) => {
   const api = useAPI();
-  const [identity] = useIdentity();
-  const [characters] = useAsync(() => api.game.character.list(game.id), [game, api]);
-  const [players] = useAsync(() => api.game.players.list(game.id), [game, api]);
+  const { proof: { userId } } = useWildspaceState();
+  const { characters, players } = gameData;
 
-  const [selectedPlayerId, setSelectedPlayerId] = useState(null);
-  const [selectedCharacterId, setSelectedCharacterId] = useURLParam('characterId');
+  const [playerId, setPlayerId] = useURLParam('playerId');
+  const [characterId, setCharacterId] = useURLParam('characterId');
 
-  if (!characters || !players || !identity)
-    return null;
+  const isGameMaster = game.gameMasterId === userId;
 
-  const selectedCharacter = characters.find(c => c.id === selectedCharacterId) || null;
-  const selectedPlayer = players.find(p => p.userId === (selectedPlayerId || (selectedCharacter && selectedCharacter.playerId))) || null;
+  const player = players.find(p => p.userId === playerId) || null;
+  const character = characters.find(c => c.id === characterId) || null;
 
-  const isGameMaster = game.gameMasterId === identity.proof.userId;
-  const isSelectedPlayerMe = selectedPlayer && (identity.proof.userId === selectedPlayer.userId);
-  const isPlayerEditable = (isGameMaster || isSelectedPlayerMe);
+  const visiblePlayers = isGameMaster ? players : players.filter(p => p.userId == userId || characters.find(c => c.playerId === p.userId)) || null;
+  const visibleCharacters = playerId && characters.filter(c => c.playerId === playerId) || null;
 
-  const ownsNoCharacters = isSelectedPlayerMe && selectedPlayer && (characters.filter(c => c.playerId === selectedPlayer.userId).length < 1)
 
   return [
     h('nav', { className: styles.charactersPageNavigation }, [
       h(TabList, {
-        options: players
-          .filter(p => (characters.filter(c => c.playerId === p.userId).length > 0) || isGameMaster || p.userId === identity.proof.userId)
-          .map(p => ({ label: identity.proof.userId === p.userId ? `${p.name} (Self)` :  p.name, value: p.userId })),
-        selected: selectedPlayer && selectedPlayer.userId,
+        options: visiblePlayers.map(p => p.userId),
+        getLabel: id => players.find(p => p.userId === id)?.name || '',
+        value: playerId || '',
         onChange: (id) => {
-          setSelectedPlayerId(id);
+          setPlayerId(id || null);
           const firstCharacter = characters.find(c => c.playerId === id)
-          setSelectedCharacterId(firstCharacter ? firstCharacter.id : null)
+          setCharacterId(firstCharacter ? firstCharacter.id : null)
         },
       }),
-      !selectedPlayer && h('p', {}, `Select a Player to view their characters`),
-      selectedPlayer && [
-        ownsNoCharacters ? h('p', {}, `You don't have any characters at the moment. Create a new one to get started!`) : null,
+      !visibleCharacters && h('p', {}, `Select a Player to view their characters`),
+      visibleCharacters && [
+        player && h('button', { onClick: () => api.game.character.create(game.id, '', player.userId) }, 'Create Character'),
         h(TabList, {
-          options: [
-            ...characters
-              .filter(c => c.playerId === selectedPlayer.userId)
-              .map(c => ({ label: c.name, value: c.id })),
-            isPlayerEditable ? { value: null, label: '<New Character>' } : null
-          ].filter(Boolean),
-          selected: selectedCharacter && selectedCharacter.id,
-          onChange: (v) => {
-            setSelectedPlayerId(selectedPlayer.userId);
-            setSelectedCharacterId(v || null);
+          options: visibleCharacters.map(c => c.id),
+          getLabel: id => characters.find(p => p.id === id)?.name || '<Unnamed Character>',
+          value: characterId || '',
+          onChange: (id) => {
+            setCharacterId(id);
           },
         }),
       ]
     ]),
-    selectedPlayer && h('div', { className: styles.charactersPageSheetWorkspace }, [
-      h('div', { className: styles.charactersPageSheetContainer }, [
-        selectedCharacter && [
-          isPlayerEditable && [
-            h(CharacterSheet, { game, character: selectedCharacter, identity, player: selectedPlayer })
-          ],
-          !isPlayerEditable && [
-            h(CharacterSheet, { game, character: selectedCharacter, identity, player: selectedPlayer, readOnly: true }),
-          ],
-        ],
-        !selectedCharacter && isPlayerEditable && [
-          h(NewCharacterEditor, { game, identity, player: selectedPlayer })
-        ]
-      ]),
+    character && player && h('div', { className: styles.charactersPageSheetWorkspace }, [
+      h('div', { className: styles.charactersPageSheetContainer },
+        h(CharacterSheet2, { character, player, game, gameData, disabled: !isGameMaster && player.userId !== userId  })),
     ]),
   ];
 };
 
-const TabList/*: Component<{ options: { value: ?string, label: string }[], selected: ?string, onChange: (v: ?string) => mixed}>*/ = ({ options, selected, onChange }) => {
+/*::
+export type TabListProps = {
+  options: string[],
+  value: string,
+  onChange: string => mixed,
+  getLabel?: string => string,
+}
+*/
+
+const TabList/*: Component<TabListProps>*/ = ({ options, value, onChange, getLabel = a => a }) => {
   const getClassName = (option) => {
     return [
       styles.tabsListOption,
-      option.value === selected ? styles.tabsListOptionSelected : null
+      option === value ? styles.tabsListOptionSelected : null
     ]
       .filter(Boolean)
       .join(' ');
@@ -141,37 +132,33 @@ const TabList/*: Component<{ options: { value: ?string, label: string }[], selec
     h('ul', { class: styles.tabsList }, [
       options.map(option =>
         h('li', {},
-          h('button', { className: getClassName(option), onClick: () => onChange(option.value) }, option.label))),
+          h('button', { className: getClassName(option), onClick: () => onChange(option) }, getLabel(option)))),
     ])
   ];
 };
 
-const CharacterPage = ({ config }) => {
+const CharacterManagementPage = () => {
   const api = useAPI();
-  const [lastUpdated, setLastUpdated] = useState(Date.now());
-  const [games] = useAsync(() => api.game.list(), [api, lastUpdated]);
-  const url = new URL(window.location.href);
-  const selectedGameId = url.searchParams.get('gameId');
-
-  const selectedGame = games && games.find(game => game.id === selectedGameId) || null;
-
-  useEffect(() => {
-    if (!selectedGame)
-      return;
-    
-    const subscriptionPromise = api.game.addUpdateListener(selectedGame.id, () => setLastUpdated(Date.now()));
-    return async () => {
-      const { close } = await subscriptionPromise;
-      close();
-    }
-  }, [selectedGame && selectedGame.id]);
+  const [games] = useAsync(() => api.game.list(), [api])
+  const [gameId, setGameId] = useURLParam('gameId');
+  const gameData = useGame(gameId);
 
   if (!games)
     return null;
 
-
+  const selectedGame = games.find(g => g.id === gameId) || null;
+  
   return [
-    h(WildspaceHeader, { title: 'Character Sheets' }),
+    h(WildspaceHeader, {
+      left: [
+        h('div', { style: { display: 'flex', flexDirection: 'column' }}, [
+          h('select', { value: gameId || '', onChange: e => setGameId(e.target.value || null) }, [
+            h('option', { selected: !gameId, value: '' }, '<No Game>'),
+            games.map(g => h('option', { value: g.id, selected: g.id === gameId }, g.name)),
+          ]),
+        ])
+      ]
+    }),
     h('div', { class: styles.characterPage }, [
       h('div', { class: styles.characterPageBackground }, [
         h(StarfieldScene),
@@ -181,10 +168,10 @@ const CharacterPage = ({ config }) => {
           h('h2', {}, 'No Game Selected'),
           h('p', {}, 'Select a Game to begin')
         ],
-        selectedGame && h(CharacterSelector, { game: selectedGame }),
+        selectedGame && h(CharacterSelector, { game: selectedGame, gameData }),
       ]),
     ]),
   ];
 };
 
-renderAppPage(CharacterPage);
+renderDocument(h(WildspaceApp, { initialURL: new URL(document.location.href) }, h(CharacterManagementPage)));

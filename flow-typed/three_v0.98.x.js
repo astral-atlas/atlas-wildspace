@@ -379,6 +379,7 @@ declare module three {
     getStyle(): string;
     setHSL(hue: number, saturation: number, lightness: number): void;
     getHSL(): HSL;
+    setRGB(r: number, g: number, b: number): Color;
     offsetHSL(hue: number, saturation: number, lightness: number): void;
     add(color: Color): void;
     addColors(a: Color, b: Color): void;

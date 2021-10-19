@@ -41,6 +41,8 @@ declare module "ws" {
     removeEventListener('message', cb: ({ data: Uint8Array, isBinary: boolean }) => void): void;
     removeEventListener('open', cb: ({ data: Uint8Array, isBinary: boolean }) => void): void;
     removeEventListener('close', cb: ({ data: Uint8Array, isBinary: boolean }) => void): void;
+
+    ping(number): void;
     
     close(code: number, reason: string): void;
     send(data: string | Uint8Array, options?: WebSocketSendOptions, cb?: (error?: Error) => void): void;

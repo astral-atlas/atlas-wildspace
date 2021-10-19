@@ -80,7 +80,7 @@ export const gameResourceDescription/*: ResourceDescription<GameAPI['/games']>*/
   },
 };
 
-export const roomStateConnectionDescription/*: ConnectionDescription<GameAPI['/games/updates']>*/ = {
+export const gameStateConnectionDescription/*: ConnectionDescription<GameAPI['/games/updates']>*/ = {
   path: '/games/updates',
   subprotocol: 'JSON.wildspace.game_updates.v1.0.0',
 
@@ -105,7 +105,7 @@ export const gameAPI = {
   ...encountersAPI,
   '/games': gameResourceDescription,
   '/games/all': allGamesResourceDescription,
-  '/games/updates': roomStateConnectionDescription,
+  '/games/updates': gameStateConnectionDescription,
 }
 export * from './game/characters.js';
 export * from './game/players.js';

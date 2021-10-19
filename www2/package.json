@@ -9,17 +9,19 @@
     "@astral-atlas/wildspace-client2": "*",
     "@astral-atlas/wildspace-components": "*",
     "@lukekaalim/act": "^2.2.3",
+    "@lukekaalim/act-curve": "^2.0.0",
     "@lukekaalim/act-three": "^3.9.4",
     "@lukekaalim/act-web": "^0.4.3",
     "@lukekaalim/cast": "^4.0.0",
     "@lukekaalim/http-client": "^5.2.0",
-    "@lukekaalim/ws-client": "^2.1.0"
+    "@lukekaalim/ws-client": "^2.1.0",
+    "lodash.debounce": "^4.0.8"
   },
   "devDependencies": {
     "vite": "^2.6.2"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build"
   },
   "repository": {
