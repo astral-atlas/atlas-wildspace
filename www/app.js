@@ -37,7 +37,7 @@ export const WildspaceApp/*: Component<WildspaceAppProps>*/ = ({ children, initi
     console.warn(e)
   }
 
-  const messenger = useConsumerMessenger('http://sesame.astral-atlas.com', {
+  const messenger = useConsumerMessenger(config && config.www.sesame.httpOrigin, {
     proof: identity && identity.proof,
     onGrant,
     onReject
