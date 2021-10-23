@@ -16,7 +16,6 @@ resource "aws_elastic_beanstalk_application" "api" {
   }
 }
 
-
 locals {
   api_config = {
     "md5_breaker": 19
@@ -146,11 +145,6 @@ resource "aws_elastic_beanstalk_environment" "api_test" {
   setting {
     namespace = "aws:ec2:vpc"
     name      = "Subnets"
-    value     = join(",", module.vpc.public_subnets)
-  }
-  setting {
-    namespace = "aws:ec2:vpc"
-    name      = "Subnets"
     value     = join(",", module.vpc.private_subnets)
   }
   setting {
@@ -165,23 +159,9 @@ resource "aws_elastic_beanstalk_environment" "api_test" {
   }
 }
 
-resource "aws_route53_record" "api" {
-  zone_id = data.aws_route53_zone.root.zone_id
-  name    = "api.wildspace"
-  type    = "A"
-
-  alias {
-    name                   = aws_elastic_beanstalk_environment.api_test.cname
-    zone_id                = "Z2PCDNR3VC2G1N"
-    evaluate_target_health = false
-  }
-}
 
 output "api-origin-name" {
   value = aws_elastic_beanstalk_environment.api_test.cname
-}
-output "api-public-name" {
-  value = aws_route53_record.api.fqdn
 }
 
 output "api-data-bucket" {

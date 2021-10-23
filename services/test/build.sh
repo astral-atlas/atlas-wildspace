@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/env -S bash -e
 
 configure_bundle() {
   input=$(</dev/stdin)
