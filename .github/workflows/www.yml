@@ -13,8 +13,8 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '16'
-      - run: npm ci -w www2
-      - run: npm run build -w www2
+      - run: npm ci -w www
+      - run: npm run build -w www
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
