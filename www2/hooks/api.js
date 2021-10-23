@@ -21,12 +21,14 @@ export const useAPI = ()/*: WildspaceClient*/ => {
 };
 
 
-export const useRoom = (gameId/*: GameID*/, roomId/*: RoomID*/)/*: { audio: ?AudioPlaylistState, encounter: ?EncounterState }*/ => {
+export const useRoom = (gameId/*: ?GameID*/, roomId/*: ?RoomID*/)/*: { audio: ?AudioPlaylistState, encounter: ?EncounterState }*/ => {
   const api = useAPI();
   const [audio, setAudio] = useState(null);
   const [encounter, setEncounter] = useState(null);
 
   useEffect(() => {
+    if (!gameId || !roomId)
+      return;
     const { close } = api.room.connectUpdates(gameId, roomId, async (update) => {
       switch (update.type) {
         case 'audio':

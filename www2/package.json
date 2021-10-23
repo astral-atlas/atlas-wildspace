@@ -10,19 +10,20 @@
     "@astral-atlas/wildspace-components": "*",
     "@lukekaalim/act": "^2.2.3",
     "@lukekaalim/act-curve": "^2.0.0",
-    "@lukekaalim/act-three": "^3.9.4",
+    "@lukekaalim/act-three": "^3.10.0",
     "@lukekaalim/act-web": "^0.4.3",
     "@lukekaalim/cast": "^4.0.0",
     "@lukekaalim/http-client": "^5.2.0",
     "@lukekaalim/ws-client": "^2.1.0",
-    "lodash.debounce": "^4.0.8"
+    "lodash.debounce": "^4.0.8",
+    "lodash.throttle": "^4.1.1"
   },
   "devDependencies": {
     "vite": "^2.6.2"
   },
   "scripts": {
     "dev": "vite --host",
-    "build": "vite build"
+    "build": "vite build && cd dist && zip ../../wildspace-www.zip -r ."
   },
   "repository": {
     "type": "git",

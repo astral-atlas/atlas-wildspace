@@ -61,6 +61,11 @@ export const SegmentedTop/*: Component<BoxDividerProps>*/ = (props) => {
   const className = [dividerStyles.segmentedTop, props.class, props.className].filter(Boolean).join(' ');
   return h('div', { className, style: { ...style, '--scale': scale } }, props.children)
 };
+export const SegmentedMiddle/*: Component<BoxDividerProps>*/ = (props) => {
+  const { style: { scale = 1.5, ...style } = {} } = props;
+  const className = [dividerStyles.segmentedMiddle, props.class, props.className].filter(Boolean).join(' ');
+  return h('div', { className, style: { ...style, '--scale': scale } }, props.children)
+};
 export const SegmentedBottom/*: Component<BoxDividerProps>*/ = (props) => {
   const { style: { scale = 1.5, ...style } = {} } = props;
   const className = [dividerStyles.segmentedBottom, props.class, props.className].filter(Boolean).join(' ');

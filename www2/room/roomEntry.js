@@ -23,9 +23,10 @@ import { useAPI, useGame, useRoom } from "../hooks/api.js";
 import { useNavigation } from "../hooks/navigation.js";
 import { WildspaceHeader } from "../components/Header.js";
 import { useURLParam } from "../hooks/navigation";
-import { SpinningZeroCube } from "./RoomMapScene.js";
+import { MapScene } from "./RoomMapScene.js";
 import { useWildspaceState } from "../hooks/app.js";
 import { GameMasterEncounterInitiativeControls } from "../../components/initiative/controls";
+import { CharacterSheet2 } from "../characters/CharacterSheet2";
 
 const RoomAudio = ({ volume, onVolumeChange }) => {
   const buttonClassNames = [
@@ -52,11 +53,32 @@ const getOffset = (view) => {
   }
 }
 
-const RoomTracker = ({ gameData, state, game, room }) => {
+const useMiniImageURLMap = (state, characters) => {
+  const api = useAPI();
+
+  const [miniImageURLMap] = useAsync(async () => {
+    if (!state)
+      return;
+    return Object.fromEntries(await Promise.all(state.minis.map(async (mini) => {
+      switch(mini.type) {
+        case 'character':
+          const character = characters.find(c => c.id === mini.characterId);
+          const characterAsset = character && character.initiativeIconAssetId && await api.asset.peek(character.initiativeIconAssetId);
+          return [mini.id, characterAsset && characterAsset.downloadURL.href || null]
+        case 'monster':
+          const monsterAsset = mini.iconAssetId && await api.asset.peek(mini.iconAssetId);
+          return [mini.id, monsterAsset && monsterAsset.downloadURL.href || null]
+      }
+    })));
+  }, [state, characters])
+
+  return miniImageURLMap || {};
+}
+
+const RoomTracker = ({ gameData, state, game, room, selectedMinis, setSelectedMinis, miniImageURLMap }) => {
   const api = useAPI();
   const { proof: { userId } } = useWildspaceState();
   const { encounters, characters } = gameData;
-  const [selectedMinis, setSelectedMinis] = useState([]);
 
   if (!state)
     return null;
@@ -65,6 +87,7 @@ const RoomTracker = ({ gameData, state, game, room }) => {
     return null;
 
   const isGM = userId === game.gameMasterId;
+
 
   return [
     h('div', { className: styles.initiative }, [
@@ -75,9 +98,11 @@ const RoomTracker = ({ gameData, state, game, room }) => {
         encounterState: state,
         onSelectedMinisChange: setSelectedMinis,
         gameMaster: isGM,
+        miniImageURLMap,
       }),
       isGM ?
         h(GameMasterEncounterInitiativeControls, {
+          api,
           className: styles.controls,
           characters, monsters: [], selectedMinis, state,
           onStateUpdate: encounter => api.room.setEncounter(game.id, room.id, encounter),
@@ -94,32 +119,91 @@ const RoomTracker = ({ gameData, state, game, room }) => {
   ]
 };
 
+const getMiniName = (characters, minis, miniId) => {
+  const mini = minis.find(m => m.id === miniId);
+  if (!mini)
+    return '';
+  switch (mini.type) {
+    case 'monster':
+      return mini.name;
+    case 'character':
+      const character = characters.find(c => c.id === mini.characterId);
+      return character ? character.name : '';
+  }
+};
+
 const Room = ({ view, game, room, gameData, volume }) => {
   const api = useAPI();
+  const ref = useRef();
+  const mapViewRef = useRef/*:: <?HTMLElement>*/();
+  const [selectedMinis, setSelectedMinis] = useState([]);
+
+  const [zoom, setZoom] = useState(1);
 
   const { audio, encounter } = useRoom(game.id, room.id);
-  const { playlists, tracks } = gameData;
+  const { playlists, tracks, characters } = gameData;
 
   const playlist = audio && playlists.find(p => p.id === audio.playlistId);
   const playlistTracks = playlist && playlist.trackIds
     .map(trackId => tracks.find(track => track.id === trackId))
     .filter(Boolean);
+  
 
   const offset = getOffset(view)
 
+  const [roomSize, setRoomSize] = useState({ x: 0, y: 0 });
+  useEffect(() => {
+    const { current } = ref;
+    if (!current)
+      return;
+
+    const onSizeChange = () => {
+      setRoomSize({ x: current.offsetWidth, y: current.offsetHeight });
+    };
+    new ResizeObserver(onSizeChange).observe(current)
+  }, []);
+
+  const miniImageURLMap = useMiniImageURLMap(encounter, characters);
+
   return [
-    h('div', { className: styles.room }, [
-      h('div', { className: styles.mapScene }, h(C.three, { height: 512, width: 512 }, h(SpinningZeroCube))),
+    h('div', { className: styles.room, ref }, [
+      audio && playlistTracks && h(PlaylistPlayer, { state: audio, tracks: playlistTracks, volume }) || null,
+      encounter && h('div', { className: styles.mapScene },
+        h(MapScene, {
+          height: roomSize.y,
+          width: roomSize.x,
+          zoom,
+          encounter,
+          mapViewRef,
+          selectedMinis,
+          setSelectedMinis,
+          miniImageURLMap,
+          onSubmitActions: actions => api.room.performEncounterActions(game.id, room.id, actions)
+        })) || null,
       h('div', { className: styles.roomViewContainer, style: { transform: `translateX(${offset})`} }, [
-        h('div', { className: styles.trackerView }, h(RoomTracker, { game, room, gameData, state: encounter })),
-        h('div', { className: styles.mapView }, [
-          audio && playlistTracks && h(PlaylistPlayer, { state: audio, tracks: playlistTracks, volume }) || null
+        h('div', { className: styles.trackerView }, h(RoomTracker, { miniImageURLMap, game, room, gameData, state: encounter, selectedMinis, setSelectedMinis })),
+        h('div', { className: styles.mapView, ref: mapViewRef, onWheel: e => setZoom(Math.min(2, Math.max(1, zoom - (e.deltaY * 0.001)))) }, [
+          encounter && h('ul', {}, selectedMinis.map(m => h('li', {}, getMiniName(characters, encounter.minis, m)))) || null,
         ]),
-        h('div', { className: styles.referenceView }, 'right'),
+        h('div', { className: styles.referenceView }, h(ReferenceView, { game, gameData })),
       ])
     ])
   ];
 };
+
+const ReferenceView = ({ gameData, game }) => {
+  const { characters, players } = gameData;
+  const { proof } = useWildspaceState();
+  const myCharacters = characters.filter(c => c.playerId !== game.gameMasterId)
+
+  return [
+    h('div', { style: { overflowX: 'scroll' } }, [
+      h('span', { style: { display: 'flex', flexDirection: 'row' }}, [
+        myCharacters.map(character => h('span', { style: { margin: '0 16px 0 16px' }}, h(CharacterSheet2, { character, disabled: true, game })))
+      ])
+    ]),
+  ];
+}
 
 const getCodeDelta = (e) => {
   if (!e.ctrlKey)
@@ -134,7 +218,7 @@ const getCodeDelta = (e) => {
   }
 }
 
-const RoomPageViewSwitcher = ({ view, onViewChange }) => {
+const RoomPageViewSwitcher = ({ view, onViewChange, audio, encounter }) => {
   useEffect(() => {
     const listener = (e/*: KeyboardEvent*/) => {
       const viewIndex = views.findIndex(v => v.value === view);
@@ -151,10 +235,10 @@ const RoomPageViewSwitcher = ({ view, onViewChange }) => {
   }, [view]);
 
   const views = [
-    { value: 'tracker', label: 'Tracker' },
+    encounter && { value: 'tracker', label: 'Tracker' },
     { value: 'map', label: 'Map' },
     { value: 'reference', label: 'Reference' },
-  ];
+  ].filter(Boolean);
 
   return [
     h('menu', { className: styles.roomViewSwitcher }, [
@@ -173,6 +257,8 @@ const RoomPage = () => {
 
   const [games] = useAsync(async () => api.game.list(), [api]);
   const { rooms, ...gameData } = useGame(gameId);
+  
+  const { audio, encounter } = useRoom(gameId, roomId);
 
   if (!games)
     return null;
@@ -196,10 +282,10 @@ const RoomPage = () => {
           ])
         ],
         center: [
-          game && room && h('nav', {},h(RoomPageViewSwitcher, { view, onViewChange: setView })) || null,
+          game && room && h('nav', {},h(RoomPageViewSwitcher, { view, onViewChange: setView, encounter, audio })) || null,
         ],
         right: [
-          h(RoomAudio, { volume, onVolumeChange: setVolume })
+          audio && audio.playlistId && h(RoomAudio, { volume, onVolumeChange: setVolume }) || null
         ]
       }),
       //!roomData && h('section', { class: styles.roomPageWall }, [

@@ -4,7 +4,7 @@
 /*:: import type { WildspaceData } from "@astral-atlas/wildspace-data"; */
 /*:: import type { Services } from "./services.js"; */
 
-import { createJSONResourceRoutes } from '@lukekaalim/http-server';
+import { createJSONResourceRoutes, createResourceRoutes } from '@lukekaalim/http-server';
 import { HTTP_STATUS } from "@lukekaalim/net-description";
 
 import { createAudioRoutes } from './routes/audio.js';
@@ -36,6 +36,15 @@ export const createRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute[], 
       return { status: HTTP_STATUS.ok, body: { type: 'found', name } };
     }
   })
+  const healthCheckRoutes = createResourceRoutes({
+    path: '/',
+
+    methods: {
+      GET: () => {
+        return { status: HTTP_STATUS.ok, headers: {}, body: null };
+      }
+    }
+  })
 
   const ws = [
     ...audioRoutes.ws,
@@ -49,6 +58,7 @@ export const createRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute[], 
     ...roomRoutes.http,
     ...gameRoutes.http,
     ...selfRoutes,
+    ...healthCheckRoutes,
   ];
   return { ws, http }
 };

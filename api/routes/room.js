@@ -171,7 +171,7 @@ export const createRoomRoutes = ({ data, ...s }/*: Services*/)/*: { ws: WebSocke
       return { status: HTTP_STATUS.switching_protocols };
     }
   });
-  const roomUpdateConnectionRoute = createJSONConnectionRoute(roomAPI['/room/updates'], async (con, socket) => {
+  const roomUpdateConnectionRoute = createJSONConnectionRoute(roomAPI['/room/updates'], (con, socket) => {
     const { query: { roomId, gameId }, addRecieveListener } = con;
     let identity = { type: 'guest' };
     const onRecieve = async (message) => {

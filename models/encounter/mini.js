@@ -4,7 +4,9 @@
 /*:: import type { Monster, MonsterID, CharacterID } from "../character.js"; */
 /*:: import type { GameID } from '../game.js'; */
 /*:: import type { Vector3D } from './map.js'; */
+/*:: import type { AssetID } from "../asset.js" ;*/
 import { c } from '@lukekaalim/cast';
+import { castAssetID } from '../asset.js';
 import { castMonsterId, castCharacterId } from '../character.js';
 import { castVector3D } from './map.js';
 
@@ -17,6 +19,7 @@ export type MonsterMini = {
   position: Vector3D,
   visible: boolean,
   monsterId: MonsterID,
+  iconAssetId: AssetID,
 
   conditions: $ReadOnlyArray<string>,
   hitpoints: number,
@@ -47,6 +50,7 @@ export const castMonsterMini/*: Cast<MonsterMini>*/ = c.obj({
   position: castVector3D,
   visible: c.bool,
   monsterId: castMonsterId,
+  iconAssetId: castAssetID,
 
   conditions: c.arr(c.str),
   hitpoints: c.num,

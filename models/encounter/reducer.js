@@ -14,6 +14,8 @@ const reduceMonsterMiniState = (mini, action) => {
       return { ...mini, conditions: [...new Set([...mini.conditions, action.tagName])] };
     case 'remove-tag':
       return { ...mini, conditions: mini.conditions.filter(c => c !== action.tagName) };
+    case 'move':
+      return { ...mini, position: action.newPosition };
     case 'damage': {
       const tempHitpoints = Math.max(0, mini.tempHitpoints - action.hitpoints);
       const hitpoints = Math.max(0, mini.hitpoints + Math.min(0, mini.tempHitpoints - action.hitpoints))
@@ -39,6 +41,8 @@ const reduceCharacterMiniState = (mini, characters, action) => {
       return { ...mini, conditions: [...new Set([...mini.conditions, action.tagName])] };
     case 'remove-tag':
       return { ...mini, conditions: mini.conditions.filter(c => c !== action.tagName)  };
+    case 'move':
+      return { ...mini, position: action.newPosition };
     case 'damage': {
       const tempHitpoints = Math.max(0, mini.tempHitpoints - action.hitpoints);
       const hitpoints = Math.max(0, mini.hitpoints + Math.min(0, mini.tempHitpoints - action.hitpoints))
@@ -72,6 +76,7 @@ export const reduceEncounterState = (state/*: EncounterState*/, characters/*: $R
     case 'damage':
     case 'heal':
     case 'grant-temp':
+    case 'move':
       return { ...state, minis: state.minis.map(mini => mini.id === action.miniId ? reduceMiniState(mini, characters, action) : mini) };
   }
   return state;

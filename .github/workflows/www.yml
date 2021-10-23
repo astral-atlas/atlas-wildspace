@@ -3,7 +3,7 @@ name: "Publish @astral-atlas/wildspace-api"
 on:
   push:
     tags:
-      - '@astral-atlas/wildspace-api@*'
+      - '@astral-atlas/wildspace-www@*'
 
 jobs:
   release-api:
@@ -13,12 +13,12 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '16'
-      - run: npm ci -w api --production
-      - run: npm run build -w api
+      - run: npm ci -w www2
+      - run: npm run build -w www2
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           draft: true
-          files: wildspace-api.zip
+          files: wildspace-www.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

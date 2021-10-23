@@ -8,3 +8,4 @@ export * from './asset.js';
 export * from './room.js';
 export * from './config.js';
 export * from './encounter.js';
+export * from './model.js';

@@ -3,7 +3,7 @@
 /*:: import type { GameID } from './game.js'; */
 /*:: import type { AssetID } from "./asset.js"; */
 
-import { castString, createObjectCaster, createArrayCaster, castNumber, createConstantUnionCaster, createNullableCaster } from "@lukekaalim/cast";
+import { castString, createObjectCaster, createArrayCaster, castNumber, createConstantUnionCaster, createNullableCaster, c } from "@lukekaalim/cast";
 import { castGameId } from "./game.js";
 import { castAssetID } from "./asset.js";
 
@@ -70,4 +70,20 @@ export const castAudioPlaylistState/*: Cast<AudioPlaylistState>*/ = createObject
   playlistStartTime: castNumber,
   playState: createConstantUnionCaster(['paused', 'stopped', 'playing']),
   globalVolume: castNumber,
+});
+
+/*::
+export type AudioTrackGroupID = string;
+export type AudioTrackGroup = {
+  id: AudioTrackGroupID,
+
+  name: string,
+  tracks: $ReadOnlyArray<AudioTrackID>,
+};
+*/
+export const castAudioTrackGroupId/*: Cast<AudioTrackGroupID>*/ = c.str;
+export const castAudioTrackGroup/*: Cast<AudioTrackGroup>*/ = c.obj({
+  id: castAudioTrackGroupId,
+  name: c.str,
+  tracks: c.arr(castAudioTrackId),
 });

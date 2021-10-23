@@ -95,7 +95,7 @@ const RoomStateAudioEditor = ({ game, room, audio, gameData }) => {
       playlistStartTime: Date.now(),
       playlistId
     }
-    api.room.setAudio(game.id, room.id, audio);
+    api.room.setAudio(game.id, room.id, playlistId ? audio : null);
   };
 
   const playlist = playlists.find(p => audio && (p.id === audio.playlistId))

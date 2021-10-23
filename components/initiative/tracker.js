@@ -17,13 +17,14 @@ export type EncounterInitiativeTrackerProps = {|
   characters: Character[],
   encounter: Encounter,
   encounterState: EncounterState,
+  miniImageURLMap: { [MiniID]: ?string },
 
   selectedMinis: MiniID[],
   onSelectedMinisChange: MiniID[] => mixed,
 |};
 */
 
-const MonsterRow = ({ encounter, encounterState, turn, mini, selectedMinis, onClick, gameMaster }) => {
+const MonsterRow = ({ miniImageURLMap, encounter, encounterState, turn, mini, selectedMinis, onClick, gameMaster }) => {
   return h(InitiativeTurnRow, {
     name: mini.name,
     
@@ -33,19 +34,19 @@ const MonsterRow = ({ encounter, encounterState, turn, mini, selectedMinis, onCl
     selected: selectedMinis.includes(mini.id),
     active: encounterState.turnIndex === turn.index,
     turn: turn.initiativeResult,
-    iconURL: '',
+    iconURL: miniImageURLMap[mini.id] || '',
     onClick,
     tags: [...mini.conditions],
   });
 };
-const CharacterRow = ({ turn, encounter, mini, character, encounterState, onClick, selectedMinis }) => {
+const CharacterRow = ({ miniImageURLMap, turn, encounter, mini, character, encounterState, onClick, selectedMinis }) => {
   return h(InitiativeTurnRow, {
     name: character.name,
     health: { type: 'values', hitpoints: mini.hitpoints, tempHitpoints: mini.tempHitpoints, maxHitpoints: character.maxHitpoints },
     selected: selectedMinis.includes(mini.id),
     active: encounterState.turnIndex === turn.index,
     turn: turn.initiativeResult,
-    iconURL: '',
+    iconURL: miniImageURLMap[mini.id] || '',
     tags: [...mini.conditions],
     onClick
   });
@@ -59,6 +60,7 @@ export const EncounterInitiativeTracker/*: Component<EncounterInitiativeTrackerP
   selectedMinis,
   onSelectedMinisChange,
   gameMaster,
+  miniImageURLMap,
 }) => {
   const onRowClick = (e, mini) => {
     const miniSelected = selectedMinis.includes(mini.id);
@@ -78,12 +80,12 @@ export const EncounterInitiativeTracker/*: Component<EncounterInitiativeTrackerP
           default:
               return null;
           case 'monster':
-            return h(MonsterRow, { gameMaster, turn, mini, encounter, encounterState, onClick: (e) => onRowClick(e, mini), selectedMinis });
+            return h(MonsterRow, { miniImageURLMap, gameMaster, turn, mini, encounter, encounterState, onClick: (e) => onRowClick(e, mini), selectedMinis });
           case 'character':
             const character = characters.find(c => c.id === mini.characterId);
             if (!character)
               return null;
-            return h(CharacterRow, { turn, mini, encounter, character, encounterState, onClick: (e) => onRowClick(e, mini), selectedMinis });
+            return h(CharacterRow, { miniImageURLMap, turn, mini, encounter, character, encounterState, onClick: (e) => onRowClick(e, mini), selectedMinis });
         }
       })
     ])

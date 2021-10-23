@@ -2,6 +2,7 @@
 /*:: import type { Component, ElementNode } from '@lukekaalim/act'; */
 /*:: import type { CharacterMini, Character, Monster, Encounter, EncounterState, MiniID, EncounterAction, CharacterID } from '@astral-atlas/wildspace-models'; */
 /*:: import type { PlainSelectInputProps } from '../inputs/select.js'; */
+/*:: import type { WildspaceClient } from '@astral-atlas/wildspace-client2'; */
 import { h, useState } from '@lukekaalim/act';
 import { PlainLabel, PlainNumberInput, PlainSelectInput, PlainTextInput, SquareDivider } from '../entry.js';
 import { v4 as uuid } from 'uuid';
@@ -124,23 +125,37 @@ export const EncounterInitiativeControls/*: Component<EncounterInitiativeControl
   ];
 };
 
-const AddAdhocMonsterControl = ({ onStateUpdate, state }) => {
+const AddAdhocMonsterControl = ({ onStateUpdate, state, api }) => {
+  const [imageFile, setImageFile] = useState/*:: <?File>*/(null);
+  console.log('monster control');
   const [monsterMini, setMonsterMini] = useState({
     type: 'monster',
     id: uuid(),
     name: '',
     position: { x: 0, y: 0, z: 0},
     monsterId: 'temp',
-  
+    iconAssetId: '',
+    
     conditions: [],
     hitpoints: 50,
     maxHitpoints: 50,
     tempHitpoints: 0,
     visible: true,
   })
-  const onClick = () => {
-    onStateUpdate({ ...state, minis: [...state.minis, monsterMini] })
+  const onClick = async (e) => {
+    if (!api)
+      return null;
+    e.preventDefault();
+    if (!imageFile) 
+      return;
+    const buffer = new Uint8Array(await imageFile.arrayBuffer());
+    const asset = await api.asset.create(imageFile.name, imageFile.type, buffer);
+
+    onStateUpdate({ ...state, minis: [...state.minis, { ...monsterMini, iconAssetId: asset.description.id }] })
   };
+
+  if (!api)
+    return null;
 
   return [
     h(PlainLabel, { label: 'Name', style: { direction: 'above' } }, [
@@ -157,6 +172,9 @@ const AddAdhocMonsterControl = ({ onStateUpdate, state }) => {
       h(PlainNumberInput, {
         value: monsterMini.maxHitpoints,
         onChange: maxHitpoints => setMonsterMini({ ...monsterMini, maxHitpoints }) }),
+    ]),
+    h(PlainLabel, { label: 'Initiative Icon', style: { direction: 'above' } }, [
+      h('input', { type: 'file', onChange: e => setImageFile(e.target.files[0]) }),
     ]),
     h('button', { onClick }, 'Apply')
   ]
@@ -259,6 +277,7 @@ const RemoveMiniFromInitiative = ({ selectedMinis, onStateUpdate, state }) => {
 /*::
 export type GameMasterEncounterInitiativeControlsProps = {
   className?: string,
+  api?: WildspaceClient,
 
   selectedMinis: MiniID[],
   state: EncounterState,
@@ -288,6 +307,7 @@ export const GameMasterEncounterInitiativeControls/*: Component<GameMasterEncoun
 
   characters,
   monsters,
+  api,
   onSubmitActions,
 }) => {
   const [controlIndex, setControlIndex] = useState(0);
@@ -301,7 +321,7 @@ export const GameMasterEncounterInitiativeControls/*: Component<GameMasterEncoun
         h(PlainSelectInput, { value: controlIndex, options: Object.keys(gmControls).map((k, i) => ({ label: k, value: i })), onChange: setControlIndex }),
       ]),
       h('hr'),
-      controlComponent && h(controlComponent, { characters, onStateUpdate, state, selectedMinis, onSubmitActions }),
+      controlComponent && h(controlComponent, { characters, onStateUpdate, state, selectedMinis, onSubmitActions, api }),
     ]),
   ];
 };

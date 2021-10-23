@@ -134,7 +134,6 @@ menu.roomViewSwitcher {
 }
 .referenceView {
   width: calc(75vw);
-  background-color: blue;
   height: 100%;
 }
 

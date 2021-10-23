@@ -825,7 +825,7 @@ declare module three {
     alphaMap?: ?Texture,
     aoMap?: ?Texture,
     aoMapIntensity?: number,
-    color?: Color | string,
+    color?: Color | string | number,
     combine?: CombineStrategy,
     isBasicMeshMaterial?: bool,
     envMap?: ?Texture,
