@@ -5,6 +5,7 @@ export default {
     alias: { 'preact': '@lukekaalim/act', 'preact/hooks': '@lukekaalim/act' }
   },
   build: {
+    sourcemap: true,
     outDir: 'dist',
     rollupOptions: {
       input: {
