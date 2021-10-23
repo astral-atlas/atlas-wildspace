@@ -19,7 +19,7 @@ resource "aws_elastic_beanstalk_application" "api" {
 
 locals {
   api_config = {
-    "md5_breaker": 16
+    "md5_breaker": 19
     "port": 8080 // this is the default port elastic beanstalk will listen to
     // This is used for the SDK
     "data": { type: "awsS3", bucket: aws_s3_bucket.api_data.bucket, keyPrefix: "/wildspace", region: "ap-southeast-2" },
@@ -137,6 +137,31 @@ resource "aws_elastic_beanstalk_environment" "api_test" {
     namespace = "aws:elasticbeanstalk:cloudwatch:logs"
     name      = "DeleteOnTerminate"
     value     = true
+  }
+  setting {
+    namespace = "aws:ec2:vpc"
+    name      = "VPCId"
+    value     = module.vpc.vpc_id
+  }
+  setting {
+    namespace = "aws:ec2:vpc"
+    name      = "Subnets"
+    value     = join(",", module.vpc.public_subnets)
+  }
+  setting {
+    namespace = "aws:ec2:vpc"
+    name      = "Subnets"
+    value     = join(",", module.vpc.private_subnets)
+  }
+  setting {
+    namespace = "aws:ec2:vpc"
+    name      = "ELBSubnets"
+    value     = join(",", module.vpc.public_subnets)
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:environment"
+    name      = "LoadBalancerType"
+    value     = "application"
   }
 }
 
