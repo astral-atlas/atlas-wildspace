@@ -1,6 +1,6 @@
 {
   "name": "@astral-atlas/wildspace-www",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "private": true,
   "dependencies": {
     "@astral-atlas/sesame-client": "^2.0.4",
@@ -23,6 +23,7 @@
   },
   "scripts": {
     "dev": "vite --host",
+    "postversion": "../scripts/postversion.sh",
     "build": "vite build && cd dist && zip ../../wildspace-www.zip -r ."
   },
   "repository": {
