@@ -15,7 +15,7 @@
   },
   "scripts": {
     "dev:api": "npm run dev -w api",
-    "dev:www": "npm run dev -w www2",
+    "dev:www": "npm run dev -w www",
     "dev:book": "npm run dev -w book",
     "dev": "npx concurrently npm:dev:*"
   }
