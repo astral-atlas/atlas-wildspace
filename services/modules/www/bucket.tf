@@ -14,6 +14,9 @@ output "bucket_arn" {
   value = aws_s3_bucket.www.arn
 }
 
+output "bucket_name" {
+  value = aws_s3_bucket.www.bucket
+}
 output "bucket_domain" {
   value = aws_s3_bucket.www.website_domain
 }

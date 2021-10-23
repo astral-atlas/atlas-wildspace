@@ -15,6 +15,7 @@ resource "aws_s3_bucket" "assets" {
   bucket_prefix = "${var.name}-wildspace-assets-"
 
   acl = "public-read"
+
   cors_rule {
     allowed_headers = ["*"]
     allowed_methods = ["PUT", "POST", "GET", "HEAD"]
@@ -29,3 +30,7 @@ output "assets_bucket" {
 output "assets_bucket_zone_id" {
   value = aws_s3_bucket.assets.hosted_zone_id
 }
+output "assets_bucket_regional_domain" {
+  value = aws_s3_bucket.assets.bucket_regional_domain_name
+}
+

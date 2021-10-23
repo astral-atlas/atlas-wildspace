@@ -46,7 +46,7 @@ module "api" {
     "md5_breaker": 0,
     "api": {
       "sesame": {
-        "origin": "http://api.sesame.astral-atlas.com",
+        "origin": "https://api.sesame.astral-atlas.com",
         "proof": {
           "type": "service",
           "grantId": "8618874e-cb56-48b4-8f93-ac7bb6d1b590",
@@ -70,7 +70,7 @@ module "api" {
     public_subnets = module.vpc.public_subnets
   }
 
-  www_origin_name = "wildspace2.astral-atlas.com"
+  www_origin_name = "https://wildspace.astral-atlas.com"
 }
 
 module "www" {
@@ -81,19 +81,19 @@ module "www" {
   www_config = {
     "www": {
       "sesame": {
-        "httpOrigin": "http://sesame.astral-atlas.com"
+        "httpOrigin": "https://sesame.astral-atlas.com"
       }
     },
     "api": {
       "wildspace": {
-        "httpOrigin": "http://api.wildspace2.astral-atlas.com",
-        "wsOrigin": "ws://api.wildspace2.astral-atlas.com"
+        "httpOrigin": "https://api.wildspace.astral-atlas.com",
+        "wsOrigin": "wss://api.wildspace.astral-atlas.com"
       },
       "sesame": {
-        "httpOrigin": "http://api.sesame.astral-atlas.com"
+        "httpOrigin": "https://api.sesame.astral-atlas.com"
       }
     }
   }
-  www_version = "3.0.0"
-  www_origin = "wildspace2.astral-atlas.com"
+  www_version = "3.0.3"
+  www_origin = "wildspace.astral-atlas.com"
 }
