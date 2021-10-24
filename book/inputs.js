@@ -17,7 +17,7 @@ import {
 
 
 export const circleInputPreview/*: PreviewPage<{ checked: boolean, disabled: boolean, scale: number }>*/ = {
-  name: h('pre', {}, '<CircleCheckboxInput />'),
+  name: '<CircleCheckboxInput />',
   defaultWorkplaceProps: {
     checked: true,
     disabled: false,

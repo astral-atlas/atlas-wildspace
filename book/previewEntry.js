@@ -19,7 +19,7 @@ import { initativeStatusPreview, initiativePreview } from './initiative.js';
 
 
 const proficiencyPreview/*: PreviewPage<{ label: string, scale: number, value: number }>*/ = {
-  name: h('pre', {}, '<ProficiencyInput />'),
+  name: '<ProficiencyInput />',
   defaultWorkplaceProps: {
     label: 'Proficiency Bonus',
     value: 4,
@@ -50,7 +50,7 @@ const proficiencyPreview/*: PreviewPage<{ label: string, scale: number, value: n
 };
 
 const armorPreview/*: PreviewPage<{ }> */ = {
-  name: h('pre', {}, '<ArmorCalculator />'),
+  name: '<ArmorCalculator />',
   defaultWorkplaceProps: {},
   workspaceControls: ({ onWorkspacePropsChange, workspaceProps: {} }) => [],
   workspace: ({  }) => [
@@ -65,8 +65,8 @@ const pages = [
   armorPreview,
   initiativePreview,
   circleInputPreview,
-  initativeStatusPreview,
-  selectInputPreview
+  //initativeStatusPreview,
+  //selectInputPreview
 ];
 
 const WildspaceBook = () => {
@@ -79,9 +79,13 @@ const main = () => {
   const { body } = document;
   if (!body)
     throw new Error();
-
+  
   setTimeout(() => {
-    render(h(WildspaceBook), body);
+    try {
+      render(h(WildspaceBook), body);
+    } catch (error) {
+      window.localStorage.removeItem("wildspace_book_index");
+    }
   }, 50);
 };
 

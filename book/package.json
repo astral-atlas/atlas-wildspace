@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && cd dist && zip ../../wildspace-book.zip -r .",
     "dev": "vite"
   },
   "repository": {

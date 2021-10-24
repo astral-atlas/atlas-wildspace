@@ -1,4 +1,4 @@
-name: "Publish Sesame Services"
+name: "Publish Wildspace Services"
 
 on:
   workflow_dispatch:

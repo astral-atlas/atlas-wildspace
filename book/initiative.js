@@ -27,8 +27,10 @@ const CharacterControls = ({ }) => {
 };
 
 export const initiativePreview/*: PreviewPage<EncounterInitiativeTrackerProps> */ = {
-  name: h('pre', {}, '<EncounterInitiativeTracker />'),
+  name: '<EncounterInitiativeTracker />',
   defaultWorkplaceProps: {
+    gameMaster: true,
+    miniImageURLMap: {},
     encounter: {
       id: '0',
       gameId: '0',
@@ -40,10 +42,14 @@ export const initiativePreview/*: PreviewPage<EncounterInitiativeTrackerProps> *
       round: 0,
       turnIndex: 0,
       turnOrder: [],
+      visibility: 'players',
     },
     characters: [],
     encounterState: {
-
+      minis: [],
+      turnOrder: [],
+      turnIndex: 0,
+      round: 1,
     },
     selectedMinis: [],
     onSelectedMinisChange: () => {},
