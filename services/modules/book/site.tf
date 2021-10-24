@@ -15,7 +15,7 @@ data "external" "configure_bundle" {
   program = ["bash", "${path.module}/configure.sh"]
 
   query = {
-    "output_dir": "./temp/www/objects",
+    "output_dir": "./temp/book/objects",
     "archive_path": module.book_release_archive.output_file
   }
 }
