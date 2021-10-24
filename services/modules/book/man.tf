@@ -3,7 +3,3 @@ terraform {
     
   }
 }
-
-variable "name" {
-  type = string
-}

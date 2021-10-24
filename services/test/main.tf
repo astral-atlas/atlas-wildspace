@@ -99,3 +99,13 @@ module "www" {
   record_zone_id = data.aws_route53_zone.root.zone_id
   record_name = "wildspace"
 }
+
+
+module "book" {
+  source = "../modules/book"
+
+  book_version = "3.0.1"
+  book_origin = "components.dev.astral-atlas.com"
+  record_zone_id = data.aws_route53_zone.root.zone_id
+  record_name = "components.dev"
+}
