@@ -96,4 +96,6 @@ module "www" {
   }
   www_version = "3.0.3"
   www_origin = "wildspace.astral-atlas.com"
+  record_zone_id = data.aws_route53_zone.root.zone_id
+  record_name = "wildspace"
 }

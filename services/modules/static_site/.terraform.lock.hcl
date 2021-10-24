@@ -2,8 +2,7 @@
 # Manual edits may be lost in future updates.
 
 provider "registry.terraform.io/hashicorp/aws" {
-  version     = "3.63.0"
-  constraints = "~> 3.0, >= 3.63.0"
+  version = "3.63.0"
   hashes = [
     "h1:v9aPF3aaBpk0uSO5pfggYJKGgP/Ur28hZRJs1jS+ttI=",
     "zh:42c6c98b294953a4e1434a331251e539f5372bf6779bd61ab5df84cac0545287",
@@ -21,7 +20,8 @@ provider "registry.terraform.io/hashicorp/aws" {
 }
 
 provider "registry.terraform.io/hashicorp/external" {
-  version = "2.1.0"
+  version     = "2.1.0"
+  constraints = "2.1.0"
   hashes = [
     "h1:wbtDfLeawmv6xVT1W0w0fctRCb4ABlaD3JTxwb1jXag=",
     "zh:0d83ffb72fbd08986378204a7373d8c43b127049096eaf2765bfdd6b00ad9853",
@@ -57,24 +57,6 @@ provider "registry.terraform.io/hashicorp/http" {
   ]
 }
 
-provider "registry.terraform.io/hashicorp/random" {
-  version = "3.1.0"
-  hashes = [
-    "h1:BZMEPucF+pbu9gsPk0G0BHx7YP04+tKdq2MrRDF1EDM=",
-    "zh:2bbb3339f0643b5daa07480ef4397bd23a79963cc364cdfbb4e86354cb7725bc",
-    "zh:3cd456047805bf639fbf2c761b1848880ea703a054f76db51852008b11008626",
-    "zh:4f251b0eda5bb5e3dc26ea4400dba200018213654b69b4a5f96abee815b4f5ff",
-    "zh:7011332745ea061e517fe1319bd6c75054a314155cb2c1199a5b01fe1889a7e2",
-    "zh:738ed82858317ccc246691c8b85995bc125ac3b4143043219bd0437adc56c992",
-    "zh:7dbe52fac7bb21227acd7529b487511c91f4107db9cc4414f50d04ffc3cab427",
-    "zh:a3a9251fb15f93e4cfc1789800fc2d7414bbc18944ad4c5c98f466e6477c42bc",
-    "zh:a543ec1a3a8c20635cf374110bd2f87c07374cf2c50617eee2c669b3ceeeaa9f",
-    "zh:d9ab41d556a48bd7059f0810cf020500635bfc696c9fc3adab5ea8915c1d886b",
-    "zh:d9e13427a7d011dbd654e591b0337e6074eef8c3b9bb11b2e39eaaf257044fd7",
-    "zh:f7605bd1437752114baf601bdf6931debe6dc6bfe3006eb7e9bb9080931dca8a",
-  ]
-}
-
 provider "registry.terraform.io/integrations/github" {
   version     = "4.9.2"
   constraints = "4.9.2"
@@ -93,15 +75,5 @@ provider "registry.terraform.io/integrations/github" {
     "zh:ec7baf2f555100077eec0eadcd0db5369c2dd1b858f76cda00b9968a5a79a29c",
     "zh:f6ed1d99833feddd8fc182036d73a158f4129cc5dd9f56e38477e0fc447583ed",
     "zh:f7e801df97fd73ab71dcf788e1aea36b49ac1d97d624be6e259887e0b0a249c6",
-  ]
-}
-
-provider "registry.terraform.io/lukekaalim/immutable-elastic-beanstalk" {
-  version     = "2.0.4"
-  constraints = "2.0.4"
-  hashes = [
-    "h1:5UhausZsupNhQoiC+Xy3U+/lcKByEBhsjIs8OZ4rGzg=",
-    "zh:7c02838c87963857b2b7bec279946b765cdb61a793a1b8aff2d9e978947df1f2",
-    "zh:b2f93c0937da47c37177cf4d9b9380df5c4dc2bc0b23fd10730e99418398f75e",
   ]
 }
