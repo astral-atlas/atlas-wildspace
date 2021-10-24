@@ -1,6 +1,6 @@
 // @flow strict
 import { h, useState } from '@lukekaalim/act';
-import { render } from '@lukekaalim/act-web';
+import { render } from '@lukekaalim/act-three';
 /*:: import type { PreviewPage, InitiativeTurnRowProps } from '@astral-atlas/wildspace-components'; */ 
 /*:: import type { CharacterClass } from '@astral-atlas/wildspace-models'; */ 
 import {
@@ -16,6 +16,7 @@ import {
 
 import { circleInputPreview, selectInputPreview } from './inputs.js';
 import { initativeStatusPreview, initiativePreview } from './initiative.js';
+import { CameraPage } from './3d/camera.js';
 
 
 const proficiencyPreview/*: PreviewPage<{ label: string, scale: number, value: number }>*/ = {
@@ -65,6 +66,7 @@ const pages = [
   armorPreview,
   initiativePreview,
   circleInputPreview,
+  CameraPage,
   //initativeStatusPreview,
   //selectInputPreview
 ];
