@@ -1,10 +1,9 @@
-name: "Publish Wildspace Services"
+name: "Publish @astral-atlas/wildspace-book"
 
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - canon
+    tags:
+      - '@astral-atlas/wildspace-book@*'
 
 jobs:
   publish-test-service:
