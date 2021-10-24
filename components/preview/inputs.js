@@ -132,9 +132,9 @@ export const ListInput= /*:: <T>*/({
   };
 
   return [
-    h('div', { style: { listStyle: 'none', display: 'flex', flexDirection: 'column' } }, [
-      h('div', { style: { display: 'flex', flexDirection: 'row', overflow: 'auto' } }, [
-        h(controlComponent, { value: nextValue, onValueChange: setNextValue }),
+    h('div', { style: { listStyle: 'none', display: 'flex', flexDirection: 'column', margin: '24px', boxShadow: '0 0 25px 0px #00000047' } }, [
+      h('div', { style: { display: 'flex', flexDirection: 'row' } }, [
+        h('span', { style: { display: 'flex', flexDirection: 'row', overflow: 'auto' } }, h(controlComponent, { value: nextValue, onValueChange: setNextValue })),
         h('span', { style: { flex: 1 } }),
         h('button', { type: 'button', onClick: () => onAddClick(), style: { margin: '16px', padding: '8px', width: '32px', boxSizing: 'border-box' } }, '+')
       ]),

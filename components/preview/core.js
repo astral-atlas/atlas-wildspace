@@ -1,6 +1,7 @@
 // @flow strict
 /*:: import type { Component, SetValue, ElementNode } from '@lukekaalim/act'; */
 import { h, useState, useMemo } from '@lukekaalim/act';
+import styles from './previewStyles.module.css';
 
 /*::
 export type PreviewPage<T: { ... }> = {
@@ -44,7 +45,7 @@ export const PreviewApp/*: Component<PreviewAppProps>*/ = ({ title, pages }) => 
 
   return [
     h('div', { style: { position: 'absolute', height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}, [
-      h('header', { style: { width: '100%' }}, h('h1', { style: { textAlign: 'center' }}, title)),
+      h('header', { style: { width: '100%' }}, h('h1', { className: styles.previewAppTitle }, title)),
       h('div', { style: { flexGrow: 1, display: 'flex', flexDirection: 'row' }}, [
         h(PreviewNavigation, { pages, selectedPageIndex, onPageClick: (p, i) => (setSelectedPageIndex(i), setWorkspaceProps(pages[i].defaultWorkplaceProps)) }),
         selectedPage ? h('main', { style: { flexGrow: 1, display: 'flex', flexDirection: 'column', height: 0, minHeight: '100%', width: 0 }}, [
@@ -66,16 +67,19 @@ export type PreviewNavigationProps = {|
 export const PreviewNavigation/*: Component<PreviewNavigationProps>*/ = ({ selectedPageIndex, pages, onPageClick }) => {
   return [
     h('nav', { style: { height: '100%', maxWidth: '250px', backgroundColor: '#eeae80' } }, [
-      h('menu', { style: { listStyle: 'none', margin: 0, padding: 0 } }, [
+      h('menu', { style: { listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', border: '1px solid black' } }, [
         ...pages.map((page, i) =>
           h('li', { },
             h('button', {
               style: {
+                borderRadius: 0,
                 width: '100%',
+                border: 0,
+                height: '100%',
+                display: 'block',
                 overflow: 'auto',
                 transition: 'box-shadow 0.2s',
                 boxSizing: 'border-box',
-                boxShadow: selectedPageIndex === i ? '0 0 10px 0 #0000005c inset' : '0 0 0 0 white inset',
               },
               disabled: selectedPageIndex === i,
               onClick: () => onPageClick(page, i)
