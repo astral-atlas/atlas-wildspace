@@ -20,6 +20,7 @@
   "dependencies": {
     "@astral-atlas/wildspace-models": "^1.0.0",
     "@lukekaalim/act": "^2.2.3",
+    "mdast-util-from-markdown": "^1.0.4",
     "uuid": "^8.3.2"
   }
 }

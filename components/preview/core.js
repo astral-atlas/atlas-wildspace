@@ -1,18 +1,21 @@
 // @flow strict
 /*:: import type { Component, SetValue, ElementNode } from '@lukekaalim/act'; */
+/*:: import type { Page } from './page'; */
 import { h, useState, useMemo } from '@lukekaalim/act';
+import { PageNavigation } from './page.js';
+import { ReadmePageContent } from './readmePageContent.js';
+import { renderWorkspacePageContent } from "./workspacePageContent.js";
+
+import previewMd from './preview.md';
 import styles from './previewStyles.module.css';
+import { TabbedToolbox } from './tools/tabs.js';
+import { GridBench } from './bench/grid.js';
+import { JSONEditorInput } from './tools/json.js';
 
 /*::
-export type PreviewPage<T: { ... }> = {
-  name: ElementNode,
-  defaultWorkplaceProps: T,
-  workspaceControls: Component<{ workspaceProps: T, onWorkspacePropsChange: SetValue<T> }>,
-  workspace: Component<T>,
-};
 export type PreviewAppProps = {|
   title: ElementNode,
-  pages: PreviewPage<any>[],
+  root: Page,
 |};
 */
 
@@ -37,110 +40,62 @@ const useStorageState = /*:: <T>*/(key/*: string*/, defaultValue/*: T*/)/*: [T, 
   return [state, setAndStoreState];
 };
 
-export const PreviewApp/*: Component<PreviewAppProps>*/ = ({ title, pages }) => {
-  const [selectedPageIndex, setSelectedPageIndex] = useStorageState("wildspace_book_index", -1);
+const pageA = {
+  href: '/#pageA',
+  name: 'pageA',
+  content: [
+    renderWorkspacePageContent({
+      defaultProps: { value: true },
+      renderBench: ({ props }) => h(GridBench, {}, h('pre', {}, JSON.stringify(props, null, 2))),
+      renderTools: ({ props, setProps }) => h(TabbedToolbox, { tabs: {
+        'Props': h(JSONEditorInput, { label: 'JSON Props', value: props, onValueChange: setProps }),
+      }}),
+    })
+  ],
+  children: []
+};
+const pageB = {
+  ...pageA,
+  type: 'pageB',
+  name: 'pageB',
+};
+const pageC = {
+  ...pageA,
+  type: 'pageC',
+  name: 'pageC',
+  children: [pageB],
+};
+const rootPage = {
+  href: '/',
+  name: 'readme',
+  content: [
+    h(ReadmePageContent, { url: previewMd })
+  ],
+  children: [pageA, pageB, pageC],
+};
 
-  const selectedPage = pages[selectedPageIndex];
-  const [workspaceProps, setWorkspaceProps] = useStorageState("wildspace_book_props", selectedPage ? selectedPage.defaultWorkplaceProps : {});
+export const PreviewApp/*: Component<PreviewAppProps>*/ = ({ title, root }) => {
+  const [selectedPage, setSelectedPage] = useState(root);
+
+  //const [workspaceProps, setWorkspaceProps] = useStorageState("wildspace_book_props", selectedPage ? selectedPage.defaultWorkplaceProps : {});
 
   return [
     h('div', { style: { position: 'absolute', height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}, [
       h('header', { style: { width: '100%' }}, h('h1', { className: styles.previewAppTitle }, title)),
       h('div', { style: { flexGrow: 1, display: 'flex', flexDirection: 'row' }}, [
-        h(PreviewNavigation, { pages, selectedPageIndex, onPageClick: (p, i) => (setSelectedPageIndex(i), setWorkspaceProps(pages[i].defaultWorkplaceProps)) }),
-        selectedPage ? h('main', { style: { flexGrow: 1, display: 'flex', flexDirection: 'column', height: 0, minHeight: '100%', width: 0 }}, [
-          h(PreviewWorkspace, { selectedPage, workspaceProps }),
-          h(PreviewControls, { selectedPage, setWorkspaceProps, workspaceProps }),
-        ]) : h('main', {}, h('p', {}, `Select a page to get started.`)),
+        h(PageNavigation, { rootPage: root, onPageClick: setSelectedPage, selectedPage }),
+        h('main', { style: { flexGrow: 1, display: 'flex', flexDirection: 'column', height: 0, minHeight: '100%', width: 0, overflow: 'auto' }}, [
+          selectedPage ? selectedPage.content : null
+        ])
       ]),
     ]),
   ]
 };
 
-/*::
-export type PreviewNavigationProps = {|
-  pages: PreviewPage<{ ... }>[],
-  selectedPageIndex: number,
-  onPageClick: (PreviewPage<{ ... }>, number) => mixed
-|};
-*/
-export const PreviewNavigation/*: Component<PreviewNavigationProps>*/ = ({ selectedPageIndex, pages, onPageClick }) => {
-  return [
-    h('nav', { style: { height: '100%', maxWidth: '250px', backgroundColor: '#eeae80' } }, [
-      h('menu', { style: { listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', border: '1px solid black' } }, [
-        ...pages.map((page, i) =>
-          h('li', { },
-            h('button', {
-              style: {
-                borderRadius: 0,
-                width: '100%',
-                border: 0,
-                height: '100%',
-                display: 'block',
-                overflow: 'auto',
-                transition: 'box-shadow 0.2s',
-                boxSizing: 'border-box',
-              },
-              disabled: selectedPageIndex === i,
-              onClick: () => onPageClick(page, i)
-            }, page.name)))
-      ]),
-    ]),
-  ];
-};
-
-const PreviewControls = ({ selectedPage, workspaceProps, setWorkspaceProps }) => {
-  return [
-    h('div', { style: {
-      height: '50%',
-      width: '100%',
-      maxHeight: '50%',
-      border: '2px ridge',
-      boxSizing: 'border-box',
-      flexShrink: 0,
-      overflow: 'scroll'
-    } }, [
-      h(selectedPage.workspaceControls, { workspaceProps, onWorkspacePropsChange: setWorkspaceProps })
-    ]),
-  ];
-};
-
-const PreviewWorkspace = ({ selectedPage, workspaceProps }) => {
-  return [
-    h('div', { style: { height: '50%', maxHeight: '50%', width: '100%', overflow: 'scroll', flexGrow: 0, boxSizing: 'border-box', position: 'relative' } }, [
-      h('div', { style: { position: 'absolute', height: '100%', width: '100%', pointerEvents: 'none', boxSizing: 'border-box', overflow: 'hidden' } }, [
-        h('svg', { width: '100%', height: '100%' }, [
-          h('defs', {}, [
-            h("pattern", {
-              id: 'polka-dots',
-              x: '0',
-              y: '0',
-              height: '100',
-              width: '100',
-              patternUnits: 'userSpaceOnUse'
-            }, [
-              h('line', { x1: '0', y1: '0', x2: '100', y2: '0', stroke: 'black' }),
-              h('line', { x1: '0', y1: '0', x2: '0', y2: '100', stroke: 'black' }),
-              h('line', { x1: '0', y1: '50', x2: '100', y2: '50', stroke: '#0000001f' }),
-              h('line', { x1: '50', y1: '0', x2: '50', y2: '100', stroke: '#0000001f' }),
-            ])
-          ]),
-          h('rect', { x: '0', y: '0', width: '100%', height: '100%', fill: 'url(#polka-dots)'})
-        ]),
-      ]),
-      h('div', { style: { padding: '50px', height: '100%', width: '100%', boxSizing: 'border-box', position: 'relative' } }, [
-        h('div', { style: {
-          resize: 'both',
-          overflow: 'hidden',
-          backgroundColor: 'rgba(255, 255, 255, 0.91)',
-          border: '1px solid #0000001f',
-          height: '100%',
-          width: '100%',
-          boxShadow: '#a4a2a2 0px 0px 20px 0px'
-        }}, [
-          h(selectedPage.workspace, workspaceProps)
-        ]),
-      ]),
-    ]),
-  ];
-};
+export * from './bench/grid.js';
+export * from './tools/json.js';
+export * from './tools/tabs.js';
+export * from './page.js';
+export * from './readmePageContent.js';
+export * from './workspacePageContent.js';
+export * from './markdown.js';

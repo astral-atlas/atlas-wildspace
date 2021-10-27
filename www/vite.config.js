@@ -19,6 +19,10 @@ export default {
   server: {
     port: 8080
   },
+  assetsInclude: [
+    '**/*.gltf',
+    '**/*.md'
+  ],
   css: {
     modules: {
       localsConvention: 'camelCaseOnly'

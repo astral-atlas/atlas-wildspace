@@ -11,12 +11,19 @@ import {
   TabbedPreviewControlPane,
   TextInput,
   InitiativeRoundTable,
-  InitiativeTurnRow
+  InitiativeTurnRow,
+  ReadmePageContent
 } from '@astral-atlas/wildspace-components';
 
 import { circleInputPreview, selectInputPreview } from './inputs.js';
 import { initativeStatusPreview, initiativePreview } from './initiative.js';
-import { CameraPage } from './3d/camera.js';
+import { CameraPage } from './components/3d/camera.js';
+
+import readmeMd from './readme.md?raw'
+import hooksMd from './hooks.md?raw'
+import componentsMd from './components.md?raw'
+import { mouseDragPage } from './hooks/mouseDrag.js';
+import { threeComponents } from "./components/3d";
 
 
 const proficiencyPreview/*: PreviewPage<{ label: string, scale: number, value: number }>*/ = {
@@ -71,9 +78,33 @@ const pages = [
   //selectInputPreview
 ];
 
+const components = {
+  name: 'components',
+  href: '/',
+  content: [h(ReadmePageContent, { text: componentsMd })],
+  children: [
+    threeComponents
+  ],
+};
+const hooks = {
+  name: 'hooks',
+  href: '/',
+  content: [h(ReadmePageContent, { text: hooksMd })],
+  children: [
+    mouseDragPage
+  ],
+};
+
+const readme = {
+  name: 'readme',
+  href: '/',
+  content: [h(ReadmePageContent, { text: readmeMd })],
+  children: [components, hooks],
+};
+
 const WildspaceBook = () => {
   return [
-    h(PreviewApp, { pages, title: 'Wildspace Component Book' }),
+    h(PreviewApp, { root: readme, title: null }),
   ]
 };
 
