@@ -33,9 +33,11 @@ const MouseDragWorkspace = ({}) => {
           };
           const onPointerDown = (e) => {
             setCursorState(c => ({ ...c, moving: true }));
+            e.target.setPointerCapture(e.pointerId);
           }
           const onPointerUp = (e) => {
             setCursorState(c => ({ ...c, moving: false }));
+            e.target.releasePointerCapture(e.pointerId);
           }
           const onPointerExit = (e) => {
             setCursorState(c => ({ ...c, moving: false }));
@@ -43,18 +45,28 @@ const MouseDragWorkspace = ({}) => {
           const onPointerEnter = (e) => {
             setCursorState(c => ({ ...c, moving: false }));
           }
+          const onDragStart = (e) => {
+            e.preventDefault();
+          };
+          const onDragEnd = (e) => {
+            e.preventDefault();
+          };
 
           element.addEventListener('pointermove', onPointerMove);
           element.addEventListener('pointerdown', onPointerDown);
           element.addEventListener('pointerup', onPointerUp);
           element.addEventListener('pointerexit', onPointerExit);
           element.addEventListener('pointerenter', onPointerEnter);
+          element.addEventListener('dragstart', onDragStart);
+          element.addEventListener('dragend', onDragEnd);
           return () => {
             element.removeEventListener('pointermove', onPointerMove);
             element.removeEventListener('pointerdown', onPointerDown);
             element.removeEventListener('pointerup', onPointerUp);
             element.removeEventListener('pointerexit', onPointerExit);
             element.removeEventListener('pointerenter', onPointerEnter);
+            element.removeEventListener('dragstart', onDragStart);
+            element.removeEventListener('dragend', onDragEnd);
           }
         }, [])
 
