@@ -1,5 +1,5 @@
 // @flow strict
-/*:: import type { PreviewPage } from '@astral-atlas/wildspace-components';*/
+/*:: import type { Page } from '@astral-atlas/wildspace-components';*/
 import { h, useRef, useEffect, useState } from '@lukekaalim/act';
 import { C } from "@lukekaalim/act-three";
 
@@ -13,7 +13,7 @@ export type CameraPageProps = {
 
 const geometry = new BoxGeometry(1, 1, 1);
 
-export const CameraPage/*: PreviewPage<CameraPageProps>*/ = {
+export const CameraPage/*: Page<CameraPageProps>*/ = {
   name: 'Camera',
   defaultWorkplaceProps: {},
   workspace: () => {
