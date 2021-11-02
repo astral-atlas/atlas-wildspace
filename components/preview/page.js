@@ -25,6 +25,7 @@ export const PageListElement/*: Component<{ page: Page, selectedPage: ?Page, onP
     h('a', { href: page.href, onClick: (e) => {
       e.preventDefault();
       onPageClick(page);
+      setOpen(true);
      } }, page.name),
   ];
   const selected = page === selectedPage;
