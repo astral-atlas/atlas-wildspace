@@ -104,7 +104,7 @@ module "www" {
 module "book" {
   source = "../modules/book"
 
-  book_version = "4.0.0"
+  book_version = "4.1.0"
   book_origin = "components.dev.astral-atlas.com"
   record_zone_id = data.aws_route53_zone.root.zone_id
   record_name = "components.dev"
