@@ -24,6 +24,7 @@ import hooksMd from './hooks.md?raw'
 import componentsMd from './components.md?raw'
 import { mouseDragPage } from './hooks/mouseDrag.js';
 import { threeComponents } from "./components/3d";
+import { keyboardPage } from './hooks/keyboard.js';
 
 
 const proficiencyPreview/*: PreviewPage<{ label: string, scale: number, value: number }>*/ = {
@@ -91,7 +92,8 @@ const hooks = {
   href: '/',
   content: [h(ReadmePageContent, { text: hooksMd })],
   children: [
-    mouseDragPage
+    mouseDragPage,
+    keyboardPage,
   ],
 };
 

@@ -1,11 +1,12 @@
 // @flow strict
 /*::
-import type { Page } from "./entry";
+import type { Page } from "../index.js";
 import type { Component, ElementNode } from '@lukekaalim/act';
 */
-import { h, useEffect, useRef, useState } from '@lukekaalim/act';
+import { h, useEffect, useMemo, useRef, useState } from '@lukekaalim/act';
 import { Document } from '@lukekaalim/act-rehersal';
 import { createBezierAnimator, useAnimation } from '@lukekaalim/act-curve';
+import styles from './layouts.module.css';
 
 /*::
 export type GridMenuProps = {
@@ -68,7 +69,7 @@ const ScrollingGridLayout/*: Component<GridMenuProps>*/ = ({ rows, position }) =
     if (!element)
       return;
     element.style.transform = `translate(${-position[0] * 100}%, ${-position[1] * 100}%)`
-  });
+  }, { initalPosition: position, initialTarget: position });
 
   return h('div', { style: { width: '100%', height: '100%', overflow: 'hidden', border: '1px solid black', position: 'relative' }}, [
     h(GridLayout, { containerProps: { style: { width: '100%', height: '100%' }, ref: scrollElementRef }, rows }),
@@ -77,7 +78,7 @@ const ScrollingGridLayout/*: Component<GridMenuProps>*/ = ({ rows, position }) =
 
 
 /*::
-type CompassMenuPosition =
+type CompassPosition =
   | 'center'
   | 'north'
   | 'south'
@@ -89,8 +90,8 @@ type CompassMenuPosition =
   | 'southwest'
 
 type CompassMenuProps = {
-  active?: CompassMenuPosition,
-  contents: { [CompassMenuPosition]: ElementNode }
+  active?: CompassPosition,
+  contents: { [CompassPosition]: ElementNode }
 }
 */
 
@@ -122,50 +123,68 @@ const CompassMenu/*: Component<CompassMenuProps>*/ = ({
   });
 };
 
-const contents = {
-  center: 'Center Text',
-  north: 'North Text',
-  south: 'South Text'
-};
+
+const compassPositions/*: CompassPosition[][]*/ = [
+  ['northwest', 'north',  'northeast'],
+  ['west',      'center', 'east'],
+  ['southwest', 'south',  'southeast'],
+];
+const compassAbbreviations = {
+  northwest: 'NW',  north: 'N',   northeast: 'NE',
+  west: 'W',        center: 'C',  east: 'E',
+  southwest: 'SW',  south: 'S',   southeast: 'SE',
+}
+
+/*::
+export type CompassButtonMenuProps = {
+  onPositionClick?: CompassPosition => mixed,
+  disabled?: { [CompassPosition]: boolean }
+}
+*/
+
+const ColoredDemoBox = ({ name }) => {
+  const color = useMemo(() => `hsl(${Math.random() * 255}, 50%, 70%)`, [name]);
+
+  return h('div', { style: { width: '100%', height: '100%', backgroundColor: color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}, [
+    h('p', { }, name)
+  ])
+}
+
+const CompassButtonMenu/*: Component<CompassButtonMenuProps>*/ = ({ onPositionClick = _ => {}, disabled = {} }) => {
+  const onClick = (position) => () => {
+    onPositionClick(position);
+  };
+  return h('menu', { className: styles.compassButtonMenu }, [
+    compassPositions.map(row =>
+      row.map(position =>
+        h('button', { onClick: onClick(position), disabled: disabled[position] || false }, compassAbbreviations[position])))
+  ]);
+}
 
 export const Components/*: Component<{}>*/ = () => {
-  const [activeCompassPosition, setActiveCompassPosition] = useState('center');
+  const [activeCompassPosition, setActiveCompassPosition] = useState/*:: <CompassPosition>*/('center');
 
   return [
     h('h1', {}, 'Layout'),
     h('select', { onChange: e => setActiveCompassPosition(e.target.value) }, [
-      Object.keys(positionVectors).map(position =>
-        h('option', { value: position, selected: activeCompassPosition === position }, position))
+      compassPositions.map((r, y) => r.map((p, x) =>
+        h('option', { value: p, selected: activeCompassPosition === p }, `${p} (${x}, ${y})`))),
     ]),
-    h('div', { style: { width: '90px', height: '90px '} },
-      h(GridLayout, { containerProps: { style: { width: '30px', height: '30px', position: 'relative' } }, rows: [
-        [
-          h('button', { onClick: () => setActiveCompassPosition('northwest') }, 'NW'),
-          h('button', { onClick: () => setActiveCompassPosition('north') }, 'N'),
-          h('button', { onClick: () => setActiveCompassPosition('northeast') }, 'NE'),
-        ],
-        [
-          h('button', { onClick: () => setActiveCompassPosition('west') }, 'W'),
-          h('button', { onClick: () => setActiveCompassPosition('center') }, 'C'),
-          h('button', { onClick: () => setActiveCompassPosition('east') }, 'E'),
-        ],
-        [
-          h('button', { onClick: () => setActiveCompassPosition('southwest') }, 'SW'),
-          h('button', { onClick: () => setActiveCompassPosition('south') }, 'S'),
-          h('button', { onClick: () => setActiveCompassPosition('southeast') }, 'SE'),
-        ]
-      ] })),
+    h(CompassButtonMenu, {
+      onPositionClick: position => setActiveCompassPosition(position),
+      disabled: { [(activeCompassPosition/*: string*/)]: true }
+    }),
     h('div', { style: { width: '600px', height: '600px' } },
-      h(CompassMenu, { active: activeCompassPosition, contents }))
+      h(CompassMenu, { active: activeCompassPosition, contents: Object.fromEntries(compassPositions.flat(1).map(p => [p, h(ColoredDemoBox, { name: p })])) }))
     
   ];
 };
 
-export const componentPage/*: Page*/ = {
+export const layoutsPage/*: Page*/ = {
   link: { href: '/layout', name: 'Layout', children: [] },
   content: h(Document, {}, h(Components)),
 };
 
-export const componentsPages = [
-  componentPage,
+export const layoutsPages = [
+  layoutsPage,
 ];

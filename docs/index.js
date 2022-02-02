@@ -6,8 +6,11 @@ import { render } from '@lukekaalim/act-three';
 import { Document, Markdown, Rehersal } from '@lukekaalim/act-rehersal';
 import { useRootNavigation, navigationContext } from '@lukekaalim/act-navigation';
 
+import './index.module.css';
+
 import wildspaceText from './wildspace.md?raw';
-import { componentPage, componentsPages } from './componentPages';
+import { layoutsPage, layoutsPages } from './pages/layouts';
+import { scenesPage, scenesPages } from './scenes.js';
 
 /*::
 export type Page = {
@@ -24,14 +27,15 @@ const rootPage = {
   ],
   link: {
     name: 'Wildspace',
-    children: [componentPage.link],
+    children: [layoutsPage.link, scenesPage.link],
     href: '/',
   }
 }
 
 const pages = [
   rootPage,
-  ...componentsPages,
+  ...scenesPages,
+  ...layoutsPages,
 ];
 
 const App = () => {
