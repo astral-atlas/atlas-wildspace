@@ -2,56 +2,82 @@
 /*::
 import type { Page } from "../index.js";
 import type { Component, ElementNode } from '@lukekaalim/act';
+import type { CubicBezierAnimation, TimeSpan } from '@lukekaalim/act-curve';
 */
 import { h, useEffect, useMemo, useRef, useState } from '@lukekaalim/act';
 import { Document } from '@lukekaalim/act-rehersal';
-import { createBezierAnimator, useAnimation } from '@lukekaalim/act-curve';
+import { useTimeSpan, maxSpan } from '@lukekaalim/act-curve';
 import styles from './layouts.module.css';
+import {
+  calculateCubicBezierAnimationPoint,
+  useAnimatedNumber,
+} from "@lukekaalim/act-curve/bezier";
+import { calculateSpanProgress } from "@lukekaalim/act-curve/schedule";
 
 /*::
 export type GridMenuProps = {
   rows: ElementNode[][],
   position: [number, number],
 };
+
+export type CubicBezier2DAnimation = {
+  type: 'cubic-bezier-2d',
+  x: CubicBezierAnimation,
+  y: CubicBezierAnimation,
+  max: TimeSpan,
+};
+export type CubicBezier2DPoint = {
+  progress: [number, number],
+  position: [number, number],
+  velocity: [number, number],
+  acceleration: [number, number],
+};
 */
 
-/*::
-export type Vector2Animator = {
-  getPosition: (now: DOMHighResTimeStamp) => [number, number],
-  isDone: (now: DOMHighResTimeStamp) => boolean,
-  update: (position: [number, number], now: DOMHighResTimeStamp) => void,
+export const useAnimatedVector2 = (
+  vector/*: [number, number]*/,
+  initial/*: [number, number]*/ = [0, 0],
+  impulse/*: number*/ = 0,
+  duration/*: number*/ = 1000,
+)/*: CubicBezier2DAnimation*/ => {
+  const [x] = useAnimatedNumber(vector[0], initial[0], { duration, impulse });
+  const [y] = useAnimatedNumber(vector[1], initial[1], { duration, impulse });
+
+  const max = maxSpan([x.span, y.span]);
+
+  return useMemo(() => {
+    return { type: 'cubic-bezier-2d', x, y, max };
+  }, [...vector]);
+};
+export const calculateBezier2DPoint = (
+  anim/*: CubicBezier2DAnimation*/,
+  now/*: DOMHighResTimeStamp*/
+)/*: CubicBezier2DPoint*/ => {
+    const x = calculateCubicBezierAnimationPoint(anim.x, now);
+    const y = calculateCubicBezierAnimationPoint(anim.y, now);
+    const progress = [x.progress, y.progress];
+    const position = [x.position, y.position];
+    const velocity = [x.velocity, y.velocity];
+    const acceleration = [x.acceleration, y.acceleration];
+    const point = {
+      progress,
+      position,
+      velocity,
+      acceleration
+    };
+    return point;
+};
+export const useBezier2DAnimation = (
+  anim/*: CubicBezier2DAnimation*/,
+  onAnimate/*: CubicBezier2DPoint => mixed*/,
+  deps/*: mixed[]*/ = [],
+) => {
+  const span = maxSpan([anim.x.span, anim.y.span]);
+  useTimeSpan(span, (now) => {
+    const point = calculateBezier2DPoint(anim, now);
+    onAnimate(point);
+  }, [anim, ...deps]);
 }
-*/
-
-const createVector2Animator = (initalPosition, initialTarget)/*: Vector2Animator*/ => {
-  const x = createBezierAnimator({ initial: { from: initalPosition[0], to: initialTarget[0], velocity: 0 } });
-  const y = createBezierAnimator({ initial: { from: initalPosition[1], to: initialTarget[1], velocity: 0 } });
-
-  const update = (nextTarget, now) => {
-    x.update(nextTarget[0], now);
-    y.update(nextTarget[1], now);
-  };
-  const getPosition = (now) => {
-    return [x.getPosition(now), y.getPosition(now)];
-  };
-  const isDone = (now) => {
-    return x.isDone(now) && y.isDone(now);
-  }
-  return { update, getPosition, isDone };
-};
-
-const useVector2Curve = (target, onAnimate, { initalPosition = [0, 0], initialTarget = [0, 0] } = {}) => {
-  const [animator] = useState/*:: <Vector2Animator>*/(() => createVector2Animator(initalPosition, initialTarget));
-
-  useEffect(() => {
-    animator.update(target, performance.now());
-  }, [...target]);
-  useAnimation((now) => {
-    const position = animator.getPosition(now);
-    onAnimate(position);
-    return animator.isDone(now);
-  }, [...target])
-};
 
 const GridLayout = ({ rows, containerProps }) => {
   return h('div', { ...containerProps }, [
@@ -63,13 +89,15 @@ const GridLayout = ({ rows, containerProps }) => {
 
 const ScrollingGridLayout/*: Component<GridMenuProps>*/ = ({ rows, position }) => {
   const scrollElementRef = useRef/*:: <?HTMLElement>*/();
-  
-  useVector2Curve(position, position => {
+
+  const anim = useAnimatedVector2(position, position, 3);
+
+  useBezier2DAnimation(anim, ({ position }) => {
     const { current: element } = scrollElementRef;
     if (!element)
       return;
     element.style.transform = `translate(${-position[0] * 100}%, ${-position[1] * 100}%)`
-  }, { initalPosition: position, initialTarget: position });
+  }, []);
 
   return h('div', { style: { width: '100%', height: '100%', overflow: 'hidden', border: '1px solid black', position: 'relative' }}, [
     h(GridLayout, { containerProps: { style: { width: '100%', height: '100%' }, ref: scrollElementRef }, rows }),

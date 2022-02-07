@@ -1,0 +1,15 @@
+.controls {
+  box-sizing: border-box;
+  border: 0px dotted rgba(255, 0, 0, 0);
+  transition: border 0.2s;
+}
+
+.controls:focus {
+  border: 4px dotted rgb(4, 0, 255);
+}
+
+.demoCanvas {
+  display: block;
+  width: 75%;
+  margin: auto;
+}

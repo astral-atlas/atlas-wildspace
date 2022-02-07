@@ -1,0 +1,54 @@
+.scene {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.scene .background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+.scene .background img {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+
+  transition: filter 200ms;
+  filter: blur(3px) saturate(50%);
+}
+.scene .background.unblur img {
+  filter: blur(0px) saturate(100%);
+}
+.scene .background .overlay {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.4);
+  height: 100%;
+  width: 100%;
+  transition: background-color 200ms;
+}
+.scene .background.unblur .overlay {
+  background-color: rgba(255, 255, 255, 0);
+}
+
+.scene .content {
+  overflow: auto;
+  position: relative;
+  
+  width: 50%;
+  margin: 0 0 0 15%;
+}
+
+.backgroundButton {
+  position: absolute;
+  top: 0;
+  right: 0;
+}

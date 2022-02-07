@@ -8,9 +8,10 @@ import { useRootNavigation, navigationContext } from '@lukekaalim/act-navigation
 
 import './index.module.css';
 
-import wildspaceText from './wildspace.md?raw';
+import wildspaceText from './index.md?raw';
 import { layoutsPage, layoutsPages } from './pages/layouts';
 import { scenesPage, scenesPages } from './scenes.js';
+import { controlsPage, controlsPages } from "./controls";
 
 /*::
 export type Page = {
@@ -27,7 +28,7 @@ const rootPage = {
   ],
   link: {
     name: 'Wildspace',
-    children: [layoutsPage.link, scenesPage.link],
+    children: [layoutsPage.link, scenesPage.link, controlsPage.link],
     href: '/',
   }
 }
@@ -36,6 +37,7 @@ const pages = [
   rootPage,
   ...scenesPages,
   ...layoutsPages,
+  ...controlsPages,
 ];
 
 const App = () => {
