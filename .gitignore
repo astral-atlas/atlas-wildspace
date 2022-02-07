@@ -3,3 +3,5 @@ artifacts
 .terraform
 *.log
 *.zip
+
+.DS_STORE
