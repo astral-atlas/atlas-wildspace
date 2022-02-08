@@ -89,3 +89,15 @@ resource "aws_cloudfront_distribution" "assets" {
     ssl_support_method = "sni-only"
   }
 }
+
+## Docs Domains
+
+resource "aws_route53_record" "assets" {
+  zone_id = data.aws_route53_zone.root.zone_id
+  name    = "docs.wildspace"
+  type    = "CNAME"
+
+  ttl     = "300"
+  records = ["astral-atlas.github.io"]
+  
+}
