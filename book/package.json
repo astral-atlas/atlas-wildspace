@@ -22,8 +22,8 @@
   "dependencies": {
     "@astral-atlas/wildspace-components": "^0.0.0",
     "@lukekaalim/act": "^2.2.3",
-    "@lukekaalim/act-three": "^3.10.0",
-    "@lukekaalim/act-web": "^0.4.6",
+    "@lukekaalim/act-three": "^4.0.0",
+    "@lukekaalim/act-web": "^1.0.0",
     "vite": "^2.6.7"
   }
 }

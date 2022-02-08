@@ -7,7 +7,7 @@ import { C } from '@lukekaalim/act-three';
 import text from './3d.md?raw';
 
 export const threeComponents/*: Page*/ = {
-  name: '3D Components',
+  name: 'Three Components',
   href: '/',
   content: [h(ReadmePageContent, { text })],
   children: []

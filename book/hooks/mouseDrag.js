@@ -12,9 +12,58 @@ This hook should let you interact with a element using the mouse, letting you dr
 Click and drag on the red square, and you should be able to move the blue square around the screen.
 `;
 
+const useMouseDrag = (onDelta/*: ({ x: number, y: number, }) => mixed*/) => {
+  const [cursorState, setCursorState] = useState({ moving: false });
+  const ref = useRef();
+  useEffect(() => {
+    const { current: element } = ref;
+    if (!element)
+      return;
+    const onPointerMove = (e) => {
+      if (cursorState.moving)
+        onDelta({ x: e.movementX, y: e.movementY });
+    };
+    const onPointerDown = (e) => {
+      setCursorState(c => ({ ...c, moving: true }));
+      e.target.setPointerCapture(e.pointerId);
+    }
+    const onPointerUp = (e) => {
+      setCursorState(c => ({ ...c, moving: false }));
+      e.target.releasePointerCapture(e.pointerId);
+    }
+    const onPointerExit = (e) => {
+      setCursorState(c => ({ ...c, moving: false }));
+    }
+    const onPointerEnter = (e) => {
+      setCursorState(c => ({ ...c, moving: false }));
+    }
+    const onDragStart = (e) => {
+      e.preventDefault();
+    };
+    const onDragEnd = (e) => {
+      e.preventDefault();
+    };
+
+    element.addEventListener('pointermove', onPointerMove);
+    element.addEventListener('pointerdown', onPointerDown);
+    element.addEventListener('pointerup', onPointerUp);
+    element.addEventListener('pointerexit', onPointerExit);
+    element.addEventListener('pointerenter', onPointerEnter);
+    element.addEventListener('dragstart', onDragStart);
+    element.addEventListener('dragend', onDragEnd);
+    return () => {
+      element.removeEventListener('pointermove', onPointerMove);
+      element.removeEventListener('pointerdown', onPointerDown);
+      element.removeEventListener('pointerup', onPointerUp);
+      element.removeEventListener('pointerexit', onPointerExit);
+      element.removeEventListener('pointerenter', onPointerEnter);
+      element.removeEventListener('dragstart', onDragStart);
+      element.removeEventListener('dragend', onDragEnd);
+    }
+  }, [])
+}
+
 const MouseDragWorkspace = ({}) => {
-
-
   return [
     renderWorkspacePageContent({
       defaultProps: {},

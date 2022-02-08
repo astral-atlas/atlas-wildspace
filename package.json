@@ -8,15 +8,18 @@
     "data",
     "cli",
     "components",
-    "book"
+    "book",
+    "costume",
+    "docs"
   ],
   "devDependencies": {
-    "flow-bin": "^0.161.0"
+    "flow-bin": "^0.170.0"
   },
   "scripts": {
     "dev:api": "npm run dev -w api",
     "dev:www": "npm run dev -w www",
     "dev:book": "npm run dev -w book",
+    "dev:docs": "npm run dev -w docs",
     "dev": "npx concurrently npm:dev:*"
   }
 }
