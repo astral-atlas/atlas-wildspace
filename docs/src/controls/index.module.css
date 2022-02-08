@@ -13,3 +13,13 @@
   width: 75%;
   margin: auto;
 }
+
+.updateInterval {
+  display: flex;
+  flex-direction: column;
+}
+
+.updateInterval input {
+  width: 60%;
+  padding: 1em;
+}

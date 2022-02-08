@@ -1,6 +1,8 @@
 // @flow strict
 /*:: import type { Ref, Component, Context } from '@lukekaalim/act'; */
+/*:: import type { Frame } from "@lukekaalim/act-curve"; */
 /*:: import type { SubscriptionFunction, Subscriber } from './subscription.js'; */
+
 import { h, useContext, useEffect, createContext } from "@lukekaalim/act";
 import { useMemo } from "@lukekaalim/act";
 import { useSubscriptionList } from './subscription.js';
@@ -94,47 +96,79 @@ export const rotateVector = (
 };
 
 /*::
+type KeyboardStateFunction = (event: KeyboardEvent) => Set<string>;
+type KeyboardStateEvents = {
+  up: KeyboardStateFunction,
+  down: KeyboardStateFunction,
+}
+
 type KeyboardState = [
   Ref<Set<string>>,
-  {
-    up: (event: KeyboardEvent) => void,
-    down: (event: KeyboardEvent) => void,
-  }
+  KeyboardStateEvents
 ];
 */
 
-export const useKeyboardState = ()/*: KeyboardState*/ => {
+export const useKeyboardState = (
+  validKeys/*: ?Set<string>*/ = null,
+  onStateChange/*: ?((nextKeys: Set<string>, event: KeyboardEvent) => mixed)*/ = null
+)/*: KeyboardState*/ => {
   const keysRef = useRef(new Set());
+
+  const isValidEvent = (event) => {
+    if (event.code === 'CapsLock')
+      return false;
+    if (validKeys && !validKeys.has(event.code))
+      return false;
+    return true;
+  }
   const down = (e) => {
-    keysRef.current.add(e.code);
+    if (isValidEvent(e)) {
+      e.preventDefault();
+      if (!e.repeat) {
+        keysRef.current.add(e.code);
+        if (onStateChange)
+          onStateChange(new Set(keysRef.current), e);
+      }
+    }
+    return keysRef.current;
   };
   const up = (e) => {
-    keysRef.current.delete(e.code);
+    if (isValidEvent(e)) {
+      e.preventDefault();
+      keysRef.current.delete(e.code);
+      if (onStateChange)
+        onStateChange(new Set(keysRef.current), e);
+    }
+    return keysRef.current;
   };
+
   return [keysRef, { down, up }];
 };
 
-export const usePendingInputs = () => {
-  const trackRef = useRef([]);
-  const keysRef = useRef(new Set());
+/*::
+type KeyboardFrame = Frame<Set<string>>;
+
+type KeyboardTrackControl = [
+  () => KeyboardFrame[],
+  (nextKeys: Set<string>, event: KeyboardEvent) => mixed
+];
+*/
+
+export const useKeyboardTrack = ()/*: KeyboardTrackControl*/ => {
+  const trackRef = useRef/*:: <Frame<Set<string>>[]>*/([]);
 
   const read = () => {
-    const final = { time: performance.now(), keys: [...keysRef.current] };
-    const track = [...trackRef.current, final];
-    trackRef.current = [final];
-    return track;
+    const trackToRead = [...trackRef.current];
+    trackRef.current = [];
+    return trackToRead;
   };
-  const down = ({ key, timeStamp }/*: KeyboardEvent*/) => {
-    if (keysRef.current.has(key))
-      return;
-    keysRef.current.add(key);
-    trackRef.current.push({ keys: [...keysRef.current], time: timeStamp });
+  const onStateChange = (nextKeys, event) => {
+    const frame = {
+      value: nextKeys,
+      time: event.timeStamp
+    };
+    trackRef.current.push(frame);
   };
-  const up = ({ key, timeStamp }/*: KeyboardEvent*/) => {
-    if (!keysRef.current.has(key))
-      return;
-    keysRef.current.delete(key);
-    trackRef.current.push({ keys: [...keysRef.current], time: timeStamp });
-  };
-  return [read, { up, down }]
+
+  return [read, onStateChange]
 };
