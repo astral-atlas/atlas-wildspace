@@ -92,7 +92,7 @@ resource "aws_cloudfront_distribution" "assets" {
 
 ## Docs Domains
 
-resource "aws_route53_record" "assets" {
+resource "aws_route53_record" "docs" {
   zone_id = data.aws_route53_zone.root.zone_id
   name    = "docs.wildspace"
   type    = "CNAME"
