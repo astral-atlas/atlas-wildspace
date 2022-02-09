@@ -125,6 +125,29 @@ of different related functions. The gist is:
 
 __keyboardContext__ can also be used act as _"middleware"_: you can choose to delegate
 to children or consume the event at a higher level.
+
+> #### Prevent Default
+>
+> We kinda hijack the "preventDefault" usage here -
+> if an event calls "preventDefault", it's basically
+> as if the other handlers didn't see it.
+>
+> Subscribers that registered _before_ the first
+> subscriber to prevent the default will see it,
+> but subscribers that registered _after_ will
+> now.
+>
+> Since this relies on the non-deterministic way the
+> elements are registered, you should observe the
+> following behaviour to avoid weird stuff:
+>
+> **When you recieve a keyboard event if you intend**
+> **to use it, call `preventDefault`.**
+> **Otherwise, do nothing.**
+>
+> **If you want to perform a "side effect" when a key event takes place but does not consume the keypress, setup some middleware**.
+>
+
 ```ts
 import type { Context, HTMLElement } from '@lukekaalim/act';
 
@@ -151,6 +174,19 @@ declare export function useKeyboardContextValue(
   ref: Ref<?HTMLElement>
 ): KeyboardContextValue;
 ```
+
+#### Example
+
+This example creates a "sibling" element to a child - the Child component
+isn't a parent of the element - so it won't recieve any key events by default.
+
+By attaching a ref to the div, and passing that ref to `useKeyboardContextValue`,
+we allow any child of the `keyboardContext.Provider` element to have access to the elements
+`onKeyDown` or `onKeyUp` events.
+
+For the child then, `useKeyboardEvents` is used to attach some functions to
+the `down` and `up` events, and in the example the child will `console.log`
+they keyboard events it receives.
 
 ```ts
 const Parent = () => {
