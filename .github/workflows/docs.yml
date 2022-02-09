@@ -20,7 +20,7 @@ jobs:
           node-version: '16'
       - run: npm ci -w docs
       - run: npm run build -w docs
-      - run: npm run build:github -w www
+      - run: npm run build:github -w docs
       - name: Pushes to another repository
         uses: cpina/github-action-push-to-another-repository@main
         env:
