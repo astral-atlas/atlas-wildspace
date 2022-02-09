@@ -5,15 +5,15 @@ import { h } from '@lukekaalim/act';
 import { Document, Markdown } from "@lukekaalim/act-rehersal";
 
 import controlsText from './controls/index.md?raw';
+import keyboardText from './controls/keyboard.md?raw';
 import styles from './controls/index.module.css';
 
 import { KeyEventDemo } from "./controls/keyEventDemo.js";
 import { KeyContextDemo } from "./controls/keyContextDemo.js";
 import { KeyStateDemo } from "./controls/keyStateDemo.js";
 import { KeyboardTrackDemo } from "./controls/keyTrackDemo.js";
-import { useContext, useRef, useState } from "@lukekaalim/act/hooks";
+import { useContext, useState } from "@lukekaalim/act/hooks";
 import { intervalContext } from "./controls/context";
-import { useAnimation } from "@lukekaalim/act-curve/animation";
 
 const Demo = ({ node }) => {
   switch (node.attributes.name) {
@@ -51,19 +51,25 @@ const directives = {
   interval: ControlDemoInvervalInput,
 }
 
-const ControlsPage = () => {
+const KeyboardControlsPage = () => {
   const [intervalTime, setIntervalTime] = useState(100);
 
   return h(Document, {},
     h(intervalContext.Provider, { value: [intervalTime, setIntervalTime] },
-      h(Markdown, { text: controlsText, directives })));
+      h(Markdown, { text: keyboardText, directives })));
 };
 
+export const keyboardControlsPage/*: Page*/ = {
+  content: h(KeyboardControlsPage),
+  link: { children: [], name: 'Keyboard', href: '/controls/keyboard' }
+}
+
 export const controlsPage/*: Page*/ = {
-  content: h(ControlsPage),
-  link: { children: [], name: 'Controls', href: '/controls' }
+  content: h(Document, {}, h(Markdown, { text: controlsText })),
+  link: { children: [keyboardControlsPage.link], name: 'Controls', href: '/controls' }
 }
 
 export const controlsPages = [
   controlsPage,
+  keyboardControlsPage,
 ];
