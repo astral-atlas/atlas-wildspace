@@ -12,6 +12,7 @@ import wildspaceText from './index.md?raw';
 import { layoutsPage, layoutsPages } from './pages/layouts';
 import { scenesPage, scenesPages } from './scenes.js';
 import { controlsPage, controlsPages } from "./controls";
+import { useEffect } from "@lukekaalim/act/hooks";
 
 /*::
 export type Page = {
@@ -53,9 +54,39 @@ const App = () => {
 
   if (!page)
     return null;
+  
+  const onClick = (e) => {
+    const anchor = e.composedPath().find(e => e.tagName === 'A');
+    if (!e.defaultPrevented && anchor && anchor.href) {
+      const url = new URL(anchor.href);
+      if (url.origin !== document.location.origin)
+        return;
+      e.preventDefault();
+      if (navigation.location.href === url.href) {
+        if (!url.hash)
+          return;
+        const target = document.getElementById(url.hash.substring(1));
+        if (!target)
+          return;
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+      navigation.navigate(url)
+    }
+  };
+
+  useEffect(() => {
+    if (!navigation.location.hash)
+      return;
+    const target = document.getElementById(navigation.location.hash.substring(1));
+    if (!target)
+      return;
+    target.scrollIntoView({ behavior: 'smooth' });
+  }, [navigation.location.hash])
 
   return h(navigationContext.Provider, { value: navigation },
-      h(Rehersal, { rootLink: rootPage.link, selectedLink: page.link, onLinkClick }, page.content));
+      h(Rehersal, { rootLink: rootPage.link, selectedLink: page.link, onLinkClick },
+         h('div', { onClick },
+          page.content)));
 };
 
 const main = () => {
