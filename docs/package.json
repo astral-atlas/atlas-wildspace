@@ -1,10 +1,12 @@
 {
   "name": "@astral-atlas/wildspace-docs",
   "version": "1.0.0",
+  "type": "module",
   "description": "Documentation site for Wildspacew",
   "scripts": {
     "dev": "vite --port 5568",
-    "build": "vite build"
+    "build": "vite build",
+    "build:github": "node add_github.js"
   },
   "repository": {
     "type": "git",
