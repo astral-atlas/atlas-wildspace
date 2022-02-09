@@ -17,7 +17,6 @@ jobs:
           node-version: '16'
       - run: npm ci -w www
       - run: npm run build -w www
-      - run: npm run build:github -w www
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
