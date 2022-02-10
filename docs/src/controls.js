@@ -14,6 +14,7 @@ import { KeyStateDemo } from "./controls/keyStateDemo.js";
 import { KeyboardTrackDemo } from "./controls/keyTrackDemo.js";
 import { useContext, useState } from "@lukekaalim/act/hooks";
 import { intervalContext } from "./controls/context";
+import { FinalDemo } from "./controls/finalDemo";
 
 const Demo = ({ node }) => {
   switch (node.attributes.name) {
@@ -25,6 +26,8 @@ const Demo = ({ node }) => {
       return h(KeyStateDemo);
     case 'track':
       return h(KeyboardTrackDemo);
+    case 'final':
+      return h(FinalDemo);
     default:
       return null;
   }

@@ -549,7 +549,7 @@ declare module three {
     getWorldRotation(optionalTarget: Euler): Euler;
     getWorldDirection(optionalTarget: Vector3): Vector3;
     localToWorld(vector: Vector3): Vector3;
-    lookAt(vector: Vector3): void;
+    lookAt(vector: Vector3 | number, b?: number, c?: number): void;
     // TODO: Find out if the array type is based on the specific Object3D
     // subtype.
     raycast(raycaster: Raycaster, intersects: Array<*>): Array<*>;

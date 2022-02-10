@@ -138,13 +138,13 @@ to children or consume the event at a higher level.
 > Subscribers that registered _before_ the first
 > subscriber to prevent the default will see it,
 > but subscribers that registered _after_ will
-> now.
+> not.
 >
 > Since this relies on the non-deterministic way the
 > elements are registered, you should observe the
 > following behaviour to avoid weird stuff:
 >
-> **When you recieve a keyboard event if you intend**
+> **When you recieve a keyboard event and you intend**
 > **to use it, call `preventDefault`.**
 > **Otherwise, do nothing.**
 >
@@ -493,3 +493,82 @@ useEffect(() => {
 > ::interval
 
 ::demo{name=track}
+
+## Final Controls
+
+We use the techniques mentioned before to create this canvas:
+  - Key events are tracked via [useKeyboardState](#useKeyboardState) and collected
+  via [useKeyboardTrack](#useKeyboardTrack)
+  - We iterate through the track for each frame, re-calculating keypresses
+  via [calculateKeyVelocity](#calculateKeyVelocity) and creating the
+  Position particle state and Rotation bezier curve.
+  - Animate those set properties each frame.
+
+We use keyDown for rotation, and convert key's held into acceleration vectors
+multiplied by the duration to feed to the particle simulator.
+
+```ts
+export const useBoardCameraControl = (
+  cameraRef/*: Ref<?PerspectiveCamera>*/,
+  readInputs/*: () => Frame<Set<string>>[]*/,
+) => {
+  const cameraStateRef = useRef({
+    rotationAnimation: createInitialCubicBezierAnimation(1/8),
+    positionParticle: { position: [0, 0], velocityPerMs: [0, 0] }
+  });
+  useAnimation((now) => {
+    const state = cameraStateRef.current;
+    const inputs = readInputs();
+    for (let i = 1; i < inputs.length; i++) {
+      const prevInput = inputs[i - 1];
+      const nextInput = inputs[i];
+
+      const delta = nextInput.time - prevInput.time;
+      const acceleration = getVectorForKeys([...prevInput.value], 0.003);
+      const { position: currentRotation } = calculateCubicBezierAnimationPoint(
+        state.rotationAnimation,
+        nextInput.time
+      );
+      state.positionParticle = simulateParticle2D(
+        state.positionParticle,
+        { velocityMagnitudeMax: 0.1, dragCoefficent: 0.005 },
+        rotateVector(acceleration, currentRotation),
+        delta,
+      )
+
+      const velocity = calculateKeyVelocity(prevInput.value, nextInput.value);
+      const rotationVelocity = getRotationFromKeys(velocity) / 8;
+      if (rotationVelocity !== 0) {
+        state.rotationAnimation = interpolateCubicBezierAnimation(
+          state.rotationAnimation,
+          state.rotationAnimation.shape[3] + rotationVelocity,
+          600,
+          3/8,
+          nextInput.time
+        );
+      }
+    }
+
+    const { current: camera } = cameraRef;
+    if (!camera)
+      return;
+    const { position: rotation } = calculateCubicBezierAnimationPoint(
+      state.rotationAnimation,
+      now,
+    );
+    const position = state.positionParticle.position;
+    setFocusTransform(
+      [position[0], 0, position[1]],
+      [40, 40, 0],
+      rotation,
+      camera
+    );
+  }, []);
+};
+```
+
+> Use WASD or Arrow Keys to Navigate.
+>
+> Use Q or R to rotate.
+
+::demo{name=final}

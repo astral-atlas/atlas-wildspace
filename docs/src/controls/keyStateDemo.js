@@ -44,11 +44,11 @@ export const KeyStateDemo/*: Component<>*/ = () => {
       const delta = now - lastInterval;
       lastInterval = now;
 
-      const acceleration = getVectorForKeys([...keysRef.current]);
+      const acceleration = getVectorForKeys([...keysRef.current], 0.0003);
       momentumRef.current = simulateParticle2D(
         momentumRef.current,
         { velocityMagnitudeMax: 0.1 },
-        [acceleration[0] * 0.0003, acceleration[1] * 0.0003],
+        acceleration,
         delta
       );
       const focus = momentumRef.current.position;

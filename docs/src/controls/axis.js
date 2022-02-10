@@ -19,10 +19,14 @@ export const arrowAxis = {
 };
 
 export const getVectorForKeys = (
-  keys/*: string[]*/
+  keys/*: string[]*/,
+  scale/*: number*/ = 1
 )/*: [number, number]*/ => {
   return keys
     .map(key => wasdAxis[key] || arrowAxis[key] || null)
     .filter(Boolean)
-    .reduce((acc, curr) => [acc[0] + curr[0], acc[1] + curr[1]], [0, 0])
+    .reduce((acc, curr) => [
+      acc[0] + (curr[0] * scale),
+      acc[1] + (curr[1] * scale)
+    ], [0, 0])
 };

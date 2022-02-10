@@ -2,13 +2,15 @@
 
 **Astral-Atlas Wildspace** is a online D&D session application.
 
-## Components
+## Projects
 - Component Library
 - Client Library
 - Data Library
-- Website
+- App Website
+- Documentation Website
 - HTTP/WS API
 - CLI
+- Test Service Infrastructure
 
 ## Features
 

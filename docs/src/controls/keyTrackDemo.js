@@ -39,19 +39,16 @@ export const KeyboardTrackDemo/*: Component<>*/ = () => {
     if (!camera)
       return;
 
+    const options = { velocityMagnitudeMax: 0.1 };
     let prevFrame = { time: 0, value: new Set() };
     const id = setInterval(() => {
-      const tracks = read()
-      const time = performance.now();
-      const finalFrame = { ...(tracks[tracks.length - 1] || prevFrame), time };
-    
-      for (const frame of [...tracks, finalFrame]) {
+      for (const frame of read()) {
         const delta = frame.time - prevFrame.time;
-        const acceleration = getVectorForKeys([...prevFrame.value]);
+        const acceleration = getVectorForKeys([...prevFrame.value], 0.0004);
         momentumRef.current = simulateParticle2D(
           momentumRef.current,
-          { velocityMagnitudeMax: 0.1 },
-          [acceleration[0] * 0.0003, acceleration[1] * 0.0003],
+          options,
+          acceleration,
           delta
         );
         prevFrame = frame;
