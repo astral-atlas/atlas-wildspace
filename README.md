@@ -8,6 +8,6 @@ Demo available on [wildspace.astral-atlas.com](https://wildspace.astral-atlas.co
 
 ## Development
 You will need:
- - make
- - node v14
- - terraform v0.13
+ - node v16
+ - terraform v1
+ - cmake (apparently - some weird AWS thing depends on it)

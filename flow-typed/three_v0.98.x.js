@@ -503,7 +503,36 @@ declare module three {
     group: number // this is a guess
   ): void;
 
-  declare class Raycaster {}
+  declare export class Raycaster {
+    setFromCamera(pointer: Vector2, camera: Camera): void;
+    ray: Ray;
+    intersectObject(
+      object: Object3D,
+      recursive?: boolean,
+      target?: IntersectionObject[]
+    ): IntersectionObject[];
+    intersectObjects(
+      objects: Object3D[],
+      recursive?: boolean,
+      target?: IntersectionObject[]
+    ): IntersectionObject[];
+  }
+
+  declare export class Ray {}
+  declare export type IntersectionObject = {
+    distance: number,     // - distance between the origin of the ray and the intersection
+    point: Vector3,       // – point of intersection, in world coordinates
+    face: number,         // – intersected face
+    faceIndex: number,    // – index of the intersected face
+    object: Object3D,     // – the intersected object
+    uv: Vector2,          // - U,V coordinates at point of intersection
+    uv2: Vector2,         // - Second set of U,V coordinates at point of intersection
+    instanceId: number,   // – The index number of the instance where the ray intersects the InstancedMesh 
+  }
+
+  declare export class Euler {
+
+  }
 
   declare class Layers {}
 
