@@ -9,17 +9,44 @@ import { BoxGeometry, MeshBasicMaterial, Vector3, Euler, Color } from "three";
 
 import styles from './index.module.css';
 import { useClickRayContextValue, useClickRay, clickRayContext } from "./click.js";
+import { useRaycastManager, useRaycast, raycastManagerContext } from "./raycast.js";
+import { useAnimation } from "@lukekaalim/act-curve/animation";
+import { useAnimatedNumber, useBezierAnimation } from "@lukekaalim/act-curve/bezier";
 
 export const ClickDemo/*: Component<>*/ = () => {
   const canvasRef = useRef();
   const cameraRef = useRef();
   const sceneRef = useRef();
 
-  const [value, onClick] = useClickRayContextValue(cameraRef);
-
   const renderer = useWebGLRenderer(canvasRef);
-  useRenderLoop(renderer, cameraRef, sceneRef);
+  const manager = useRaycastManager();
+  useRenderLoop(renderer, cameraRef, sceneRef, () => {
+    const { current: camera } = cameraRef;
+    if (!camera)
+      return;
+    
+    manager.onUpdate(camera);
+  });
   const canvasSize = useResizingRenderer(canvasRef, renderer);
+
+  useEffect(() => {
+    const { current: canvas } = canvasRef;
+    if (!canvas)
+      return;
+    canvas.addEventListener('click', manager.onClick);
+    canvas.addEventListener('mousemove', manager.onMouseMove);
+    canvas.addEventListener('mouseenter', manager.onMouseEnter);
+    canvas.addEventListener('mouseleave', manager.onMouseExit);
+    return () => {
+      canvas.removeEventListener('click', manager.onClick);
+      canvas.removeEventListener('mousemove', manager.onMouseMove);
+      canvas.removeEventListener('mouseenter', manager.onMouseEnter);
+      canvas.removeEventListener('mouseleave', manager.onMouseExit);
+    }
+  }, []);
+  useEffect(() => {
+    manager.onMouseMove
+  }, [])
 
   useEffect(() => {
     const { current: camera } = cameraRef;
@@ -37,8 +64,8 @@ export const ClickDemo/*: Component<>*/ = () => {
   }, [canvasSize])
 
   return [
-    h('canvas', { ref: canvasRef, onClick, class: styles.demoCanvas, tabIndex: 0 }),
-    h(clickRayContext.Provider, { value }, [
+    h('canvas', { ref: canvasRef, class: styles.demoCanvas, tabIndex: 0 }),
+    h(raycastManagerContext.Provider, { value: manager }, [
       h(scene, { ref: sceneRef }, [
         h(perspectiveCamera, {
           ref: cameraRef,
@@ -61,15 +88,30 @@ const boxGeometry = new BoxGeometry(2, 2, 2);
 
 const MyBox = ({ position }) => {
   const ref = useRef();
+  const [selected, setSelected] = useState(false);
 
-  useClickRay(ref, (event, intersection, allIntersections) => {
-    if (intersection !== allIntersections[0])
-      return;
-    event.preventDefault();
+  const spinColor = () => {
     materialRef.current.color = new Color(`hsl(${Math.random() * 255}, 75%, 75%)`)
+  }
+
+  useRaycast(ref, {
+    click: () => (spinColor(), setSelected(s => !s)),
   });
+  useAnimation(() => {
+    if (selected && ref.current)
+      ref.current.rotateZ(0.01 * Math.PI);
+  }, [selected]);
 
   const materialRef = useRef(new MeshBasicMaterial({ color: 'yellow' }))
+
+  const [anim] = useAnimatedNumber(selected ? 1 : 0, 0);
+  useBezierAnimation(anim, (v) => {
+    const { current: mesh } = ref;
+    if (!mesh)
+      return;
+  
+    mesh.position.set(position.x, position.y, position.z - v.position)
+  })
 
   return [
     h(mesh, {
