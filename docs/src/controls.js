@@ -7,6 +7,7 @@ import { Document, Markdown } from "@lukekaalim/act-rehersal";
 import controlsText from './controls/index.md?raw';
 import keyboardText from './controls/keyboard.md?raw';
 import raycastText from './controls/raycast.md?raw';
+import gameText from './controls/game.md?raw';
 import styles from './controls/index.module.css';
 
 import { KeyEventDemo } from "./controls/keyEventDemo.js";
@@ -17,6 +18,7 @@ import { useContext, useState } from "@lukekaalim/act/hooks";
 import { intervalContext } from "./controls/context";
 import { FinalDemo } from "./controls/finalDemo";
 import { ClickDemo } from './controls/clickDemo';
+import { BoardDemo } from './controls/game/boardDemo';
 
 const Demo = ({ node }) => {
   switch (node.attributes.name) {
@@ -32,6 +34,8 @@ const Demo = ({ node }) => {
       return h(FinalDemo);
     case 'click':
       return h(ClickDemo);
+    case 'board':
+        return h(BoardDemo);
     default:
       return null;
   }
@@ -75,14 +79,23 @@ export const raycastControlPage/*: Page*/ = {
   content: h(Document, {}, h(Markdown, { text: raycastText, directives })),
   link: { children: [], name: 'Raycast', href: '/controls/raycast' }
 };
+export const gameControlPage/*: Page*/ = {
+  content: h(Document, {}, h(Markdown, { text: gameText, directives })),
+  link: { children: [], name: 'Game', href: '/controls/game' }
+};
 
 export const controlsPage/*: Page*/ = {
   content: h(Document, {}, h(Markdown, { text: controlsText })),
-  link: { children: [keyboardControlsPage.link, raycastControlPage.link], name: 'Controls', href: '/controls' }
+  link: { children: [
+    keyboardControlsPage.link,
+    raycastControlPage.link,
+    gameControlPage.link
+  ], name: 'Controls', href: '/controls' }
 }
 
 export const controlsPages = [
   controlsPage,
   raycastControlPage,
   keyboardControlsPage,
+  gameControlPage,
 ];

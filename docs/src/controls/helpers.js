@@ -1,14 +1,14 @@
 // @flow strict
 /*:: import type { Component, Ref } from '@lukekaalim/act'; */
-/*:: import type { Object3D, Mesh, Group } from "three"; */
+/*:: import type { Object3D, Mesh, Group, Material } from "three"; */
 import { h, useEffect, useRef } from '@lukekaalim/act';
 // $FlowFixMe
 import { GridHelper, Box3Helper, Vector3, Box3 } from "three";
 
 import { group } from "@lukekaalim/act-three";
 
-const useHelper = /*:: <T: Object3D>*/(
-  parentRef,
+export const useHelper = /*:: <T: Object3D, Parent: Object3D>*/(
+  parentRef/*: Ref<?Parent>*/,
   helperConstructor/*: () => T*/,
   deps/*: mixed[]*/ = []
 ) => {
@@ -40,10 +40,12 @@ export const GridHelperGroup/*: Component<{ size?: number, interval?: number }>*
 
 export const BoxHelperGroup/*: Component<{
   ref: Ref<?Group>,
+  material?: Material,
   center?: [number, number, number],
   size?: [number, number, number]
 }>*/ = ({
   ref,
+  material,
   center = [0, 0, 0],
   size = [10, 10, 10],
 }) => {
@@ -53,8 +55,11 @@ export const BoxHelperGroup/*: Component<{
       new Vector3(0, 0, 0),
       new Vector3(...size)
     );
-    return new Box3Helper(box);
-  }, [...center, ...size]);
+    const helper = new Box3Helper(box);
+    if (material)
+      helper.material = material;
+    return helper;
+  }, [...center, ...size, material]);
 
   return h(group, { ref })
 };

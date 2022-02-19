@@ -225,7 +225,9 @@ declare module three {
 
   declare class Vector4 {}
 
-  declare class Euler {}
+  declare class Euler {
+    constructor(x: number, y: number, z: number): this;
+  }
 
   declare export class Quaternion {
     constructor(x: number, y: number, z: number, w: number): this;
@@ -528,10 +530,6 @@ declare module three {
     uv: Vector2,          // - U,V coordinates at point of intersection
     uv2: Vector2,         // - Second set of U,V coordinates at point of intersection
     instanceId: number,   // – The index number of the instance where the ray intersects the InstancedMesh 
-  }
-
-  declare export class Euler {
-
   }
 
   declare class Layers {}
@@ -997,10 +995,10 @@ declare module three {
 
     load(
       url: string,
-      onLoad: typeof TextureLoaderOnLoadCallback,
-      onProgress: typeof TextureLoaderOnProgressCallback,
-      onError: typeof TextureLoaderOnErrorCallback,
-    ): void;
+      onLoad?: typeof TextureLoaderOnLoadCallback,
+      onProgress?: typeof TextureLoaderOnProgressCallback,
+      onError?: typeof TextureLoaderOnErrorCallback,
+    ): Texture;
     setCrossOrigin(value: string): void;
     setWithCredentials(value: boolean): void;
   }

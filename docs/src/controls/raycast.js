@@ -31,6 +31,7 @@ type RaycastEvents = {
 }
 
 export type RaycastManager = {
+  lastIntersectionRef: Ref<?IntersectionObject>,
   subscribe: (object: Object3D, events: RaycastEvents) => () => void,
   onUpdate: (camera: Camera) => void,
   onMouseEnter: (event: MouseEvent) => void,
@@ -92,6 +93,8 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
   const [subscribeExit, emitExit] = useTargetedEmitter();
   const [subscribeOver, emitOver] = useTargetedEmitter();
 
+  const lastIntersectionRef = useRef();
+
   const focusIntersectionRef = useRef(null);
   const onUpdate = (camera) => {
     if (!mouseEnteredRef.current)
@@ -112,10 +115,8 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
         emitEnter(nextFocused, focusIntersection);
 
       focusIntersectionRef.current = focusIntersection;
-    } else {
-      if (nextFocused)
-        emitOver(nextFocused, focusIntersection)
     }
+    lastIntersectionRef.current = focusIntersection;
   }
 
   const [subscribeClick, emitClick] = useTargetedEmitter();
@@ -123,7 +124,7 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
     if (!mouseEnteredRef.current)
       return;
     
-    const intersection = focusIntersectionRef.current;
+    const intersection = lastIntersectionRef.current;
     const focused = intersection && intersection.object;
     if (focused && intersection)
       emitClick(focused, intersection);
@@ -146,6 +147,7 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
   
   const manager = useMemo(() => ({
     onClick,
+    lastIntersectionRef,
     onMouseMove,
     onMouseEnter,
     onMouseExit,
