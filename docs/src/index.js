@@ -12,6 +12,7 @@ import wildspaceText from './index.md?raw';
 import { layoutsPage, layoutsPages } from './pages/layouts';
 import { scenesPage, scenesPages } from './scenes.js';
 import { controlsPage, controlsPages } from "./controls";
+import { geometryPage, geometryPages } from './geometry';
 import { useEffect } from "@lukekaalim/act/hooks";
 
 /*::
@@ -29,7 +30,12 @@ const rootPage = {
   ],
   link: {
     name: 'Wildspace',
-    children: [layoutsPage.link, scenesPage.link, controlsPage.link],
+    children: [
+      layoutsPage.link,
+      scenesPage.link,
+      controlsPage.link,
+      geometryPage.link
+    ],
     href: '/',
   }
 }
@@ -39,6 +45,7 @@ const pages = [
   ...scenesPages,
   ...layoutsPages,
   ...controlsPages,
+  ...geometryPages,
 ];
 
 const App = () => {

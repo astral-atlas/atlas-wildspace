@@ -14,7 +14,7 @@ import type { Subscriber, SubscriptionFunction } from "./subscription";
 */
 import { Vector2, Raycaster } from 'three';
 
-import { createContext, useContext, useEffect, useMemo, useRef } from "@lukekaalim/act";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "@lukekaalim/act";
 
 /*::
 export type OnClickRaySubscriber = (
@@ -99,7 +99,7 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
   const onUpdate = (camera) => {
     if (!mouseEnteredRef.current)
       return;
-    
+      
     raycaster.setFromCamera(mousePosition, camera);
     const intersections = raycaster.intersectObjects([...focusTargets], false);
     
@@ -176,3 +176,23 @@ export const useRaycast = /*:: <T: Object>*/(objectRef/*: Ref<T>*/, events/*: Ra
     }
   }, [manager, ...deps]);
 };
+
+export const useRaycast2 = /*:: <T: Object>*/(
+  manager/*: ?RaycastManager*/,
+  objectRef/*: Ref<T>*/,
+  events/*: RaycastEvents*/,
+  deps/*: mixed[]*/ = []
+) => {
+  useEffect(() => {
+    if (!manager)
+      return;
+    const { current: object } = objectRef;
+    if (!object)
+      return;
+
+    const unsubscribe = manager.subscribe(object, events);
+    return () => {
+      unsubscribe();
+    }
+  }, [manager, ...deps]);
+}

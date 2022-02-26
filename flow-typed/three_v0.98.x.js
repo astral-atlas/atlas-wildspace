@@ -353,9 +353,9 @@ declare module three {
     mergeMesh(mesh: Mesh): void;
     mergeVertices(): void;
     normalize(): void;
-    rotateX(radians: number): void;
-    rotateY(radians: number): void;
-    rotateZ(radians: number): void;
+    rotateX(radians: number): this;
+    rotateY(radians: number): this;
+    rotateZ(radians: number): this;
     sortFacesByMaterialIndex(): void;
     scale(x: number, y: number, z: number): void;
     toJSON(): string;
@@ -554,7 +554,7 @@ declare module three {
     +quaternion: Quaternion;
     receiveShadow: boolean;
     renderOrder: number;
-    rotation: Vector3;
+    rotation: Euler;
     scale: Vector3;
     up: Vector3;
     userData: mixed;
@@ -921,6 +921,14 @@ declare module three {
     ): this;
 
     parameters: BoxGeometryParams;
+  }
+  declare export class PlaneGeometry extends BufferGeometry {
+    constructor(
+      width?: number,
+      height?: number,
+      widthSegments?: number,
+      heightSegments?: number,
+    ): this;
   }
 
   declare class LightShadow {

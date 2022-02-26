@@ -1,0 +1,10 @@
+
+.demoCanvas {
+  display: block;
+  width: 75%;
+  margin: auto;
+}
+.bigDemoCanvas {
+  display: block;
+  width: 100%;
+}

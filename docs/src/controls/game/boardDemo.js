@@ -3,7 +3,7 @@
 
 import { BoxHelperGroup, GridHelperGroup, useHelper } from "../helpers";
 import { h, useEffect, useMemo, useRef, useState } from "@lukekaalim/act";
-import { mesh, perspectiveCamera, scene, useAnimationFrame, useRenderLoop, useResizingRenderer, useWebGLRenderer } from "@lukekaalim/act-three";
+import { group, mesh, perspectiveCamera, scene, useAnimationFrame, useRenderLoop, useResizingRenderer, useWebGLRenderer } from "@lukekaalim/act-three";
 
 import {
   Vector3,
@@ -28,6 +28,8 @@ import {
   useAnimatedVector2,
   useBezier2DAnimation,
 } from "../../pages/layouts";
+import { BoardInterface } from "./board";
+import { useRenderLoopManager } from "../loop";
 
 /*::
 type Board = {
@@ -46,6 +48,7 @@ export const BoardDemo/*: Component<>*/ = () => {
 
   const webgl = useWebGLRenderer(canvasRef, { antialias: true });
   const size = useResizingRenderer(canvasRef, webgl);
+  
   useEffect(() => {
     const { current: camera } = cameraRef;
     if (!camera || !size)
@@ -54,14 +57,49 @@ export const BoardDemo/*: Component<>*/ = () => {
     camera.aspect = size.width / size.height;
     camera.updateProjectionMatrix()
   }, [size])
-  
-  const raycaster = useRaycastManager()
-  useRenderLoop(webgl, cameraRef, sceneRef, (now, delta) => {
+
+
+  const [onLoop, loopContext] = useRenderLoopManager()
+  const raycaster = useRaycastManager();
+  useEffect(() => {
+    const { current: canvas } = canvasRef;
+    const { current: scene } = sceneRef;
     const { current: camera } = cameraRef;
-    if (!camera)
+    if (!canvas || !scene || !camera || !webgl)
       return;
-    raycaster.onUpdate(camera)
-  }, []);
+
+    const renderVars = {
+      delta: 0,
+      now: performance.now(),
+    }
+    const renderConsts = {
+      canvas,
+      scene,
+      camera,
+      renderer: webgl
+    }
+    const onFrame = (now) => {
+      renderVars.delta = now - renderVars.now;
+      renderVars.now = now;
+
+      onLoop(renderConsts, renderVars);
+
+      id = requestAnimationFrame(onFrame);
+    }
+    let id = requestAnimationFrame(onFrame);
+    return () => {
+      cancelAnimationFrame(id);
+    }
+  }, [webgl]);
+
+  useEffect(() => loopContext.subscribeInput((renderConsts, renderVars) => {
+    raycaster.onUpdate(renderConsts.camera)
+  }), [])
+
+  useEffect(() => loopContext.subscribeRender((renderConsts) => {
+    renderConsts.renderer.render(renderConsts.scene, renderConsts.camera);
+  }), [])
+  
   useLookAt(cameraRef, new Vector3(0, 0, 0), []);
 
   const gridRef = useRef();
@@ -70,7 +108,7 @@ export const BoardDemo/*: Component<>*/ = () => {
     (Math.round((x +5) / 10) * 10) - 5,
     (Math.round((y +5) / 10) * 10) - 5,
   ]
-
+/*
   useAnimation(() => {
     const point = raycaster.lastIntersectionRef.current?.point;
     if (!point)
@@ -86,9 +124,10 @@ export const BoardDemo/*: Component<>*/ = () => {
       return nextFocus;
     });
   }, []);
-  
+  */
 
   const [otherFocus, setOtherFocus] = useState/*:: <[number, number]>*/([0, 0]);
+  /*
   useEffect(() => {
     const id = setInterval(() => {
       const now = performance.now();
@@ -105,7 +144,7 @@ export const BoardDemo/*: Component<>*/ = () => {
       clearInterval(id);
     }
   }, [])
-
+  */
   const [visible, setVisible] = useState(false);
   const [focus, setFocus] = useState/*:: <[number, number]>*/([0, 0]);
 
@@ -115,7 +154,7 @@ export const BoardDemo/*: Component<>*/ = () => {
     const now = performance.now();
     filter(anim => calculateSpanProgress(anim.status.span, now) !== 1)
   }, [visible, focus]);
-
+/*
   useEffect(() => {
     const { current: grid } = gridRef;
     if (!grid)
@@ -132,6 +171,7 @@ export const BoardDemo/*: Component<>*/ = () => {
     }
     return raycaster.subscribe(grid, { enter, exit, click })
   }, [])
+  */
 
   const canvasProps = {
     ref: canvasRef,
@@ -152,16 +192,27 @@ export const BoardDemo/*: Component<>*/ = () => {
     if (boxRef.current)
       boxRef.current.position.set(point.position[0], 5, point.position[1]);
   })
+  const groupRef = useRef();
+
+  useAnimation((now) => {
+    const { current: group } = groupRef;
+    if (!group)
+      return;
+    group.rotation.set(0, now / 1000 * Math.PI * (1/60), 0)
+  })
 
   return [
     h('canvas', canvasProps),
     h(scene, { ref: sceneRef }, [
       h(perspectiveCamera, { ref: cameraRef, position: new Vector3(40, 80, 40), fov: 50 }),
-      h(mesh, { visible: false, geometry: plane, ref: gridRef, rotation: new Euler(Math.PI * 1.5, 0, 0) }),
-      h(GridHelperGroup),
-      h(mesh, { geometry: boxGeo, ref: boxRef }),
+      //h(mesh, { visible: false, geometry: plane, ref: gridRef, rotation: new Euler(Math.PI * 1.5, 0, 0) }),
+      h(group, { ref: groupRef }, [
+        h(GridHelperGroup),
+        h(BoardInterface, { raycaster, board: { width: 10, height: 10, pieces: [{ pieceId: 'cool', area: { type: 'box', origin: [0, 1, 0],  height: 1, width: 1, depth: 1 }}] }}),
+      ])
+      //h(mesh, { geometry: boxGeo, ref: boxRef }),
     
-      anims.map(anim => h(GridSquareHighlighter, { status: anim.status, position: new Vector3(anim.value[0], 0, anim.value[1]) })),
+      //anims.map(anim => h(GridSquareHighlighter, { status: anim.status, position: new Vector3(anim.value[0], 0, anim.value[1]) })),
     ])
   ];
 }
