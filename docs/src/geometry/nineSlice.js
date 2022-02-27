@@ -168,7 +168,7 @@ const GeometryDemo = ({ children }) => {
   return [
     h('canvas', { ref: canvasRef, class: styles.bigDemoCanvas }),
     h(scene, { ref: sceneRef }, [
-      h(perspectiveCamera, { ref: cameraRef, position: new Vector3(16, 16, 16), fov: 20 }),
+      h(perspectiveCamera, { ref: cameraRef, position: new Vector3(16, 16, 16), fov: 16 }),
       h(GridHelperGroup, { interval: 10, size: 10 }),
       children,
     ])
@@ -204,8 +204,8 @@ export const NineSliceDemo/*: Component<>*/ = () => {
   }, [geometry]);
 
   return [
-    h('input', { type: 'range', min: 0, max: 10, step: 0.01, value: x, onInput: throttle(e => setX(e.target.valueAsNumber), 100) }),
-    h('input', { type: 'range', min: 0, max: 10, step: 0.01, value: y, onInput: throttle(e => setY(e.target.valueAsNumber), 100) }),
+    h('input', { type: 'range', min: b*2, max: 10, step: 0.01, value: x, onInput: throttle(e => setX(e.target.valueAsNumber), 100) }),
+    h('input', { type: 'range', min: b*2, max: 10, step: 0.01, value: y, onInput: throttle(e => setY(e.target.valueAsNumber), 100) }),
     h('input', { type: 'range', min: 0, max: maxWidth, step: 0.01, value: Math.min(b, maxWidth), onInput: throttle(e => setB(e.target.valueAsNumber), 100) }),
     h(GeometryDemo, {}, [
       h(mesh, { geometry, material, position: new Vector3(-x / 2, 0, -y / 2) }),
