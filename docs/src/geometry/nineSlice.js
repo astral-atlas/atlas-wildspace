@@ -16,10 +16,12 @@ import {
   Vector3,
   Vector2,
   MeshBasicMaterial,
+  TextureLoader,
 } from "three";
 import { GridHelperGroup } from "../controls/helpers";
 import { useRenderLoopManager } from "../controls/loop";
 import styles from '../demo.module.css';
+import gradiantURL from './gradiant.jpg';
 
 const threshold = (input, limit) => {
   return input <= limit ? 0 : 1;
@@ -35,7 +37,6 @@ export const writeVertexPositions = (
       const i = (x + (y * 4)) * 3;
       const vertexX = ((((x + 1) % 3) - 1) * borderSize) + (threshold(x, 1) * width);
       const vertexY = ((((y + 1) % 3) - 1) * borderSize) + (threshold(y, 1) * height);
-      console.log({ vertexX, vertexY, width, height })
 
       output[i + 0] = vertexX;
       output[i + 1] = 0;
@@ -165,21 +166,24 @@ const GeometryDemo = ({ children }) => {
   useLookAt(cameraRef, new Vector3(0, 0, 0), []);
 
   return [
-    h('canvas', { ref: canvasRef, class: styles.demoCanvas }),
+    h('canvas', { ref: canvasRef, class: styles.bigDemoCanvas }),
     h(scene, { ref: sceneRef }, [
-      h(perspectiveCamera, { ref: cameraRef, position: new Vector3(0, 16, 4), fov: 26 }),
-      h(GridHelperGroup, { interval: 1, size: 10 }),
+      h(perspectiveCamera, { ref: cameraRef, position: new Vector3(16, 16, 16), fov: 20 }),
+      h(GridHelperGroup, { interval: 10, size: 10 }),
       children,
     ])
   ];
 };
 
-const material = new MeshBasicMaterial();
+const texture = new TextureLoader().load(gradiantURL);
+const material = new MeshBasicMaterial({ map: texture });
 
 export const NineSliceDemo/*: Component<>*/ = () => {
-  const [x, setX] = useState(0);
-  const [y, setY] = useState(0);
+  const [x, setX] = useState(5);
+  const [y, setY] = useState(5);
   const [b, setB] = useState(1);
+
+  const maxWidth = Math.min(x/2, y/2);
   
   const geometry = useDisposable(() => {
     return createNineSlicedGeometry();
@@ -188,42 +192,25 @@ export const NineSliceDemo/*: Component<>*/ = () => {
 
   useEffect(() => {
     const position = geometry.getAttribute('position');
-    writeVertexPositions([1+x, 1+y], b, position.array);
+    writeVertexPositions([x, y], Math.min(b, maxWidth), position.array);
     position.needsUpdate = true;
     setGeometryVersion(position.version);
   }, [x, y, b, geometry]);
 
-  const wireframeGeometry = useDisposable(() => {
-    return new WireframeGeometry(geometry);
-  }, [geometryVersion]);
   const pointsGeometry = useDisposable(() => {
     const pointsGeometry = new BufferGeometry();
     pointsGeometry.setAttribute('position', geometry.getAttribute('position'));
     return pointsGeometry;
-  }, [geometryVersion]);
-
-  const groupRef = useRef();
-
-  useEffect(() => {
-    const { current: group } = groupRef;
-    if (!group)
-      return;
-    
-    const line = new LineSegments(wireframeGeometry);
-    group.add(line);
-    return () => {
-      group.remove(line);
-    };
-  }, [wireframeGeometry]);
+  }, [geometry]);
 
   return [
     h('input', { type: 'range', min: 0, max: 10, step: 0.01, value: x, onInput: throttle(e => setX(e.target.valueAsNumber), 100) }),
     h('input', { type: 'range', min: 0, max: 10, step: 0.01, value: y, onInput: throttle(e => setY(e.target.valueAsNumber), 100) }),
-    h('input', { type: 'range', min: 0, max: 10, step: 0.01, value: b, onInput: throttle(e => setB(e.target.valueAsNumber), 100) }),
+    h('input', { type: 'range', min: 0, max: maxWidth, step: 0.01, value: Math.min(b, maxWidth), onInput: throttle(e => setB(e.target.valueAsNumber), 100) }),
     h(GeometryDemo, {}, [
-      //h(mesh, { geometry, material }),
-      h(group, { ref: groupRef }),
-      h(points, { geometry: pointsGeometry }),
+      h(mesh, { geometry, material, position: new Vector3(-x / 2, 0, -y / 2) }),
+      //h(group, { ref: groupRef }),
+      h(points, { geometry: pointsGeometry, position: new Vector3(-x / 2, 0, -y / 2) }),
     ])
   ];
 };
