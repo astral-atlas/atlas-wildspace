@@ -310,6 +310,7 @@ declare module three {
   declare export class BufferGeometry {
     constructor(): this;
     colors: Array<Color>;
+    index: ?BufferAttribute,
     faces: Array<Face3>;
     boundingBox: Box3 | null;
     boundingSphere: Sphere | null;
@@ -350,6 +351,8 @@ declare module three {
       materialIndexOffset: number
     ): void;
     setAttribute(name: string, attribute: BufferAttribute): void;
+    getAttribute(name: string): BufferAttribute;
+    setIndex(attribute: BufferAttribute): this;
     mergeMesh(mesh: Mesh): void;
     mergeVertices(): void;
     normalize(): void;
