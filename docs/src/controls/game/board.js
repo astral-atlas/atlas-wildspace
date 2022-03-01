@@ -6,10 +6,11 @@
 
 import { h, useContext, useEffect, useRef, useState } from "@lukekaalim/act";
 import { raycastManagerContext, useRaycast2 } from "../raycast";
-import { BoxGeometry, BufferGeometry, PlaneGeometry, Vector3 } from "three";
+import { BoxGeometry, BufferGeometry, PlaneGeometry, Vector3, TextureLoader } from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { mesh } from "@lukekaalim/act-three";
 import { useAnimation } from "@lukekaalim/act-curve";
-import * as focus from "../focus";
+
 
 
 /*::

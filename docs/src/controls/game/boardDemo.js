@@ -11,8 +11,11 @@ import {
   Euler,
   LineBasicMaterial,
   MeshBasicMaterial,
+  RepeatWrapping,
   TextureLoader,
+  PMREMGenerator,
   Color,
+  MathUtils,
   BoxGeometry,
 } from "three";
 import { useLookAt } from "@lukekaalim/act-three/hooks/matrix";
@@ -30,6 +33,14 @@ import {
 } from "../../pages/layouts";
 import { BoardInterface } from "./board";
 import { useRenderLoopManager } from "../loop";
+
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { Water } from "three/examples/jsm/objects/Water.js";
+import { Sky } from "three/examples/jsm/objects/Sky.js";
+
+import keelboatModelURL from './keelboat.gltf';
+import keelboatTextureURL from './keelboat.jpg';
+import waternormalsTextureURL from './waternormals.jpg';
 
 /*::
 type Board = {
@@ -100,7 +111,6 @@ export const BoardDemo/*: Component<>*/ = () => {
     renderConsts.renderer.render(renderConsts.scene, renderConsts.camera);
   }), [])
   
-  useLookAt(cameraRef, new Vector3(0, 0, 0), []);
 
   const gridRef = useRef();
 
@@ -195,11 +205,106 @@ export const BoardDemo/*: Component<>*/ = () => {
   const groupRef = useRef();
 
   useAnimation((now) => {
-    const { current: group } = groupRef;
-    if (!group)
+    const { current: camera } = cameraRef;
+    if (!camera)
       return;
-    group.rotation.set(0, now / 1000 * Math.PI * (1/60), 0)
+    const rotation = now / 1000 * Math.PI * (1/60);
+
+    camera.position.set(Math.cos(rotation) * 90, 50, Math.sin(rotation) * 90);
+    camera.lookAt(new Vector3(0, 0, 0));
   })
+  //useLookAt(cameraRef, new Vector3(0, 0, 0), []);
+
+  const [keelboatGeometry, setKeelboatGeometry] = useState(null); 
+  useEffect(() => {
+    const loader = new GLTFLoader();
+    const a = loader.load(keelboatModelURL, (gltf) => {
+      const keelboatMesh = gltf.scene.children[0];
+      keelboatMesh.geometry.scale(8, 8, 8)
+      setKeelboatGeometry(keelboatMesh.geometry);
+    })
+  }, [])
+  const [keelboatMaterial, setKeelboatMaterial] = useState(null); 
+  useEffect(() => {
+    const run = async () => {
+      const keelboatTexture = await new TextureLoader().loadAsync(keelboatTextureURL);
+      const keelboatMaterial = new MeshBasicMaterial({ map: keelboatTexture });
+      setKeelboatMaterial(keelboatMaterial)
+    };
+    run();
+  }, []);
+
+  const [water, setWater] = useState(null);
+  useEffect(() => {
+    if (!webgl)
+      return;
+
+    const waterGeometry = new PlaneGeometry( 10000, 10000 );
+    const sky = new Sky();
+    sky.scale.setScalar( 10000 );
+
+    const skyUniforms = sky.material.uniforms;
+
+    const sun = new Vector3();
+
+    skyUniforms[ 'turbidity' ].value = 10;
+    skyUniforms[ 'rayleigh' ].value = 2;
+    skyUniforms[ 'mieCoefficient' ].value = 0.005;
+    skyUniforms[ 'mieDirectionalG' ].value = 0.8;
+    const water = (new Water(
+      waterGeometry,
+      {
+        textureWidth: 512,
+        textureHeight: 512,
+        waterNormals: new TextureLoader().load(waternormalsTextureURL, function ( texture ) {
+          texture.wrapS = texture.wrapT = RepeatWrapping;
+        } ),
+        sunDirection: new Vector3(),
+        sunColor: 0xffffff,
+        waterColor: 0x001e0f,
+        distortionScale: 3.7,
+      }
+    ));
+    setWater(water);
+    water.position.y -= 1;
+    water.rotation.x = - Math.PI / 2;
+    sceneRef.current.add(water);
+    sceneRef.current.add( sky );
+    const parameters = {
+      elevation: 2,
+      azimuth: 180
+    };
+
+    const pmremGenerator = new PMREMGenerator( webgl );
+
+    function updateSun() {
+
+      const phi = MathUtils.degToRad( 90 - parameters.elevation );
+      const theta = MathUtils.degToRad( parameters.azimuth );
+
+      sun.setFromSphericalCoords( 1, phi, theta );
+
+      sky.material.uniforms[ 'sunPosition' ].value.copy( sun );
+      water.material.uniforms[ 'sunDirection' ].value.copy( sun ).normalize();
+
+      sceneRef.current.environment = pmremGenerator.fromScene( sky ).texture;
+    }
+    updateSun();
+  }, [webgl]);
+  useAnimation(now => {
+    if (water)
+      water.material.uniforms[ 'time' ].value += 1.0 / 60.0;
+  }, [water])
+
+  const boatRef = useRef();
+  useAnimation((now) => {
+    const { current: boat } = boatRef;
+    if (!boat)
+      return;
+
+    boat.position.y = Math.sin(now * 1.3 / 1000) + 5;
+    boat.rotation.z = (Math.sin((now * 3.4) / 1000) +  Math.sin(now / 1000)) / 32;
+  }, [keelboatGeometry, keelboatMaterial])
 
   return [
     h('canvas', canvasProps),
@@ -207,8 +312,10 @@ export const BoardDemo/*: Component<>*/ = () => {
       h(perspectiveCamera, { ref: cameraRef, position: new Vector3(40, 80, 40), fov: 50 }),
       //h(mesh, { visible: false, geometry: plane, ref: gridRef, rotation: new Euler(Math.PI * 1.5, 0, 0) }),
       h(group, { ref: groupRef }, [
-        h(GridHelperGroup),
-        h(BoardInterface, { raycaster, board: { width: 10, height: 10, pieces: [{ pieceId: 'cool', area: { type: 'box', origin: [0, 1, 0],  height: 1, width: 1, depth: 1 }}] }}),
+        keelboatGeometry && keelboatMaterial && h(mesh, { ref: boatRef, geometry: keelboatGeometry, material: keelboatMaterial }, [
+          h(GridHelperGroup, { size: 100, interval: 10 }),
+          h(BoardInterface, { raycaster, board: { width: 10, height: 10, pieces: [{ pieceId: 'cool', area: { type: 'box', origin: [0, 1, 0],  height: 1, width: 1, depth: 1 }}] }}),
+        ]),
       ])
       //h(mesh, { geometry: boxGeo, ref: boxRef }),
     
