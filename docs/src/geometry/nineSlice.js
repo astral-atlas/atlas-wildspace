@@ -4,24 +4,18 @@ import type { Component } from "@lukekaalim/act/component";
 */
 import throttle from 'lodash.throttle';
 import { h, useEffect, useRef, useState } from "@lukekaalim/act";
-import { mesh, points, useDisposable, useLookAt, useResizingRenderer, useWebGLRenderer } from "@lukekaalim/act-three";
-import { scene, perspectiveCamera, group } from "@lukekaalim/act-three";
+import { mesh, points, useDisposable } from "@lukekaalim/act-three";
 
 import {
   BufferAttribute,
-  Float32BufferAttribute,
   BufferGeometry,
-  WireframeGeometry,
-  LineSegments,
   Vector3,
-  Vector2,
   MeshBasicMaterial,
   TextureLoader,
 } from "three";
-import { GridHelperGroup } from "../controls/helpers";
-import { useRenderLoopManager } from "../controls/loop";
-import styles from '../demo.module.css';
+
 import gradiantURL from './gradiant.jpg';
+import { GeometryDemo } from "../demo";
 
 const threshold = (input, limit) => {
   return input <= limit ? 0 : 1;
@@ -30,7 +24,7 @@ const threshold = (input, limit) => {
 export const writeVertexPositions = (
   [width, height]/*: [number, number]*/,
   borderSize/*: number*/,
-  output/*: number[] | Float32Array*/,
+  output/*: number[] | $TypedArray*/,
 ) => {
   for (let y = 0; y < 4; y++) {
     for (let x = 0; x < 4; x ++) {
@@ -65,7 +59,7 @@ export const writeTriangleIndices = (
   }
 }
 export const writeUV = (
-  output/*: number[] | Float32Array*/
+  output/*: number[] | $TypedArray*/
 ) => {
   for (let i = 0; i < 16; i++) {
     const x = i % 4;
@@ -95,85 +89,6 @@ export const createNineSlicedGeometry = ()/*: BufferGeometry*/ => {
   return geometry;
 };
 
-const useResizingCamera = (size, cameraRef) => {
-  useEffect(() => {
-    const { current: camera } = cameraRef;
-    if (!camera || !size)
-      return;
-    
-    camera.aspect = size.width / size.height;
-    camera.updateProjectionMatrix()
-  }, [size])
-}
-
-const useAnimationContext = (canvasRef, sceneRef, cameraRef, webgl) => {
-  const [onLoop, loopContext] = useRenderLoopManager()
-
-  useEffect(() => {
-    const { current: canvas } = canvasRef;
-    const { current: scene } = sceneRef;
-    const { current: camera } = cameraRef;
-    if (!canvas || !scene || !camera || !webgl)
-      return;
-
-    const renderVars = {
-      delta: 0,
-      now: performance.now(),
-    }
-    const renderConsts = {
-      canvas,
-      scene,
-      camera,
-      renderer: webgl
-    }
-    const onFrame = (now) => {
-      renderVars.delta = now - renderVars.now;
-      renderVars.now = now;
-
-      onLoop(renderConsts, renderVars);
-
-      id = requestAnimationFrame(onFrame);
-    }
-    let id = requestAnimationFrame(onFrame);
-    return () => {
-      cancelAnimationFrame(id);
-    }
-  }, [webgl]);
-
-  useEffect(() => loopContext.subscribeRender((renderConsts) => {
-    renderConsts.renderer.render(renderConsts.scene, renderConsts.camera);
-  }), [])
-
-  return loopContext;
-}
-
-const useDemoSetup = () => {
-  const canvasRef = useRef();
-  const cameraRef = useRef();
-  const sceneRef = useRef();
-
-  const webgl = useWebGLRenderer(canvasRef);
-  const size = useResizingRenderer(canvasRef, webgl);
-  useResizingCamera(size, cameraRef)
-  useAnimationContext(canvasRef, sceneRef, cameraRef, webgl);
-
-  return { canvasRef, cameraRef, sceneRef };
-}
-
-const GeometryDemo = ({ children }) => {
-  const { canvasRef, cameraRef, sceneRef } = useDemoSetup();
-
-  useLookAt(cameraRef, new Vector3(0, 0, 0), []);
-
-  return [
-    h('canvas', { ref: canvasRef, class: styles.bigDemoCanvas }),
-    h(scene, { ref: sceneRef }, [
-      h(perspectiveCamera, { ref: cameraRef, position: new Vector3(16, 16, 16), fov: 16 }),
-      h(GridHelperGroup, { interval: 10, size: 10 }),
-      children,
-    ])
-  ];
-};
 
 const texture = new TextureLoader().load(gradiantURL);
 const material = new MeshBasicMaterial({ map: texture });

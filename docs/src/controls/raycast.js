@@ -95,7 +95,6 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
 
   const lastIntersectionRef = useRef();
 
-  const focusIntersectionRef = useRef(null);
   const onUpdate = (camera) => {
     if (!mouseEnteredRef.current)
       return;
@@ -105,7 +104,9 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
     
     const focusIntersection = intersections[0];
     const nextFocused = focusIntersection && focusIntersection.object;
-    const prevFocused = focusIntersectionRef.current && focusIntersectionRef.current.object;
+    const prevFocused = lastIntersectionRef.current && lastIntersectionRef.current.object;
+
+    lastIntersectionRef.current = focusIntersection;
 
     if (prevFocused !== nextFocused) {
       if (prevFocused)
@@ -113,10 +114,9 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
       
       if (nextFocused)
         emitEnter(nextFocused, focusIntersection);
-
-      focusIntersectionRef.current = focusIntersection;
     }
-    lastIntersectionRef.current = focusIntersection;
+    if (nextFocused)
+      emitOver(nextFocused, focusIntersection);
   }
 
   const [subscribeClick, emitClick] = useTargetedEmitter();

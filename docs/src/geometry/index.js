@@ -7,11 +7,14 @@ import { Document, Markdown } from "@lukekaalim/act-rehersal";
 
 import geometryText from './index.md?raw';
 import { NineSliceDemo } from "./nineSlice";
+import { TilemapDemo } from "./tilemap";
 
 const Demo = ({ node }) => {
   switch (node.attributes.name) {
     case 'nine_slice':
       return h(NineSliceDemo)
+    case 'tilemap':
+      return h(TilemapDemo)
     default:
       throw new Error();
   }

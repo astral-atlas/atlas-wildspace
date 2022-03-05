@@ -1,16 +1,34 @@
 // @flow strict
 /*:: import type { Component } from "@lukekaalim/act"; */
 /*:: import type { MiniID } from "@astral-atlas/wildspace-models"; */
-/*:: import type { Vector2, Quaternion, Material } from "three"; */
+/*:: import type { Quaternion, Material } from "three"; */
 /*:: import type { RaycastManager } from "../raycast"; */
 
-import { h, useContext, useEffect, useRef, useState } from "@lukekaalim/act";
-import { raycastManagerContext, useRaycast2 } from "../raycast";
-import { BoxGeometry, BufferGeometry, PlaneGeometry, Vector3, TextureLoader } from "three";
+import { createContext, h, useContext, useEffect, useRef, useState } from "@lukekaalim/act";
+import { raycastManagerContext, useRaycast, useRaycast2, useRaycastManager } from "../raycast";
+import {
+  BoxGeometry,
+  BufferGeometry,
+  PlaneGeometry,
+  Vector3,
+  TextureLoader,
+  BufferAttribute,
+  LineBasicMaterial,
+  SpriteMaterial,
+  Color,
+  Vector2,
+} from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { mesh } from "@lukekaalim/act-three";
-import { useAnimation } from "@lukekaalim/act-curve";
+import { lineSegments, mesh, sprite } from "@lukekaalim/act-three";
+import { maxSpan, useAnimatedNumber, useAnimation, useBezierAnimation, useTimeSpan } from "@lukekaalim/act-curve";
+import { useDisposable } from "@lukekaalim/act-three/hooks";
 
+import targetIconURL from './target_icon.png';
+import {
+  calculateBezier2DPoint,
+  useAnimatedVector2,
+} from "../../pages/layouts";
+import { calculateCubicBezierAnimationPoint } from "@lukekaalim/act-curve/bezier";
 
 
 /*::
@@ -22,7 +40,9 @@ export type BoardPiece = {
   pieceId: BoardPieceID,
 };
 
+export type BoardID = string;
 export type Board = {
+  id: BoardID,
   height: number,
   width: number,
 
@@ -66,12 +86,71 @@ const useGeometry = (geometryCreator, deps) => {
   return geometry;
 };
 
-const PieceRenderer = ({ piece: { pieceId, area: { origin } }, focused }) => {
-  return h(mesh, {
-    geometry: cubeGeo,
-    position: new Vector3((origin[0] * 10) + 5, origin[2] * 10, (origin[1] * 10) + 5),
-    scale: new Vector3().setScalar(focused ? 3 : 1)
-  })
+const CharacterMiniRenderer = ({ position, mini, focused, selected }) => {
+  const ref = useRef();
+  const material = useDisposable(() => {
+    return new SpriteMaterial({ map: mini.texture })
+  }, [mini])
+
+  const [focusAnimation] = useAnimatedNumber(focused ? 1 : 0, 0, { duration: 200, impulse: 3 });
+  const [selectedAnimation] = useAnimatedNumber(selected ? 1 : 0, 0, { duration: 200, impulse: 3 });
+  const animatedPosition = useAnimatedVector2([position.x, position.z], [position.x, position.z], 30, 600)
+
+  const max = maxSpan([focusAnimation.span, animatedPosition.max, selectedAnimation.span]);
+
+  useTimeSpan(max, (now) => {
+    const { current: characterSprite } = ref;
+    if (!characterSprite)
+      return;
+
+    const positionPoint = calculateBezier2DPoint(animatedPosition, now);
+    const focusPoint = calculateCubicBezierAnimationPoint(focusAnimation, now);
+    const selectedPoint = calculateCubicBezierAnimationPoint(selectedAnimation, now);
+
+    material.opacity = 0.5 + (selectedPoint.position/2);
+    characterSprite.position.set(
+      positionPoint.position[0],
+      position.y + (focusPoint.position * 1.5) + (selectedPoint.position) + (Math.sin(Math.min(...positionPoint.progress) * Math.PI) * 5),
+      positionPoint.position[1],
+    );
+  }, [max, animatedPosition, focusAnimation])
+
+  return h(sprite, {
+    ref,
+    scale: new Vector3(10, 10, 10),
+    material: material,
+    center: new Vector2(0.5, 0.5),
+    position,
+  });
+};
+
+const targetTexture = new TextureLoader().load(targetIconURL);
+
+const characterMinis = new Map([
+  ['mini_1', { texture: targetTexture }]
+])
+
+const pieceVisuals = new Map([
+  ['cool', { type: 'character_mini', miniId: 'mini_1' }],
+  ['hot', { type: 'character_mini', miniId: 'mini_1' }],
+])
+
+const PieceRenderer = ({ piece: { pieceId, area: { origin } }, focused, selected }) => {
+
+  const position = new Vector3((origin[0] * 10) + 5, (origin[2] * 10) + 5, (origin[1] * 10) + 5);
+  const visual = pieceVisuals.get(pieceId);
+  if (!visual)
+    return h(mesh, { geometry: cubeGeo, position });
+
+  switch (visual.type) {
+    case 'character_mini':
+      const mini = characterMinis.get(visual.miniId);
+      if (!mini)
+        throw new Error();
+      return h(CharacterMiniRenderer, { position, mini, focused, selected })
+    default:
+      throw new Error(`Unknown visual type`);
+  }
 }
 
 const pointIntersectsBoxShape = (point, boxArea) => {
@@ -107,8 +186,18 @@ const pointIntersectsShape = (point, area) => {
   }
 }
 
-export const BoardInterface/*: Component<{| raycaster: RaycastManager, board: Board |}>*/ = ({
-  raycaster, board: { height, width, pieces }
+/*::
+export type BoardInterfaceProps = {|
+  raycaster: RaycastManager,
+  board: Board,
+
+  onBoardClick?: (piece: ?BoardPiece) => mixed,
+|};
+*/
+
+export const BoardInterface/*: Component<BoardInterfaceProps>*/ = ({
+  raycaster, board: { height, width, pieces },
+  onBoardClick
 }) => {
   const planeRef = useRef();
   const planeGeo = useGeometry(
@@ -159,3 +248,181 @@ export const BoardInterface/*: Component<{| raycaster: RaycastManager, board: Bo
     ...pieces.map(piece => h(PieceRenderer, { piece, focused: focusedPiece && focusedPiece.pieceId === piece.pieceId }))
   ];
 };
+
+const useBoardGeometry = (board/*: Board*/) => {
+  const width = 10 * board.width;
+  const height = 10 * board.height;
+
+  const geometry = useGeometry(
+    () => new PlaneGeometry(width, height, 1, 1).rotateX(Math.PI*-0.5),
+    [height, width]
+  );
+
+  return geometry;
+}
+
+const writeGridLines = (array, widthSegments, heightSegments) => {
+  const width = widthSegments * 10;
+  const height = heightSegments * 10;
+
+  for (let y = 0; y < heightSegments + 1; y++) {
+      const i = (y * 6);
+
+      array[i + 0] = 0;
+      array[i + 1] = 0;
+      array[i + 2] = y * 10;
+
+      array[i + 3] = width
+      array[i + 4] = 0;
+      array[i + 5] = y * 10;
+  }
+  for (let x = 0; x < heightSegments + 1; x++) {
+      const i = (x * 6) + ((heightSegments + 1) * 6)
+
+      array[i + 0] = x * 10;
+      array[i + 1] = 0;
+      array[i + 2] = 0;
+
+      array[i + 3] = x * 10
+      array[i + 4] = 0;
+      array[i + 5] = height;
+  }
+}
+
+const useGridGeometry = (width, height) => {
+  return useDisposable(() => {
+    const positions = new Float32Array(((width + 1) * 6) + (height + 1) * 6);
+
+    writeGridLines(positions, width, height)
+    const geometry = new BufferGeometry();
+    geometry.setAttribute('position', new BufferAttribute(positions, 3));
+    geometry.translate(-width * 5, 0, -height * 5);
+
+    return geometry;
+  }, [width, height])
+}
+
+const BoardLineGrid = ({ board }) => {
+  const geometry = useGridGeometry(board.width , board.height);
+  const material = useDisposable(() => new LineBasicMaterial({ color: new Color('red'), linewidth: 1 }))
+
+  return h(lineSegments, { geometry, material });
+}
+
+const localVectorToBoardPosition = (localVector/*: Vector3*/)/*: [number, number, number]*/ => [
+  Math.floor(localVector.x / 10),
+  Math.floor(localVector.z / 10),
+  0,
+];
+
+const BoardRenderer = ({ board }) => {
+  const geometry = useBoardGeometry(board);
+
+  const { onBoardClick, focus, selection, useBoardCollisionRef } = useContext(encounterContext);
+  const [internalRef, ref] = useBoardCollisionRef(board);
+
+  useRaycast(internalRef, {
+    click: (intersection) => {
+      const localPoint = intersection.object.worldToLocal(intersection.point);
+  
+      const position = localVectorToBoardPosition(localPoint);
+      onBoardClick(board, position);
+    }
+  }, [board, onBoardClick])
+
+  return [
+    h(mesh, { visible: false, geometry, ref }),
+    h(BoardLineGrid, { board }),
+    board.pieces.map(piece => h(PieceRenderer, {
+      piece,
+      focused: focus === piece.pieceId || selection === piece.pieceId,
+      selected: selection === piece.pieceId
+    })),
+  ];
+};
+
+const encounterContext = createContext({
+  focus: null,
+  selection: null,
+  useBoardCollisionRef: (_) => { throw new Error(); },
+  onBoardClick: (_, __) => { throw new Error() },
+});
+
+/*::
+type EncounterProps = {
+  board: Board,
+};
+*/
+export const Encounter/*: Component<EncounterProps>*/ = ({
+  board,
+  subscribeAuxClick,
+  movePiece,
+}) => {
+  const [focus, setFocus] = useState(null);
+  const [selection, setSelection] = useState([]);
+
+  const [boardByCollisionObject] = useState(new Map());
+
+  const encounterValue = {
+    focus,
+    selection,
+    useBoardCollisionRef(board) {
+      const internalRef = useRef()
+      const sharedRef = (boardCollisionObject) => {
+        internalRef.current = boardCollisionObject;
+        if (boardCollisionObject) {
+          boardByCollisionObject.set(boardCollisionObject, board);
+        } else {
+          const previousObjectEntry = [...boardByCollisionObject.entries()].find(([, b]) => b.id === board.id)
+          if (previousObjectEntry)
+            boardByCollisionObject.delete(previousObjectEntry[0]);
+        }
+      }
+      return [internalRef, sharedRef];
+    },
+    onBoardClick(board, position) {
+      const nextFocusedPiece = board.pieces.find(piece => {
+        return pointIntersectsShape(position, piece.area);
+      });
+      if (nextFocusedPiece)
+        setSelection(nextFocusedPiece.pieceId)
+      else
+        setSelection(null)
+    }
+  }
+  const raycast = useContext(raycastManagerContext);
+  useEffect(() => raycast && subscribeAuxClick(() => {
+    const intersection = raycast.lastIntersectionRef.current;
+    if (!intersection)
+      return;
+    //const board = boardByCollisionObject.get(intersection.object);
+    if (!board)
+      return;
+    const localVector = intersection.object.worldToLocal(intersection.point);
+    const position = localVectorToBoardPosition(localVector);
+    movePiece(board, selection, position);
+  }), [raycast, selection])
+
+  useAnimation(raycast && (() => {
+    const intersection = raycast.lastIntersectionRef.current;
+    if (!intersection)
+      return;
+    //const board = boardByCollisionObject.get(intersection.object);
+    if (!board)
+      return;
+    const localVector = intersection.object.worldToLocal(intersection.point);
+    const position = localVectorToBoardPosition(localVector);
+    const nextFocusedPiece = board.pieces.find(piece => {
+      return pointIntersectsShape(position, piece.area);
+    });
+    if (focus !== nextFocusedPiece)
+      setFocus(nextFocusedPiece ? nextFocusedPiece.pieceId : null);
+  }), [focus, board]);
+  console.log(board);
+
+  return [
+    h(encounterContext.Provider, { value: encounterValue }, [
+      h(BoardRenderer, { board })
+    ]),
+  ];
+}

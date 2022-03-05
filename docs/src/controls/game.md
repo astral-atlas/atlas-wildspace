@@ -1,3 +1,5 @@
-# Game
+## Encouter
 
 ::demo{name=board}
+
+## Map

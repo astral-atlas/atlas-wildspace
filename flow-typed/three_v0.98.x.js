@@ -425,7 +425,10 @@ declare module three {
   }
 
   declare export class BufferAttribute {
-    constructor(array: $TypedArray, itemSize: number, normalized?: boolean ): void
+    constructor(array: $TypedArray, itemSize: number, normalized?: boolean ): void,
+    needsUpdate: boolean,
+    version: number,
+    array: $TypedArray,
   }
 
   declare export class Points extends Object3D {
@@ -729,6 +732,18 @@ declare module three {
     setValues(vs: mixed): void;
     toJSON(meta: mixed): string;
     update(): void;
+  }
+
+  declare type ShaderMaterialInput = {
+    fragmentShader?: string,
+    vertexShader?: string,
+    uniforms?: { [string]: { value: mixed } },
+  };
+
+  declare export class ShaderMaterial extends Material {
+    constructor(input?: ShaderMaterialInput): this;
+    uniforms: { [string]: { value: mixed } },
+    uniformsNeedUpdate: boolean,
   }
 
   declare type MeshPhongMaterialCtorArgs = {

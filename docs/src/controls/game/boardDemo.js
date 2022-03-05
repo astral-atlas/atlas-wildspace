@@ -23,7 +23,7 @@ import { useLookAt } from "@lukekaalim/act-three/hooks/matrix";
 import grid_highlight_basic_texture from '../../assets/grid_highlight_basic_300.png';
 
 import styles from '../index.module.css';
-import { useRaycastManager } from "../raycast";
+import { raycastManagerContext, useRaycastManager } from "../raycast";
 import { useAnimation } from "@lukekaalim/act-curve/animation";
 import { calculateSpanProgress, defaultBezierElementOptions, useAnimatedList, useBezierAnimation } from "@lukekaalim/act-curve";
 import {
@@ -31,7 +31,7 @@ import {
   useAnimatedVector2,
   useBezier2DAnimation,
 } from "../../pages/layouts";
-import { BoardInterface } from "./board";
+import { BoardInterface, Encounter } from "./board";
 import { useRenderLoopManager } from "../loop";
 
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
@@ -41,6 +41,7 @@ import { Sky } from "three/examples/jsm/objects/Sky.js";
 import keelboatModelURL from './keelboat.gltf';
 import keelboatTextureURL from './keelboat.jpg';
 import waternormalsTextureURL from './waternormals.jpg';
+import { useSubscriptionList } from "../subscription";
 
 /*::
 type Board = {
@@ -183,6 +184,13 @@ export const BoardDemo/*: Component<>*/ = () => {
   }, [])
   */
 
+  const onContextMenu = (event) => {
+    event.preventDefault();
+    const subscribers = auxClickSubscribers.current;
+    for (const subscriber of subscribers)
+      subscriber(event)
+  }
+
   const canvasProps = {
     ref: canvasRef,
     className: styles.bigDemoCanvas,
@@ -190,7 +198,8 @@ export const BoardDemo/*: Component<>*/ = () => {
     onMouseEnter: raycaster.onMouseEnter,
     onMouseMove: raycaster.onMouseMove,
     onMouseExit: raycaster.onMouseExit,
-    onClick: raycaster.onClick
+    onClick: raycaster.onClick,
+    onContextMenu,
   }
 
   const [plane] = useState(new PlaneGeometry(100, 100));
@@ -306,17 +315,53 @@ export const BoardDemo/*: Component<>*/ = () => {
     boat.rotation.z = (Math.sin((now * 3.4) / 1000) +  Math.sin(now / 1000)) / 32;
   }, [keelboatGeometry, keelboatMaterial])
 
+  const [subscribeAuxClick, auxClickSubscribers] = useSubscriptionList();
+  
+
+  const coolPiece = {
+    pieceId: 'cool',
+    area: { type: 'box', origin: [0, 1, 0],  height: 1, width: 1, depth: 1 }
+  }
+  const hotPiece = {
+    pieceId: 'hot',
+    area: { type: 'box', origin: [4, 4, 0],  height: 1, width: 1, depth: 1 }
+  }
+
+  const pieces = [
+    coolPiece,
+    hotPiece,
+  ];
+
+  const [board, setBoard] = useState({ width: 10, height: 10, pieces });
+
+  const movePiece = (_, pieceId, position) => {
+    if (!_ || !pieceId || !position)
+      return;
+    setBoard(board => ({
+      ...board,
+      pieces: board.pieces.map(p => p.pieceId === pieceId ? ({
+        ...p,
+        area: { ...p.area, origin: position }
+      }) : p)
+    }))
+  }
+
   return [
     h('canvas', canvasProps),
     h(scene, { ref: sceneRef }, [
-      h(perspectiveCamera, { ref: cameraRef, position: new Vector3(40, 80, 40), fov: 50 }),
+      h(perspectiveCamera, { ref: cameraRef, fov: 50 }),
       //h(mesh, { visible: false, geometry: plane, ref: gridRef, rotation: new Euler(Math.PI * 1.5, 0, 0) }),
+      /*
       h(group, { ref: groupRef }, [
         keelboatGeometry && keelboatMaterial && h(mesh, { ref: boatRef, geometry: keelboatGeometry, material: keelboatMaterial }, [
           h(GridHelperGroup, { size: 100, interval: 10 }),
-          h(BoardInterface, { raycaster, board: { width: 10, height: 10, pieces: [{ pieceId: 'cool', area: { type: 'box', origin: [0, 1, 0],  height: 1, width: 1, depth: 1 }}] }}),
+          h(BoardInterface, { raycaster, board: { width: 10, height: 10, pieces, }}),
         ]),
       ])
+      */
+      h(raycastManagerContext.Provider, { value: raycaster }, [
+        h(Encounter, { board, subscribeAuxClick, movePiece })
+      ]),
       //h(mesh, { geometry: boxGeo, ref: boxRef }),
     
       //anims.map(anim => h(GridSquareHighlighter, { status: anim.status, position: new Vector3(anim.value[0], 0, anim.value[1]) })),
