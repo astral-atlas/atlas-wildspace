@@ -1,6 +1,8 @@
 // @flow strict
 /*:: import type { Component } from '@lukekaalim/act'; */
 
+/*:: import type { Board } from './board'; */
+
 import { BoxHelperGroup, GridHelperGroup, useHelper } from "../helpers";
 import { h, useEffect, useMemo, useRef, useState } from "@lukekaalim/act";
 import { group, mesh, perspectiveCamera, scene, useAnimationFrame, useRenderLoop, useResizingRenderer, useWebGLRenderer } from "@lukekaalim/act-three";
@@ -42,14 +44,13 @@ import keelboatModelURL from './keelboat.gltf';
 import keelboatTextureURL from './keelboat.jpg';
 import waternormalsTextureURL from './waternormals.jpg';
 import { useSubscriptionList } from "../subscription";
+import { useBoardCameraControl } from "../finalDemo";
+import {
+  useKeyboardContextValue,
+  useKeyboardState,
+  useKeyboardTrack,
+} from "../keyboard";
 
-/*::
-type Board = {
-  size: [number, number],
-  position: [number, number, number]
-};
-
-*/
 
 const boxGeo = new BoxGeometry(10, 10, 10);
 
@@ -200,6 +201,7 @@ export const BoardDemo/*: Component<>*/ = () => {
     onMouseExit: raycaster.onMouseExit,
     onClick: raycaster.onClick,
     onContextMenu,
+    tabIndex: 0,
   }
 
   const [plane] = useState(new PlaneGeometry(100, 100));
@@ -213,6 +215,7 @@ export const BoardDemo/*: Component<>*/ = () => {
   })
   const groupRef = useRef();
 
+  /*
   useAnimation((now) => {
     const { current: camera } = cameraRef;
     if (!camera)
@@ -222,6 +225,7 @@ export const BoardDemo/*: Component<>*/ = () => {
     camera.position.set(Math.cos(rotation) * 90, 50, Math.sin(rotation) * 90);
     camera.lookAt(new Vector3(0, 0, 0));
   })
+  */
   //useLookAt(cameraRef, new Vector3(0, 0, 0), []);
 
   const [keelboatGeometry, setKeelboatGeometry] = useState(null); 
@@ -242,7 +246,6 @@ export const BoardDemo/*: Component<>*/ = () => {
     };
     run();
   }, []);
-
   const [water, setWater] = useState(null);
   useEffect(() => {
     if (!webgl)
@@ -332,7 +335,17 @@ export const BoardDemo/*: Component<>*/ = () => {
     hotPiece,
   ];
 
-  const [board, setBoard] = useState({ width: 10, height: 10, pieces });
+  const [board, setBoard] = useState/*:: <Board>*/({ id: 'a', width: 10, height: 10, pieces });
+
+  const [readInputs, onInputChange] = useKeyboardTrack();
+  const [keyRef, events] = useKeyboardState(null, onInputChange);
+  const keyboardContext = useKeyboardContextValue(canvasRef);
+  useEffect(() => {
+    const clearDown = keyboardContext.subscribeDown(events.down);
+    const clearUp = keyboardContext.subscribeUp(events.up);
+    return () => (clearDown(), clearUp());
+  }, [])
+  useBoardCameraControl(cameraRef, readInputs, 60);
 
   const movePiece = (_, pieceId, position) => {
     if (!_ || !pieceId || !position)

@@ -42,11 +42,13 @@ const getRotationFromKeys = (velocity) => {
 export const useBoardCameraControl = (
   cameraRef/*: Ref<?PerspectiveCamera>*/,
   readInputs/*: () => Frame<Set<string>>[]*/,
+  height/*: number*/ = 40,
 ) => {
   const cameraStateRef = useRef({
     rotationAnimation: createInitialCubicBezierAnimation(1/8),
     positionParticle: { position: [0, 0], velocityPerMs: [0, 0] }
   });
+  const [heightAnim] = useAnimatedNumber(height, height);
   useAnimation((now) => {
     const state = cameraStateRef.current;
     const inputs = readInputs();
@@ -79,6 +81,7 @@ export const useBoardCameraControl = (
         );
       }
     }
+    const heightPoint = calculateCubicBezierAnimationPoint(heightAnim, now);
 
     const { current: camera } = cameraRef;
     if (!camera)
@@ -90,7 +93,7 @@ export const useBoardCameraControl = (
     const position = state.positionParticle.position;
     setFocusTransform(
       [position[0], 0, position[1]],
-      [40, 40, 0],
+      [40, heightPoint.position, 0],
       rotation,
       camera
     );

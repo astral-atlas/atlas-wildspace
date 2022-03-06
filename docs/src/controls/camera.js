@@ -18,9 +18,9 @@ export const setFocusTransform = (
     Math.sin(radians + Math.PI/2)
   ]
   const cameraPosition = [
-    focusPosition[0] + (forward[0] * -40) + (right[0] * 0),
-    40,
-    focusPosition[2] + (forward[1] * -40) + (right[1] * 0),
+    focusPosition[0] + (forward[0] * -cameraOffset[0]) + (right[0] * 0),
+    cameraOffset[1],
+    focusPosition[2] + (forward[1] * -cameraOffset[0]) + (right[1] * 0),
   ];
 
   camera.position.set(cameraPosition[0], cameraPosition[1], cameraPosition[2]);

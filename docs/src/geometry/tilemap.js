@@ -18,10 +18,12 @@ import {
   NearestFilter,
   UVMapping,
   RepeatWrapping,
+  Texture,
   TextureLoader,
   Vector3,
   Color,
   PlaneGeometry,
+  Vector2,
 } from "three";
 import { GeometryDemo } from "../demo";
 
@@ -143,39 +145,63 @@ varying vec2 vUv;
 
 void main() {
   gl_FragColor = texture(tiles, vUv);
-	if ( gl_FragColor.a < 0.5 ) discard;
 }
 `;
 
-const data = new Uint8Array(10 * 10);
-const mapTexture = new DataTexture(
-  data, 10, 10, RedFormat, UnsignedByteType,
-  UVMapping, RepeatWrapping, RepeatWrapping,
-  NearestFilter
-);
-const tilesTexture = new TextureLoader().load(board_grid_tilemap);
+export class TilemapTileIDTexture extends DataTexture {
+  /*:: tileIds: Uint8Array*/
+  /*:: mapSize: Vector2*/
 
-const material = new ShaderMaterial({
-  fragmentShader,
-  vertexShader,
-  uniforms: {
-    tiles: { value: tilesTexture },
-    map: { value: mapTexture },
-    tilesSize: { value: [8, 8] }
+  constructor(tileIds/*: Uint8Array*/, mapSize/*: Vector2*/) {
+    super(
+      tileIds, mapSize.x, mapSize.y,
+      RedFormat, UnsignedByteType,
+      UVMapping, RepeatWrapping, RepeatWrapping,
+      NearestFilter
+    )
+    this.tileIds = tileIds;
+    this.mapSize = mapSize;
   }
-});
-
-/*::
-export type TilemapProps = {
-  ...$Diff<MeshProps, {| geometry?: BufferGeometry, material?: Material |}>,
-
-  height: number,
-  width: number,
 }
-*/
 
-export const Tilemap/*: Component<TilemapProps>*/ = ({ children, height, width, ...meshProps }) => {
+export class TilemapMaterial extends ShaderMaterial {
+  constructor(mapTexture/*: TilemapTileIDTexture*/, tilesTexture/*: Texture*/, tileSize/*: Vector2*/) {
+    super({
+      fragmentShader,
+      vertexShader,
+      transparent: true,
+      uniforms: {
+        tiles: { value: tilesTexture },
+        map: { value: mapTexture },
+        tilesSize: { value: tileSize }
+      }
+    });
+  }
+}
+
+
+export const useTilemapMaterial = (
+  mapTexture/*: TilemapTileIDTexture*/,
+  tilesTexture/*: Texture*/,
+  tileSize/*: Vector2*/
+)/*: TilemapMaterial*/ => {
+  const material = useDisposable(() =>
+    new TilemapMaterial(mapTexture, tilesTexture, tileSize),
+    []
+  );
+  useEffect(() => {
+    material.uniforms.map.value = mapTexture;
+    material.uniforms.tiles.value = tilesTexture;
+    material.uniforms.tilesSize.value = tileSize;
+  }, [mapTexture, tilesTexture, tileSize])
+
+  return material;
+};
+
+export const useTilemapGeometry = (mapTexture/*: TilemapTileIDTexture*/)/*: BufferGeometry*/ => {
   const geometry = useDisposable(() => new BufferGeometry());
+  const width = mapTexture.mapSize.x;
+  const height = mapTexture.mapSize.y;
 
   useEffect(() => {
     const positions = new Float32Array(calculateTilemapVertextCount(width, height) * 3);
@@ -191,11 +217,35 @@ export const Tilemap/*: Component<TilemapProps>*/ = ({ children, height, width, 
     geometry.setIndex(new BufferAttribute(triangles, 1))
 
     geometry.translate(Math.floor(-width/2), 0, Math.floor(-height/2));
+  }, [width, height])
 
-  }, [height, width, geometry])
+  return geometry;
+}
+
+/*::
+export type TilemapProps = {
+  ...$Diff<MeshProps, {| geometry?: BufferGeometry, material?: Material |}>,
+
+  mapTexture: TilemapTileIDTexture,
+  tilesTexture: Texture,
+  tileSize: Vector2,
+}
+*/
+
+export const Tilemap/*: Component<TilemapProps>*/ = ({
+  mapTexture,
+  tilesTexture,
+  tileSize,
+  children,
+  ...meshProps
+}) => {
+  const geometry = useTilemapGeometry(mapTexture);
+  const material = useTilemapMaterial(mapTexture, tilesTexture, tileSize);
 
   return h(mesh, { ...meshProps, geometry, material }, children)
 };
+
+
 
 const ClickPlane = ({ width, height, over }) => {
   const ref = useRef();
@@ -210,24 +260,9 @@ const ClickPlane = ({ width, height, over }) => {
   return h(mesh, { ref, geometry, visible: false });
 };
 
-
 export const TilemapDemo/*: Component<>*/ = () => {
   const [x, setX] = useState(64);
   const [y, setY] = useState(64);
-
-  useEffect(() => {
-    const encoder = new TextEncoder();
-    const encodedData = localStorage.getItem('terrain')
-
-    const data = encodedData && encoder.encode(encodedData) || new Uint8Array(x * y);
-
-    const mapTexture = new DataTexture(data, x, y, RedFormat, UnsignedByteType);
-    material.uniforms.map.value = mapTexture;
-    
-    return () => {
-      mapTexture.dispose();
-    };
-  }, [x, y]);
 
   const over = (e) => {
     if (!painting)
@@ -236,20 +271,16 @@ export const TilemapDemo/*: Component<>*/ = () => {
     const local = e.object.worldToLocal(e.point)
     const grid = [Math.floor(local.x + (x/2) + ((x % 2) * 0.5)), Math.floor(local.z + (y/2) + ((y % 2) * 0.5))]
     
-    const texture = ((material.uniforms.map.value/*: any*/)/*: DataTexture*/)
-    const data = texture.image.data;
+    const data = mapTexture.image.data;
 
     const gridIndex = grid[0] + (grid[1] * x);
     const prevIndex = data[gridIndex];
+
     data[gridIndex] = brushId;
+
     const needsUpdate = prevIndex !== brushId;
 
-    texture.needsUpdate = needsUpdate;
-    if (needsUpdate) {
-      const dataToSave = new Uint8Array(data);
-      const decode = new TextDecoder('utf-8', { fatal: false });
-      localStorage.setItem('terrain', decode.decode(dataToSave));
-    }
+    mapTexture.needsUpdate = needsUpdate;
   }
 
   const [brushId, setBrushId] = useState(0)
@@ -263,6 +294,14 @@ export const TilemapDemo/*: Component<>*/ = () => {
     e.target.releasePointerCapture(e.id);
     setPainting(false);
   }
+  const onContextMenu = (e) => {
+    e.preventDefault();
+  }
+
+  const mapTexture = useDisposable(() => {
+    const data = new Uint8Array(Array.from({ length:  x * y }).map(_ => 0));
+    return new TilemapTileIDTexture(data, new Vector2(x, y));
+  }, [x, y])
 
   return [
     h('input', { type: 'range', min: 0, max: 32, step: 1, value: x, onInput: throttle(e => setX(e.target.valueAsNumber), 100) }),
@@ -271,10 +310,19 @@ export const TilemapDemo/*: Component<>*/ = () => {
     h('select', { onChange: e => setBrushId(parseInt(e.target.value)) }, 
       Array.from({ length: (8 * 8) }).map((_, i) => h('option', { value: i, selected: brushId === i }, `Brush ${i}`)),
     ),
+    h('input', { type: 'checkbox', disabled: true, checked: painting }),
     
-    h(GeometryDemo, { showGrid: false, sceneProps: { background: new Color('#282c34'), }, canvasProps: { onMouseDown, onMouseUp } }, [
-      h(Tilemap, { height: y, width: x, position: new Vector3(0, 0.1, 0), geometry: new BufferGeometry() }),
+    h(GeometryDemo, { showGrid: false, sceneProps: { background: new Color('#282c34'), }, canvasProps: { onMouseDown, onMouseUp, onContextMenu } }, [
+      h(Tilemap, {
+        mapTexture,
+        tilesTexture,
+        tileSize,
+        position: new Vector3(0, 0.1, 0),
+      }),
       h(ClickPlane, { height: y, width: x, over }),
     ])
   ];
 };
+
+const tilesTexture = new TextureLoader().load(board_grid_tilemap);
+const tileSize = new Vector2(8, 8);

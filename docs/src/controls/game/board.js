@@ -17,18 +17,22 @@ import {
   SpriteMaterial,
   Color,
   Vector2,
+  NearestFilter,
 } from "three";
+import * as THREE from 'three';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { lineSegments, mesh, sprite } from "@lukekaalim/act-three";
 import { maxSpan, useAnimatedNumber, useAnimation, useBezierAnimation, useTimeSpan } from "@lukekaalim/act-curve";
 import { useDisposable } from "@lukekaalim/act-three/hooks";
 
 import targetIconURL from './target_icon.png';
+import board_grid_tilemap from '../../geometry/board_grid_tilemap.png';
 import {
   calculateBezier2DPoint,
   useAnimatedVector2,
 } from "../../pages/layouts";
 import { calculateCubicBezierAnimationPoint } from "@lukekaalim/act-curve/bezier";
+import { Tilemap, TilemapTileIDTexture } from "../../geometry/tilemap";
 
 
 /*::
@@ -302,11 +306,17 @@ const useGridGeometry = (width, height) => {
   }, [width, height])
 }
 
-const BoardLineGrid = ({ board }) => {
-  const geometry = useGridGeometry(board.width , board.height);
-  const material = useDisposable(() => new LineBasicMaterial({ color: new Color('red'), linewidth: 1 }))
+const tilesTexture = new TextureLoader().load(board_grid_tilemap);
+tilesTexture.minFilter = THREE.LinearFilter;
+const tileSize = new Vector2(8, 8);
 
-  return h(lineSegments, { geometry, material });
+const BoardLineGrid = ({ board }) => {
+  const mapTexture = useDisposable(() => {
+    const data = new Uint8Array(Array.from({ length: board.width * board.height }).map(_ => 0));
+    return new TilemapTileIDTexture(data, new Vector2(board.width, board.height));
+  }, [board.width, board.height]);
+
+  return h(Tilemap, { mapTexture, tileSize, tilesTexture, position: new Vector3(0, 0, 0), scale: new Vector3(10, 10, 10) });
 }
 
 const localVectorToBoardPosition = (localVector/*: Vector3*/)/*: [number, number, number]*/ => [
@@ -418,7 +428,6 @@ export const Encounter/*: Component<EncounterProps>*/ = ({
     if (focus !== nextFocusedPiece)
       setFocus(nextFocusedPiece ? nextFocusedPiece.pieceId : null);
   }), [focus, board]);
-  console.log(board);
 
   return [
     h(encounterContext.Provider, { value: encounterValue }, [
