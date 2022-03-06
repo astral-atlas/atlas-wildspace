@@ -345,7 +345,7 @@ export const BoardDemo/*: Component<>*/ = () => {
     const clearUp = keyboardContext.subscribeUp(events.up);
     return () => (clearDown(), clearUp());
   }, [])
-  useBoardCameraControl(cameraRef, readInputs, 60);
+  useBoardCameraControl(cameraRef, readInputs, 45);
 
   const movePiece = (_, pieceId, position) => {
     if (!_ || !pieceId || !position)

@@ -18,6 +18,7 @@ import {
   Color,
   Vector2,
   NearestFilter,
+  MeshBasicMaterial,
 } from "three";
 import * as THREE from 'three';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
@@ -331,7 +332,21 @@ const BoardRenderer = ({ board }) => {
   const { onBoardClick, focus, selection, useBoardCollisionRef } = useContext(encounterContext);
   const [internalRef, ref] = useBoardCollisionRef(board);
 
+  const [focused, setFocused] = useState(false);
+  const [cursorPosition, setCursorPosition] = useState(new Vector3(0, 0, 0));
+
   useRaycast(internalRef, {
+    enter() {
+      setFocused(true);
+    },
+    over(intersection) {
+      const localVector = intersection.object.worldToLocal(intersection.point);
+      const position = localVectorToBoardPosition(localVector);
+      setCursorPosition(new Vector3((position[0] * 10) + 5, (position[2]  *10) + 0.5, (position[1] * 10) + 5));
+    },
+    exit() {
+      setFocused(false);
+    },
     click: (intersection) => {
       const localPoint = intersection.object.worldToLocal(intersection.point);
   
@@ -348,8 +363,15 @@ const BoardRenderer = ({ board }) => {
       focused: focus === piece.pieceId || selection === piece.pieceId,
       selected: selection === piece.pieceId
     })),
+    focused && h(BoardCursor, { position: cursorPosition }),
   ];
 };
+
+const boardCursorGeometry = new PlaneGeometry(10, 10).rotateX(Math.PI * -0.5);
+const boardCursorMaterial = new MeshBasicMaterial({ color: new Color(`white`), transparent: true, opacity: 0.5 });
+const BoardCursor = ({ position }) => {
+  return h(mesh, { geometry: boardCursorGeometry, material: boardCursorMaterial, position });
+}
 
 const encounterContext = createContext({
   focus: null,
