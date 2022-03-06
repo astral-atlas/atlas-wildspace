@@ -12,6 +12,7 @@ import {
   Vector3,
   MeshBasicMaterial,
   TextureLoader,
+  Color,
 } from "three";
 
 import gradiantURL from './gradiant.jpg';
@@ -122,7 +123,7 @@ export const NineSliceDemo/*: Component<>*/ = () => {
     h('input', { type: 'range', min: b*2, max: 10, step: 0.01, value: x, onInput: throttle(e => setX(e.target.valueAsNumber), 100) }),
     h('input', { type: 'range', min: b*2, max: 10, step: 0.01, value: y, onInput: throttle(e => setY(e.target.valueAsNumber), 100) }),
     h('input', { type: 'range', min: 0, max: maxWidth, step: 0.01, value: Math.min(b, maxWidth), onInput: throttle(e => setB(e.target.valueAsNumber), 100) }),
-    h(GeometryDemo, {}, [
+    h(GeometryDemo, { sceneProps: { background: new Color(`#282c34`) } }, [
       h(mesh, { geometry, material, position: new Vector3(-x / 2, 0, -y / 2) }),
       //h(group, { ref: groupRef }),
       h(points, { geometry: pointsGeometry, position: new Vector3(-x / 2, 0, -y / 2) }),

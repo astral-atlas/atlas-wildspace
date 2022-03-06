@@ -362,7 +362,7 @@ declare module three {
     sortFacesByMaterialIndex(): void;
     scale(x: number, y: number, z: number): void;
     toJSON(): string;
-    translate(x: number, y: number, z: number): void;
+    translate(x: number, y: number, z: number): this;
   }
 
   declare type HSL = {h: number, s: number, l: number,}
@@ -1004,7 +1004,29 @@ declare module three {
 
   }
   declare class LoadingManager {}
-  declare export class Texture {}
+  declare export class Texture {
+    dispose(): void;
+    needsUpdate: boolean;
+  }
+
+  declare export var RedFormat: string;
+  declare export var UnsignedByteType: string;
+
+  declare export var UVMapping: string;
+  declare export var RepeatWrapping: string;
+  declare export var NearestFilter: string;
+
+  declare export class DataTexture extends Texture {
+    constructor(
+      data: $TypedArray,
+      width: number, height: number,
+      format?: string, type?: string,
+      mapping?: string,
+      uWrapping?: string, vWrapping?: string,
+      filter?: string,
+    ): this;
+    image: { width: number, height: number, data: $TypedArray }
+  }
 
   declare function TextureLoaderOnLoadCallback(texture: Texture): void;
   declare function TextureLoaderOnProgressCallback(request: XMLHttpRequest): void;

@@ -1,7 +1,9 @@
 // @flow strict
 /*:: import type { Component, Ref } from '@lukekaalim/act'; */
+/*:: import type { SceneProps } from '@lukekaalim/act-three'; */
 
 /*:: import type { PerspectiveCamera, Scene, Vector2 } from "three"; */
+/*:: import type { LoopContextValue } from "./controls/loop"; */
 
 import { h, useRef, useEffect } from "@lukekaalim/act";
 import { perspectiveCamera, scene, useLookAt, useResizingRenderer, useWebGLRenderer } from "@lukekaalim/act-three";
@@ -9,6 +11,7 @@ import { GridHelperGroup } from "./controls/helpers";
 import { useRenderLoopManager } from "./controls/loop";
 import styles from './demo.module.css';
 import { Vector3 } from "three";
+import { raycastManagerContext, useRaycastManager } from "./controls/raycast";
 
 const useAnimationContext = (canvasRef, sceneRef, cameraRef, webgl) => {
   const [onLoop, loopContext] = useRenderLoopManager()
@@ -63,7 +66,7 @@ export const useResizingCamera = (size/*: ?Vector2*/, cameraRef/*: Ref<?Perspect
 }
 
 
-export const useDemoSetup = ()/*: { canvasRef: Ref<?HTMLCanvasElement>, cameraRef: Ref<?PerspectiveCamera>, sceneRef: Ref<?Scene> }*/ => {
+export const useDemoSetup = ()/*: { canvasRef: Ref<?HTMLCanvasElement>, cameraRef: Ref<?PerspectiveCamera>, sceneRef: Ref<?Scene>, loop: LoopContextValue }*/ => {
   const canvasRef = useRef();
   const cameraRef = useRef();
   const sceneRef = useRef();
@@ -71,22 +74,56 @@ export const useDemoSetup = ()/*: { canvasRef: Ref<?HTMLCanvasElement>, cameraRe
   const webgl = useWebGLRenderer(canvasRef);
   const size = useResizingRenderer(canvasRef, webgl);
   useResizingCamera(size, cameraRef)
-  useAnimationContext(canvasRef, sceneRef, cameraRef, webgl);
+  const loop = useAnimationContext(canvasRef, sceneRef, cameraRef, webgl);
 
-  return { canvasRef, cameraRef, sceneRef };
+  return { canvasRef, cameraRef, sceneRef, loop };
 }
 
-export const GeometryDemo/*: Component<>*/ = ({ children }) => {
-  const { canvasRef, cameraRef, sceneRef } = useDemoSetup();
+/*::
+export type GeometryDemoProps = {
+  sceneProps?: SceneProps,
+  canvasProps?: { [string]: mixed },
+  showGrid?: boolean,
+}
+*/
+
+export const GeometryDemo/*: Component<GeometryDemoProps>*/ = ({
+  children,
+  showGrid = true,
+  sceneProps,
+  canvasProps
+}) => {
+  const { canvasRef, cameraRef, sceneRef, loop } = useDemoSetup();
+  const raycast = useRaycastManager();
 
   useLookAt(cameraRef, new Vector3(0, 0, 0), []);
+  useEffect(() => {
+    return loop.subscribeInput((loopConsts) => raycast.onUpdate(loopConsts.camera));
+  }, [loop, raycast.onUpdate])
+
+  useEffect(() => {
+    const { current: canvas } = canvasRef;
+    if (!canvas) return;
+    canvas.addEventListener('click', raycast.onClick);
+    canvas.addEventListener('mouseenter', raycast.onMouseEnter);
+    canvas.addEventListener('mousemove', raycast.onMouseMove);
+    canvas.addEventListener('mouseleave', raycast.onMouseExit);
+    return () => {
+      canvas.removeEventListener('click', raycast.onClick);
+      canvas.removeEventListener('mouseenter', raycast.onMouseEnter);
+      canvas.removeEventListener('mousemove', raycast.onMouseMove);
+      canvas.removeEventListener('mouseleave', raycast.onMouseExit);
+    }
+  }, [raycast])
 
   return [
-    h('canvas', { ref: canvasRef, class: styles.bigDemoCanvas }),
-    h(scene, { ref: sceneRef }, [
+    h('canvas', { ...canvasProps, ref: canvasRef, class: styles.bigDemoCanvas }),
+    h(scene, { ...sceneProps, ref: sceneRef }, [
+      h(raycastManagerContext.Provider, { value: raycast }, [
+        children,
+      ]),
       h(perspectiveCamera, { ref: cameraRef, position: new Vector3(16, 16, 16), fov: 16 }),
-      h(GridHelperGroup, { interval: 10, size: 10 }),
-      children,
+      showGrid && h(GridHelperGroup, { interval: 10, size: 10 }),
     ])
   ];
 };

@@ -1,32 +1,33 @@
 // @flow strict
 /*:: import type { Component } from "@lukekaalim/act";*/
+/*:: import type { MeshProps } from "@lukekaalim/act-three";*/
+/*:: import type { Material } from "three";*/
 
-import { h, useEffect, useMemo, useState } from "@lukekaalim/act";
+import { h, useEffect, useMemo, useRef, useState } from "@lukekaalim/act";
 import { mesh, useDisposable } from "@lukekaalim/act-three";
-import { useAnimatedNumber, calculateCubicBezierAnimationPoint } from '@lukekaalim/act-curve';
+import { useAnimatedNumber, calculateCubicBezierAnimationPoint, useTimeSpan } from '@lukekaalim/act-curve';
 import throttle from "lodash.throttle";
 
 import {
   BufferAttribute,
   BufferGeometry,
-  Color,
   ShaderMaterial,
-  MeshBasicMaterial,
   DataTexture,
   RedFormat,
-  RedIntegerFormat,
-  IntType,
   UnsignedByteType,
-  GLSL3,
   NearestFilter,
   UVMapping,
   RepeatWrapping,
   TextureLoader,
+  Vector3,
+  Color,
+  PlaneGeometry,
 } from "three";
 import { GeometryDemo } from "../demo";
 
 import tilemapTestURL from './tilemap_test.png';
-import { useTimeSpan } from "@lukekaalim/act-curve/schedule";
+import board_grid_tilemap from './board_grid_tilemap.png';
+import { useRaycast, useRaycastManager } from "../controls/raycast";
 
 const writeVector3 = (array, index, x, y, z) => {
   array[(index * 3) + 0] = x;
@@ -96,24 +97,19 @@ export const writeTilemapUV = (
       const vertexIndex = (x + (y * width)) * 4;
       const vi = vertexIndex;
 
-      writeVector2(array, vi + 0, 0, 0);
-      writeVector2(array, vi + 1, 1, 0);
-      writeVector2(array, vi + 2, 0, 1);
-      writeVector2(array, vi + 3, 1, 1);
+      writeVector2(array, vi + 0, 0, 1);
+      writeVector2(array, vi + 1, 1, 1);
+      writeVector2(array, vi + 2, 0, 0);
+      writeVector2(array, vi + 3, 1, 0);
     }
   }
 }
 
-/*::
-export type TilemapProps = {
-  height: number,
-  width: number,
-}
-*/
 
 
 const vertexShader = `
 uniform sampler2D map;
+uniform vec2 tilesSize;
 varying vec2 vUv;
 
 void main() {
@@ -132,8 +128,8 @@ void main() {
   vec4 tileOffset = texture(map, mapPosition);
   float mapIndex = (tileOffset.r * 255.0);
 
-  float u = ((uv.x) / 4.0) + (mod(mapIndex, 4.0) / 4.0);
-  float v = ((uv.y) / 4.0) + (floor(mapIndex / 4.0) / 4.0);
+  float u = ((uv.x) / tilesSize.x) + (mod(mapIndex, tilesSize.x) / tilesSize.x);
+  float v = ((uv.y) / tilesSize.y) + ((tilesSize.y - floor(mapIndex / tilesSize.x) - 1.0) / tilesSize.y);
 
   vUv = vec2(u, v);
 
@@ -147,6 +143,7 @@ varying vec2 vUv;
 
 void main() {
   gl_FragColor = texture(tiles, vUv);
+	if ( gl_FragColor.a < 0.5 ) discard;
 }
 `;
 
@@ -156,7 +153,7 @@ const mapTexture = new DataTexture(
   UVMapping, RepeatWrapping, RepeatWrapping,
   NearestFilter
 );
-const tilesTexture = new TextureLoader().load(tilemapTestURL);
+const tilesTexture = new TextureLoader().load(board_grid_tilemap);
 
 const material = new ShaderMaterial({
   fragmentShader,
@@ -164,12 +161,20 @@ const material = new ShaderMaterial({
   uniforms: {
     tiles: { value: tilesTexture },
     map: { value: mapTexture },
-    division: { value: 0 },
-    branchy: { value: false }
+    tilesSize: { value: [8, 8] }
   }
 });
 
-export const Tilemap/*: Component<TilemapProps>*/ = ({ children, height, width }) => {
+/*::
+export type TilemapProps = {
+  ...$Diff<MeshProps, {| geometry?: BufferGeometry, material?: Material |}>,
+
+  height: number,
+  width: number,
+}
+*/
+
+export const Tilemap/*: Component<TilemapProps>*/ = ({ children, height, width, ...meshProps }) => {
   const geometry = useDisposable(() => new BufferGeometry());
 
   useEffect(() => {
@@ -189,56 +194,87 @@ export const Tilemap/*: Component<TilemapProps>*/ = ({ children, height, width }
 
   }, [height, width, geometry])
 
-  return h(mesh, { geometry, material }, children)
+  return h(mesh, { ...meshProps, geometry, material }, children)
+};
+
+const ClickPlane = ({ width, height, over }) => {
+  const ref = useRef();
+  const geometry = useDisposable(() => {
+    return new PlaneGeometry(width, height)
+      .rotateX(Math.PI * -0.5)
+      .translate( (width % 2) * -0.5, 0, (height % 2) * -0.5)
+  }, [height, width]);
+
+  useRaycast(ref, { over }, [over]);
+
+  return h(mesh, { ref, geometry, visible: false });
 };
 
 
 export const TilemapDemo/*: Component<>*/ = () => {
-  const [x, setX] = useState(1);
-  const [y, setY] = useState(10);
-  const [z, setZ] = useState(0);
-  const [w, setW] = useState(false);
-
-  const [zAnim] = useAnimatedNumber(z, z);
-  
-  useTimeSpan(zAnim.span, now => {
-    const point = calculateCubicBezierAnimationPoint(zAnim, now);
-    material.uniforms.division.value = point.position;
-  }, [zAnim])
+  const [x, setX] = useState(64);
+  const [y, setY] = useState(64);
 
   useEffect(() => {
-    material.uniforms.branchy.value = w;
-  }, [w])
+    const encoder = new TextEncoder();
+    const encodedData = localStorage.getItem('terrain')
 
-  useEffect(() => {
-    const data = new Uint8Array(x * y);
-    for (let v = 0; v < y; v++) {
-      for (let u = 0; u < x; u++) {
-        data[u + (v * x)] = (u + (v * x)) % 16;
-      }
-    }
-    console.log(data);
-    
+    const data = encodedData && encoder.encode(encodedData) || new Uint8Array(x * y);
+
     const mapTexture = new DataTexture(data, x, y, RedFormat, UnsignedByteType);
-
     material.uniforms.map.value = mapTexture;
-    material.uniformsNeedUpdate = true;
     
-
     return () => {
       mapTexture.dispose();
     };
   }, [x, y]);
 
+  const over = (e) => {
+    if (!painting)
+      return;
+  
+    const local = e.object.worldToLocal(e.point)
+    const grid = [Math.floor(local.x + (x/2) + ((x % 2) * 0.5)), Math.floor(local.z + (y/2) + ((y % 2) * 0.5))]
+    
+    const texture = ((material.uniforms.map.value/*: any*/)/*: DataTexture*/)
+    const data = texture.image.data;
+
+    const gridIndex = grid[0] + (grid[1] * x);
+    const prevIndex = data[gridIndex];
+    data[gridIndex] = brushId;
+    const needsUpdate = prevIndex !== brushId;
+
+    texture.needsUpdate = needsUpdate;
+    if (needsUpdate) {
+      const dataToSave = new Uint8Array(data);
+      const decode = new TextDecoder('utf-8', { fatal: false });
+      localStorage.setItem('terrain', decode.decode(dataToSave));
+    }
+  }
+
+  const [brushId, setBrushId] = useState(0)
+
+  const [painting, setPainting] = useState(false);
+  const onMouseDown = (e) => {
+    e.target.setPointerCapture(e.id);
+    setPainting(true);
+  }
+  const onMouseUp = (e) => {
+    e.target.releasePointerCapture(e.id);
+    setPainting(false);
+  }
 
   return [
-    h('input', { type: 'range', min: 0, max: 10, step: 1, value: x, onInput: throttle(e => setX(e.target.valueAsNumber), 100) }),
-    h('input', { type: 'range', min: 0, max: 10, step: 1, value: y, onInput: throttle(e => setY(e.target.valueAsNumber), 100) }),
-    h('input', { type: 'range', min: 1, max: 100, step: 1, value: z, onInput: throttle(e => setZ(e.target.valueAsNumber), 100) }),
-    h('input', { type: 'checkbox', min: 1, checked: w, onChange: e => setW(e.target.checked) }),
+    h('input', { type: 'range', min: 0, max: 32, step: 1, value: x, onInput: throttle(e => setX(e.target.valueAsNumber), 100) }),
+    h('input', { type: 'range', min: 0, max: 32, step: 1, value: y, onInput: throttle(e => setY(e.target.valueAsNumber), 100) }),
+
+    h('select', { onChange: e => setBrushId(parseInt(e.target.value)) }, 
+      Array.from({ length: (8 * 8) }).map((_, i) => h('option', { value: i, selected: brushId === i }, `Brush ${i}`)),
+    ),
     
-    h(GeometryDemo, {}, [
-      h(Tilemap, { height: y, width: x })
+    h(GeometryDemo, { showGrid: false, sceneProps: { background: new Color('#282c34'), }, canvasProps: { onMouseDown, onMouseUp } }, [
+      h(Tilemap, { height: y, width: x, position: new Vector3(0, 0.1, 0), geometry: new BufferGeometry() }),
+      h(ClickPlane, { height: y, width: x, over }),
     ])
   ];
 };
