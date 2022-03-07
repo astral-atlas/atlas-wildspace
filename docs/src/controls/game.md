@@ -6,3 +6,5 @@
 ::demo{name=board}
 
 ## Map
+
+::demo{name=map}

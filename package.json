@@ -13,7 +13,7 @@
     "docs"
   ],
   "devDependencies": {
-    "flow-bin": "^0.170.0"
+    "flow-bin": "^0.173.0"
   },
   "scripts": {
     "dev:api": "npm run dev -w api",

@@ -19,6 +19,7 @@ import { intervalContext } from "./controls/context";
 import { FinalDemo } from "./controls/finalDemo";
 import { ClickDemo } from './controls/clickDemo';
 import { BoardDemo } from './controls/game/boardDemo';
+import { MapDemo } from './controls/game/map';
 
 const Demo = ({ node }) => {
   switch (node.attributes.name) {
@@ -35,7 +36,9 @@ const Demo = ({ node }) => {
     case 'click':
       return h(ClickDemo);
     case 'board':
-        return h(BoardDemo);
+      return h(BoardDemo);
+    case 'map':
+      return h(MapDemo);
     default:
       return null;
   }
