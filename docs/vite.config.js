@@ -1,6 +1,6 @@
 
 export default {
-  assetsInclude: ['**/*.gltf'],
+  assetsInclude: ['**/*.gltf', '**/*.ogg'],
   build: {
     sourcemap: true,
     rollupOptions: {

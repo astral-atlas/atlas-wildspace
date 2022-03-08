@@ -7,13 +7,11 @@ import type {
 } from '@astral-atlas/wildspace-models';
 */
 import { h, useContext, useMemo, useEffect, useRef, useState } from '@lukekaalim/act';
-// @flow strict 
 
 /*::
 export type TrackData = {
   track: AudioTrack,
-  asset: AssetDescription,
-  trackDownloadURL: URL
+  trackDownloadURL: ?URL
 };
 export type PlaybackData = {
   progress: number,
@@ -55,7 +53,7 @@ export const usePlaybackData = (
   
       return { progress, trackIndex };
     };
-  }, [tracksData, audio.playlistStartTime])
+  }, [tracksData, audio.playlistStartTime, audio.playState])
 
   return getPlaybackData
 };
@@ -95,7 +93,7 @@ export const RoomAudioPlayer/*: Component<RoomAudioPlayerProps>*/ = ({
         audioElement.pause();
         onTrackChange(null);
       } else {
-        if (audioElement.src !== trackData.trackDownloadURL.href)
+        if (trackData.trackDownloadURL && audioElement.src !== trackData.trackDownloadURL.href)
           audioElement.src = trackData.trackDownloadURL.href;
 
         if (Math.abs(audioElement.currentTime - (playback.progress / 1000)) > 1)
@@ -111,7 +109,7 @@ export const RoomAudioPlayer/*: Component<RoomAudioPlayerProps>*/ = ({
       if (timeoutId)
         clearTimeout(timeoutId);
     };
-  }, [getPlaybackData, tracksData.map(t => t.asset.id).join(' ')])
+  }, [getPlaybackData, tracksData.map(t => t.track.id).join(' ')])
 
   useEffect(() => {
     const playback = getPlaybackData();
@@ -121,7 +119,10 @@ export const RoomAudioPlayer/*: Component<RoomAudioPlayerProps>*/ = ({
     }
   }, [getPlaybackData, volume])
 
+  if (audio.playState !== 'playing')
+    return null;
+
   return [
-    h('audio', { ref: audioRef, controls, volume })
+    h('audio', { ref: audioRef, controls, volume: volume })
   ];
 };

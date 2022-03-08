@@ -29,6 +29,7 @@
     "@lukekaalim/act-rehersal": "^2.0.0",
     "@lukekaalim/act-three": "^5.3.0",
     "@lukekaalim/act-web": "^1.2.0",
-    "lodash.throttle": "^4.1.1"
+    "lodash.throttle": "^4.1.1",
+    "@astral-atlas/wildspace-components": "0.0.0"
   }
 }

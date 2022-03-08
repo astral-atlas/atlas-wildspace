@@ -317,7 +317,12 @@ const BoardLineGrid = ({ board }) => {
     return new TilemapTileIDTexture(data, new Vector2(board.width, board.height));
   }, [board.width, board.height]);
 
-  return h(Tilemap, { mapTexture, tileSize, tilesTexture, position: new Vector3(0, 0, 0), scale: new Vector3(10, 10, 10) });
+  return h(Tilemap, {
+    mapTexture, tileSize, tilesTexture,
+    color: new Color('black'), opacity: 0.1,
+    position: new Vector3(0, 0, 0),
+    scale: new Vector3(10, 10, 10)
+  });
 }
 
 const localVectorToBoardPosition = (localVector/*: Vector3*/)/*: [number, number, number]*/ => [
@@ -344,7 +349,8 @@ const BoardRenderer = ({ board }) => {
       const position = localVectorToBoardPosition(localVector);
       setCursorPosition(new Vector3((position[0] * 10) + 5, (position[2]  *10) + 0.5, (position[1] * 10) + 5));
     },
-    exit() {
+    exit(e) {
+      console.log('exit')
       setFocused(false);
     },
     click: (intersection) => {
@@ -354,6 +360,8 @@ const BoardRenderer = ({ board }) => {
       onBoardClick(board, position);
     }
   }, [board, onBoardClick])
+
+  console.log(focused);
 
   return [
     h(mesh, { visible: false, geometry, ref }),

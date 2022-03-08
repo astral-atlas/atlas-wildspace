@@ -20,3 +20,4 @@ export * from './preview/core.js';
 export * from './preview/control.js';
 export * from './preview/inputs.js';
 
+export * from './audio/index.js';

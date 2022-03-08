@@ -93,7 +93,7 @@ export const useBoardCameraControl = (
     const position = state.positionParticle.position;
     setFocusTransform(
       [position[0], 0, position[1]],
-      [40, heightPoint.position, 0],
+      [50, heightPoint.position, 0],
       rotation,
       camera
     );

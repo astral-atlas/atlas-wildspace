@@ -6,7 +6,7 @@ import { PageNavigation } from './page.js';
 import { ReadmePageContent } from './readmePageContent.js';
 import { renderWorkspacePageContent } from "./workspacePageContent.js";
 
-import previewMd from './preview.md';
+import previewMd from './preview.md?raw';
 import styles from './previewStyles.module.css';
 import { TabbedToolbox } from './tools/tabs.js';
 import { GridBench } from './bench/grid.js';

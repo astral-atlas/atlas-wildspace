@@ -113,8 +113,11 @@ const vertexShader = `
 uniform sampler2D map;
 uniform vec2 tilesSize;
 varying vec2 vUv;
+varying vec4 vColor;
 
 void main() {
+	vColor = vec4( 1.0 ) * color;
+  
   vec2 mapSize = vec2(textureSize(map, 0));
 
   float tileId = float(gl_VertexID / 4);
@@ -142,9 +145,12 @@ void main() {
 const fragmentShader = `
 uniform sampler2D tiles;
 varying vec2 vUv;
+varying vec4 vColor;
+uniform vec4 tint;
 
 void main() {
   gl_FragColor = texture(tiles, vUv);
+	gl_FragColor *= vColor * tint;
 }
 `;
 
@@ -167,10 +173,12 @@ export class TilemapTileIDTexture extends DataTexture {
 export class TilemapMaterial extends ShaderMaterial {
   constructor(mapTexture/*: TilemapTileIDTexture*/, tilesTexture/*: Texture*/, tileSize/*: Vector2*/) {
     super({
+      defines: { USE_COLOR_ALPHA: true, USE_COLOR: true },
       fragmentShader,
       vertexShader,
       transparent: true,
       uniforms: {
+        tint: { value: [1, 1, 1, 1] },
         tiles: { value: tilesTexture },
         map: { value: mapTexture },
         tilesSize: { value: tileSize }
@@ -183,7 +191,9 @@ export class TilemapMaterial extends ShaderMaterial {
 export const useTilemapMaterial = (
   mapTexture/*: TilemapTileIDTexture*/,
   tilesTexture/*: Texture*/,
-  tileSize/*: Vector2*/
+  tileSize/*: Vector2*/,
+  color/*: ?Color*/ = null,
+  opacity/*: number*/ = 1,
 )/*: TilemapMaterial*/ => {
   const material = useDisposable(() =>
     new TilemapMaterial(mapTexture, tilesTexture, tileSize),
@@ -193,7 +203,8 @@ export const useTilemapMaterial = (
     material.uniforms.map.value = mapTexture;
     material.uniforms.tiles.value = tilesTexture;
     material.uniforms.tilesSize.value = tileSize;
-  }, [mapTexture, tilesTexture, tileSize])
+    material.uniforms.tint.value = color ? [color.r, color.g, color.b, opacity] : [1, 1, 1, opacity];
+  }, [mapTexture, tilesTexture, tileSize, color, opacity])
 
   return material;
 };
@@ -229,6 +240,8 @@ export type TilemapProps = {
   mapTexture: TilemapTileIDTexture,
   tilesTexture: Texture,
   tileSize: Vector2,
+  color?: Color,
+  opacity?: number,
 }
 */
 
@@ -237,10 +250,12 @@ export const Tilemap/*: Component<TilemapProps>*/ = ({
   tilesTexture,
   tileSize,
   children,
+  color,
+  opacity,
   ...meshProps
 }) => {
   const geometry = useTilemapGeometry(mapTexture);
-  const material = useTilemapMaterial(mapTexture, tilesTexture, tileSize);
+  const material = useTilemapMaterial(mapTexture, tilesTexture, tileSize, color, opacity);
 
   return h(mesh, { ...meshProps, geometry, material }, children)
 };

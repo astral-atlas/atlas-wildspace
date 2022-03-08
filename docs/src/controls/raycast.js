@@ -35,7 +35,7 @@ export type RaycastManager = {
   subscribe: (object: Object3D, events: RaycastEvents) => () => void,
   onUpdate: (camera: Camera) => void,
   onMouseEnter: (event: MouseEvent) => void,
-  onMouseExit: (event: MouseEvent) => void,
+  onMouseLeave: (event: MouseEvent) => void,
   onMouseMove: (event: MouseEvent) => void,
   onClick: (event: MouseEvent) => void,
 };
@@ -82,7 +82,7 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
   const onMouseEnter = () => {
     mouseEnteredRef.current = true;
   };
-  const onMouseExit = () => {
+  const onMouseLeave = () => {
     mouseEnteredRef.current = false;
   }
 
@@ -96,8 +96,13 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
   const lastIntersectionRef = useRef();
 
   const onUpdate = (camera) => {
-    if (!mouseEnteredRef.current)
+    if (!mouseEnteredRef.current) {
+      const prevFocused = lastIntersectionRef.current && lastIntersectionRef.current.object;
+      emitExit(prevFocused, null)
+      lastIntersectionRef.current = null;
+      console.log('exit');
       return;
+    }
       
     raycaster.setFromCamera(mousePosition, camera);
     const intersections = raycaster.intersectObjects([...focusTargets], false);
@@ -150,7 +155,7 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
     lastIntersectionRef,
     onMouseMove,
     onMouseEnter,
-    onMouseExit,
+    onMouseLeave,
     onUpdate,
     subscribe
   }));

@@ -189,8 +189,40 @@ const CompassButtonMenu/*: Component<CompassButtonMenuProps>*/ = ({ onPositionCl
   ]);
 }
 
+const clampCompassVector = ([x, y]) => [
+  Math.min(2, Math.max(0, x)),
+  Math.min(2, Math.max(0, y)),
+]
+const addVector = (a, b) => [
+  a[0] + b[0],
+  a[1] + b[1]
+]
+const vectorToPosition = ([x, y]) => {
+  return compassPositions[y][x]
+}
+
 export const Components/*: Component<{}>*/ = () => {
   const [activeCompassPosition, setActiveCompassPosition] = useState/*:: <CompassPosition>*/('center');
+
+  const onKeyDown = (e) => {
+    if (e.shiftKey) {
+      setActiveCompassPosition(position => {
+        const vector = positionVectors[position];
+        switch (e.code) {
+          case 'KeyD':
+            return vectorToPosition(clampCompassVector(addVector(vector, [1, 0])));
+          case 'KeyA':
+            return vectorToPosition(clampCompassVector(addVector(vector, [-1, 0])));
+          case 'KeyW':
+            return vectorToPosition(clampCompassVector(addVector(vector, [0, -1])));
+          case 'KeyS':
+            return vectorToPosition(clampCompassVector(addVector(vector, [0, 1])));
+          default:
+            return position;
+        }
+      })
+    }
+  }
 
   return [
     h('h1', {}, 'Layout'),
@@ -202,7 +234,7 @@ export const Components/*: Component<{}>*/ = () => {
       onPositionClick: position => setActiveCompassPosition(position),
       disabled: { [(activeCompassPosition/*: string*/)]: true }
     }),
-    h('div', { style: { width: '600px', height: '600px' } },
+    h('div', { style: { width: '600px', height: '600px' }, tabIndex: 0, onKeyDown },
       h(CompassMenu, { active: activeCompassPosition, contents: Object.fromEntries(compassPositions.flat(1).map(p => [p, h(ColoredDemoBox, { name: p })])) }))
     
   ];

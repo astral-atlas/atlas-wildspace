@@ -14,6 +14,7 @@ import { scenesPage, scenesPages } from './scenes.js';
 import { controlsPage, controlsPages } from "./controls";
 import { geometryPage, geometryPages } from './geometry';
 import { useEffect } from "@lukekaalim/act/hooks";
+import { audioPage, audioPages } from './audio';
 
 /*::
 export type Page = {
@@ -34,7 +35,8 @@ const rootPage = {
       layoutsPage.link,
       scenesPage.link,
       controlsPage.link,
-      geometryPage.link
+      geometryPage.link,
+      audioPage.link,
     ],
     href: '/',
   }
@@ -46,6 +48,7 @@ const pages = [
   ...layoutsPages,
   ...controlsPages,
   ...geometryPages,
+  ...audioPages,
 ];
 
 const App = () => {

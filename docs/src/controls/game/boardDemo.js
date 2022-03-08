@@ -19,6 +19,7 @@ import {
   Color,
   MathUtils,
   BoxGeometry,
+  Group,
 } from "three";
 import { useLookAt } from "@lukekaalim/act-three/hooks/matrix";
 
@@ -41,6 +42,8 @@ import { Water } from "three/examples/jsm/objects/Water.js";
 import { Sky } from "three/examples/jsm/objects/Sky.js";
 
 import keelboatModelURL from './keelboat.gltf';
+import gullmansIsleURL from './gullmans.gltf';
+
 import keelboatTextureURL from './keelboat.jpg';
 import waternormalsTextureURL from './waternormals.jpg';
 import { useSubscriptionList } from "../subscription";
@@ -50,6 +53,7 @@ import {
   useKeyboardState,
   useKeyboardTrack,
 } from "../keyboard";
+import { ambientLight } from "@lukekaalim/act-three/components";
 
 
 const boxGeo = new BoxGeometry(10, 10, 10);
@@ -198,7 +202,7 @@ export const BoardDemo/*: Component<>*/ = () => {
     
     onMouseEnter: raycaster.onMouseEnter,
     onMouseMove: raycaster.onMouseMove,
-    onMouseExit: raycaster.onMouseExit,
+    onMouseLeave: raycaster.onMouseLeave,
     onClick: raycaster.onClick,
     onContextMenu,
     tabIndex: 0,
@@ -280,8 +284,8 @@ export const BoardDemo/*: Component<>*/ = () => {
     setWater(water);
     water.position.y -= 1;
     water.rotation.x = - Math.PI / 2;
-    sceneRef.current.add(water);
-    sceneRef.current.add( sky );
+    //sceneRef.current.add(water);
+    //sceneRef.current.add( sky );
     const parameters = {
       elevation: 2,
       azimuth: 180
@@ -318,6 +322,20 @@ export const BoardDemo/*: Component<>*/ = () => {
     boat.rotation.z = (Math.sin((now * 3.4) / 1000) +  Math.sin(now / 1000)) / 32;
   }, [keelboatGeometry, keelboatMaterial])
 
+  const [gullmans, setGullmans] = useState(null)
+  useEffect(() => {
+    const { current: scene } = sceneRef;
+    if (!scene) return;
+
+    new GLTFLoader().loadAsync(gullmansIsleURL)
+      .then(gltf => {
+        const group = new Group();
+        group.add(...gltf.scene.children)
+        console.log(group.children);
+        setGullmans(group)
+      });
+  }, [])
+
   const [subscribeAuxClick, auxClickSubscribers] = useSubscriptionList();
   
 
@@ -335,7 +353,7 @@ export const BoardDemo/*: Component<>*/ = () => {
     hotPiece,
   ];
 
-  const [board, setBoard] = useState/*:: <Board>*/({ id: 'a', width: 10, height: 10, pieces });
+  const [board, setBoard] = useState/*:: <Board>*/({ id: 'a', width: 64, height: 64, pieces });
 
   const [readInputs, onInputChange] = useKeyboardTrack();
   const [keyRef, events] = useKeyboardState(null, onInputChange);
@@ -345,7 +363,7 @@ export const BoardDemo/*: Component<>*/ = () => {
     const clearUp = keyboardContext.subscribeUp(events.up);
     return () => (clearDown(), clearUp());
   }, [])
-  useBoardCameraControl(cameraRef, readInputs, 45);
+  useBoardCameraControl(cameraRef, readInputs, 60);
 
   const movePiece = (_, pieceId, position) => {
     if (!_ || !pieceId || !position)
@@ -359,10 +377,27 @@ export const BoardDemo/*: Component<>*/ = () => {
     }))
   }
 
+  const [isFullscreen, setFullscreen] = useState();
+  useEffect(() => {
+    document.addEventListener('fullscreenchange', (e/*: Event*/) => {
+      setFullscreen(document.fullscreenElement);
+    })
+  }, []);
+
+  const onFullscreenClick = () => {
+    const { current: canvas } = canvasRef;
+    if (!canvas) return;
+    canvas.requestFullscreen();
+    canvas.focus();
+  };
+
   return [
+    h('button', { onClick: onFullscreenClick }, 'Fullscreen'),
     h('canvas', canvasProps),
     h(scene, { ref: sceneRef }, [
-      h(perspectiveCamera, { ref: cameraRef, fov: 50 }),
+      h(ambientLight),
+      h(perspectiveCamera, { ref: cameraRef, fov: isFullscreen ? 80 : 50 }),
+      gullmans && h(group, { group: gullmans, scale: new Vector3(10, 10, 10), position: new Vector3(0, -1, 0) }),
       //h(mesh, { visible: false, geometry: plane, ref: gridRef, rotation: new Euler(Math.PI * 1.5, 0, 0) }),
       /*
       h(group, { ref: groupRef }, [
