@@ -6,12 +6,12 @@ import { AssetGrid, AssetGridItem } from "@astral-atlas/wildspace-components";
 import { h, useState } from "@lukekaalim/act";
 
 export const AssetGridDemo/*: Component<>*/ = () => {
-  const [count, setCount] = useState(10);
+  const [count, setCount] = useState(3);
   
   return [
     h('label', {}, [
       'Assets',
-      h('input', { type: 'range', value: count, onInput: e => setCount(e.target.valueAsNumber) }),
+      h('input', { type: 'range', max: 12, value: count, onInput: e => setCount(e.target.valueAsNumber) }),
     ]),
     h(AssetGrid, { style: { height: '40vh', width: '100%', border: '1px solid black' }}, [
       ...Array.from({ length: count })

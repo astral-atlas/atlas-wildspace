@@ -2,9 +2,9 @@
   display: grid;
 
   gap: 8px;
-  grid-template-columns: repeat(auto-fit, max(10vw, 100px));
+  grid-template-columns: repeat(auto-fill, max(calc(8vw), 100px));
   
-  grid-auto-rows: calc(max(10vw, 100px) + var(--vertical_height_offset, 0px));
+  grid-auto-rows: max(8vw, 100px);
 
   justify-content: center;
   overflow-y: scroll;
