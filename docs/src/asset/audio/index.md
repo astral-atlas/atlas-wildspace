@@ -1,4 +1,9 @@
-# Player
+# Audio Assets
+
+Audio plays a large role in Wildspace - uploading custom musical cues and tracks
+is managed by the AudioAssetLibrary.
+
+## AudioAssetLibrary
 
 ::demo{name=player}
 

@@ -55,10 +55,13 @@ export const createPlaylistClient = (httpClient/*: HTTPClient*/, httpOrigin/*: s
 export type AudioClient = {
   playlist: PlaylistClient,
   tracks: {
-    create: (gameId: GameID, title: string, artist: ?string, MIMEType: string, trackLengthMs: number, trackData: Uint8Array) =>
-      Promise<{ track: AudioTrack, asset: AssetDescription, trackDownloadURL: URL }>,
+    create: (
+      gameId: GameID, title: string, artist: ?string, MIMEType: string, trackLengthMs: number, trackData: Uint8Array,
+      options?: ?{ cover?: ?{ mime: string, data: Uint8Array } }  
+    ) =>
+      Promise<{ track: AudioTrack, asset: AssetDescription, trackDownloadURL: URL, coverDownloadURL: ?URL }>,
     read: (gameId: GameID, trackId: AudioTrackID) =>
-      Promise<{ track: AudioTrack, asset: AssetDescription, trackDownloadURL: URL }>,
+      Promise<{ track: AudioTrack, asset: AssetDescription, trackDownloadURL: URL, coverDownloadURL: ?URL }>,
     list: (gameId: GameID) => Promise<$ReadOnlyArray<AudioTrack>>,
     remove: (gameId: GameID, trackId: AudioTrackID) => Promise<void>
   }
@@ -69,19 +72,30 @@ export const createAudioTracksClient = (httpClient/*: HTTPClient*/, assetClient/
   const tracksResource = createJSONResourceClient(audioAPI['/tracks'], httpClient, httpOrigin);
   const allTracksResource = createJSONResourceClient(audioAPI['/tracks/all'], httpClient, httpOrigin);
 
-  const create = async (gameId, title, artist, MIMEType, trackLengthMs, data) => {
-    const { description: asset, downloadURL:trackDownloadURL  } = await assetClient.create(`${gameId}/audio/${MIMEType}/${title}`, MIMEType, data);
+  const create = async (gameId, title, artist, MIMEType, trackLengthMs, data, { cover } = {}) => {
+    const { description: asset, downloadURL: trackDownloadURL  } = await assetClient.create(`${gameId}/audio/${MIMEType}/${title}`, MIMEType, data);
+
+    const coverImageAssetRequest = cover && await assetClient.create(`${gameId}/audio/${MIMEType}/${title}/cover`, cover.mime, cover.data);
     const { id: trackAudioAssetId } = asset;
 
-    const { body: { track } } = await tracksResource.POST({ body: { gameId, title, artist, trackLengthMs, gameId, trackAudioAssetId, coverImageAssetId: null }})
+    const { body: { track } } = await tracksResource.POST({ body: {
+      gameId,
+      title,
+      artist,
+      trackLengthMs,
+      gameId,
+      trackAudioAssetId,
+      coverImageAssetId: coverImageAssetRequest && coverImageAssetRequest.description.id
+    }})
 
-    return { track, asset, trackDownloadURL };
+    return { track, asset, trackDownloadURL, coverDownloadURL: coverImageAssetRequest && coverImageAssetRequest.downloadURL };
   };
   const read = async (gameId, trackId) => {
     const { body: { track } } = await tracksResource.GET({ query: { gameId, trackId }});
     const { downloadURL: trackDownloadURL, description: asset } = await assetClient.peek(track.trackAudioAssetId);
+    const coverImageAssetRequest = track.coverImageAssetId && await assetClient.peek(track.coverImageAssetId);
 
-    return { track, asset, trackDownloadURL };
+    return { track, asset, trackDownloadURL, coverDownloadURL: coverImageAssetRequest ? coverImageAssetRequest.downloadURL : null };
   };
   const list = async (gameId) => {
     const { body: { tracks }} = await allTracksResource.GET({ query: { gameId } });

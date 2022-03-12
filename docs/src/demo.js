@@ -107,12 +107,12 @@ export const GeometryDemo/*: Component<GeometryDemoProps>*/ = ({
     canvas.addEventListener('click', raycast.onClick);
     canvas.addEventListener('mouseenter', raycast.onMouseEnter);
     canvas.addEventListener('mousemove', raycast.onMouseMove);
-    canvas.addEventListener('mouseleave', raycast.onMouseExit);
+    canvas.addEventListener('mouseleave', raycast.onMouseLeave);
     return () => {
       canvas.removeEventListener('click', raycast.onClick);
       canvas.removeEventListener('mouseenter', raycast.onMouseEnter);
       canvas.removeEventListener('mousemove', raycast.onMouseMove);
-      canvas.removeEventListener('mouseleave', raycast.onMouseExit);
+      canvas.removeEventListener('mouseleave', raycast.onMouseLeave);
     }
   }, [raycast])
 
@@ -127,3 +127,15 @@ export const GeometryDemo/*: Component<GeometryDemoProps>*/ = ({
     ])
   ];
 };
+
+/*::
+export type DOMDemoProps = {
+
+};
+*/
+
+export const DOMDemo/*: Component<DOMDemoProps>*/ = () => {
+  return h('div', {}, [
+    
+  ])
+}

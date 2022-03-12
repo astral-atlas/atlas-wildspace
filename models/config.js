@@ -13,9 +13,11 @@ export type DataConfig =
 
 export type FileAssetConfig = { type: 'file', directory: string };
 export type AWSS3AssetConfig = { type: 'awsS3', bucket: string, keyPrefix: string, region: string };
+export type MemoryAssetConfig = { type: 'memory' };
 export type AssetConfig = 
   | FileAssetConfig
   | AWSS3AssetConfig
+  | MemoryAssetConfig
 
 export type APIConfig = {
   port: number,
@@ -37,10 +39,12 @@ export const castDataConfig/*: Cast<DataConfig>*/ = c.or('type', {
 })
 export const castFileAssetConfig/*: Cast<FileAssetConfig>*/ = c.obj({ type: c.lit('file'), directory: c.str, });
 export const castAWSS3AssetConfig/*: Cast<AWSS3AssetConfig>*/ = c.obj({ type: c.lit('awsS3'), bucket: c.str, keyPrefix: c.str, region: c.str });
+export const castMemoryAssetConfig/*: Cast<MemoryAssetConfig>*/ = c.obj({ type: c.lit('memory') });
 
 export const castAssetConfig/*: Cast<AssetConfig>*/ = c.or('type', {
   'file': castFileAssetConfig,
   'awsS3': castAWSS3AssetConfig,
+  'memory': castMemoryAssetConfig,
 });
 
 export const castAPIConfig/*: Cast<APIConfig>*/ = createObjectCaster({

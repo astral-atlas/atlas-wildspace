@@ -5,7 +5,7 @@
 import { h, useEffect, useRef, useState } from "@lukekaalim/act";
 import { mesh, perspectiveCamera, scene, useRenderLoop, useResizingRenderer, useWebGLRenderer } from "@lukekaalim/act-three";
 
-import { BoxGeometry, MeshBasicMaterial, Vector3, Euler, Color } from "three";
+import { BoxGeometry, MeshBasicMaterial, Vector3, Color } from "three";
 
 import styles from './index.module.css';
 import { useClickRayContextValue, useClickRay, clickRayContext } from "./click.js";
@@ -36,12 +36,12 @@ export const ClickDemo/*: Component<>*/ = () => {
     canvas.addEventListener('click', manager.onClick);
     canvas.addEventListener('mousemove', manager.onMouseMove);
     canvas.addEventListener('mouseenter', manager.onMouseEnter);
-    canvas.addEventListener('mouseleave', manager.onMouseExit);
+    canvas.addEventListener('mouseleave', manager.onMouseLeave);
     return () => {
       canvas.removeEventListener('click', manager.onClick);
       canvas.removeEventListener('mousemove', manager.onMouseMove);
       canvas.removeEventListener('mouseenter', manager.onMouseEnter);
-      canvas.removeEventListener('mouseleave', manager.onMouseExit);
+      canvas.removeEventListener('mouseleave', manager.onMouseLeave);
     }
   }, []);
   useEffect(() => {

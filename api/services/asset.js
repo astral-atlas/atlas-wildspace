@@ -55,8 +55,35 @@ export const createS3AssetService = (data/*: WildspaceData*/, config/*: AWSS3Ass
   return { peek, put };
 };
 
+export const createMemoryAssetService = (data/*: WildspaceData*/)/*: AssetService*/ => {
+  const peek = async (id) => {
+    const { result: description } = await data.assets.get(id);
+    if (!description)
+      throw new Error();
+    
+    return {
+      description,
+      downloadURL: `http://localhost:5567/assets/data?assetId=${id}`,
+    }
+  };
+  const put = async (MIMEType, bytes, name) => {
+    const description = {
+      MIMEType, bytes, creator: '', id: uuid(), name, uploaded: Date.now()
+    };
+    await data.assets.set(description.id, description);
+    return {
+      downloadURL: `http://localhost:5567/assets/data?assetId=${description.id}`,
+      description,
+      uploadURL: `http://localhost:5567/assets/data?assetId=${description.id}`,
+    }
+  };
+  return { peek, put };
+};
+
 export const createAssetService = (data/*: WildspaceData*/, config/*: APIConfig*/)/*: AssetService*/ => {
   switch (config.asset.type) {
+    case 'memory':
+      return createMemoryAssetService(data);
     case 'awsS3':
       return createS3AssetService(data, config.asset);
     case 'file':

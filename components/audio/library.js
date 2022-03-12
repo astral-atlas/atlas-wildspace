@@ -3,13 +3,19 @@
 /*::
 import type { 
   AudioTrack, AudioPlaylist, AudioPlaylistState,
-  GameID, AssetDescription, AudioPlaylistID, AssetID
+  GameID, AssetDescription, AudioPlaylistID, AssetID,
+  AudioTrackID,
 } from '@astral-atlas/wildspace-models';
 */
 import { h, useContext, useMemo, useEffect, useRef, useState } from '@lukekaalim/act';
 import throttle from 'lodash.throttle';
 import styles from './index.module.css';
 import { TrackInfo } from "./track";
+import { PlaylistInfo } from "./playlist";
+
+/*::
+export type LibraryMode = 'playlist' | 'track' | 'upload';
+*/
 
 const AudioLibraryModeInput = ({ mode, onModeChange }) => {
   return [
@@ -17,8 +23,28 @@ const AudioLibraryModeInput = ({ mode, onModeChange }) => {
     h('button', { disabled: mode === 'track', onClick: e => onModeChange('track') }, 'Tracks'),
   ]
 }
+/*::
+export type AudioLibrarySelection = {
+  tracks: AudioTrackID[],
+  playlists: AudioPlaylistID[]
+}
 
-export const AudioLibrary = ({ selection = {}, onSelect, tracks, playlists, assets }) => {
+export type AudioLibraryProps = {
+  tracks: AudioTrack[],
+  playlists: AudioPlaylist[],
+  assets: { id: AssetID, url: URL }[],
+
+  onTrackUpdate: () => {},
+}
+*/
+
+const AudioAssetLibrary = () => {
+  const [mode, setMode] = useState/*:: <'track' | 'playlist'>*/('track');
+
+  
+}
+
+export const AudioLibrary/*: Component<AudioLibraryProps>*/ = ({ selection, onSelect, tracks, playlists, assets }) => {
   const [mode, setMode] = useState('playlist')
 
   const onSelectPlaylists = (selectedPlaylists, event) => {
@@ -45,7 +71,16 @@ export const AudioLibrary = ({ selection = {}, onSelect, tracks, playlists, asse
   ]
 }
 
-export const TracksLibrary = ({ tracks, assets, selection = [], onSelect }) => {
+/*::
+export type TracksLibraryProps = {
+  selection: AudioTrackID[],
+  onSelect: (selection: AudioTrackID[], event: MouseEvent) => mixed,
+  tracks: AudioTrack[],
+  assets: { id: AssetID, url: URL }[],
+}
+*/
+
+export const TracksLibrary/*: Component<TracksLibraryProps>*/ = ({ tracks, assets, selection = [], onSelect, children }) => {
   const onListClick = e => {
     if (e.target !== e.currentTarget)
       return;
@@ -59,11 +94,12 @@ export const TracksLibrary = ({ tracks, assets, selection = [], onSelect }) => {
 
     if (track.title.toLowerCase().includes(filter.toLowerCase()))
       return true;
-    if (track.artist.toLowerCase().includes(filter.toLowerCase()))
+    if (track.artist && track.artist.toLowerCase().includes(filter.toLowerCase()))
       return true;
   }), [filter, tracks]);
 
   return h('div', { class: styles.trackLibrary }, [
+    children,
     tracks.length === 0 && h('div', { class: styles.playlistLibraryNotice }, 'No Tracks'),
     tracks.length > 0 && [
       h('label', { class: styles.librarySearchLabel }, [
@@ -85,7 +121,18 @@ export const TracksLibrary = ({ tracks, assets, selection = [], onSelect }) => {
   ]);
 };
 
-export const PlaylistLibrary = ({ playlists, tracks, assets, selection = [], onSelect }) => {
+/*::
+export type PlaylistLibraryProps = {
+  selection: AudioTrackID[],
+  onSelect: (selection: AudioTrackID[], event: MouseEvent) => mixed,
+  tracks: AudioTrack[],
+  playlists: AudioPlaylist[],
+  assets: { id: AssetID, url: URL }[],
+}
+*/
+
+
+export const PlaylistLibrary/*: Component<PlaylistLibraryProps>*/ = ({ playlists, tracks, assets, selection, onSelect }) => {
   const onListClick = e => {
     if (e.target !== e.currentTarget)
       return;
@@ -119,7 +166,7 @@ export const PlaylistLibrary = ({ playlists, tracks, assets, selection = [], onS
               class: [styles.playlistItem, isSelected && styles.playlistItemSelected].filter(Boolean).join(' '),
               onClick: throttle(e => (onSelect([playlist.id], e)), 300)
             }, [
-              h(PlaylistInfo, { playlist, coverImageURL: coverAsset && coverAsset.url })
+              h(PlaylistInfo, { playlist, coverImageURL: coverAsset ? coverAsset.url : null, tracks })
             ])
           ]
         })
@@ -127,10 +174,3 @@ export const PlaylistLibrary = ({ playlists, tracks, assets, selection = [], onS
     ]
   ]);
 };
-
-export const PlaylistInfo = ({ playlist, tracks, assets, coverImageURL }) => {
-  return h('div', { class: styles.playlistInfo }, [
-    coverImageURL && h('img', { src: coverImageURL.href }),
-    h('p', {}, playlist.title)
-  ])
-}

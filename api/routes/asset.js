@@ -38,7 +38,7 @@ export const createAssetRoutes = ({ data, asset }/*: Services*/)/*: { ws: WebSoc
         if (!assetId)
           return { status: HTTP_STATUS.not_found, body: null, headers: {} };
         const { result: buffer } = await data.assetData.get(assetId);
-        const { result: description } = await data.assets.get(assetId); 
+        const { result: description } = await data.assets.get(assetId);
         if (!buffer || !description)
           return { status: HTTP_STATUS.not_found, body: null, headers: {} };
 

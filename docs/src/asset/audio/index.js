@@ -24,7 +24,7 @@ export const audioPage/*: Page*/ = {
   content: h(Document, {}, h(Markdown, { text: audioText, directives })),
   link: { children: [
     
-  ], name: 'Audio', href: '/audio' }
+  ], name: 'Audio', href: '/assets/audio' }
 }
 
 export const audioPages/*: Page[]*/ = [

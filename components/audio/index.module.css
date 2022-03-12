@@ -105,3 +105,21 @@
   padding: 64px;
   text-align: center;
 }
+
+
+.playlistEditor {
+}
+
+.playlistEditorTrackList {
+  border: 1px solid black;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.assetGrid {
+
+}
+
+.assetGridItem {
+  
+}

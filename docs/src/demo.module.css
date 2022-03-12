@@ -8,3 +8,10 @@
   display: block;
   width: 100%;
 }
+
+.demoLabel {
+  display: flex;
+}
+.demoInput {
+  
+}

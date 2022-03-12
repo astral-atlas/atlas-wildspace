@@ -1,0 +1,18 @@
+.assetGrid {
+  display: grid;
+
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, max(10vw, 100px));
+  
+  grid-auto-rows: calc(max(10vw, 100px) + var(--vertical_height_offset, 0px));
+
+  justify-content: center;
+  overflow-y: scroll;
+
+  padding: 0;
+}
+
+.assetGridItem {
+  list-style: none;
+  
+}

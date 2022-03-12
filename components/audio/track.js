@@ -1,11 +1,12 @@
 // @flow strict
 /*::
-import type { AudioTrack, AudioPlaylistState } from "@astral-atlas/wildspace-models";
+import type { AudioTrack, AudioPlaylistState, AssetID } from "@astral-atlas/wildspace-models";
 import type { Component } from '@lukekaalim/act';
 
 import type { PlaybackData } from "./player";
 */
 import { h, useEffect, useRef } from '@lukekaalim/act';
+import { v4 as uuid } from 'uuid';
 import styles from './index.module.css';
 
 /*::
@@ -115,3 +116,59 @@ export const TrackUploadInfo/*: Component<TrackUploadInfoProps>*/ = ({ file, onI
     !!trackURL && h('audio', { ref: audioRef, src: trackURL, controls: true })
   ]);
 };
+
+/*::
+export type StagingTrack = {
+  audioFile: File,
+  imageFile: ?Blob,
+
+  title: string,
+  album: string,
+  artist: string,
+
+  trackLengthMs: number,
+};
+
+export type StagingTrackInputProps = {
+  track: StagingTrack,
+  onTrackChange: StagingTrack => mixed,
+};
+*/
+export const StagingTrackInput/*: Component<StagingTrackInputProps>*/ = ({ track, onTrackChange }) => {
+  const onTitleInput = (e) => {
+    onTrackChange({ ...track, title: e.target.value });
+  }
+  return [
+    h('form', {}, [
+      h('input', { type: 'text', value: track.title, onInput: onTitleInput })
+    ])
+  ]
+}
+/*::
+export type LocalAsset = {
+  id: AssetID,
+  url: URL
+};
+*/
+export const applyLocalStagingTrack = (
+  { imageFile, audioFile, title, artist, trackLengthMs }/*: StagingTrack*/
+)/*: { track: AudioTrack, imageAsset: ?LocalAsset, audioAsset: LocalAsset }*/ => {
+  const imageAsset = imageFile && {
+    id: uuid(),
+    url: new URL(URL.createObjectURL(imageFile))
+  };
+  const audioAsset = {
+    id: uuid(),
+    url: new URL(URL.createObjectURL(audioFile))
+  };
+  const track = {
+    id: uuid(),
+    trackLengthMs,
+    title,
+    artist,
+    gameId: '0',
+    coverImageAssetId: imageAsset && imageAsset.id,
+    trackAudioAssetId: audioAsset.id,
+  };
+  return { track, audioAsset, imageAsset }
+}

@@ -34,7 +34,7 @@ export type WSServiceClient = {
 export const createHTTPServiceJSONClient = (httpOrigin/*: string*/, httpClient/*: HTTPClient*/, proof/*: ?LinkProof*/)/*: HTTPServiceClient*/ => {
   const token = proof ? encodeProofToken(proof) : null;
   const authorizedClient = createAuthorizedClient(httpClient, token ? { type: 'bearer', token } : null)
-  const createResource = /*:: <T>*/(desc) => {
+  const createResource = /*:: <T: Resource>*/(desc/*: ResourceDescription<T>*/)/*: ResourceClient<T>*/ => {
     return createJSONResourceClient(desc, authorizedClient, httpOrigin);
   };
   return { createResource, httpClient: authorizedClient };
