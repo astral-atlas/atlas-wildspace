@@ -11,7 +11,15 @@ import { v4 as uuid } from 'uuid';
 import parseAudioMetadata from "parse-audio-metadata";
 
 import styles from './index.module.css';
-import { applyLocalStagingTrack, StagingTrackInput } from "./track";
+import {
+  applyLocalStagingTrack,
+  StagingTrackInput,
+  TrackAssetGrid,
+  TrackAssetGridItem,
+  MultiStagingTrackInput,
+} from "./track";
+import { AssetGrid } from "../asset";
+import { AssetGridItem } from "../asset/grid";
 
 /*::
 export type Asset = {
@@ -21,54 +29,49 @@ export type Asset = {
 
 
 export type UploadTrackInputProps = {
-  disabled: boolean,
+  disabled?: boolean,
   stagingTracks: StagingTrack[],
   onStagingTracksChange: (stagingTracks: StagingTrack[]) => mixed,
   onStagingTracksSubmit: (stagingTracks: StagingTrack[], playlistName: ?string) => mixed,
 };
+
+export type LocalTrackData = {
+  track: AudioTrack,
+  imageAsset: ?Asset,
+  audioAsset: Asset
+};
 */
+
+export const useLocalTrackData = (stagingTracks/*: StagingTrack[]*/)/*: LocalTrackData[]*/ => {
+  const [trackData, setTrackData] = useState/*:: <LocalTrackData[]>*/([]);
+  useEffect(() => {
+    const trackData = stagingTracks.map(applyLocalStagingTrack);
+    setTrackData(trackData);
+
+    return () => {
+      for (const { audioAsset, imageAsset } of trackData) {
+        if (imageAsset)
+          URL.revokeObjectURL(imageAsset.url.href)
+        URL.revokeObjectURL(audioAsset.url.href)
+      }
+    }
+  }, [stagingTracks])
+  
+  return trackData;
+}
 
 export const UploadTrackInput/*: Component<UploadTrackInputProps>*/ = ({
   onStagingTracksChange,
-  stagingTracks,
   onStagingTracksSubmit,
+  stagingTracks,
   disabled
 }) => {
-  const onChange = async (e) => {
-    const files = [...e.target.files].reverse();
-    e.target.value = null;
-
-    const nextTracks = await Promise.all(files.map(async (file) => {
-      const metadata = await parseAudioMetadata(file);
-      const { title, albumartist, artist, duration, picture, album } = metadata;
-      return {
-        audioFile: file,
-        imageFile: picture,
-      
-        title,
-        album,
-        artist,
-      
-        trackLengthMs:  duration * 1000,
-      }
-    }));
-    const firstTrack = nextTracks[0];
-    if (firstTrack && firstTrack.album) {
-      setUploadAsPlaylist(true);
-      setPlaylistName(firstTrack.album);
-    }
-    onStagingTracksChange([...stagingTracks, ...nextTracks]);
+  const onStagingTracksAdd = (nextStagingTracks) => {
+    onStagingTracksChange([...stagingTracks, ...nextStagingTracks]);
   }
-  
-  const onSubmit = async (e) => {
-    e.preventDefault();
-    setPlaylistName('');
-    setUploadAsPlaylist(false);
-    onStagingTracksSubmit(stagingTracks, uploadAsPlaylist ? playlistName : null)
+  const onSubmitStagingTracks = async (playlistName) => {
+    onStagingTracksSubmit(stagingTracks, playlistName)
   }
-
-  const [uploadAsPlaylist, setUploadAsPlaylist] = useState(false) 
-  const [playlistName, setPlaylistName] = useState('') 
 
   const [trackData, setTrackData] = useState/*:: <{ track: AudioTrack, imageAsset: ?Asset, audioAsset: Asset }[]>*/([]);
   useEffect(() => {
@@ -84,21 +87,49 @@ export const UploadTrackInput/*: Component<UploadTrackInputProps>*/ = ({
     }
   }, [stagingTracks])
 
-  const assets = trackData
-    .map(({ audioAsset, imageAsset }) => [imageAsset, audioAsset])
-    .flat(1)
-    .filter(Boolean);
-  const tracks = trackData.
-    map(({ track }) => track);
-
-  const [editingTrackIndex, setEditingTrackIndex] = useState(-1); 
-  const onSelect = (selection) => {
-    setEditingTrackIndex(tracks.findIndex(track => track.id === selection[0]))
+  const [selectionIndices, setSelectionIndices] = useState([]);
+  const onGridClick = (event) => {
+    if (event.defaultPrevented)
+      return;
+    setSelectionIndices([])
+  }
+  const onSelect = (trackId, event) => {
+    event.preventDefault()
+    const index = trackData.findIndex(data => data.track.id === trackId);
+    if (event.shiftKey)
+      setSelectionIndices(s => [...s, index]);
+    else
+      setSelectionIndices([index]);
   };
-  const editingTrack = stagingTracks[editingTrackIndex];
+  
   const onTrackChange = (nextTrack) => {
-    onStagingTracksChange(stagingTracks.map((track, i) => i === editingTrackIndex ? nextTrack : track))
+    onStagingTracksChange(stagingTracks.map((track, i) => i === selectionIndices[0] ? nextTrack : track))
   };
+  const onTracksChange = (mapNextTrack) => {
+    onStagingTracksChange(stagingTracks.map((track, i) => selectionIndices.includes(i) ? mapNextTrack(track) : track))
+  }
+
+  return [
+    h(UploadTrackControls, { stagedTrackCount: trackData.length, onStagingTracksAdd, onSubmitStagingTracks }),
+    h(TrackAssetGrid, { onClick: onGridClick }, [
+      trackData.map(({ track, audioAsset, imageAsset }, index) =>
+        h(TrackAssetGridItem, {
+          track,
+          selected: selectionIndices.includes(index),
+          coverImageURL: imageAsset && imageAsset.url,
+          onClick: e => onSelect(track.id, e)
+        }))
+    ]),
+    selectionIndices.length < 2
+    ? selectionIndices.length === 1 &&
+        h(StagingTrackInput, { track: stagingTracks[selectionIndices[0]], onTrackChange, selected: true })
+    : h(MultiStagingTrackInput, { tracks: selectionIndices.map(i => stagingTracks[i]), onTracksChange }),
+  ];
+}
+
+export const UploadTrackControls = ({ stagedTrackCount, onStagingTracksAdd, onSubmitStagingTracks }) => {
+  const [uploadAsPlaylist, setUploadAsPlaylist] = useState(false) 
+  const [playlistName, setPlaylistName] = useState('');
 
   const fileInputRef = useRef();
   const onUploadClick = () => {
@@ -107,37 +138,55 @@ export const UploadTrackInput/*: Component<UploadTrackInputProps>*/ = ({
       return;
     fileInput.click();
   }
-  const selection = [tracks[editingTrackIndex] && tracks[editingTrackIndex].id]
+  const onSubmit = (e) => {
+    e.preventDefault();
+    onSubmitStagingTracks(uploadAsPlaylist ? playlistName : '');
+  }
 
-  return [
-    //isUploading && h('progress', { value: uploadProgress, min: 0, max: 1, step: 0.01, style: { width: '100%', display: 'block' } }),
-    h('form', { onSubmit, disabled }, [
-      h('h3', {}, 'Upload Tracks'),
-      h(TracksLibrary, { assets, onSelect, selection, tracks }, [
-        h('div', { style: { margin: '4px' } }, [
-          h('div', { style: { display: 'flex', flexDirection: 'row', justifyContent: 'center' } }, [
-            h('input', { disabled, type: 'submit', value: `Upload ${stagingTracks.length} tracks` }),
-            h('button', { type: 'button', disabled, onClick: onUploadClick }, 'Add Files to Upload'),
-            h('input', { ref: fileInputRef, style: { display: 'none' }, type: 'file', multiple: true, accept: 'audio/*', files: null, onChange }),
-          ]),
-          h('div', { style: { display: 'flex', flexDirection: 'row', justifyContent: 'center' }}, [
-            h('label', { style: { marginRight: '12px' } }, [
-              h('span', {}, 'Upload tracks as Playlist'),
-              h('input', { disabled, type: 'checkbox', checked: uploadAsPlaylist, onChange: e => setUploadAsPlaylist(e.target.checked) })
-            ]),
-            h('label', {}, [
-              h('span', { style: { marginRight: '12px' } }, 'Playlist Name'),
-              h('input', { disabled: !uploadAsPlaylist || disabled, type: 'text', value: playlistName, onInput: e => setPlaylistName(e.target.value) })
-            ]),
-          ]),
-        ]),
+  const onChange = async (e) => {
+    e.preventDefault();
+    const files = [...e.target.files];
+    e.target.files = null;
+
+    const stagingTracks = await Promise.all(files.map(async (file) => {
+      const metadata = await parseAudioMetadata(file);
+      const { title, albumartist, artist, duration, picture, album } = metadata;
+      return {
+        audioFile: file,
+        imageFile: picture,
+      
+        title,
+        album,
+        artist,
+      
+        trackLengthMs:  duration * 1000,
+      }
+    }));
+    const firstTrack = stagingTracks[0];
+    if (firstTrack && firstTrack.album) {
+      setUploadAsPlaylist(true);
+      setPlaylistName(firstTrack.album);
+    }
+    onStagingTracksAdd(stagingTracks);
+  }
+
+  return h('form', { classList: [styles.trackUploadControls], onSubmit }, [
+    h('div', { classList: [styles.trackUploadSubmitControls] }, [
+      h('input', { type: 'submit', value: `Upload ${stagedTrackCount} tracks` }),
+      h('button', { type: 'button', onClick: onUploadClick }, 'Add Files to Upload'),
+      h('input', { type: 'file', ref: fileInputRef, style: { display: 'none' }, multiple: true, accept: 'audio/*', onChange }),
+    ]),
+    h('div', { classList: [styles.trackUploadPlaylistControls] }, [
+      h('label', { style: { marginRight: '12px' } }, [
+        h('span', {}, 'Upload tracks as Playlist'),
+        h('input', { type: 'checkbox', checked: uploadAsPlaylist, onChange: e => setUploadAsPlaylist(e.target.checked) })
       ]),
-    ]),
-    editingTrack && h('form', { onSubmit: e => e.preventDefault() }, [
-      h('h3', {}, 'Edit Selected'),
-       h(StagingTrackInput, { track: editingTrack, onTrackChange })
-    ]),
-  ];
+      h('label', {}, [
+        h('span', { style: { marginRight: '12px' } }, 'Playlist Name'),
+        h('input', { disabled: !uploadAsPlaylist, type: 'text', value: playlistName, onInput: e => setPlaylistName(e.target.value) })
+      ]),
+    ])
+  ]);
 }
 
 /*::

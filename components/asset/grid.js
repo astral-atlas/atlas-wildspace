@@ -7,12 +7,17 @@ import styles from './index.module.css';
 /*::
 export type AssetGridrops = {
   classList?: string[],
-  style?: { [string]: mixed }
+  style?: { [string]: mixed },
+  [string]: mixed
 }
 */
 
-export const AssetGrid/*: Component<AssetGridItemProps>*/ = ({ children, style }) => {
-  return h('ul', { classList: [styles.assetGrid], style }, [
+export const AssetGrid/*: Component<AssetGridItemProps>*/ = ({
+  children, style,
+  classList = [],
+  ...props
+}) => {
+  return h('ul', { ...props, classList: [styles.assetGrid, ...classList], style }, [
     children
   ]);
 };
@@ -20,14 +25,15 @@ export const AssetGrid/*: Component<AssetGridItemProps>*/ = ({ children, style }
 /*::
 export type AssetGridItemProps = {
   classList?: string[],
-  style?: { [string]: mixed }
+  style?: { [string]: mixed },
+  [string]: mixed
 }
 */
 
 export const AssetGridItem/*: Component<AssetGridItemProps>*/ = ({
-  children, classList = [], style = {}
+  children, classList = [], style = {}, ...props
 }) => {
-  return h('li', { classList: [styles.assetGridItem, ...classList], style }, [
+  return h('li', { ...props, classList: [styles.assetGridItem, ...classList], style }, [
     children
   ])
 };

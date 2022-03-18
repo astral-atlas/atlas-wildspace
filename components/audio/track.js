@@ -1,12 +1,15 @@
 // @flow strict
 /*::
-import type { AudioTrack, AudioPlaylistState, AssetID } from "@astral-atlas/wildspace-models";
+import type { AudioTrack, AudioTrackID, AudioPlaylistState, AssetID } from "@astral-atlas/wildspace-models";
 import type { Component } from '@lukekaalim/act';
 
 import type { PlaybackData } from "./player";
+import type { Asset } from "./upload";
 */
 import { h, useEffect, useRef } from '@lukekaalim/act';
+import parseAudioMetadata from 'parse-audio-metadata';
 import { v4 as uuid } from 'uuid';
+import { AssetGrid, AssetGridItem } from '../asset';
 import styles from './index.module.css';
 
 /*::
@@ -138,9 +141,49 @@ export const StagingTrackInput/*: Component<StagingTrackInputProps>*/ = ({ track
   const onTitleInput = (e) => {
     onTrackChange({ ...track, title: e.target.value });
   }
+  const onAlbumInput = (e) => {
+    onTrackChange({ ...track, album: e.target.value });
+  }
+  const onArtistInput = (e) => {
+    onTrackChange({ ...track, artist: e.target.value });
+  }
+  const onAudioFileInput = async (e) => {
+    const file = e.target.files[0];
+    const { duration } = await parseAudioMetadata(file);
+    onTrackChange({ ...track, audioFile: file, trackLengthMs: duration * 1000 })
+  }
+  const onImageFileInput = (e) => {
+    onTrackChange({ ...track, imageFile: e.target.files[0] })
+  }
+  console.log(track);
   return [
     h('form', {}, [
-      h('input', { type: 'text', value: track.title, onInput: onTitleInput })
+      h('input', { type: 'text', value: track.title, onInput: onTitleInput }),
+      h('input', { type: 'text', value: track.album, onInput: onAlbumInput }),
+      h('input', { type: 'text', value: track.artist, onInput: onArtistInput }),
+      h('label', {}, [
+        `Audio`,
+        h('input', { type: 'file', accept: 'audio/*', onInput: onAudioFileInput }),
+      ]),
+      h('label', {}, [
+        `Image`,
+        h('input', { type: 'file', accept: 'image/*', onInput: onImageFileInput }),
+      ]),
+    ])
+  ]
+}
+
+export const MultiStagingTrackInput = ({ tracks, onTracksChange }) => {
+
+  const onImageFileInput = (e) => {
+    onTracksChange(track => ({ ...track, imageFile: e.target.files[0] }));
+  }
+  return [
+    h('form', {}, [
+      h('label', {}, [
+        `Image`,
+        h('input', { type: 'file', accept: 'image/*', onInput: onImageFileInput }),
+      ]),
     ])
   ]
 }
@@ -171,4 +214,58 @@ export const applyLocalStagingTrack = (
     trackAudioAssetId: audioAsset.id,
   };
   return { track, audioAsset, imageAsset }
+}
+
+export const TrackAssetGridItem/*: Component<>*/ = ({ track, coverImageURL, onClick, selected }) => {
+  const { title, artist } = track;
+
+  return h(AssetGridItem, { classList: [styles.trackGridItem, selected && styles.selected], onClick }, [
+    !!coverImageURL && h('img', { src: coverImageURL.href }),
+    h('div', {}, [
+      h('p', { class: styles.trackInfoTitle }, track.title),
+      !!track.artist && h('p', {}, `${track.artist}`),
+      h('p', {}, `${track.trackLengthMs/1000}s`),
+    ])
+  ]);
+}
+
+/*::
+export type TrackAssetGridProps = {
+  tracks: AudioTrack[],
+  assets: Asset[],
+  selected: AudioTrackID[],
+  onSelect: AudioTrackID[] => mixed,
+  style?: { [string]: mixed },
+  [string]: mixed,
+};
+*/
+
+export const TrackAssetGrid/*: Component<TrackAssetGridProps>*/ = ({
+  selected,
+  onSelect,
+  assets,
+  tracks,
+  style,
+  ...props
+}) => {
+  const onTrackClick = (trackId) => (event) => {
+    if (event.shiftKey)
+      onSelect([...selected, trackId]);
+    else
+      onSelect([trackId]);
+  };
+  return h(AssetGrid, { ...props, style, classList: [styles.trackGrid] },
+    tracks.map((track) =>
+      h(TrackAssetGridItem, {
+        track,
+        selected: selected.includes(track.id),
+        coverImageURL:
+          track.coverImageAssetId &&
+          assets
+            .filter(asset => asset.id === track.coverImageAssetId)
+            .map(asset => asset.url)
+            [0],
+        onClick: onTrackClick(track.id)
+      }))
+  );
 }

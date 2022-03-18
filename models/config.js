@@ -1,8 +1,9 @@
 // @flow strict
 /*:: import type { ServiceProof } from "@astral-atlas/sesame-models"; */
-/*:: import type { Cast } from "@lukekaalim/cast"; */
+/*:: import type { User } from "@astral-atlas/sesame-models/src/user";
+import type { Cast } from "@lukekaalim/cast"; */
 
-import { castServiceProof } from "@astral-atlas/sesame-models";
+import { castServiceProof, castUser } from "@astral-atlas/sesame-models";
 import { castNumber, createObjectCaster, castString, c } from "@lukekaalim/cast";
 
 /*::
@@ -19,16 +20,24 @@ export type AssetConfig =
   | AWSS3AssetConfig
   | MemoryAssetConfig
 
+export type SesameAPIAuthConfig = {|
+  type: 'sesame',
+  origin: string,
+  proof: ServiceProof,
+|};
+export type FakeAuthConfig = {|
+  type: 'fake',
+  user: User,
+|};
+export type AuthConfig =
+  | SesameAPIAuthConfig
+  | FakeAuthConfig
+
 export type APIConfig = {
   port: number,
   data: DataConfig,
   asset: AssetConfig,
-  api: {
-    sesame: {
-      origin: string,
-      proof: ServiceProof,
-    }
-  }
+  auth: AuthConfig,
 };
 */
 
@@ -47,16 +56,25 @@ export const castAssetConfig/*: Cast<AssetConfig>*/ = c.or('type', {
   'memory': castMemoryAssetConfig,
 });
 
+export const castFakeAuthConfig/*: Cast<FakeAuthConfig>*/ = c.obj({
+  type: c.lit('fake'),
+  user: castUser,
+});
+export const castSesameAPIAuthConfig/*: Cast<SesameAPIAuthConfig>*/ = c.obj({
+  type: c.lit('sesame'),
+  origin: c.str,
+  proof: castServiceProof,
+});
+export const castAuthConfig/*: Cast<AuthConfig>*/ = c.or('type', {
+  fake: castFakeAuthConfig,
+  sesame: castSesameAPIAuthConfig,
+});
+
 export const castAPIConfig/*: Cast<APIConfig>*/ = createObjectCaster({
   port: castNumber,
   data: castDataConfig,
   asset: castAssetConfig,
-  api: c.obj({
-    sesame: c.obj({
-      origin: c.str,
-      proof: castServiceProof
-    })
-  })
+  auth: castAuthConfig,
 });
 
 /*::

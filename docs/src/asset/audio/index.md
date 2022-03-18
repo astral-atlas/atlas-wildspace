@@ -6,16 +6,16 @@ is managed by the AudioAssetLibrary.
 ## Concepts
 
 ### AudioTrack
-An AudioTrack represents
+An AudioTrack represents a set-length piece of audio content with
+a name (and optionally a cover image).
 
 ### AudioPlaylist
-
+A playlist is a array of tracks in a specific order.
 ### AudioPlaylistState
-
+A playlist state describes how far through a playlist you are.
 ## AudioAssetLibrary
 
-
-::demo{name=player}
+::demo{name=library}
 
 ## TODO
 

@@ -7,12 +7,14 @@
   grid-auto-rows: max(8vw, 100px);
 
   justify-content: center;
-  overflow-y: scroll;
+  overflow-y: auto;
 
   padding: 0;
 }
 
 .assetGridItem {
   list-style: none;
-  
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
 }

@@ -3,9 +3,10 @@
 /*:: import type { AudioPlaylistState, AudioTrack, AudioPlaylist } from '@astral-atlas/wildspace-models'; */
 
 import {
+  AudioAssetLibrary,
   calculateTrackDataSums, RoomAudioPlayer,
   usePlaybackData, PlaylistTrackControl,
-  TrackUploadInfo, AudioLibrary, PlaylistEditor, UploadTrackInput, applyLocalStagingTrack, useTrackUploader
+  TrackUploadInfo, AudioLibrary, PlaylistEditor, UploadTrackInput, applyLocalStagingTrack, useTrackUploader, useLocalTrackData
 } from "@astral-atlas/wildspace-components";
 import { createWildspaceClient } from '@astral-atlas/wildspace-client2';
 import { h, useEffect, useState, useMemo, useRef } from "@lukekaalim/act";
@@ -159,3 +160,25 @@ export const PlayerDemo/*: Component<>*/ = () => {
     h(UploadTrackInput, { onStagingTracksChange: t => setStagingTracks(t), stagingTracks, onStagingTracksSubmit, disabled: false }),
   ];
 };
+
+export const AudioAssetLibraryDemo/*: Component<>*/ = () => {
+  const ref = useRef();
+  const onClick = () => {
+    ref.current && ref.current.requestFullscreen()
+  }
+  const [tracks, setTracks] = useState([]);
+  const upload = (stagingTracks) => {
+    const data = stagingTracks
+      .map(applyLocalStagingTrack)
+    setTracks([...tracks, ...data.map(d => d.track)])
+  };
+  return [
+    h('button', { onClick }, 'Fullscreen'),
+    h('div', { ref, style: {
+      backgroundColor: 'white',
+      width: '100%', height: '600px',
+      display: 'flex', flexDirection: 'column'
+    } },
+      h(AudioAssetLibrary, { tracks, upload }))
+  ];
+}

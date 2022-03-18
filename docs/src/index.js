@@ -1,7 +1,7 @@
 // @flow strict
 /*:: import type { NavigationLink } from "@lukekaalim/act-rehersal"; */
 /*:: import type { ElementNode } from "@lukekaalim/act"; */
-import { h } from '@lukekaalim/act'; 
+import { Boundary, h } from '@lukekaalim/act'; 
 import { render } from '@lukekaalim/act-three';
 import { Document, Markdown, Rehersal } from '@lukekaalim/act-rehersal';
 import { useRootNavigation, navigationContext } from '@lukekaalim/act-navigation';
