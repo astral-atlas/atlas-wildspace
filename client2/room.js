@@ -2,7 +2,7 @@
 /*:: import type { HTTPClient } from '@lukekaalim/http-client'; */
 /*:: import type { GameID, RoomID, Room, RoomState, RoomUpdate, EncounterState, AudioPlaylistState, EncounterAction } from "@astral-atlas/wildspace-models"; */
 /*:: import type { AssetClient } from './asset.js'; */
-/*:: import type { HTTPServiceClient, WSServiceClient } from './entry.js'; */
+/*:: import type { HTTPServiceClient, WSServiceClient } from './wildspace.js'; */
 
 import { createJSONResourceClient } from '@lukekaalim/http-client';
 import { createJSONConnectionClient } from '@lukekaalim/ws-client';

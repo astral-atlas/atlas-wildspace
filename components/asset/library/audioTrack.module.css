@@ -133,8 +133,10 @@
 }
 
 .trackGrid {
+  overflow-y: scroll;
   flex-grow: 1;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  flex-basis: 0px;
   min-height: 0px;
 }
 
@@ -156,7 +158,6 @@
   flex-direction: column;
 
   transition: border 0.2s;
-  cursor: pointer;
 }
 
 .trackGridItem img {
@@ -170,10 +171,6 @@
 
 .trackGridItem.selected {
   border: 3px solid red;
-}
-.trackGridItem.disabled {
-  opacity: 0.5;
-  cursor: auto;
 }
 
 .trackGridItem div {

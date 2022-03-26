@@ -32,5 +32,8 @@
     "json5": "^2.2.0",
     "uuid": "^8.3.2",
     "ws": "^8.2.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
   }
 }

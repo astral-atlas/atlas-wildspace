@@ -8,7 +8,6 @@ import styles from './index.module.css';
 import { useAnimatedList } from "@lukekaalim/act-curve/array";
 import { useBezierAnimation } from "@lukekaalim/act-curve/bezier";
 import throttle from 'lodash.throttle';
-import { AudioLibrary } from "./library";
 
 /*::
 export type PlaylistControlsProps = {
@@ -163,7 +162,7 @@ export const PlaylistEditor/*: Component<PlaylistEditorProps>*/ = ({ playlist, t
       h('div', { class: styles.playlistEditorTrackList }, [
         h(PlaylistControls, { playlist: stagingPlaylist, tracks, renderControls }),
       ]),
-      h(AudioLibrary, { assets, onSelect, playlists: otherPlaylists, selection: { tracks: [...playlist.trackIds], playlists: [] }, tracks })
+      //h(AudioLibrary, { assets, onSelect, playlists: otherPlaylists, selection: { tracks: [...playlist.trackIds], playlists: [] }, tracks })
     ]),
   ];
 }

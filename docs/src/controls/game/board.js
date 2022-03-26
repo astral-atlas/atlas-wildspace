@@ -319,7 +319,7 @@ const BoardLineGrid = ({ board }) => {
 
   return h(Tilemap, {
     mapTexture, tileSize, tilesTexture,
-    color: new Color('black'), opacity: 0.1,
+    color: new Color('red'), opacity: 0.9,
     position: new Vector3(0, 0, 0),
     scale: new Vector3(10, 10, 10)
   });

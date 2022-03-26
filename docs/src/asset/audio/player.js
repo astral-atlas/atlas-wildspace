@@ -3,10 +3,10 @@
 /*:: import type { AudioPlaylistState, AudioTrack, AudioPlaylist } from '@astral-atlas/wildspace-models'; */
 
 import {
-  AudioAssetLibrary,
+  TracksLibrary,
   calculateTrackDataSums, RoomAudioPlayer,
   usePlaybackData, PlaylistTrackControl,
-  TrackUploadInfo, AudioLibrary, PlaylistEditor, UploadTrackInput, applyLocalStagingTrack, useTrackUploader, useLocalTrackData
+  TrackUploadInfo, PlaylistEditor, UploadTrackInput, applyLocalStagingTrack, useTrackUploader, useLocalTrackData, useGameUpdateTimes, useAsync
 } from "@astral-atlas/wildspace-components";
 import { createWildspaceClient } from '@astral-atlas/wildspace-client2';
 import { h, useEffect, useState, useMemo, useRef } from "@lukekaalim/act";
@@ -136,7 +136,7 @@ export const PlayerDemo/*: Component<>*/ = () => {
         ]),
       ])),
     ]),
-    h(AudioLibrary, { playlists, tracks, assets, selection, onSelect }),
+    //h(AudioLibrary, { playlists, tracks, assets, selection, onSelect }),
 
     !!playlist && h(PlaylistEditor, { playlist, tracks, assets, onPlaylistChange, playlists, onDeletePlaylist }),
 
@@ -166,12 +166,23 @@ export const AudioAssetLibraryDemo/*: Component<>*/ = () => {
   const onClick = () => {
     ref.current && ref.current.requestFullscreen()
   }
-  const [tracks, setTracks] = useState([]);
-  const upload = (stagingTracks) => {
-    const data = stagingTracks
-      .map(applyLocalStagingTrack)
-    setTracks([...tracks, ...data.map(d => d.track)])
-  };
+  const [tracksInGame, setTracks] = useState([]);
+  
+  const client = createWildspaceClient(null, 'http://127.0.0.1:5567', 'ws://127.0.0.1:5567');
+  const updateTime = useGameUpdateTimes(client.game, '0');
+  useEffect(() => {
+    client.audio.tracks.list('0')
+      .then(t => setTracks(t));
+  }, [updateTime.tracks])
+  const [loadedAssets] = useAsync(async () => {
+    const assetIds = tracksInGame
+      .map(track => [track.trackAudioAssetId, track.coverImageAssetId].filter(Boolean))
+      .flat(1);
+    const assetsData = await Promise.all(assetIds.map(id => client.asset.peek(id)))
+    return assetsData.map(d => ({ id: d.description.id, url: d.downloadURL }));
+  }, [tracksInGame])
+  const assets = loadedAssets || [];
+
   return [
     h('button', { onClick }, 'Fullscreen'),
     h('div', { ref, style: {
@@ -179,6 +190,12 @@ export const AudioAssetLibraryDemo/*: Component<>*/ = () => {
       width: '100%', height: '600px',
       display: 'flex', flexDirection: 'column'
     } },
-      h(AudioAssetLibrary, { tracks, upload }))
+      h(TracksLibrary, {
+        tracksInGame,
+        assetsInGame: assets,
+        playlistClient: client.audio.playlist,
+        trackClient: client.audio.tracks,
+        gameId: '0'
+      }))
   ];
 }

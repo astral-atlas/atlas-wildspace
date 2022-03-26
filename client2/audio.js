@@ -52,27 +52,24 @@ export const createPlaylistClient = (httpClient/*: HTTPClient*/, httpOrigin/*: s
 };
 
 /*::
-export type AudioClient = {
-  playlist: PlaylistClient,
-  tracks: {
-    create: (
-      gameId: GameID, title: string, artist: ?string, MIMEType: string, trackLengthMs: number, trackData: Uint8Array,
-      options?: ?{ cover?: ?{ mime: string, data: Uint8Array } }  
-    ) =>
-      Promise<{ track: AudioTrack, asset: AssetDescription, trackDownloadURL: URL, coverDownloadURL: ?URL }>,
-    read: (gameId: GameID, trackId: AudioTrackID) =>
-      Promise<{ track: AudioTrack, asset: AssetDescription, trackDownloadURL: URL, coverDownloadURL: ?URL }>,
-    list: (gameId: GameID) => Promise<$ReadOnlyArray<AudioTrack>>,
-    remove: (gameId: GameID, trackId: AudioTrackID) => Promise<void>
-  }
+export type TrackClient = {
+  create: (
+    gameId: GameID, title: string, artist: ?string, MIMEType: string, trackLengthMs: number, trackData: Uint8Array,
+    options?: { cover?: ?{ mime: string, data: Uint8Array } }  
+  ) =>
+    Promise<{ track: AudioTrack, asset: AssetDescription, trackDownloadURL: URL, coverDownloadURL: ?URL }>,
+  read: (gameId: GameID, trackId: AudioTrackID) =>
+    Promise<{ track: AudioTrack, asset: AssetDescription, trackDownloadURL: URL, coverDownloadURL: ?URL }>,
+  list: (gameId: GameID) => Promise<$ReadOnlyArray<AudioTrack>>,
+  remove: (gameId: GameID, trackId: AudioTrackID) => Promise<void>
 };
 */
 
-export const createAudioTracksClient = (httpClient/*: HTTPClient*/, assetClient/*: AssetClient*/, httpOrigin/*: string*/, wsOrigin/*: string*/)/*: AudioClient['tracks']*/ => {
+export const createAudioTracksClient = (httpClient/*: HTTPClient*/, assetClient/*: AssetClient*/, httpOrigin/*: string*/, wsOrigin/*: string*/)/*: TrackClient*/ => {
   const tracksResource = createJSONResourceClient(audioAPI['/tracks'], httpClient, httpOrigin);
   const allTracksResource = createJSONResourceClient(audioAPI['/tracks/all'], httpClient, httpOrigin);
 
-  const create = async (gameId, title, artist, MIMEType, trackLengthMs, data, { cover } = {}) => {
+  const create = async (gameId, title, artist, MIMEType, trackLengthMs, data, { cover } = { cover: null }) => {
     const { description: asset, downloadURL: trackDownloadURL  } = await assetClient.create(`${gameId}/audio/${MIMEType}/${title}`, MIMEType, data);
 
     const coverImageAssetRequest = cover && await assetClient.create(`${gameId}/audio/${MIMEType}/${title}/cover`, cover.mime, cover.data);
@@ -112,6 +109,14 @@ export const createAudioTracksClient = (httpClient/*: HTTPClient*/, assetClient/
     remove,
   };
 };
+
+
+/*::
+export type AudioClient = {
+  playlist: PlaylistClient,
+  tracks: TrackClient
+};
+*/
 
 export const createAudioClient = (httpClient/*: HTTPClient*/, assetClient/*: AssetClient*/, httpOrigin/*: string*/, wsOrigin/*: string*/)/*: AudioClient*/ => {
   return {

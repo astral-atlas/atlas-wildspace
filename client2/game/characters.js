@@ -1,7 +1,7 @@
 // @flow strict
 /*:: import type { UserID } from '@astral-atlas/sesame-models'; */
 /*:: import type { Character, CharacterID, GameID } from '@astral-atlas/wildspace-models'; */
-/*:: import type { HTTPServiceClient } from '../entry.js'; */
+/*:: import type { HTTPServiceClient } from '../wildspace.js'; */
 import { charactersAPI } from "@astral-atlas/wildspace-models";
 
 /*::

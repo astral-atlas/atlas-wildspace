@@ -24,7 +24,7 @@ export const AssetGrid/*: Component<AssetGridItemProps>*/ = ({
 
 /*::
 export type AssetGridItemProps = {
-  classList?: string[],
+  classList?: mixed[],
   style?: { [string]: mixed },
   [string]: mixed
 }

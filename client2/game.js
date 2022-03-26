@@ -3,7 +3,7 @@
 /*:: import type { UserID } from "@astral-atlas/sesame-models"; */
 /*:: import type { GameID, Game, GameUpdate } from "@astral-atlas/wildspace-models"; */
 /*:: import type { AssetClient } from './asset.js'; */
-/*:: import type { HTTPServiceClient, WSServiceClient } from './entry.js'; */
+/*:: import type { HTTPServiceClient, WSServiceClient } from './wildspace.js'; */
 
 /*:: import type { CharacterClient } from './game/characters.js'; */
 /*:: import type { PlayersClient } from './game/players.js'; */

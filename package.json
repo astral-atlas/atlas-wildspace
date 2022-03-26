@@ -10,9 +10,11 @@
     "components",
     "book",
     "costume",
-    "docs"
+    "docs",
+    "task"
   ],
   "devDependencies": {
+    "concurrently": "^7.0.0",
     "flow-bin": "^0.173.0"
   },
   "scripts": {

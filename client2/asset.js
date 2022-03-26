@@ -2,7 +2,7 @@
 
 /*:: import type { HTTPClient } from '@lukekaalim/http-client'; */
 /*:: import type { AssetID, AssetDescription } from "@astral-atlas/wildspace-models"; */
-/*:: import type { HTTPServiceClient, WSServiceClient } from './entry.js'; */
+/*:: import type { HTTPServiceClient, WSServiceClient } from './wildspace.js'; */
 import { assetAPI } from '@astral-atlas/wildspace-models';
 import { createJSONResourceClient } from '@lukekaalim/http-client';
 

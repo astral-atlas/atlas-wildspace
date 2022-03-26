@@ -22,3 +22,6 @@ export * from './preview/inputs.js';
 
 export * from './audio/index.js';
 export * from './asset/index.js';
+export * from './editor/index.js';
+
+export * from './utils/index.js';

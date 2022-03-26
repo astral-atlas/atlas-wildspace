@@ -1,0 +1,47 @@
+.editorForm {
+  display: flex;
+  flex-direction: column;
+
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.editorFormSubmit {
+  font-size: inherit;
+  margin: 8px;
+}
+
+.editorRoot {
+  margin: 8px;
+}
+
+label.editorRoot {
+  display: flex;
+  flex-direction: column;
+}
+label.editorRoot span {
+  display: flex;
+  flex-direction: row;
+}
+
+.editorRoot input, .editorRoot select, button.editorRoot {
+  font-size: inherit;
+}
+.editorRoot input[type=text] {
+  padding: 4px;
+}
+.editorRoot input[type=checkbox] {
+  height: 1em;
+  width: 1em;
+}
+
+.editorHorizontalSection {
+  overflow-x: auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+/*
+input.editorRoot {
+  
+}
+*/

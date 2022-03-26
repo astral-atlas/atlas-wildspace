@@ -39,11 +39,21 @@ export const createHTTPServiceJSONClient = (httpOrigin/*: string*/, httpClient/*
   };
   return { createResource, httpClient: authorizedClient };
 }
-export const createWSServiceJSONClient  = (wsOrigin/*: string*/, websocket/*: Class<WebSocket>*/, proof/*: ?LinkProof*/)/*: WSServiceClient*/ => {
-  const createConnection = /*:: <T>*/(desc) => {
+export const createWSServiceJSONClient  = (
+  wsOrigin/*: string*/,
+  websocket/*: Class<WebSocket>*/,
+  proof/*: ?LinkProof*/
+)/*: WSServiceClient*/ => {
+
+  const createConnection = /*:: <T: Connection<>>*/(
+    desc/*: ConnectionDescription<T>*/
+  )/*: ClientConnection<T>*/ => {
     return createJSONConnectionClient(websocket, desc, wsOrigin);
   };
-  const createAuthorizedConnection =  /*:: <T>*/(desc) => {
+
+  const createAuthorizedConnection =  /*:: <T: Connection<any>>*/(
+    desc/*: ConnectionDescription<AuthorizedConnection<T>>*/
+  )/*: ClientConnection<T>*/ => {
     const connection = createJSONConnectionClient(websocket, desc, wsOrigin);
     const connect = async (options) => {
       const c = await connection.connect(options);
@@ -55,7 +65,6 @@ export const createWSServiceJSONClient  = (wsOrigin/*: string*/, websocket/*: Cl
     return { connect }
   }
   return { createConnection, createAuthorizedConnection };
-
 }
 
 /*::

@@ -122,6 +122,7 @@ export const TrackUploadInfo/*: Component<TrackUploadInfoProps>*/ = ({ file, onI
 
 /*::
 export type StagingTrack = {
+  id: AudioTrackID,
   audioFile: File,
   imageFile: ?Blob,
 
@@ -155,7 +156,6 @@ export const StagingTrackInput/*: Component<StagingTrackInputProps>*/ = ({ track
   const onImageFileInput = (e) => {
     onTrackChange({ ...track, imageFile: e.target.files[0] })
   }
-  console.log(track);
   return [
     h('form', {}, [
       h('input', { type: 'text', value: track.title, onInput: onTitleInput }),
@@ -173,20 +173,6 @@ export const StagingTrackInput/*: Component<StagingTrackInputProps>*/ = ({ track
   ]
 }
 
-export const MultiStagingTrackInput = ({ tracks, onTracksChange }) => {
-
-  const onImageFileInput = (e) => {
-    onTracksChange(track => ({ ...track, imageFile: e.target.files[0] }));
-  }
-  return [
-    h('form', {}, [
-      h('label', {}, [
-        `Image`,
-        h('input', { type: 'file', accept: 'image/*', onInput: onImageFileInput }),
-      ]),
-    ])
-  ]
-}
 /*::
 export type LocalAsset = {
   id: AssetID,
@@ -194,7 +180,7 @@ export type LocalAsset = {
 };
 */
 export const applyLocalStagingTrack = (
-  { imageFile, audioFile, title, artist, trackLengthMs }/*: StagingTrack*/
+  { id, imageFile, audioFile, title, artist, trackLengthMs }/*: StagingTrack*/
 )/*: { track: AudioTrack, imageAsset: ?LocalAsset, audioAsset: LocalAsset }*/ => {
   const imageAsset = imageFile && {
     id: uuid(),
@@ -205,7 +191,7 @@ export const applyLocalStagingTrack = (
     url: new URL(URL.createObjectURL(audioFile))
   };
   const track = {
-    id: uuid(),
+    id,
     trackLengthMs,
     title,
     artist,
@@ -216,56 +202,54 @@ export const applyLocalStagingTrack = (
   return { track, audioAsset, imageAsset }
 }
 
-export const TrackAssetGridItem/*: Component<>*/ = ({ track, coverImageURL, onClick, selected }) => {
-  const { title, artist } = track;
+/*::
+export type TrackAssetGridItemProps = {
+  style?: { [string]: mixed },
+  track: AudioTrack,
+  coverImageURL?: ?URL,
+  onClick?: (event: MouseEvent) => mixed,
+  onDblClick?: (event: MouseEvent) => mixed,
+  selected?: boolean,
+  disabled?: boolean,
+  loading?: boolean,
+  [string]: mixed,
+};
+*/
 
-  return h(AssetGridItem, { classList: [styles.trackGridItem, selected && styles.selected], onClick }, [
+export const TrackAssetGridItem/*: Component<TrackAssetGridItemProps>*/ = ({
+  track, coverImageURL, onClick, onDblClick, selected, disabled, loading
+}) => {
+  const { title, artist, trackLengthMs } = track;
+  const classList = [
+    styles.trackGridItem,
+    selected && styles.selected,
+    disabled && styles.disabled
+  ]
+  return h(AssetGridItem, { classList, onClick, onDblClick }, [
     !!coverImageURL && h('img', { src: coverImageURL.href }),
+    !!loading && h('progress'),
     h('div', {}, [
-      h('p', { class: styles.trackInfoTitle }, track.title),
-      !!track.artist && h('p', {}, `${track.artist}`),
-      h('p', {}, `${track.trackLengthMs/1000}s`),
-    ])
+      h('p', { class: styles.trackInfoTitle }, title),
+      !!artist && h('p', {}, `${artist}`),
+      h('p', {}, `${trackLengthMs/1000}s`),
+    ]),
   ]);
 }
 
 /*::
 export type TrackAssetGridProps = {
-  tracks: AudioTrack[],
-  assets: Asset[],
-  selected: AudioTrackID[],
-  onSelect: AudioTrackID[] => mixed,
   style?: { [string]: mixed },
   [string]: mixed,
 };
 */
 
 export const TrackAssetGrid/*: Component<TrackAssetGridProps>*/ = ({
-  selected,
-  onSelect,
-  assets,
-  tracks,
   style,
+  children,
   ...props
 }) => {
-  const onTrackClick = (trackId) => (event) => {
-    if (event.shiftKey)
-      onSelect([...selected, trackId]);
-    else
-      onSelect([trackId]);
-  };
-  return h(AssetGrid, { ...props, style, classList: [styles.trackGrid] },
-    tracks.map((track) =>
-      h(TrackAssetGridItem, {
-        track,
-        selected: selected.includes(track.id),
-        coverImageURL:
-          track.coverImageAssetId &&
-          assets
-            .filter(asset => asset.id === track.coverImageAssetId)
-            .map(asset => asset.url)
-            [0],
-        onClick: onTrackClick(track.id)
-      }))
+  return h(AssetGrid,
+    { ...props, style, classList: [styles.trackGrid] },
+    children,
   );
 }

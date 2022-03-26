@@ -4,7 +4,6 @@ import type { Component } from '@lukekaalim/act';
 import type { AudioTrack, AssetID, } from '@astral-atlas/wildspace-models';
 import type { StagingTrack } from './track.js';
 */
-import { TracksLibrary } from "./library";
 import { h, useEffect, useRef, useState } from '@lukekaalim/act';
 
 import { v4 as uuid } from 'uuid';
@@ -16,10 +15,18 @@ import {
   StagingTrackInput,
   TrackAssetGrid,
   TrackAssetGridItem,
-  MultiStagingTrackInput,
 } from "./track";
 import { AssetGrid } from "../asset";
 import { AssetGridItem } from "../asset/grid";
+import {
+  EditorButton,
+  EditorCheckboxInput,
+  EditorForm,
+  EditorFormSubmit,
+  EditorHorizontalSection,
+  EditorTextInput,
+  FilesButtonEditor,
+} from "../editor/form";
 
 /*::
 export type Asset = {
@@ -60,98 +67,20 @@ export const useLocalTrackData = (stagingTracks/*: StagingTrack[]*/)/*: LocalTra
   return trackData;
 }
 
-export const UploadTrackInput/*: Component<UploadTrackInputProps>*/ = ({
-  onStagingTracksChange,
-  onStagingTracksSubmit,
-  stagingTracks,
-  disabled
-}) => {
-  const onStagingTracksAdd = (nextStagingTracks) => {
-    onStagingTracksChange([...stagingTracks, ...nextStagingTracks]);
-  }
-  const onSubmitStagingTracks = async (playlistName) => {
-    onStagingTracksSubmit(stagingTracks, playlistName)
-  }
-
-  const [trackData, setTrackData] = useState/*:: <{ track: AudioTrack, imageAsset: ?Asset, audioAsset: Asset }[]>*/([]);
-  useEffect(() => {
-    const trackData = stagingTracks.map(applyLocalStagingTrack);
-    setTrackData(trackData);
-
-    return () => {
-      for (const { audioAsset, imageAsset } of trackData) {
-        if (imageAsset)
-          URL.revokeObjectURL(imageAsset.url.href)
-        URL.revokeObjectURL(audioAsset.url.href)
-      }
-    }
-  }, [stagingTracks])
-
-  const [selectionIndices, setSelectionIndices] = useState([]);
-  const onGridClick = (event) => {
-    if (event.defaultPrevented)
-      return;
-    setSelectionIndices([])
-  }
-  const onSelect = (trackId, event) => {
-    event.preventDefault()
-    const index = trackData.findIndex(data => data.track.id === trackId);
-    if (event.shiftKey)
-      setSelectionIndices(s => [...s, index]);
-    else
-      setSelectionIndices([index]);
-  };
-  
-  const onTrackChange = (nextTrack) => {
-    onStagingTracksChange(stagingTracks.map((track, i) => i === selectionIndices[0] ? nextTrack : track))
-  };
-  const onTracksChange = (mapNextTrack) => {
-    onStagingTracksChange(stagingTracks.map((track, i) => selectionIndices.includes(i) ? mapNextTrack(track) : track))
-  }
-
-  return [
-    h(UploadTrackControls, { stagedTrackCount: trackData.length, onStagingTracksAdd, onSubmitStagingTracks }),
-    h(TrackAssetGrid, { onClick: onGridClick }, [
-      trackData.map(({ track, audioAsset, imageAsset }, index) =>
-        h(TrackAssetGridItem, {
-          track,
-          selected: selectionIndices.includes(index),
-          coverImageURL: imageAsset && imageAsset.url,
-          onClick: e => onSelect(track.id, e)
-        }))
-    ]),
-    selectionIndices.length < 2
-    ? selectionIndices.length === 1 &&
-        h(StagingTrackInput, { track: stagingTracks[selectionIndices[0]], onTrackChange, selected: true })
-    : h(MultiStagingTrackInput, { tracks: selectionIndices.map(i => stagingTracks[i]), onTracksChange }),
-  ];
-}
-
-export const UploadTrackControls = ({ stagedTrackCount, onStagingTracksAdd, onSubmitStagingTracks }) => {
+const UploadTrackControls = ({ stagedTrackCount, onStagingTracksAdd, onSubmitStagingTracks }) => {
   const [uploadAsPlaylist, setUploadAsPlaylist] = useState(false) 
   const [playlistName, setPlaylistName] = useState('');
 
-  const fileInputRef = useRef();
-  const onUploadClick = () => {
-    const { current: fileInput } = fileInputRef;
-    if (!fileInput)
-      return;
-    fileInput.click();
-  }
-  const onSubmit = (e) => {
-    e.preventDefault();
-    onSubmitStagingTracks(uploadAsPlaylist ? playlistName : '');
+  const onEditorSubmit = (e) => {
+    onSubmitStagingTracks(uploadAsPlaylist ? playlistName : null);
   }
 
-  const onChange = async (e) => {
-    e.preventDefault();
-    const files = [...e.target.files];
-    e.target.files = null;
-
+  const onFilesChange = async (files) => {
     const stagingTracks = await Promise.all(files.map(async (file) => {
       const metadata = await parseAudioMetadata(file);
       const { title, albumartist, artist, duration, picture, album } = metadata;
       return {
+        id: uuid(),
         audioFile: file,
         imageFile: picture,
       
@@ -170,22 +99,24 @@ export const UploadTrackControls = ({ stagedTrackCount, onStagingTracksAdd, onSu
     onStagingTracksAdd(stagingTracks);
   }
 
-  return h('form', { classList: [styles.trackUploadControls], onSubmit }, [
-    h('div', { classList: [styles.trackUploadSubmitControls] }, [
-      h('input', { type: 'submit', value: `Upload ${stagedTrackCount} tracks` }),
-      h('button', { type: 'button', onClick: onUploadClick }, 'Add Files to Upload'),
-      h('input', { type: 'file', ref: fileInputRef, style: { display: 'none' }, multiple: true, accept: 'audio/*', onChange }),
+  return h(EditorForm, { onEditorSubmit }, [
+    h(EditorHorizontalSection, {}, [
+      h(EditorFormSubmit, { label: `Upload ${stagedTrackCount} tracks` }),
+      h(FilesButtonEditor, { label: `Add Files to Upload`, multiple: true, accept: 'audio/*', onFilesChange })
     ]),
-    h('div', { classList: [styles.trackUploadPlaylistControls] }, [
-      h('label', { style: { marginRight: '12px' } }, [
-        h('span', {}, 'Upload tracks as Playlist'),
-        h('input', { type: 'checkbox', checked: uploadAsPlaylist, onChange: e => setUploadAsPlaylist(e.target.checked) })
-      ]),
-      h('label', {}, [
-        h('span', { style: { marginRight: '12px' } }, 'Playlist Name'),
-        h('input', { disabled: !uploadAsPlaylist, type: 'text', value: playlistName, onInput: e => setPlaylistName(e.target.value) })
-      ]),
-    ])
+    h(EditorHorizontalSection, {}, [
+      h(EditorCheckboxInput, {
+        checked: uploadAsPlaylist,
+        onCheckedChange: setUploadAsPlaylist,
+        label: `Upload tracks as Playlist`
+      }),
+      h(EditorTextInput, {
+        disabled: !uploadAsPlaylist,
+        text: playlistName,
+        onTextChange: name => setPlaylistName(name),
+        label: `Playlist Name`
+      }),
+    ]),
   ]);
 }
 
