@@ -1,13 +1,23 @@
 // @flow strict
 /*::
 import type { Component, ElementNode, Ref } from '@lukekaalim/act';
-import type { AudioPlaylist, AudioTrack, AssetID } from "@astral-atlas/wildspace-models";
+import type {
+  AudioPlaylist, AudioPlaylistID,
+  AudioTrack, AudioTrackID,
+  AssetID
+} from "@astral-atlas/wildspace-models";
+
+import type { LocalAsset } from "./track";
+import type { SelectionActions } from "../editor/selection";
 */
+import throttle from 'lodash.throttle';
+
 import { h, useEffect, useMemo, useRef, useState } from '@lukekaalim/act';
-import styles from './index.module.css';
 import { useAnimatedList } from "@lukekaalim/act-curve/array";
 import { useBezierAnimation } from "@lukekaalim/act-curve/bezier";
-import throttle from 'lodash.throttle';
+
+import styles from './index.module.css';
+import { AssetGrid, AssetGridItem } from "../asset/grid";
 
 /*::
 export type PlaylistControlsProps = {
@@ -180,4 +190,79 @@ export const PlaylistInfo/*: Component<PlaylistInfoProps>*/ = ({ playlist, track
     coverImageURL && h('img', { src: coverImageURL.href }) || null,
     h('p', {}, playlist.title)
   ])
+}
+
+/*::
+export type PlaylistGridItemProps = {
+  playlist: AudioPlaylist,
+  coverImage?: ?URL,
+  selected?: boolean,
+  disabled?: boolean,
+  onClick?: (event: MouseEvent) => mixed,
+  onDblClick?: (event: MouseEvent) => mixed,
+};
+*/
+export const PlaylistGridItem/*: Component<PlaylistGridItemProps>*/ = ({
+  playlist,
+  coverImage,
+  onClick,
+  onDblClick,
+}) => h(AssetGridItem, {
+  classList: [styles.audioGridItem],
+  onClick,
+  onDblClick
+}, [
+  !!coverImage && h('img', { src: coverImage.href }),
+  h('div', {}, [
+    h('p', { class: styles.audioGridItemInfo }, playlist.title),
+  ]),
+])
+
+/*::
+export type PlaylistGridProps = {
+  playlists: $ReadOnlyArray<AudioPlaylist>,
+  tracks?: $ReadOnlyArray<AudioTrack>,
+  assets?: $ReadOnlyArray<LocalAsset>,
+  
+  selection?: AudioPlaylistID[],
+  disabled?: AudioPlaylistID[],
+
+  select?: SelectionActions<AudioPlaylistID>,
+};
+*/
+
+export const PlaylistGrid/*: Component<PlaylistGridProps>*/ = ({
+  playlists,
+  select,
+  selection = [],
+  tracks = [],
+  assets = []
+}) => {
+  return h(AssetGrid, {
+    classList: [styles.audioGrid],
+    onClick: select && (event => {
+      if (event.target === event.currentTarget)
+       select.replace([])
+    })
+  }, playlists.map(playlist =>
+    h(PlaylistGridItem, {
+      playlist,
+      onClick: select && ((event) => {
+        if (!event.shiftKey)
+          return select.replace([playlist.id]);
+        if (selection.includes(playlist.id))
+          return select.remove([playlist.id]);
+        return select.add([playlist.id]);
+      }),
+      onDblClick: select && ((event) => {
+        if (event.shiftKey)
+          return;
+        select.add(playlists.map(p => p.id));
+      }),
+      selected: selection.includes(playlist.id),
+      coverImage: assets.find(asset =>
+        asset.id ===
+        tracks.find(track => track.id === playlist.trackIds[0])?.coverImageAssetId
+      )?.url
+    })))
 }

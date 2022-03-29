@@ -7,6 +7,8 @@
 [lints]
 
 [options]
+module.name_mapper.extension='module.css' -> '<PROJECT_ROOT>/flow-stubs/vite_css_module.js'
+
 module.name_mapper.extension='md' -> '<PROJECT_ROOT>/flow-stubs/vite_string.js'
 module.name_mapper.extension='md?raw' -> '<PROJECT_ROOT>/flow-stubs/vite_string.js'
 module.name_mapper.extension='ogg' -> '<PROJECT_ROOT>/flow-stubs/vite_string.js'

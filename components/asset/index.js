@@ -1,4 +1,4 @@
 // @flow strict
 
 export * from './grid.js';
-export * from './library';
+export * from './library/index.js';

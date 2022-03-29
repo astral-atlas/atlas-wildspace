@@ -12,13 +12,11 @@ export type DataConfig =
   | {| type: 'memory' |}
   | {| type: 'awsS3', bucket: string, keyPrefix: string, region: string |}
 
-export type FileAssetConfig = { type: 'file', directory: string };
 export type AWSS3AssetConfig = { type: 'awsS3', bucket: string, keyPrefix: string, region: string };
-export type MemoryAssetConfig = { type: 'memory' };
+export type LocalAssetConfig = { type: 'local' };
 export type AssetConfig = 
-  | FileAssetConfig
   | AWSS3AssetConfig
-  | MemoryAssetConfig
+  | LocalAssetConfig
 
 export type SesameAPIAuthConfig = {|
   type: 'sesame',
@@ -46,14 +44,12 @@ export const castDataConfig/*: Cast<DataConfig>*/ = c.or('type', {
   'awsS3': c.obj({ type: c.lit('awsS3'), bucket: c.str, keyPrefix: c.str, region: c.str }),
   'memory': c.obj({ type: c.lit('memory') }),
 })
-export const castFileAssetConfig/*: Cast<FileAssetConfig>*/ = c.obj({ type: c.lit('file'), directory: c.str, });
 export const castAWSS3AssetConfig/*: Cast<AWSS3AssetConfig>*/ = c.obj({ type: c.lit('awsS3'), bucket: c.str, keyPrefix: c.str, region: c.str });
-export const castMemoryAssetConfig/*: Cast<MemoryAssetConfig>*/ = c.obj({ type: c.lit('memory') });
+export const castLocalAssetConfig/*: Cast<LocalAssetConfig>*/ = c.obj({ type: c.lit('local') });
 
 export const castAssetConfig/*: Cast<AssetConfig>*/ = c.or('type', {
-  'file': castFileAssetConfig,
   'awsS3': castAWSS3AssetConfig,
-  'memory': castMemoryAssetConfig,
+  'local': castLocalAssetConfig,
 });
 
 export const castFakeAuthConfig/*: Cast<FakeAuthConfig>*/ = c.obj({

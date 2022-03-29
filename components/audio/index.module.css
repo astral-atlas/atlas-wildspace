@@ -132,13 +132,13 @@
   flex-direction: column;
 }
 
-.trackGrid {
+.audioGrid {
   flex-grow: 1;
   flex-shrink: 0;
   min-height: 0px;
 }
 
-.trackGridItem {
+.audioGridItem {
   user-select: none;
 
   width: 100%;
@@ -159,7 +159,7 @@
   cursor: pointer;
 }
 
-.trackGridItem img {
+.audioGridItem img {
   position: absolute;
   opacity: 0.5;
   top: 0;
@@ -168,20 +168,24 @@
   bottom: 0;
 }
 
-.trackGridItem.selected {
+.audioGridItem.selected {
   border: 3px solid red;
 }
-.trackGridItem.disabled {
+.audioGridItem.disabled {
   opacity: 0.5;
   cursor: auto;
 }
 
-.trackGridItem div {
+.audioGridItemInfo {
+  
+}
+
+.audioGridItem div {
   position: relative;
   overflow: auto;
   padding: 4px;
 }
-.trackGridItem div p {
+.audioGridItem div p {
   margin: 0;
 }
 

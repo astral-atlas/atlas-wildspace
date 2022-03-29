@@ -29,7 +29,7 @@ export const FileEditorDemo/*: Component<>*/ = () => {
       setObjectURL(URL.createObjectURL(file));
   }, [file])
   return [
-    h(FilesEditor, { onFilesChange, accept: 'image/*', label: 'Text Editor Label' }),
+    h(FilesEditor, { onFilesChange, accept: 'image/*', label: 'File Image Editor Label' }),
     objectURL && h('img', { src: objectURL, height: '240' })
   ];
 }
@@ -51,6 +51,5 @@ export const EditorFormDemo/*: Component<>*/ = () => {
       new Intl.DateTimeFormat('en-US', { dateStyle: 'full', timeStyle: 'long' })
         .format(submissionTime)
     ]),
-    h('div', { style: { height: '120px' }})
   ]
 }

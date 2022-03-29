@@ -14,6 +14,7 @@
 .assetGridItem {
   list-style: none;
   overflow: auto;
+  
   display: flex;
   flex-direction: column;
 }

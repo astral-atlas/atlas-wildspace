@@ -15,3 +15,7 @@ To aid in manipulating data, some standard form components are needed.
 This component is used to contain multiple editors at once.
 
 ::demo{name=editor_form}
+
+### Editor List
+
+::demo{name=list_editor}

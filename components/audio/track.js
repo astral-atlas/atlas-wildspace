@@ -221,7 +221,7 @@ export const TrackAssetGridItem/*: Component<TrackAssetGridItemProps>*/ = ({
 }) => {
   const { title, artist, trackLengthMs } = track;
   const classList = [
-    styles.trackGridItem,
+    styles.audioGridItem,
     selected && styles.selected,
     disabled && styles.disabled
   ]
@@ -249,7 +249,7 @@ export const TrackAssetGrid/*: Component<TrackAssetGridProps>*/ = ({
   ...props
 }) => {
   return h(AssetGrid,
-    { ...props, style, classList: [styles.trackGrid] },
+    { ...props, style, classList: [styles.audioGrid] },
     children,
   );
 }

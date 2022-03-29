@@ -68,13 +68,16 @@ export const createBufferTable = /*:: <T>*/(store/*: BufferStore*/, castValue/*:
   };
   const set = async (key, newValue) => {
     const table = await loadTable();
+    console.log('Loaded Table')
     const updatedTable = newValue ?
     [...table.filter(e => e.key !== key), { key, value: newValue }] :
       table.filter(e => e.key !== key);
     await store.set(Buffer.from(JSON.stringify(updatedTable, null, 2)));
+    console.log('Set Store')
   };
   const scan = async () => {
     const table = await loadTable();
+    console.log('Scanned Table')
     // TODO: this is broken!
     return { result: table.map(e => e.value), next: null };
   }

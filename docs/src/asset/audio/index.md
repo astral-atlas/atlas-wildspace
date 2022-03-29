@@ -13,9 +13,13 @@ a name (and optionally a cover image).
 A playlist is a array of tracks in a specific order.
 ### AudioPlaylistState
 A playlist state describes how far through a playlist you are.
-## AudioAssetLibrary
 
-::demo{name=library}
+## AudioTrackLibrary
+
+::demo{name=track_library}
+## AudioPlaylistLibrary
+
+::demo{name=playlist_library}
 
 ## TODO
 

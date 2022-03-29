@@ -2,6 +2,8 @@
   "ignore": ["./data/*"],
   "ext": "js,json5,json",
   "watch": [
-    "../"
+    "./",
+    "../data",
+    "../models"
   ]
 }

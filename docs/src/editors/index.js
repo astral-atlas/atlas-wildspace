@@ -6,6 +6,7 @@ import { Document, Markdown } from "@lukekaalim/act-rehersal";
 import { EditorFormDemo, FileEditorDemo, TextEditorDemo } from "./demos";
 
 import editorsText from './index.md?raw';
+import { ListEditorDemo } from "./list";
 
 const Demo = ({ node }) => {
   switch (node.attributes.name) {
@@ -15,6 +16,8 @@ const Demo = ({ node }) => {
       return h(FileEditorDemo)
     case 'editor_form':
       return h(EditorFormDemo);
+    case 'list_editor':
+      return h(ListEditorDemo);
     default:
       throw new Error();
   }

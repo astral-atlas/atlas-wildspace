@@ -35,6 +35,7 @@ export const createFileBufferStore = (path/*: string*/)/*: BufferStore*/ => crea
     return await readFile(path);
   },
   async set(newBuffer) {
+    console.log('write file')
     await writeFile(path, newBuffer);
   }
 });
@@ -74,6 +75,7 @@ export const createFileStreamBufferDB = /*:: <K: string>*/(directoryPath/*: stri
         return await unlink(join(directoryPath, key));
       await writeFile(join(directoryPath, key), value);
     } catch (error) {
+      console.warn(error);
       return;
     }
   };

@@ -5,6 +5,7 @@
 /*:: import type { HTTPServiceClient, WSServiceClient } from './wildspace.js'; */
 import { assetAPI } from '@astral-atlas/wildspace-models';
 import { createJSONResourceClient } from '@lukekaalim/http-client';
+import * as upload from "../components/audio/upload";
 
 /*::
 export type AssetClient = {

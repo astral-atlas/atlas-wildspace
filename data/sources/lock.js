@@ -12,6 +12,7 @@ export const createLockFunction = /*:: <I, O>*/(functionToLock/*: I => Promise<O
       lock = new Promise(r => release = r);
     }
     const output = await functionToLock(input);
+    // bug!
     lock = null;
     release && release();
     return output;

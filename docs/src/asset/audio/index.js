@@ -1,18 +1,20 @@
 // @flow strict
 /*:: import type { Page } from "@lukekaalim/act-rehersal"; */
 
-import { h } from "@lukekaalim/act";
+import { createContext, h } from "@lukekaalim/act";
 import { Document, Markdown } from "@lukekaalim/act-rehersal";
 
 import audioText from './index.md?raw';
-import { AudioAssetLibraryDemo, PlayerDemo } from "./player";
+import { TrackLibraryDemo } from "./track";
+import { PlaylistLibraryDemo } from "./playlist";
 
 const Demo = ({ node }) => {
   switch (node.attributes.name) {
+    case 'track_library':
+      return h(TrackLibraryDemo);
+    case 'playlist_library':
+      return h(PlaylistLibraryDemo)
     case 'player':
-      return h(PlayerDemo);
-    case 'library':
-      return h(AudioAssetLibraryDemo);
     default:
       throw new Error();
   }

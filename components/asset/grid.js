@@ -31,7 +31,10 @@ export type AssetGridItemProps = {
 */
 
 export const AssetGridItem/*: Component<AssetGridItemProps>*/ = ({
-  children, classList = [], style = {}, ...props
+  children,
+  classList = [],
+  style = {},
+  ...props
 }) => {
   return h('li', { ...props, classList: [styles.assetGridItem, ...classList], style }, [
     children
