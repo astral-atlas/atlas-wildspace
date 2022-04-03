@@ -22,7 +22,7 @@ export type AuthService = {
 const createFakeAuthService = (config/*: FakeAuthConfig*/)/*: AuthService*/ => {
   const grant = {
     type: 'link',
-    id: 0,
+    id: '0',
     identity: config.user.id,
     linkedIdentity: '',
     target: 'localhost',

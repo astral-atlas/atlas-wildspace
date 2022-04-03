@@ -13,7 +13,9 @@ export type AssetResource = {|
   GET: {
     query: { assetId: AssetID },
     request: empty,
-    response: { type: 'found', downloadURL: string, description: AssetDescription }
+    response: 
+      | { type: 'found', downloadURL: string, description: AssetDescription }
+      | { type: 'not_found' }
   },
   POST: {
     query: empty,

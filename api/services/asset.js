@@ -1,5 +1,5 @@
 // @flow strict
-/*:: import type { AssetID, AssetDescription, APIConfig, AWSS3AssetConfig, FileAssetConfig } from '@astral-atlas/wildspace-models'; */
+/*:: import type { AssetID, AssetDescription, APIConfig, AWSS3AssetConfig } from '@astral-atlas/wildspace-models'; */
 /*:: import type { WildspaceData } from '@astral-atlas/wildspace-data'; */
 import { S3, PutObjectCommand } from '@aws-sdk/client-s3';
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
@@ -9,7 +9,7 @@ import { join } from 'path';
 
 /*::
 export type AssetService = {
-  peek: (id: AssetID) => Promise<{ downloadURL: string, description: AssetDescription }>,
+  peek: (id: AssetID) => Promise<?{ downloadURL: string, description: AssetDescription }>,
   put: (MIMEType: string, bytes: number, name: string) => Promise<{ downloadURL: string, description: AssetDescription, uploadURL: string }>
 };
 */
@@ -55,7 +55,7 @@ export const createLocalAssetService = (data/*: WildspaceData*/)/*: AssetService
   const peek = async (id) => {
     const { result: description } = await data.assets.get(id);
     if (!description)
-      throw new Error();
+      return null;
     
     return {
       description,

@@ -9,13 +9,15 @@ import styles from './window.module.css';
 /*::
 export type AssetLibraryWindowProps = {
   editor?: ElementNode,
-  content?: ElementNode
+  content?: ElementNode,
+  popup?: ?ElementNode,
 };
 */
 
 export const AssetLibraryWindow/*: Component<AssetLibraryWindowProps>*/ = ({
   editor,
-  content
+  content,
+  popup
 }) => {
   return h('div', { classList: [styles.assetLibraryWindow] }, [
     h('section', { classList: [styles.assetLibraryWindowContent] }, content),

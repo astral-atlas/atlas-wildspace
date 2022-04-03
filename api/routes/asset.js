@@ -19,7 +19,10 @@ export const createAssetRoutes = ({ data, asset }/*: Services*/)/*: { ws: WebSoc
   const assetResourceRoutes = createJSONResourceRoutes(assetAPI['/asset'], {
     ...defaultOptions,
     GET: async ({ query: { assetId } }) => {
-      const { downloadURL, description } = await asset.peek(assetId);
+      const peekResponse = await asset.peek(assetId);
+      if (!peekResponse)
+        return { status: HTTP_STATUS.not_found, body: { type: 'not_found' }, headers: {} };
+      const { downloadURL, description } = peekResponse;
       return { status: HTTP_STATUS.ok, body: { type: 'found', description, downloadURL } };
     },
     POST: async ({ body: { MIMEType, bytes, name } }) => {
