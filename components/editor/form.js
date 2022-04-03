@@ -6,7 +6,7 @@ import styles from './index.module.css';
 
 /*::
 export type EditorFormProps = {
-  onEditorSubmit?: () => void,
+  onEditorSubmit?: () => mixed,
   [string]: mixed,
 };
 */
@@ -34,17 +34,24 @@ export type TextEditorProps = {
   text?: string,
   disabled?: boolean,
   onTextChange?: string => mixed,
+  onTextInput?: string => mixed,
   [string]: mixed,
 };
 */
 
-export const EditorTextInput/*: Component<TextEditorProps>*/ = ({ text = '', label, disabled, onTextChange }) => {
-  const onInput = (event) => {
-    onTextChange && onTextChange(event.target.value);
-  }
+export const EditorTextInput/*: Component<TextEditorProps>*/ = ({
+  text = '', label, disabled,
+  onTextChange, onTextInput
+}) => {
+  const onChange = onTextChange && ((event) => {
+    onTextChange(event.target.value);
+  });
+  const onInput = onTextInput && ((event) => {
+    onTextInput(event.target.value);
+  });
   return h('label', { classList: [styles.editorRoot] }, [
     h('span', {}, label),
-    h('input', { type: 'text', value: text, onInput, disabled })
+    h('input', { type: 'text', value: text, onInput, onChange, disabled })
   ]);
 };
 

@@ -253,3 +253,31 @@ export const TrackAssetGrid/*: Component<TrackAssetGridProps>*/ = ({
     children,
   );
 }
+
+/*::
+export type TrackGridProps = {
+  tracks: $ReadOnlyArray<AudioTrack>,
+  assets: $ReadOnlyArray<LocalAsset>,
+
+  onTrackClick?: AudioTrack => mixed,
+};
+*/
+
+export const TrackGrid/*: Component<TrackGridProps>*/ = ({
+  tracks,
+  assets,
+
+  onTrackClick,
+}) => {
+  return h(AssetGrid,
+    { classList: [styles.audioGrid] },
+    tracks.map(track => {
+      const coverImageAsset = assets.find(a => a.id === track.coverImageAssetId);
+      return h(TrackAssetGridItem, {
+        onClick: onTrackClick && (() => onTrackClick(track)),
+        track,
+        coverImageURL: coverImageAsset && coverImageAsset.url
+      })
+    }),
+  );
+};

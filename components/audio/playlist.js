@@ -206,17 +206,26 @@ export const PlaylistGridItem/*: Component<PlaylistGridItemProps>*/ = ({
   playlist,
   coverImage,
   onClick,
+  selected,
+  disabled,
   onDblClick,
-}) => h(AssetGridItem, {
-  classList: [styles.audioGridItem],
-  onClick,
-  onDblClick
-}, [
-  !!coverImage && h('img', { src: coverImage.href }),
-  h('div', {}, [
-    h('p', { class: styles.audioGridItemInfo }, playlist.title),
-  ]),
-])
+}) => {
+  const classList = [
+    styles.audioGridItem,
+    selected && styles.selected,
+    disabled && styles.disabled
+  ]
+  return h(AssetGridItem, {
+    classList,
+    onClick,
+    onDblClick
+  }, [
+    !!coverImage && h('img', { src: coverImage.href }),
+    h('div', {}, [
+      h('p', { class: styles.audioGridItemInfo }, playlist.title),
+    ]),
+  ])
+}
 
 /*::
 export type PlaylistGridProps = {

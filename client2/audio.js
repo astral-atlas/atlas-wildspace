@@ -12,7 +12,7 @@ import { audioAPI, assetAPI } from "@astral-atlas/wildspace-models";
 export type PlaylistClient = {
   create: (gameId: GameID, title: string, trackIds: AudioTrackID[]) => Promise<AudioPlaylist>,
   read: (gameId: GameID, audioPlaylistId: AudioPlaylistID) => Promise<AudioPlaylist>,
-  update: (gameId: GameID, audioPlaylistId: AudioPlaylistID, opts: { title?: string, trackIds?: AudioTrackID[] }) => Promise<AudioPlaylist>,
+  update: (gameId: GameID, audioPlaylistId: AudioPlaylistID, opts: { title?: ?string, trackIds?: ?AudioTrackID[] }) => Promise<AudioPlaylist>,
   list: (gameId: GameID) => Promise<$ReadOnlyArray<AudioPlaylist>>,
   remove: (gameId: GameID, audioPlaylistId: AudioPlaylistID) => Promise<void>
 };
