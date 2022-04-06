@@ -32,6 +32,9 @@ jobs:
     needs:
       - build
     steps:
+      - name: Set outputs
+        id: vars
+        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
       - name: Deploy to Beanstalk
         uses: einaregilsson/beanstalk-deploy@v20
         with:
@@ -39,6 +42,6 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: "test2 - Wildspace API"
           environment_name: main
-          version_label: ${{ github.ref_name }}-${{ github.sha }}
+          version_label: ${{ github.ref_name }}-${{ steps.vars.outputs.sha_short }}
           region: ap-southeast-2
           deployment_package: wildspace-api.zip
