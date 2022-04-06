@@ -1,6 +1,10 @@
 // @flow strict
 /*:: import type { HTTPClient } from '@lukekaalim/http-client'; */
-/*:: import type { GameID, RoomID, Room, RoomState, RoomUpdate, EncounterState, AudioPlaylistState, EncounterAction } from "@astral-atlas/wildspace-models"; */
+/*:: import type {
+  GameID, RoomID, Room, RoomState,
+  RoomUpdate, EncounterState,
+  RoomAudioState, EncounterAction
+} from "@astral-atlas/wildspace-models"; */
 /*:: import type { AssetClient } from './asset.js'; */
 /*:: import type { HTTPServiceClient, WSServiceClient } from './wildspace.js'; */
 
@@ -14,8 +18,8 @@ export type RoomClient = {
   read: (gameId: GameID, roomId: RoomID) => Promise<Room>,
   connectUpdates: (gameId: GameID, roomId: RoomID, onUpdate: (state: RoomUpdate) => mixed) => { close: () => Promise<void> },
   
-  readAudio: (gameId: GameID, roomId: RoomID) => Promise<null | AudioPlaylistState>,
-  setAudio: (gameId: GameID, roomId: RoomID, audio: ?AudioPlaylistState) => Promise<void>,
+  readAudio: (gameId: GameID, roomId: RoomID) => Promise<RoomAudioState>,
+  setAudio: (gameId: GameID, roomId: RoomID, audio: RoomAudioState) => Promise<void>,
   readEncounter: (gameId: GameID, roomId: RoomID) => Promise<null | EncounterState>,
   setEncounter: (gameId: GameID, roomId: RoomID, encounter: ?EncounterState) => Promise<void>,
   performEncounterActions: (gameId: GameID, roomId: RoomID, actions: EncounterAction[]) => Promise<void>,

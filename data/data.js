@@ -34,7 +34,7 @@ export const createBufferWildspaceData = ({ createBufferStore, createBufferDB }/
 
   const room = createBufferCompositeTable(createBufferStore('room'), m.castRoom);
   //const roomState = createBufferCompositeTable(createBufferStore('roomState'), m.castRoomState);
-  const roomAudio = createBufferCompositeTable(createBufferStore('roomAudio'), m.castAudioPlaylistState);
+  const roomAudio = createBufferCompositeTable(createBufferStore('roomAudio'), m.castRoomAudioState);
   const roomEncounter = createBufferCompositeTable(createBufferStore('roomEncounter'), m.castEncounterState);
   const roomUpdates = createMemoryChannel();
 

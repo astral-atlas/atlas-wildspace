@@ -3,7 +3,7 @@
 /*:: import type { AuthorizerFrameProps } from '@astral-atlas/sesame-components'; */
 /*:: import type { Component } from "@lukekaalim/act"; */
 import { h, useMemo, useEffect, useState, useContext, createContext, useRef } from "@lukekaalim/act";
-import { C, render } from '@lukekaalim/act-three';
+import { render } from '@lukekaalim/act-three';
 import { AuthorizerFrame } from '@astral-atlas/sesame-components';
 import { createWildspaceClient } from '@astral-atlas/wildspace-client2';
 import { EncounterInitiativeControls, EncounterInitiativeTracker } from "@astral-atlas/wildspace-components";

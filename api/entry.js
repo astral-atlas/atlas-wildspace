@@ -33,7 +33,6 @@ const createWildspaceServer = (config, services) => {
     }
   }
   
-  console.log(process.cwd())
   const { ws, http } = createRoutes(services); 
   const httpRoutes = [
     ...http,

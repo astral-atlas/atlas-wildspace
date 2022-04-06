@@ -80,6 +80,8 @@ export const createRoomRoutes = ({ data, ...s }/*: Services*/)/*: { ws: WebSocke
 
     GET: async ({ query: { gameId, roomId }}) => {
       const { result: audio } = await data.roomAudio.get(gameId, roomId);
+      if (!audio)
+        return { status: HTTP_STATUS.not_found, body: { type: 'not_found' } }
       return { status: HTTP_STATUS.ok, body: { type: 'found', audio } };
     },
     PUT: async ({ query: { gameId, roomId }, body: { audio }}) => {

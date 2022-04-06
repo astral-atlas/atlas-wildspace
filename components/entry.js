@@ -25,3 +25,9 @@ export * from './asset/index.js';
 export * from './editor/index.js';
 
 export * from './utils/index.js';
+
+
+export * from './game/data.js';
+export * from './game/audio.js';
+
+export * from './navigation/index.js';

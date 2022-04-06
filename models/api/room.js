@@ -1,15 +1,13 @@
 // @flow strict
 /*:: import type { ResourceDescription, ConnectionDescription } from "@lukekaalim/net-description"; */
 /*:: import type { GameID } from "../game.js"; */
-/*:: import type { Room, RoomID, RoomState, RoomUpdate } from "../room.js"; */
-/*:: import type { AudioPlaylistState } from "../audio.js"; */
+/*:: import type { Room, RoomID, RoomState, RoomUpdate, RoomAudioState } from "../room.js"; */
 /*:: import type { EncounterState, EncounterAction } from "../encounter.js"; */
 /*:: import type { AuthorizedConnection } from "./meta.js"; */
 
 import { createObjectCaster, createConstantCaster, castString, createKeyedUnionCaster, createArrayCaster, c } from "@lukekaalim/cast";
 import { castGameId } from "../game.js";
-import { castRoom, castRoomId, castRoomState, castRoomUpdate } from "../room.js";
-import { castAudioPlaylistState } from "../audio.js";
+import { castRoom, castRoomAudioState, castRoomId, castRoomState, castRoomUpdate } from "../room.js";
 import { castEncounterAction, castEncounterState } from "../encounter.js";
 import { createAuthorizedConnectionDescription } from './meta.js';
 
@@ -68,11 +66,11 @@ export type RoomAudio = {|
   GET: {
     query: { roomId: RoomID, gameId: GameID },
     request: empty,
-    response: { type: 'found', audio: ?AudioPlaylistState }
+    response: { type: 'found', audio: RoomAudioState } | { type: 'not_found' }
   },
   PUT: {
     query: { roomId: RoomID, gameId: GameID },
-    request: { audio: ?AudioPlaylistState },
+    request: { audio: RoomAudioState },
     response: { type: 'updated' }
   }
 |};
@@ -159,11 +157,11 @@ export const roomAudio/*: ResourceDescription<RoomAudio>*/ = {
 
   GET: {
     toQuery: c.obj({ roomId: castRoomId, gameId: castGameId }),
-    toResponseBody: c.obj({ type: c.lit('found'), audio: c.maybe(castAudioPlaylistState) })
+    toResponseBody: c.obj({ type: c.lit('found'), audio: castRoomAudioState })
   },
   PUT: {
     toQuery: c.obj({ roomId: castRoomId, gameId: castGameId }),
-    toRequestBody: c.obj({ audio: c.maybe(castAudioPlaylistState) }),
+    toRequestBody: c.obj({ audio: castRoomAudioState }),
     toResponseBody: c.obj({ type: c.lit('updated') }),
   }
 };

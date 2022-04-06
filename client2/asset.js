@@ -27,7 +27,11 @@ export const createAssetClient = (http/*: HTTPServiceClient*/, unauthorizedClien
     return { description, downloadURL: new URL(downloadURL) };
   };
   const peek = async (assetId) => {
-    const { body: { description, downloadURL } } = await assetResource.GET({ query: { assetId } });
+    const { body } = await assetResource.GET({ query: { assetId } });
+    if (body.type !== 'found')
+      throw new Error();
+
+    const { description, downloadURL } = body;
 
     return { description, downloadURL: new URL(downloadURL)  };
   };

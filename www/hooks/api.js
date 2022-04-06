@@ -2,9 +2,9 @@
 /*:: import type { Context, Component } from '@lukekaalim/act'; */
 /*:: import type { WildspaceClient } from '@astral-atlas/wildspace-client2'; */
 /*:: import type {
-  AudioPlaylistState, EncounterState, RoomID, GameID,
+  EncounterState, RoomID, GameID,
   Encounter, Character, AudioTrack, AudioPlaylist,
-  Room, Player
+  Room, Player, RoomAudioState
 } from '@astral-atlas/wildspace-models'; */
 import { h, useContext, createContext, useState, useEffect } from "@lukekaalim/act";
 
@@ -21,7 +21,7 @@ export const useAPI = ()/*: WildspaceClient*/ => {
 };
 
 
-export const useRoom = (gameId/*: ?GameID*/, roomId/*: ?RoomID*/)/*: { audio: ?AudioPlaylistState, encounter: ?EncounterState }*/ => {
+export const useRoom = (gameId/*: ?GameID*/, roomId/*: ?RoomID*/)/*: { audio: ?RoomAudioState, encounter: ?EncounterState }*/ => {
   const api = useAPI();
   const [audio, setAudio] = useState(null);
   const [encounter, setEncounter] = useState(null);

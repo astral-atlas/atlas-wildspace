@@ -1,0 +1,45 @@
+.roomSelectionForm {
+  width: 20vw;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+}
+
+.roomSelectionInputContainer {
+  width: 100%;
+  margin: 16px;
+
+  display: flex;
+  flex-direction: column;
+}
+.roomSelectionInputContainer span {
+  margin: 4px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.roomSelectionInput, .roomSelectionSubmit {
+  padding: 16px;
+
+  border-radius: 8px;
+  border: 1px solid white;
+
+  background: none;
+  color: white;
+
+  font-size: 18px;
+  
+  transition: background 0.2s;
+}
+
+.roomSelectionInput:hover, .roomSelectionSubmit:hover {
+  background: white;
+  color: black;
+}
+
+.roomSelectionInput option {
+  background-color: initial;
+  color: initial;
+  border: none;
+}

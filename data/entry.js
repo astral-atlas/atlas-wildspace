@@ -14,6 +14,7 @@ import type {
   Room, RoomID, RoomState, RoomUpdate,
   CharacterID, Character,
   EncounterID, Encounter, EncounterState,
+  RoomAudioState,
   MonsterID, Monster,
 } from "@astral-atlas/wildspace-models";
 */
@@ -44,7 +45,7 @@ export type WildspaceData = {
   monsters: CompositeTable<GameID, MonsterID, Monster>,
 
   room: CompositeTable<GameID, RoomID, Room>,
-  roomAudio: CompositeTable<GameID, RoomID, AudioPlaylistState>,
+  roomAudio: CompositeTable<GameID, RoomID, RoomAudioState>,
   roomEncounter: CompositeTable<GameID, RoomID, EncounterState>,
   roomUpdates: Channel<RoomID, RoomUpdate>,
 
