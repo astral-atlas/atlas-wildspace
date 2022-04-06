@@ -56,7 +56,7 @@ module "api" {
       }
     }
   }
-  api_version = "3.0.0"
+  api_version = "3.1.0"
   eb_version_bucket = "sesame-application-versions20210426131620788800000001"
 
   environment_options = [
