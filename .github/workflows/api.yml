@@ -16,11 +16,18 @@ jobs:
           cache: 'npm'
       - run: npm ci -w api --production
       - run: npm run build -w api
+      - uses: actions/upload-artifact@v3
+        with:
+          name: wildspace_api_application
+          path: wildspace-api.zip
   release:
     runs-on: ubuntu-latest
     needs:
       - build
     steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: wildspace_api_application
       - name: Publish to Github
         uses: softprops/action-gh-release@v1
         with:
@@ -30,11 +37,14 @@ jobs:
   deploy-test:
     runs-on: ubuntu-latest
     environment:
-      name: test
+      name: api_test
       url: https://api.wildspace.astral-atlas.com
     needs:
       - build
     steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: wildspace_api_application
       - name: Set outputs
         id: vars
         run: |
