@@ -27,7 +27,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v3
         with:
-          name: wildspace_api_application
+          name: wildspace-api.zip
       - name: Publish to Github
         uses: softprops/action-gh-release@v1
         with:
