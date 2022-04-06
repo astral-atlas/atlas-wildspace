@@ -39,6 +39,6 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: "test2 - Wildspace API"
           environment_name: main
-          version_label: ${{ github.sha }}
+          version_label: ${{ github.ref_name }}-${{ github.sha }}
           region: ap-southeast-2
           deployment_package: wildspace-api.zip
