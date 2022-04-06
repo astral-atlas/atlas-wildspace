@@ -48,7 +48,7 @@ jobs:
           name: wildspace_api
       - run: |
           cp -a environments/test/. ./
-          zip -r wildspace-api.zip
+          zip -r wildspace-api.zip config.json5 Procfile
       - name: Set outputs
         id: vars
         run: |
