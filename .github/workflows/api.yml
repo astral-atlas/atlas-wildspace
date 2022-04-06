@@ -24,7 +24,6 @@ jobs:
       - name: Publish to Github
         uses: softprops/action-gh-release@v1
         with:
-          draft: true
           files: wildspace-api.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -35,7 +34,9 @@ jobs:
     steps:
       - name: Set outputs
         id: vars
-        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+        run: |
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+          echo "::set-output name=version::$(cat api/package.json | jq -r .version)"
       - name: Deploy to Beanstalk
         uses: einaregilsson/beanstalk-deploy@v20
         with:
@@ -43,6 +44,6 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: "test2 - Wildspace API"
           environment_name: main
-          version_label: ${{ github.ref_name }}-${{ steps.vars.outputs.sha_short }}
+          version_label: ${{ steps.vars.outputs.version }}-${{ steps.vars.outputs.sha_short }}
           region: ap-southeast-2
           deployment_package: wildspace-api.zip
