@@ -47,8 +47,8 @@ jobs:
         with:
           name: wildspace_api
       - run: |
-          unzip -u wildspace-api.zip
           cp -a environments/test/. ./
+          zip -r wildspace-api.zip
       - name: Set outputs
         id: vars
         run: |
