@@ -8,7 +8,7 @@ module "api" {
 
   www_origin_name = "wildspace.astral-atlas.com"
   certificate = {
-    arn = module.assets_certificate.certificate_arn
+    arn = module.api_certificate.certificate_arn
   }
   environment_network = {
     id = module.vpc.vpc_id

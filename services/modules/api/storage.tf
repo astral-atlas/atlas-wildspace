@@ -13,8 +13,11 @@ variable "www_origin_name" {
 }
 resource "aws_s3_bucket" "assets" {
   bucket_prefix = "test2-wildspace-assets-"
-
   acl = "public-read"
+}
+
+resource "aws_s3_bucket_cors_configuration" "cors" {
+  bucket = aws_s3_bucket.assets.bucket
 
   cors_rule {
     allowed_headers = ["*"]
