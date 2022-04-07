@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "api_data" {
-  bucket_prefix = "${var.name}-wildspace-data-"
+  bucket_prefix = "test2-wildspace-data-"
 }
 output "data_bucket" {
   value = aws_s3_bucket.api_data.bucket
@@ -12,7 +12,7 @@ variable "www_origin_name" {
   type = string
 }
 resource "aws_s3_bucket" "assets" {
-  bucket_prefix = "${var.name}-wildspace-assets-"
+  bucket_prefix = "test2-wildspace-assets-"
 
   acl = "public-read"
 
