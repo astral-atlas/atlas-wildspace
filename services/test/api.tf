@@ -5,6 +5,8 @@ resource "aws_s3_bucket" "api_data" {
 
 module "api" {
   source = "../modules/api"
+
+  www_origin_name = "wildspace.astral-atlas.com"
   environment_network = {
     id = module.vpc.vpc_id
     private_subnets = module.vpc.private_subnets
