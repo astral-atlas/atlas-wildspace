@@ -37,7 +37,7 @@ data "aws_iam_policy_document" "api_role_policy" {
   }
 }
 resource "aws_iam_role" "api_role" {
-  name = "${var.name}_wildspace_api"
+  name = "test2_wildspace_api"
   assume_role_policy = data.aws_iam_policy_document.ec2_assume_role_policy.json
 
   inline_policy {
@@ -54,6 +54,6 @@ resource "aws_iam_role" "api_role" {
 }
 
 resource "aws_iam_instance_profile" "api_instance_profile" {
-  name = "${var.name}_wildspace_api"
+  name = "test2_wildspace_api"
   role = aws_iam_role.api_role.name
 }
