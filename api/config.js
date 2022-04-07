@@ -41,10 +41,9 @@ export const loadConfigFromParameterStore = async (
     const ssm = new SSM({ region: paramConfig.region });
   
     const { Parameter } = await ssm.getParameter({ Name: paramConfig.name });
-    if (!Parameter)
+    if (!Parameter || !Parameter.Value)
       throw new Error();
-  
-    return loadConfigFromChain(Parameter);
+    return loadConfigFromChain(Parameter.Value);
   } catch (error) {
     console.warn('Could not load parameter store config');
     throw error;
