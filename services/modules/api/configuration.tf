@@ -1,7 +1,3 @@
-variable "data_bucket" {
-  type = string
-}
-
 resource "aws_ssm_parameter" "api_config" {
   name  = "/wildspace/api/v1"
   type  = "String"
@@ -9,13 +5,13 @@ resource "aws_ssm_parameter" "api_config" {
     "port": 8080
     "data": {
       type: "awsS3",
-      bucket: var.data_bucket,
+      bucket: aws_s3_bucket.api_data.bucket,
       keyPrefix: "/wildspace",
       region: "ap-southeast-2"
     },
     "asset": {
       type: "awsS3",
-      bucket: var.data_bucket,
+      bucket: aws_s3_bucket.assets.bucket,
       keyPrefix: "/wildspace/assets",
       region: "ap-southeast-2"
     },

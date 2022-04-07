@@ -1,6 +1,5 @@
 data "aws_elastic_beanstalk_solution_stack" "node_16_latest" {
   most_recent = true
-
   name_regex = "^64bit Amazon Linux 2 (.*) running Node.js 16$"
 }
 
@@ -72,7 +71,7 @@ locals {
 }
 
 resource "aws_elastic_beanstalk_environment" "main_environment" {
-  name                  = "test"
+  name                  = "main"
   application           = aws_elastic_beanstalk_application.api.name
   solution_stack_name   = data.aws_elastic_beanstalk_solution_stack.node_16_latest.name
 
