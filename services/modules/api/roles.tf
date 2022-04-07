@@ -35,6 +35,15 @@ data "aws_iam_policy_document" "api_role_policy" {
     ]
     effect = "Allow"
   }
+
+  statement {
+    sid = "ParameterAccess"
+    actions = ["ssm:GetParameters"]
+    resources = [
+      aws_ssm_parameter.api_config.arn
+    ]
+    effect = "Allow"
+  }
 }
 resource "aws_iam_role" "api_role" {
   name = "test2_wildspace_api"
