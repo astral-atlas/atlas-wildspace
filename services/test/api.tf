@@ -7,9 +7,31 @@ module "api" {
   source = "../modules/api"
 
   www_origin_name = "wildspace.astral-atlas.com"
+  certificate = {
+    arn = module.assets_certificate.certificate_arn
+  }
   environment_network = {
     id = module.vpc.vpc_id
     private_subnets = module.vpc.private_subnets
     public_subnets = module.vpc.public_subnets
   }
+}
+
+resource "aws_route53_record" "api" {
+  zone_id = data.aws_route53_zone.root.zone_id
+  name    = "api.wildspace"
+  type    = "A"
+
+  alias {
+    name                   = module.api.environment_cname
+    zone_id                = data.aws_elastic_beanstalk_hosted_zone.current.id
+    evaluate_target_health = false
+  }
+}
+
+module "api_certificate" {
+  source = "../modules/certificate"
+
+  record_zone_id = data.aws_route53_zone.root.zone_id
+  record_full_name = "api.wildspace.astral-atlas.com"
 }

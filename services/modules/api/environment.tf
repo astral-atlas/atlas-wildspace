@@ -10,6 +10,11 @@ variable "environment_options" {
 variable "environment_network" {
   type = object({ id = string, private_subnets = list(string), public_subnets = list(string) })
 }
+variable "certificate" {
+  type = object({
+    arn = string
+  })
+}
 
 locals {
   launch_config = [
@@ -58,7 +63,7 @@ locals {
   ssl = [
     { namespace: "aws:elbv2:listener:443", name: "ListenerEnabled", value: true },
     { namespace: "aws:elbv2:listener:443", name: "Protocol", value: "HTTPS" },
-    { namespace: "aws:elbv2:listener:443", name: "SSLCertificateArns", value: module.api_certificate.certificate_arn },
+    { namespace: "aws:elbv2:listener:443", name: "SSLCertificateArns", value: var.certificate.arn },
   ]
   settings = concat(
     var.environment_options,
