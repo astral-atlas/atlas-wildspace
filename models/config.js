@@ -4,7 +4,7 @@
 import type { Cast } from "@lukekaalim/cast"; */
 
 import { castServiceProof, castUser } from "@astral-atlas/sesame-models";
-import { castNumber, createObjectCaster, castString, c } from "@lukekaalim/cast";
+import { castNumber, createObjectCaster, castString, c, castObject } from "@lukekaalim/cast";
 
 /*::
 export type DataConfig =
@@ -32,11 +32,22 @@ export type AuthConfig =
   | FakeAuthConfig
 
 export type APIConfig = {
+  type?: ?'final',
   port: number,
   data: DataConfig,
   asset: AssetConfig,
   auth: AuthConfig,
 };
+
+export type AWSParameterStoreConfig = {
+  type: 'aws-parameter-store',
+  name: string,
+  region: string,
+}
+
+export type APIConfigChain =
+  | APIConfig
+  | AWSParameterStoreConfig
 */
 
 export const castDataConfig/*: Cast<DataConfig>*/ = c.or('type', {
@@ -67,12 +78,28 @@ export const castAuthConfig/*: Cast<AuthConfig>*/ = c.or('type', {
 });
 
 export const castAPIConfig/*: Cast<APIConfig>*/ = createObjectCaster({
+  type: c.maybe(c.lit('final')),
   port: castNumber,
   data: castDataConfig,
   asset: castAssetConfig,
   auth: castAuthConfig,
 });
+const castParameterStoreConfig = c.obj({
+  type: c.lit('aws-parameter-store'),
+  name: c.str,
+  region: c.str,
+})
 
+export const castAPIConfigChain/*: Cast<APIConfigChain>*/ = (value) => {
+  const obj = castObject(value);
+  switch (obj.type) {
+    case 'final':
+    default:
+      return castAPIConfig(obj);
+    case 'aws-parameter-store':
+      return castParameterStoreConfig(obj);
+  }
+}
 /*::
 export type WWWConfig = {
   www: {

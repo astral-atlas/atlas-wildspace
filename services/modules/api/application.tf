@@ -2,7 +2,7 @@ data "aws_iam_role" "beanstalk_service" {
   name = "aws-elasticbeanstalk-service-role"
 }
 resource "aws_elastic_beanstalk_application" "api" {
-  name        = "${var.name} - Wildspace API"
+  name        = "Wildspace API"
   description = "Wildspace API"
 
   appversion_lifecycle {

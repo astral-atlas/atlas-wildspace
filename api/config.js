@@ -1,20 +1,52 @@
 // @flow strict
-/*:: import type { APIConfig } from '@astral-atlas/wildspace-models'; */
+/*:: import type { APIConfig, AWSParameterStoreConfig } from '@astral-atlas/wildspace-models'; */
 import { resolve } from 'path';
 import { promises } from 'fs';
+import { SSM } from '@aws-sdk/client-ssm';
 import JSON5 from 'json5';
-import { castAPIConfig } from '@astral-atlas/wildspace-models';
+import { castAPIConfigChain } from '@astral-atlas/wildspace-models';
 
 const { readFile } = promises;
 
-export const loadConfigFromFile = async (configPath/*: string*/ = 'config.json')/*: Promise<APIConfig>*/ => {
+export const loadConfigFromChain = async (
+  configContent/*: string*/
+)/*: Promise<APIConfig>*/ => {
+  const config = castAPIConfigChain(JSON5.parse(configContent));
+  console.log(config);
+  switch (config.type) {
+    default:
+    case 'final':
+      return config;
+    case 'aws-parameter-store':
+      return await loadConfigFromParameterStore(config);
+  }
+}
+
+export const loadConfigFromFile = async (
+  configPath/*: string*/ = 'config.json'
+)/*: Promise<APIConfig>*/ => {
   try {
     console.log(`Loading config from ${resolve(configPath)}`);
-    const config = castAPIConfig(JSON5.parse(await readFile(configPath, 'utf-8')));
-    console.log(config);
-    return config;
+    return loadConfigFromChain(await readFile(configPath, 'utf-8'));
   } catch (error) {
-    console.warn('Could not load config');
+    console.warn('Could not load local file config');
     throw error;
   }
 };
+
+export const loadConfigFromParameterStore = async (
+  paramConfig/*: AWSParameterStoreConfig*/
+)/*: Promise<APIConfig>*/ => {
+  try {
+    const ssm = new SSM({ region: paramConfig.region });
+  
+    const { Parameter } = await ssm.getParameter({ Name: paramConfig.name });
+    if (!Parameter)
+      throw new Error();
+  
+    return loadConfigFromChain(Parameter);
+  } catch (error) {
+    console.warn('Could not load parameter store config');
+    throw error;
+  }
+}
