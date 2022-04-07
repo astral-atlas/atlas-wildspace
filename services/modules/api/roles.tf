@@ -38,7 +38,7 @@ data "aws_iam_policy_document" "api_role_policy" {
 
   statement {
     sid = "ParameterAccess"
-    actions = ["ssm:GetParameters"]
+    actions = ["ssm:GetParameters", "ssm:GetParameter"]
     resources = [
       aws_ssm_parameter.api_config.arn
     ]
