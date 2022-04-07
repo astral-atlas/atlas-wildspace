@@ -81,7 +81,7 @@ resource "aws_elastic_beanstalk_environment" "main_environment" {
   solution_stack_name   = data.aws_elastic_beanstalk_solution_stack.node_16_latest.name
 
   dynamic "setting" {
-    for_each = var.settings
+    for_each = local.settings
     content {
       namespace = setting.value["namespace"]
       name      = setting.value["name"]
