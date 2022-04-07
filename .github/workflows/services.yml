@@ -10,6 +10,7 @@ on:
 
 jobs:
   publish-test-service:
+    concurrency: terraform
     runs-on: ubuntu-latest
     defaults:
       run:
