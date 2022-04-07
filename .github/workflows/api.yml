@@ -59,7 +59,7 @@ jobs:
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: "test2 - Wildspace API"
+          application_name: "wildspace.api"
           environment_name: main
           version_label: ${{ steps.vars.outputs.version }}-${{ steps.vars.outputs.sha_short }}
           region: ap-southeast-2
