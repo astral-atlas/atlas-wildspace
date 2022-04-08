@@ -75,8 +75,9 @@ locals {
   )
 }
 
+resource "random_pet" "environment_name" {}
 resource "aws_elastic_beanstalk_environment" "main_environment" {
-  name                  = "main"
+  name                  = random_pet.environment_name.id
   application           = aws_elastic_beanstalk_application.api.name
   solution_stack_name   = data.aws_elastic_beanstalk_solution_stack.node_16_latest.name
 
