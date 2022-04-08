@@ -3,7 +3,7 @@
 /*:: import type { EncounterState, Mini, MiniID, EncounterAction } from "@astral-atlas/wildspace-models"; */
 import { h, useEffect, useMemo, useRef, useState } from '@lukekaalim/act';
 import { C } from '@lukekaalim/act-three';
-import { useCurves } from '@lukekaalim/act-curve';
+import {  } from '@lukekaalim/act-curve';
 import throttle from 'lodash.throttle';
 import icon from '../public/2d/unknown_icon.png'
 import battlemap_src from '../public/2d/battlemap_island_4.png';
