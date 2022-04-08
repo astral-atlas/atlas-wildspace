@@ -13,7 +13,11 @@ variable "www_origin_name" {
 }
 resource "aws_s3_bucket" "assets" {
   bucket_prefix = "test2-wildspace-assets-"
-  acl = "public-read"
+}
+
+resource "aws_s3_bucket_acl" "acl" {
+  bucket = aws_s3_bucket.assets.id
+  acl    = "public-read"
 }
 
 resource "aws_s3_bucket_cors_configuration" "cors" {
