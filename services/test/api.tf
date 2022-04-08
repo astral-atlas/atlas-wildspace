@@ -16,7 +16,7 @@ module "api" {
     public_subnets = module.vpc.public_subnets
   }
 }
-
+data "aws_elastic_beanstalk_hosted_zone" "current" { }
 resource "aws_route53_record" "api" {
   zone_id = data.aws_route53_zone.root.zone_id
   name    = "api.wildspace"
