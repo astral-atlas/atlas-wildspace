@@ -14,12 +14,15 @@ variable "www_origin_name" {
 resource "aws_s3_bucket" "assets" {
   bucket_prefix = "test2-wildspace-assets-"
 }
-
-resource "aws_s3_bucket_acl" "acl" {
+resource "aws_s3_bucket_acl" "assets_acl" {
   bucket = aws_s3_bucket.assets.id
-  acl    = "public-read"
+  acl    = "private"
 }
-
+resource "aws_s3_bucket_public_access_block" "assets_block" {
+  bucket = aws_s3_bucket.assets.id
+  block_public_acls   = true
+  block_public_policy = true
+}
 resource "aws_s3_bucket_cors_configuration" "cors" {
   bucket = aws_s3_bucket.assets.bucket
 
@@ -37,6 +40,8 @@ output "assets_bucket" {
 output "assets_bucket_zone_id" {
   value = aws_s3_bucket.assets.hosted_zone_id
 }
+
+
 output "assets_bucket_regional_domain" {
   value = aws_s3_bucket.assets.bucket_regional_domain_name
 }
