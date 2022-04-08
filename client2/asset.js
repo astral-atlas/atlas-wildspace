@@ -21,8 +21,10 @@ export const createAssetClient = (http/*: HTTPServiceClient*/, unauthorizedClien
   const create = async (name, MIMEType, content) => {
     const bytes = content.byteLength;
     const { body: { description, uploadURL, downloadURL } } = await assetResource.POST({ body: { name, MIMEType, bytes }});
+
+    const headers = { 'Content-Type': MIMEType, 'Content-Length': bytes.toString() };
     
-    await unauthorizedClient.sendRequest({ url: uploadURL, headers: {}, method: 'PUT', body: content });
+    await unauthorizedClient.sendRequest({ url: uploadURL, headers, method: 'PUT', body: content });
 
     return { description, downloadURL: new URL(downloadURL) };
   };

@@ -26,7 +26,7 @@ export const loadConfigFromFile = async (
   configPath/*: string*/ = 'config.json'
 )/*: Promise<APIConfig>*/ => {
   try {
-    console.log(`Loading config from ${resolve(configPath)}`);
+    console.log(`Loading config from "${resolve(configPath)}"`);
     return loadConfigFromChain(await readFile(configPath, 'utf-8'));
   } catch (error) {
     console.warn('Could not load local file config');
@@ -40,6 +40,7 @@ export const loadConfigFromParameterStore = async (
   try {
     const ssm = new SSM({ region: paramConfig.region });
   
+    console.log(`Loading config from AWS Parameter "${paramConfig.name}"`);
     const { Parameter } = await ssm.getParameter({ Name: paramConfig.name });
     if (!Parameter || !Parameter.Value)
       throw new Error();

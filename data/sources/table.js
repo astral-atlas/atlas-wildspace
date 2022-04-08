@@ -68,7 +68,6 @@ export const createBufferTable = /*:: <T>*/(store/*: BufferStore*/, castValue/*:
   };
   const set = async (key, newValue) => {
     const table = await loadTable();
-    console.log('Loaded Table')
     const updatedTable = newValue ?
     [...table.filter(e => e.key !== key), { key, value: newValue }] :
       table.filter(e => e.key !== key);
@@ -77,13 +76,15 @@ export const createBufferTable = /*:: <T>*/(store/*: BufferStore*/, castValue/*:
   };
   const scan = async () => {
     const table = await loadTable();
-    console.log('Scanned Table')
     // TODO: this is broken!
     return { result: table.map(e => e.value), next: null };
   }
   return createMemoryTableLock({ get, set, scan, });
 };
-export const createBufferCompositeTable = /*:: <T>*/(store/*: BufferStore*/, castValue/*: Cast<T>*/)/*: CompositeTable<string, string, T>*/ => {
+export const createBufferCompositeTable = /*:: <T>*/(
+  store/*: BufferStore*/,
+  castValue/*: Cast<T>*/
+)/*: CompositeTable<string, string, T>*/ => {
   const castTable = createFaultTolerantArrayCaster(c.obj({ partition: c.str, sort: c.str, value: castValue }));
   const matchEntry = (partition, sort, e) => (e.partition === partition && e.sort === sort);
   const loadTable = async () => {

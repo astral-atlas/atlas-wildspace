@@ -31,7 +31,7 @@ const GMAudioDemo = () => {
       .map(track => client.asset.peek(track.trackAudioAssetId))
     );
     return assets.map(a => ({ id: a.description.id, url: a.downloadURL }));
-  }, [times.tracks])
+  }, [gameData.tracks])
   return h(AudioStateEditor, { gameData, state, client: roomClient, gameId: '0', roomId: '0', assets: assets || [] })
 };
 

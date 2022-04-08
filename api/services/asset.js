@@ -1,7 +1,7 @@
 // @flow strict
 /*:: import type { AssetID, AssetDescription, APIConfig, AWSS3AssetConfig } from '@astral-atlas/wildspace-models'; */
 /*:: import type { WildspaceData } from '@astral-atlas/wildspace-data'; */
-import { S3, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { v4 as uuid } from 'uuid';
@@ -17,12 +17,30 @@ export type AssetService = {
 export const createS3AssetService = (data/*: WildspaceData*/, config/*: AWSS3AssetConfig*/)/*: AssetService*/ => {
   const client = new S3({ region: config.region });
 
+  const calculateDownloadURL = async (key) => {
+    const { result } = await data.assetLinkCache.get(key, Date.now());
+    if (result) {
+      return result.downloadURL;
+    }
+
+    const getObject = new GetObjectCommand({
+      Key: key,
+      Bucket: config.bucket,
+    });
+    const durationSeconds = 60 * 60 * 24;
+    const downloadURL = await getSignedUrl(client, getObject, { expiresIn: durationSeconds })
+    await data.assetLinkCache.set(key, { downloadURL }, durationSeconds * 1000 + Date.now())
+
+    return downloadURL;
+  };
+
   const peek = async (id) => {
     const { result: description } = await data.assets.get(id);
     if (!description)
       throw new Error();
     const key = join(config.keyPrefix, description.id);
-    const downloadURL = `https://${config.bucket}.s3.amazonaws.com/${key}`;
+    const downloadURL = await calculateDownloadURL(key);
+
     return { description, downloadURL };
   };
   const put = async (MIMEType, bytes, name) => {
@@ -35,16 +53,15 @@ export const createS3AssetService = (data/*: WildspaceData*/, config/*: AWSS3Ass
       uploaded: Date.now(),
     };
     const key = join(config.keyPrefix, description.id);
-    const command = new PutObjectCommand({
+    const putObject = new PutObjectCommand({
       Key: key,
       Bucket: config.bucket,
       ContentType: MIMEType,
       ContentLength: bytes,
-      ACL: 'public-read'
     });
     await data.assets.set(description.id, description);
-    const uploadURL = await getSignedUrl(client, command);
-    const downloadURL = `https://${config.bucket}.s3.amazonaws.com/${key}`;
+    const uploadURL = await getSignedUrl(client, putObject, { expiresIn: 600 });
+    const downloadURL = await calculateDownloadURL(key);
 
     return { description, uploadURL, downloadURL };
   };

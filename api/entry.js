@@ -56,7 +56,7 @@ const main = async (configPath) => {
     const services = createServices(config);
     
     const [httpServer, wsServer] = createWildspaceServer(config, services);
-    const { httpOrigin, wsOrigin } = await listenServer(httpServer, config.port, 'localhost');
+    const { httpOrigin, wsOrigin } = await listenServer(httpServer, 5567, 'localhost');
     console.log(`Listening on ${httpOrigin} & ${wsOrigin}`)
   } catch (error) {
     console.error(error);

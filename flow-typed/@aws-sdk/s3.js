@@ -77,6 +77,9 @@ declare module '@aws-sdk/client-s3' {
   declare export class PutObjectCommand {
     constructor(input: PutObjectCommandInput): PutObjectCommand,
   }
+  declare export class GetObjectCommand {
+    constructor(input: GetObjectCommandInput): GetObjectCommand,
+  }
 
   declare export type S3ClientConfig = {
     region?: string,

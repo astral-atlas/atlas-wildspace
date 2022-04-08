@@ -11,6 +11,7 @@ import { c } from '@lukekaalim/cast';
 
 import { createBufferTable, createBufferCompositeTable } from "./sources/table.js";
 import { createMemoryChannel } from "./sources/channel.js";
+import { createExpiryTable } from "./sources/expiry.js";
 
 /*::
 type DataConstructors = {
@@ -22,6 +23,7 @@ type DataConstructors = {
 export const createBufferWildspaceData = ({ createBufferStore, createBufferDB }/*: DataConstructors*/)/*: { data: WildspaceData }*/ => {
   const assets = createBufferTable(createBufferStore('assets'), m.castAssetDescription);
   const assetData = createBufferDB('assetData');
+  const assetLinkCache = createExpiryTable(createBufferStore('asset_links'), c.obj({ downloadURL: c.str }))
 
   const game = createBufferTable(createBufferStore('game'), c.obj({ id: m.castGameId, name: c.str, gameMasterId: sm.castUserId }));
   const gameUpdates = createMemoryChannel();
@@ -44,6 +46,7 @@ export const createBufferWildspaceData = ({ createBufferStore, createBufferDB }/
   const data = {
     assets,
     assetData,
+    assetLinkCache,
 
     game,
     gameUpdates,

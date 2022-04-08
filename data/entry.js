@@ -3,6 +3,7 @@
 /*:: import type { Table, CompositeTable } from './sources/table.js'; */
 /*:: import type { BufferStore, BufferDB } from './sources/buffer.js'; */
 /*:: import type { Channel } from './sources/channel.js'; */
+/*:: import type { ExpiryTable } from './sources/expiry.js'; */
 
 /*::
 import type {
@@ -34,6 +35,8 @@ import { createBufferWildspaceData } from "./data.js";
 export type WildspaceData = {
   assets: Table<AssetID, AssetDescription>,
   assetData: BufferDB<AssetID>,
+
+  assetLinkCache: ExpiryTable<{ downloadURL: string }>,
 
   game: Table<GameID, { id: GameID, name: string, gameMasterId: UserID }>,
   gameUpdates: Channel<GameID, GameUpdate>,

@@ -6,7 +6,7 @@ import { c } from "@lukekaalim/cast";
 import { castAudioPlaylistId } from "../audio.js";
 
 /*::
-export type RoomPlaylistPlaybackState = {
+export type PlaylistPlaybackState = {
   id: AudioPlaylistID,
 
   mode:
@@ -19,12 +19,12 @@ export type RoomPlaylistPlaybackState = {
 export type RoomAudioState = {
   volume: number,
   playback:
-    | { type: 'playlist', playlist: RoomPlaylistPlaybackState }
+    | { type: 'playlist', playlist: PlaylistPlaybackState }
     | { type: 'none' },
 };
 */
 
-export const castRoomPlaylistPlaybackState/*: Cast<RoomPlaylistPlaybackState>*/ = c.obj({
+export const casPlaylistPlaybackState/*: Cast<PlaylistPlaybackState>*/ = c.obj({
   id: castAudioPlaylistId,
   mode: c.or('type', {
     'paused': c.obj({ type: c.lit('paused'), progress: c.num }),
@@ -36,12 +36,12 @@ export const castRoomAudioState/*: Cast<RoomAudioState>*/ = c.obj({
   volume: c.num,
   playback: c.or('type', {
     'none': c.obj({ type: c.lit('none') }),
-    'playlist': c.obj({ type: c.lit('playlist'), playlist: castRoomPlaylistPlaybackState }),
+    'playlist': c.obj({ type: c.lit('playlist'), playlist: casPlaylistPlaybackState }),
   })
 })
 
 export const calculatePlaylistProgress = (
-  state/*: RoomPlaylistPlaybackState*/,
+  state/*: PlaylistPlaybackState*/,
   now/*: number*/
 )/*: number*/ => {
   switch (state.mode.type) {
@@ -52,11 +52,20 @@ export const calculatePlaylistProgress = (
   }
 }
 
+/*::
+export type PlaylistPlaybackTrack = {
+  index: number,
+  track: AudioTrack,
+  trackProgress: number,
+  offsets: number[]
+};
+*/
+
 export const calculatePlaylistCurrentTrack = (
-  state/*: RoomPlaylistPlaybackState*/,
+  state/*: PlaylistPlaybackState*/,
   playlistTracks/*: AudioTrack[]*/,
   now/*: number*/,
-)/*: ?{ index: number, track: AudioTrack, trackProgress: number, offsets: number[] }*/ => {
+)/*: ?PlaylistPlaybackTrack*/ => {
   if (playlistTracks.length === 0)
     return null;
 
