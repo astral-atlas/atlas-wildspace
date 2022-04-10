@@ -1,5 +1,5 @@
 resource "random_pet" "asset_bucket_name" {
-  length = 6
+  length = 4
 }
 resource "aws_s3_bucket" "asset_data" {
   bucket = "wildspace-data-${random_pet.asset_bucket_name.id}"
