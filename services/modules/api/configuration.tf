@@ -11,7 +11,7 @@ resource "aws_ssm_parameter" "api_config" {
     },
     "asset": {
       type: "awsS3",
-      bucket: aws_s3_bucket.assets.bucket,
+      bucket: aws_s3_bucket.asset_data.bucket,
       keyPrefix: "/wildspace/assets",
       region: "ap-southeast-2"
     },
