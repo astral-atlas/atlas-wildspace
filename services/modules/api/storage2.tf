@@ -1,9 +1,8 @@
 resource "random_pet" "asset_bucket_name" {
   length = 6
-  separator = "_"
 }
 resource "aws_s3_bucket" "asset_data" {
-  bucket = "wildspace_data_${random_pet.asset_bucket_name.id}"
+  bucket = "wildspace-data-${random_pet.asset_bucket_name.id}"
 }
 resource "aws_s3_bucket_acl" "asset_data_acl" {
   bucket = aws_s3_bucket.asset_data.id
