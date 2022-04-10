@@ -27,3 +27,4 @@ resource "aws_ssm_parameter" "api_config" {
     }
   })
 }
+
