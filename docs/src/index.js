@@ -66,7 +66,10 @@ const App = () => {
       navigation.navigate(new URL(link.href, navigation.location));
   }
 
-  const page = pages.find(p => p.link.href === navigation.location.pathname)
+  const page = pages.find(p => {
+    const url = new URL(p.link.href || '/', document.location.href);
+    return url.pathname === navigation.location.pathname;
+  })
 
   if (!page)
     return null;

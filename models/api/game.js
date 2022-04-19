@@ -111,3 +111,5 @@ export * from './game/characters.js';
 export * from './game/players.js';
 export * from './game/monsters.js';
 export * from './game/encounters.js';
+export * from './game/scene.js';
+export * from './game/location.js';

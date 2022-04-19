@@ -6,7 +6,10 @@ import { renderAppPage } from "./app.js";
 import { Wildspace } from './src/index.js';
 
 const main = () => {
-  renderAppPage(Wildspace)
+  render(
+    h(Wildspace),
+    (document.body/*: any*/)
+  )
 };
 
 main();

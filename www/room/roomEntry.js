@@ -20,7 +20,7 @@ import { loadConfig } from "../config";
 import { IdentityProvider, useIdentity, useMessenger } from "../hooks/identity.js";
 import { WildspaceApp, renderDocument } from "../app.js";
 import { useAPI, useGame, useRoom } from "../hooks/api.js";
-import { useNavigation } from "../hooks/navigation.js";
+import {  } from "../hooks/navigation.js";
 import { WildspaceHeader } from "../components/Header.js";
 import { useURLParam } from "../hooks/navigation";
 import { MapScene } from "./RoomMapScene.js";

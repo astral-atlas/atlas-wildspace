@@ -157,7 +157,10 @@ export const roomAudio/*: ResourceDescription<RoomAudio>*/ = {
 
   GET: {
     toQuery: c.obj({ roomId: castRoomId, gameId: castGameId }),
-    toResponseBody: c.obj({ type: c.lit('found'), audio: castRoomAudioState })
+    toResponseBody: c.or('type', {
+      'found': c.obj({ type: c.lit('found'), audio: castRoomAudioState }),
+      'not_found': c.obj({ type: c.lit('not_found') }),
+    }) 
   },
   PUT: {
     toQuery: c.obj({ roomId: castRoomId, gameId: castGameId }),

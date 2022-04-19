@@ -12,7 +12,7 @@ import { castGameId } from "./game.js";
 import { castEncounterState } from "./encounter.js";
 import { castRoomAudioState } from "./room/audio.js";
 
-export * from './room/audio.js';
+export * from './room/index.js';
 
 
 /*::

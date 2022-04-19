@@ -36,8 +36,9 @@ export const createS3AssetService = (data/*: WildspaceData*/, config/*: AWSS3Ass
 
   const peek = async (id) => {
     const { result: description } = await data.assets.get(id);
+    console.log(id);
     if (!description)
-      throw new Error();
+      return null
     const key = join(config.keyPrefix, description.id);
     const downloadURL = await calculateDownloadURL(key);
 

@@ -27,8 +27,8 @@ export const PlaylistLibraryDemo/*: Component<>*/ = ({}) => {
     const assetIds = tracksInGame
       .map(track => [track.trackAudioAssetId, track.coverImageAssetId].filter(Boolean))
       .flat(1);
-    const assetsData = await Promise.all(assetIds.map(id => client.asset.peek(id)))
-    return assetsData.map(d => ({ id: d.description.id, url: d.downloadURL }));
+    const assetsData = await Promise.all(assetIds.map(id => client.asset.peek(id).catch(err => null)))
+    return assetsData.filter(Boolean).map(d => ({ id: d.description.id, url: d.downloadURL }));
   }, [tracksInGame])
 
   return h('div', { style: { height: '600px', display: 'flex' }}, [

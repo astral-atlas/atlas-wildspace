@@ -1,0 +1,26 @@
+
+.cornersLayout {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+
+.top {
+  position: absolute;
+  top: 24px;
+}
+
+.left {
+  position: absolute;
+  left: 24px;
+}
+
+.right {
+  position: absolute;
+  right: 24px;
+}
+
+.bottom {
+  position: absolute;
+  bottom: 24px;
+}

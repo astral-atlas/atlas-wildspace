@@ -9,15 +9,17 @@
 /*:: import type { PlayersClient } from './game/players.js'; */
 /*:: import type { EncounterClient } from './game/encounter.js'; */
 
-import { createJSONResourceClient } from '@lukekaalim/http-client';
-import { createJSONConnectionClient } from '@lukekaalim/ws-client';
-
 import { gameAPI } from "@astral-atlas/wildspace-models";
 import { createCharacterClient } from './game/characters.js';
 import { createPlayersClient } from './game/players.js';
 import { createEncounterClient } from './game/encounter.js';
+import { createSceneClient } from './game/scene.js';
+import { createLocationClient } from "./game/locations.js";
 
 /*::
+import type { SceneClient } from "./game/scene";
+import type { LocationClient } from "./game/locations";
+
 export type GameClient = {
   read: (gameId: GameID) => Promise<Game>,
   list: () => Promise<$ReadOnlyArray<Game>>,
@@ -29,6 +31,8 @@ export type GameClient = {
   character: CharacterClient,
   players: PlayersClient,
   encounter: EncounterClient,
+  scene: SceneClient,
+  location: LocationClient
 };
 */
 
@@ -76,5 +80,7 @@ export const createGameClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceCli
     character: createCharacterClient(http),
     players: createPlayersClient(http),
     encounter: createEncounterClient(http),
+    scene: createSceneClient(http),
+    location: createLocationClient(http),
   };
 }

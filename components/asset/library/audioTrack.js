@@ -67,7 +67,7 @@ export const TracksLibrary/*: Component<TracksLibraryProps>*/ = ({
     };
     const track = await trackClient.create(
       gameId, title, artist,
-      mimeLib.getType(audioFile.name),
+      audioFile.type || mimeLib.getType(audioFile.name) || 'application/octet-stream',
       trackLengthMs,
       new Uint8Array(await audioFile.arrayBuffer()),
       { cover }

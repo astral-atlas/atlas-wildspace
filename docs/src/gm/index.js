@@ -28,9 +28,9 @@ const GMAudioDemo = () => {
   const roomClient = { setAudio };
   const [assets] = useAsync(async () => {
     const assets = await Promise.all(gameData.tracks
-      .map(track => client.asset.peek(track.trackAudioAssetId))
+      .map(track => client.asset.peek(track.trackAudioAssetId).catch(e => null))
     );
-    return assets.map(a => ({ id: a.description.id, url: a.downloadURL }));
+    return assets.filter(Boolean).map(a => ({ id: a.description.id, url: a.downloadURL }));
   }, [gameData.tracks])
   return h(AudioStateEditor, { gameData, state, client: roomClient, gameId: '0', roomId: '0', assets: assets || [] })
 };

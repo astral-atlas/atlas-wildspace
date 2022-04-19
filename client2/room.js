@@ -57,8 +57,10 @@ export const createRoomClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceCli
     return { close };
   };
   const readAudio = async (gameId, roomId) => {
-    const { body: { audio }} = await roomAudioResource.GET({ query: { roomId, gameId }});
-    return audio || null;
+    const { body } = await roomAudioResource.GET({ query: { roomId, gameId }});
+    if (body.type === 'not_found')
+      return null;
+    return body.audio;
   }
   const setAudio = async (gameId, roomId, audio) => {
     await roomAudioResource.PUT({ query: { roomId, gameId }, body: { audio }});

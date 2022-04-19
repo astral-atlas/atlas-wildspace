@@ -1,0 +1,30 @@
+.userTablet {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+  border-radius: 16px;
+  background-color: white;
+
+  color: black;
+  text-transform: lowercase;
+
+  padding: 8px 32px 8px 32px;
+}
+.userTablet a {
+  color: inherit;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.userTabletLogoutButton {
+  border: none;
+  background: none;
+  margin: 0;
+  padding: 0;
+  
+  font-size: inherit;
+  font-family: inherit;
+  text-decoration: underline;
+
+  color: black;
+  cursor: pointer;
+}

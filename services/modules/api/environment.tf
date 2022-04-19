@@ -18,47 +18,19 @@ variable "certificate" {
 
 locals {
   launch_config = [
-    {
-      namespace: "aws:autoscaling:launchconfiguration",
-      name: "IamInstanceProfile",
-      value: aws_iam_instance_profile.api_instance_profile.name
-    },
+    { namespace: "aws:autoscaling:launchconfiguration",  name: "IamInstanceProfile", value: aws_iam_instance_profile.api_instance_profile.name },
   ]
   logs = [
-    {
-      namespace: "aws:elasticbeanstalk:cloudwatch:logs",
-      name: "StreamLogs",
-      value: true
-    },
-    {
-      namespace: "aws:elasticbeanstalk:cloudwatch:logs",
-      name: "DeleteOnTerminate",
-      value: true
-    },
+    { namespace: "aws:elasticbeanstalk:cloudwatch:logs", name: "StreamLogs", value: true },
+    { namespace: "aws:elasticbeanstalk:cloudwatch:logs", name: "DeleteOnTerminate",  value: true },
   ]
   environment = [
-    {
-      namespace: "aws:elasticbeanstalk:environment",
-      name: "LoadBalancerType",
-      value: "application"
-    },
+    { namespace: "aws:elasticbeanstalk:environment", name: "LoadBalancerType", value: "application" },
   ]
   vpc = [
-    {
-      namespace: "aws:ec2:vpc",
-      name: "VPCId",
-      value: var.environment_network.id
-    },
-    {
-      namespace: "aws:ec2:vpc",
-      name: "Subnets",
-      value: join(",", sort(var.environment_network.private_subnets))
-    },
-    {
-      namespace: "aws:ec2:vpc",
-      name: "ELBSubnets",
-      value: join(",", sort(var.environment_network.public_subnets))
-    },
+    { namespace: "aws:ec2:vpc", name: "VPCId", value: var.environment_network.id },
+    { namespace: "aws:ec2:vpc", name: "Subnets", value: join(",", sort(var.environment_network.private_subnets)) },
+    { namespace: "aws:ec2:vpc", name: "ELBSubnets", value: join(",", sort(var.environment_network.public_subnets)) },
   ]
   ssl = [
     { namespace: "aws:elbv2:listener:443", name: "ListenerEnabled", value: true },

@@ -18,6 +18,8 @@ import type {
   RoomAudioState,
   MonsterID, Monster,
 } from "@astral-atlas/wildspace-models";
+
+import type { WildspaceGameData } from "./game";
 */
 import { join, resolve } from 'path';
 import { S3 } from "@aws-sdk/client-s3";
@@ -46,6 +48,8 @@ export type WildspaceData = {
   characters: CompositeTable<GameID, CharacterID, Character>,
   encounters: CompositeTable<GameID, EncounterID, Encounter>,
   monsters: CompositeTable<GameID, MonsterID, Monster>,
+
+  gameData: WildspaceGameData,
 
   room: CompositeTable<GameID, RoomID, Room>,
   roomAudio: CompositeTable<GameID, RoomID, RoomAudioState>,

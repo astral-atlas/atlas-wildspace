@@ -8,7 +8,7 @@ import { useIdentity } from "../hooks/identity";
 import { useAsync } from '../hooks/async';
 import { createWebClient } from "@lukekaalim/http-client";
 import { useAPI } from '../hooks/api';
-import { useNavigation } from '../hooks/navigation';
+import { } from '../hooks/navigation';
 
 const GameSelector = () => {
   const { navigate, url } = useNavigation();

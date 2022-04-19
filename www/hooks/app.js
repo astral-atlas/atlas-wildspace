@@ -7,7 +7,7 @@ import { createContext, useContext } from "@lukekaalim/act";
 
 /*::
 export type WildspaceState = {
-  proof: LinkProof,
+  proof: ?LinkProof,
   config: WWWConfig
 };
 */

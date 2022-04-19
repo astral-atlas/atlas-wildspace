@@ -5,7 +5,7 @@ import type { Component, ElementNode } from '@lukekaalim/act';
 import type { CubicBezierAnimation, TimeSpan } from '@lukekaalim/act-curve';
 */
 import { h, useEffect, useMemo, useRef, useState } from '@lukekaalim/act';
-import { Document } from '@lukekaalim/act-rehersal';
+import { Document, Markdown } from '@lukekaalim/act-rehersal';
 import { useTimeSpan, maxSpan } from '@lukekaalim/act-curve';
 import styles from './layouts.module.css';
 import {
@@ -13,6 +13,10 @@ import {
   useAnimatedNumber,
 } from "@lukekaalim/act-curve/bezier";
 import { calculateSpanProgress } from "@lukekaalim/act-curve/schedule";
+
+import layoutsText from './layouts.md?raw';
+import { CompassLayout, CompassLayoutMinimap, CornersLayout, useCompassKeysDirection, useElementKeyboard, useKeyboardTrack, useKeyboardTrackEmitter } from '@astral-atlas/wildspace-components';
+import { Vector2 } from "three";
 
 /*::
 export type GridMenuProps = {
@@ -90,7 +94,7 @@ const GridLayout = ({ rows, containerProps }) => {
 const ScrollingGridLayout/*: Component<GridMenuProps>*/ = ({ rows, position }) => {
   const scrollElementRef = useRef/*:: <?HTMLElement>*/();
 
-  const anim = useAnimatedVector2(position, position, 3);
+  const anim = useAnimatedVector2(position, position, 3, 200);
 
   useBezier2DAnimation(anim, ({ position }) => {
     const { current: element } = scrollElementRef;
@@ -225,7 +229,6 @@ export const Components/*: Component<{}>*/ = () => {
   }
 
   return [
-    h('h1', {}, 'Layout'),
     h('select', { onChange: e => setActiveCompassPosition(e.target.value) }, [
       compassPositions.map((r, y) => r.map((p, x) =>
         h('option', { value: p, selected: activeCompassPosition === p }, `${p} (${x}, ${y})`))),
@@ -240,9 +243,101 @@ export const Components/*: Component<{}>*/ = () => {
   ];
 };
 
+const LayoutDemo = ({ children }) => {
+  return h('div', { style: { position: 'relative', width: '100%', height: '512px', overflow: 'auto' } }, [
+    h('div', {  style: {
+      position: 'relative',
+      width: '100%', height: '100%',
+      maxWidth: '100%', maxHeight: '100%',
+      border: '1px solid black', boxSizing: 'border-box',
+      resize: 'both', overflow: 'hidden'
+    } }, [
+      children
+    ]),
+  ])
+}
+
+const CornersDemo = () => {
+  return h(LayoutDemo, {}, [
+    h(CornersLayout, {
+      topLeft: 'topLeft',
+      topRight: 'topRight',
+      bottomLeft: 'bottomLeft',
+      bottomRight: 'bottomRight',
+    }),
+  ]);
+}
+
+const DemoScreen = ({ children, backgroundColor }) => {
+  return h('div', { classList: [styles.demoScreen], style: { backgroundColor } }, children)
+}
+
+const demoScreens = [
+  {
+    content: h(DemoScreen, { backgroundColor: `hsl(${Math.random() * 255}, 50%, 70%)` }, 'Center!'),
+    position: new Vector2(0, 0),
+    icon: 'C',
+  },
+  {
+    content: h(DemoScreen, { backgroundColor: `hsl(${Math.random() * 255}, 50%, 70%)` }, 'Above!'),
+    position: new Vector2(0, 1),
+    icon: 'N',
+  },
+  {
+    content: h(DemoScreen, { backgroundColor: `hsl(${Math.random() * 255}, 50%, 70%)` }, 'Left!'),
+    position: new Vector2(-1, 0),
+    icon: 'E',
+  },
+  {
+    content: h(DemoScreen, { backgroundColor: `hsl(${Math.random() * 255}, 50%, 70%)` }, 'Bottom Right Corner!'),
+    position: new Vector2(1, -1),
+    icon: 'SW',
+  },
+]
+
+const Compass2Demo = () => {
+  const ref = useRef();
+  const emitter = useElementKeyboard(ref);
+  const track = useKeyboardTrack(emitter);
+  const trackEmitter = useKeyboardTrackEmitter(track);
+
+  const [direction, setDirection] = useCompassKeysDirection(trackEmitter, demoScreens)
+
+  return h('div', { ref }, [
+    h(CompassLayoutMinimap, {
+      direction,
+      screens: demoScreens,
+      onScreenClick: screen => setDirection(screen.position)
+    }),
+    h(LayoutDemo, {}, [
+      h(CompassLayout, {
+        direction,
+        screens: demoScreens,
+      }),
+    ])
+  ]);
+}
+
+const Demo = ({ node }) => {
+  switch (node.attributes.name) {
+    case 'compass':
+      return h(Components);
+    case 'corners':
+      return h(CornersDemo);
+    case 'compass2':
+      return h(Compass2Demo)
+    default:
+      throw new Error();
+  }
+};
+
+const directives = {
+  demo: Demo,
+}
+
 export const layoutsPage/*: Page*/ = {
   link: { href: '/layout', name: 'Layout', children: [] },
-  content: h(Document, {}, h(Components)),
+  content: h(Document, {}, h(Markdown, { text: layoutsText, directives })),
 };
 
 export const layoutsPages = [

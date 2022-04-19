@@ -55,6 +55,22 @@ export const EditorTextInput/*: Component<TextEditorProps>*/ = ({
   ]);
 };
 
+export const EditorTextAreaInput/*: Component<TextEditorProps>*/ = ({
+  text = '', label, disabled,
+  onTextChange, onTextInput
+}) => {
+  const onChange = onTextChange && ((event) => {
+    onTextChange(event.target.value);
+  });
+  const onInput = onTextInput && ((event) => {
+    onTextInput(event.target.value);
+  });
+  return h('label', { classList: [styles.editorRoot] }, [
+    h('span', {}, label),
+    h('textarea', { value: text, onInput, onChange, disabled })
+  ]);
+};
+
 /*::
 export type SingleFileEditorProps = {
   label?: string,

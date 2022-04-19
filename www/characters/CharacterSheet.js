@@ -15,7 +15,7 @@ import { BackgroundBox, WordInput } from "../components/5e.js";
 import styles from './characters.module.css';
 import { WildspaceHeader } from '../components/Header.js';
 import { StarfieldScene } from './starfieldScene.js';
-import { useNavigation, useURLParam } from '../hooks/navigation.js';
+import { useURLParam } from '../hooks/navigation.js';
 import { useConnection } from "../hooks/connect";
 
 /*::

@@ -12,6 +12,7 @@ import { c } from '@lukekaalim/cast';
 import { createBufferTable, createBufferCompositeTable } from "./sources/table.js";
 import { createMemoryChannel } from "./sources/channel.js";
 import { createExpiryTable } from "./sources/expiry.js";
+import { createBufferWildspaceGameData } from './game.js';
 
 /*::
 type DataConstructors = {
@@ -29,6 +30,8 @@ export const createBufferWildspaceData = ({ createBufferStore, createBufferDB }/
   const gameUpdates = createMemoryChannel();
   const gameParticipation = createBufferCompositeTable(createBufferStore('game_participation'), c.obj({ gameId: m.castGameId, joined: c.bool }));
   const gamePlayers = createBufferCompositeTable(createBufferStore('game_players'), c.obj({ userId: sm.castUserId, joined: c.bool }));
+
+  const gameData = createBufferWildspaceGameData({ createBufferStore });
 
   const characters = createBufferCompositeTable(createBufferStore('characters'), m.castCharacter);
   const encounters = createBufferCompositeTable(createBufferStore('encounters'), m.castEncounter);
@@ -52,6 +55,8 @@ export const createBufferWildspaceData = ({ createBufferStore, createBufferDB }/
     gameUpdates,
     gameParticipation,
     gamePlayers,
+
+    gameData,
 
     characters,
     encounters,

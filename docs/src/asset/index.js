@@ -7,6 +7,7 @@ import { Document, Markdown } from "@lukekaalim/act-rehersal";
 import assetText from './index.md?raw';
 import { AssetGridDemo } from "./assetGrid.js";
 import { audioPage, audioPages } from "./audio";
+import { assetScenePage, assetScenePages } from "./scene";
 
 const Demo = ({ node }) => {
   switch (node.attributes.name) {
@@ -25,10 +26,12 @@ export const assetPage/*: Page*/ = {
   content: h(Document, {}, h(Markdown, { text: assetText, directives })),
   link: { children: [
     audioPage.link,
+    assetScenePage.link,
   ], name: 'Assets', href: '/assets' }
 }
 
 export const assetPages/*: Page[]*/ = [
   assetPage,
-  ...audioPages
+  ...audioPages,
+  ...assetScenePages
 ];

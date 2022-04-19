@@ -23,11 +23,16 @@ label.editorRoot span {
   flex-direction: row;
 }
 
-.editorRoot input, .editorRoot select, button.editorRoot {
+.editorRoot input, .editorRoot select, button.editorRoot, .editorRoot textarea {
   font-size: inherit;
+  font-family: inherit;
 }
 .editorRoot input[type=text] {
   padding: 4px;
+}
+.editorRoot textarea {
+  padding: 4px;
+  resize: vertical;
 }
 .editorRoot input[type=checkbox] {
   height: 1em;

@@ -12,7 +12,6 @@ import { identityContext } from './hooks/identity.js';
 import { apiContext } from './hooks/api.js';
 import { useAsync } from "./hooks/async.js";
 import { useStoredValue } from './hooks/storage.js';
-import { navigationContext } from "./hooks/navigation.js";
 
 import { identityStore } from "./lib/storage.js";
 import { Login } from './pages/login.js';
@@ -65,14 +64,10 @@ export const WildspaceApp/*: Component<WildspaceAppProps>*/ = ({ children, initi
   if (!config || !api || !navigation)
     return h('p', {}, `Loading`);
 
-  if (!identity)
-    return h(Login)
-  const { proof } = identity;
-
-  const wildspaceState = useMemo(() => ({ config, proof }), [config, proof])
+  const wildspaceState = useMemo(() => ({ config, proof: identity && identity.proof }), [config, identity])
 
   return (
-    h(wildspaceStateContext.Provider, { value:wildspaceState },
+    h(wildspaceStateContext.Provider, { value: wildspaceState },
       h(apiContext.Provider, { value: api },
         h(navigationContext.Provider, { value: navigation }, children)))
   );

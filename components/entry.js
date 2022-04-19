@@ -27,7 +27,12 @@ export * from './editor/index.js';
 export * from './utils/index.js';
 
 
-export * from './game/data.js';
-export * from './game/audio.js';
+export * from './game/index.js';
 
 export * from './navigation/index.js';
+export * from './user/index.js';
+export * from './scenes/index.js';
+export * from './ui/index.js';
+export * from './keyboard/index.js';
+export * from './subscription/index.js';
+export * from './layout/index.js';

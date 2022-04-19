@@ -27,12 +27,17 @@ export type ImageGraphic = {
   source: string,
   alternativeText: string,
 }
+export type ColorGraphic = {
+  type: 'color',
+  color: string,
+}
 
 export type Graphic =
   | ImageGraphic
+  | ColorGraphic
 
 export type LocationExposition = {
-  content: MarkdownASTNode,
+  content: string | MarkdownASTNode,
   background: Graphic
 };
 */
@@ -89,11 +94,14 @@ export const LocationExpositionRenderer/*: Component<{ exposition: ?LocationExpo
   return anims.map(anim => {
     return h('div', { key: anim.value, class: styles.scene, ref: setRef(anim.value) }, [
       h('div', { class: styles.background }, [
-        h('img', { src: anim.value.background.source }),
+        anim.value.background.type === 'image' && h('img', { src: anim.value.background.source }),
+        anim.value.background.type === 'color' && h('div', { class: styles.background, style: { backgroundColor: anim.value.background.color } }),
         h('div', { class: styles.overlay }),
       ]),
       h('article', { class: styles.content }, [
-        h(MarkdownASTRenderer, { root: anim.value.content })
+        typeof anim.value.content === 'string'
+          ? anim.value.content
+          : h(MarkdownASTRenderer, { root: anim.value.content })
       ]),
     ])
   });

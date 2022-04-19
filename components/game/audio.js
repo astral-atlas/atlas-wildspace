@@ -197,6 +197,9 @@ export const AudioPlaylistStateEditor/*: Component<AudioPlaylistStateEditorProps
     await client.setAudio(gameId, roomId, nextAudioState);
   }
 
+  console.log(currentAsset, currentTrack)
+  console.log(assets)
+
   return [
     !!currentAsset && h('audio', { src: currentAsset.url, ref: audioRef, controls: true, onSeeked, onPlay }),
     h('progress', { ref: progressRef, min: 0, max: 100, step: 0.001 }),

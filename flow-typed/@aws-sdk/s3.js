@@ -66,12 +66,38 @@ declare module '@aws-sdk/client-s3' {
   declare export type DeleteObjectCommandOutput = {
     DeleteMarker: boolean,
   };
+  declare interface ListObjectsInput {
+    Bucket: string,
+  }
+  declare interface ListObjectsOutput {
+    Contents: ({ Key: string })[],
+  }
+  declare interface HeadObjectInput {
+    Bucket: string,
+    Key: string,
+  }
+  declare interface HeadObjectOutput {
+    ContentType: string,
+  }
+  declare interface CopyObjectInput {
+    CopySource: string,
+    Bucket: string,
+    Key: string,
+    ACL?: string,
+  }
+  declare interface CopyObjectOutput {
+    
+  }
 
   declare export class S3 {
     constructor(config: S3ClientConfig): S3,
     putObject(args: PutObjectCommandInput): Promise<PutObjectCommandOutput>,
     getObject(args: GetObjectCommandInput): Promise<GetObjectCommandOutput>,
     deleteObject(args: DeleteObjectCommandInput): Promise<DeleteObjectCommandOutput>,
+
+    listObjectsV2(ListObjectsInput): Promise<ListObjectsOutput>,
+    headObject(HeadObjectInput): Promise<HeadObjectOutput>,
+    copyObject(CopyObjectInput): Promise<CopyObjectOutput>,
   }
 
   declare export class PutObjectCommand {

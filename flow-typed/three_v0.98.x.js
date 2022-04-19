@@ -23,6 +23,7 @@ declare module three {
     clampScalar(min: number, max: number): void;
     clone(): Vector2;
     copy (v: Vector2): void;
+    equals (v: Vector2): boolean;
     distanceTo(v: Vector2): void;
     distanceToManhattan(v: Vector2): number;
     distanceToSquared(v: Vector2): number;

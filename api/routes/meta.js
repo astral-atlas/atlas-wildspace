@@ -69,8 +69,9 @@ export const createMetaRoutes = (services/*: Services*/)/*: MetaRoutes*/ => {
     }
 
     return createJSONResourceRoutes(description, {
-      access: implementation.access,
-      cache: implementation.cache,
+      ...defaultOptions,
+      access: implementation.access || defaultOptions.access,
+      cache: implementation.cache || defaultOptions.cache,
 
       GET: implementation.GET && createAuthorizedResourceHandler(implementation.GET),
       POST: implementation.POST && createAuthorizedResourceHandler(implementation.POST),

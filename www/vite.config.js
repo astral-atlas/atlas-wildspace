@@ -9,7 +9,7 @@ export default {
     outDir: 'dist',
   },
   server: {
-    port: 8081
+    port: 8080
   },
   assetsInclude: [
     '**/*.gltf',

@@ -15,7 +15,7 @@ import { BackgroundBox } from "../components/5e";
 import styles from './characters.module.css';
 import { WildspaceHeader } from '../components/Header.js';
 import { StarfieldScene } from './starfieldScene.js';
-import { useNavigation, useURLParam } from '../hooks/navigation.js';
+import { useURLParam } from '../hooks/navigation.js';
 import { useConnection } from "../hooks/connect";
 import { CharacterSheet } from './CharacterSheet.js';
 import { WildspaceApp } from "../app";

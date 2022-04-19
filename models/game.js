@@ -2,7 +2,7 @@
 /*:: import type { UserID } from '@astral-atlas/sesame-models'; */
 /*:: import type { Cast } from "@lukekaalim/cast/main"; */
 
-import { c } from "@lukekaalim/cast"; 
+import { c, castEnum } from "@lukekaalim/cast"; 
 import { castUserId } from '@astral-atlas/sesame-models';
 
 
@@ -60,7 +60,11 @@ export type GameUpdate =
   | {| type: 'tracks' |}
   | {| type: 'playlists' |}
   | {| type: 'encounters' |}
+  | {| type: 'locations' |}
+  | {| type: 'non-player-characters' |}
+  | {| type: 'scenes' |}
 */
+
 
 export const castGameUpdate/*: Cast<GameUpdate>*/ = c.or('type', {
   'players':    c.obj({ type: (c.lit('players')/*: Cast<'players'>*/) }),
@@ -69,4 +73,10 @@ export const castGameUpdate/*: Cast<GameUpdate>*/ = c.or('type', {
   'tracks':     c.obj({ type: (c.lit('tracks')/*: Cast<'tracks'>*/)}),
   'playlists':  c.obj({ type: (c.lit('playlists')/*: Cast<'playlists'>*/)}),
   'encounters': c.obj({ type: (c.lit('encounters')/*: Cast<'encounters'>*/)}),
+
+  'locations':              c.obj({ type: c.lit('locations') }),
+  'non-player-characters':  c.obj({ type: c.lit('non-player-characters') }),
+  'scenes':                 c.obj({ type: c.lit('scenes') }),
 });
+
+export * from './game/index.js'

@@ -1,0 +1,29 @@
+.fullscreenToggle {
+  background: none;
+  border: none;
+
+  margin: 0;
+  padding: 0;
+
+  opacity: 0.2;
+  transform: scale(1);
+
+  transition: all 0.2s;
+  display: block;
+  cursor: pointer;
+
+}
+.fullscreenToggle:hover {
+  opacity: 1;
+  transform: scale(1.05);
+}
+.fullscreenToggle:focus {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.fullscreenToggle img {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
