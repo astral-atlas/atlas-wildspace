@@ -3,24 +3,30 @@
   position: absolute;
   height: 100%;
   width: 100%;
+
+  pointer-events: none;
 }
 
 .top {
+  pointer-events: all;
   position: absolute;
   top: 24px;
 }
 
 .left {
+  pointer-events: all;
   position: absolute;
   left: 24px;
 }
 
 .right {
+  pointer-events: all;
   position: absolute;
   right: 24px;
 }
 
 .bottom {
+  pointer-events: all;
   position: absolute;
   bottom: 24px;
 }

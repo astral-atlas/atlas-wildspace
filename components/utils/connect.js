@@ -1,18 +1,18 @@
 // @flow strict
 import { h, useMemo, useEffect, useState, useContext, createContext, useRef } from "@lukekaalim/act";
 
-export const useConnection = /*:: <T>*/(
-  createConnection/*: (T => void) => Promise<? (() => mixed)>*/, initial/*: T*/
-)/*: T*/ => {
-  const [state, setState] = useState(initial);
+export const useConnection = (
+  createConnection/*: () => Promise<? (() => mixed)>*/,
+  deps/*: mixed[]*/ = []
+)/*: void*/ => {
+  
   useEffect(() => {
-    const connectionPromise = createConnection(setState);
+    const connectionPromise = createConnection();
 
     return async () => {
       const connection = await connectionPromise;
       connection && connection()
     };
-  }, [])
+  }, deps)
 
-  return state;
 }

@@ -7,11 +7,12 @@ import { locationAPI } from "@astral-atlas/wildspace-models";
 /*::
 import type {
   GameID,
-  Location, LocationID
+  Location, LocationID,
+  AssetInfoDatabase
 } from '@astral-atlas/wildspace-models';
 
 export type LocationClient = {
-  list: (gameId: GameID) => Promise<$ReadOnlyArray<Location>>,
+  list: (gameId: GameID) => Promise<[$ReadOnlyArray<Location>, AssetInfoDatabase]>,
   create: (gameId: GameID) => Promise<Location>,
   update: (gameId: GameID, updatedLocation: Location) => Promise<void>,
   destroy: (gameId: GameID, locationId: LocationID) => Promise<void>,
@@ -22,8 +23,8 @@ export const createLocationClient = (service/*: HTTPServiceClient*/)/*: Location
   const locationsResource = service.createResource(locationAPI["/games/location"]);
 
   const list = async (gameId) => {
-    const { body: { location } } = await locationsResource.GET({ query: { gameId } });
-    return location;
+    const { body: { location, relatedAssets } } = await locationsResource.GET({ query: { gameId } });
+    return [location, relatedAssets];
   };
   const create = async (gameId) => {
     const { body: { location } } = await locationsResource.POST({ body: { gameId } });

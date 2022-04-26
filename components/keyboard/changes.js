@@ -31,6 +31,11 @@ const whitelist = new Set([
   'ArrowLeft',
   'ArrowRight',
 ]);
+const elementBlocklist = new Set([
+  'INPUT',
+  'SELECT',
+  'TEXTAREA'
+]);
 
 export const useElementKeyboard = /*:: <T: Element>*/(
   elementRef/*: Ref<?T>*/,
@@ -48,6 +53,8 @@ export const useElementKeyboard = /*:: <T: Element>*/(
     const currentKeys = new Set(initKeys);
 
     const onKeyDown = (event/*: KeyboardEvent*/) => {
+      if (event.target instanceof HTMLElement && elementBlocklist.has(event.target.tagName))
+        return;
       if (event.code === 'CapsLock')
         return;
 
@@ -63,6 +70,8 @@ export const useElementKeyboard = /*:: <T: Element>*/(
         subscriber(keys, event);
     }
     const onKeyUp = (event/*: KeyboardEvent*/) => {
+      if (event.target instanceof HTMLElement && elementBlocklist.has(event.target.tagName))
+        return;  
       if (!whitelist.has(event.code))
         return;
 

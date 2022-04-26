@@ -4,28 +4,48 @@
   AudioPlaylist, AudioTrack,
   PlaylistPlaybackState, PlaylistPlaybackTrack
 } from '@astral-atlas/wildspace-models'; */
-/*:: import type { LocalAsset } from "./track"; */
+/*::
+import type { AssetDownloadURLMap } from "../asset/map";
+*/
+
+import { useAudioPlayback } from "../game/audio";
+
+
 /*::
 export type PlaylistPlayerProps = {
-  playlists: AudioPlaylist[],
-  tracks: AudioTrack[],
-  assets: LocalAsset[],
+  playlists: $ReadOnlyArray<AudioPlaylist>,
+  tracks: $ReadOnlyArray<AudioTrack>,
+  assets: AssetDownloadURLMap,
   state: PlaylistPlaybackState,
+  volume?: number,
 }
 */
 import { calculatePlaylistCurrentTrack } from "@astral-atlas/wildspace-models";
 
-import { useEffect, useState } from "@lukekaalim/act";
+import { h, useEffect, useRef, useState } from "@lukekaalim/act";
 
 export const PlaylistPlayer/*: Component<PlaylistPlayerProps>*/ = ({
   playlists,
   tracks,
   assets,
-  state
+  state,
+  volume = 1,
 }) => {
-  const current = usePlaylistPlaybackTrack(tracks, state);
-  const asset = current && assets.find(a => a.id === current.track.id)
-  return []
+  const ref = useRef();
+  const playlist = playlists.find(p => p.id === state.id);
+  if (!playlist)
+    return null;
+  
+  const playlistTracks = playlist.trackIds.map(id => tracks.find(t => t.id === id)).filter(Boolean);
+  const current = usePlaylistPlaybackTrack(playlistTracks, state, [playlist, assets, volume === 0]);
+  const asset = current && assets.get(current.track.trackAudioAssetId)
+  
+  useAudioPlayback(ref, current, state, [playlist, asset, volume === 0])
+
+  if (!asset)
+    return null;
+
+  return h('audio', { ref, src: asset.downloadURL, volume });
 }
 
 export const usePlaylistPlaybackTrack = (

@@ -6,6 +6,7 @@ import { SceneLibrary } from "./scene";
 
 import styles from './AssetLibrary.module.css';
 import { LocationLibrary } from "./LocationLibrary.js";
+import { AudioPlaylistLibrary } from "./audioPlaylist.js";
 
 /*::
 import type { Component } from "@lukekaalim/act";
@@ -71,11 +72,13 @@ const AssetLibraryModeInput = ({ mode, onModeSet }) => {
 const AssetLibrarySubLibrary = ({ mode, data, client, gameId }) => {
   switch (mode) {
     case 'location':
-      return h(LocationLibrary, { assets: new Map(), data, client, gameId })
+      return h(LocationLibrary, { assets: data.assets, data, client, gameId })
     case 'scene':
-      return h(SceneLibrary, { assets: new Map(), data, client, gameId });
+      return h(SceneLibrary, { assets: data.assets, data, client, gameId });
     case 'track':
-      //return h(TracksLibrary, { })
+      return h(TracksLibrary, { gameData: data, gameId, playlistClient: client.audio.playlist, trackClient: client.audio.tracks })
+    case 'playlist':
+      return h(AudioPlaylistLibrary, { gameId, playlist: client.audio.playlist, gameData: data })
     default:
       return 'Pick a mode';
   }

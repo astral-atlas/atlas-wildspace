@@ -25,7 +25,7 @@ import {
 import { maxSpan, useTimeSpan } from "@lukekaalim/act-curve/schedule";
 
 
-const useRefMap = /*:: <K, V>*/()/*: [(key: K) => (ref: null | V) => void, Map<K, V>]*/ => {
+export const useRefMap = /*:: <K, V>*/()/*: [(key: K) => (ref: null | V) => void, Map<K, V>]*/ => {
   const [map] = useState(new Map());
   const useKeyedRef = useMemo(() => (key) => (value) => {
     if (value === null)

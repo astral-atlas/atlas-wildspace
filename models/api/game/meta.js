@@ -7,16 +7,23 @@ import type { ResourceDescription, ConnectionDescription } from "@lukekaalim/net
 import type {
   GameID, Game,
 } from '../../game.js';
+import type {
+  AssetID, AssetDescription, AssetInfo
+} from '../../asset.js';
 */
 import { c } from '@lukekaalim/cast';
 import { castGameId } from '../../game.js';
+import { castAssetDescription, castAssetID } from "../../asset.js";
 
 /*::
 export type CRUDGameAPI<Resource, ResourceName: string, ResourceID: string> = {|
   GET: {
     query: { gameId: GameID },
     request: empty,
-    response: { type: 'found', [ResourceName]: $ReadOnlyArray<Resource> },
+    response: {
+      type: 'found', [ResourceName]: $ReadOnlyArray<Resource>,
+      relatedAssets: $ReadOnlyArray<[AssetID, ?AssetInfo]>
+    },
   },
   POST: {
     query: empty,
@@ -32,7 +39,8 @@ export type CRUDGameAPI<Resource, ResourceName: string, ResourceID: string> = {|
     query: { gameId: GameID, [ResourceName]: ResourceID },
     request: empty,
     response: { type: 'deleted' },
-  }
+  },
+  PATCH: any,
 |}
 */
 
@@ -47,7 +55,14 @@ export const createCRUDGameAPI = /*:: <Resource, ResourceName: string, ResourceI
 
     GET: {
       toQuery: c.obj({ gameId: castGameId }),
-      toResponseBody: c.obj({ type: c.lit('found'), [name]: c.arr(castResource) }),
+      toResponseBody: c.obj({
+        type: c.lit('found'),
+        [name]: c.arr(castResource),
+        relatedAssets: c.arr(c.tup([
+          castAssetID,
+          c.maybe(c.obj({ description: castAssetDescription, downloadURL: c.str }))
+        ]))
+      }),
     },
     POST: {
       toRequestBody: c.obj({ gameId: castGameId }),

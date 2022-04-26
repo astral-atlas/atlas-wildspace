@@ -4,7 +4,7 @@ import type { Component } from '@lukekaalim/act';
 import type { PlaylistClient } from "@astral-atlas/wildspace-client2";
 import type { AudioPlaylist, GameID, AudioTrack } from "@astral-atlas/wildspace-models";
 
-import type { LocalAsset } from "../../audio/track";
+import type { GameData } from "../../game/data";
 */
 
 import { AssetLibraryWindow } from "./window";
@@ -32,30 +32,26 @@ export type AudioPlaylistLibraryProps = {
     ...
   },
 
-  tracksInGame: $ReadOnlyArray<AudioTrack>,
-  playlistsInGame: $ReadOnlyArray<AudioPlaylist>,
-  assetsInGame: LocalAsset[],
+  gameData: GameData
 };
 */
 
 export const AudioPlaylistLibrary/*: Component<AudioPlaylistLibraryProps>*/ = ({
   gameId,
   playlist,
-  playlistsInGame,
-  assetsInGame,
-  tracksInGame,
+  gameData
 }) => {
   const [selection, select] = useSelection();
   const [mode, setMode] = useState/*:: <'browse' | 'pick_tracks'>*/('browse');
-  const editingPlaylist = playlistsInGame.find(p => p.id === selection[0])
+  const editingPlaylist = gameData.playlists.find(p => p.id === selection[0])
 
   return h(AssetLibraryWindow, {
     editor: editingPlaylist && h(PlaylistEditor, {
       playlist, gameId,
 
-      playlists: playlistsInGame,
-      assets: assetsInGame,
-      tracks: tracksInGame,
+      playlists: gameData.playlists,
+      assets: gameData.assets,
+      tracks: gameData.tracks,
 
       mode, setMode,
       editingPlaylist,
@@ -63,9 +59,9 @@ export const AudioPlaylistLibrary/*: Component<AudioPlaylistLibraryProps>*/ = ({
     content: h(PlaylistBrowser, {
       playlist, gameId,
 
-      playlists: playlistsInGame,
-      assets: assetsInGame,
-      tracks: tracksInGame,
+      playlists: gameData.playlists,
+      assets: gameData.assets,
+      tracks: gameData.tracks,
       selection,
       select,
       mode,

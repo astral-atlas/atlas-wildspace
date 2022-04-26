@@ -1,7 +1,7 @@
 // @flow strict
 
 /*::
-import type { AssetID } from "@astral-atlas/wildspace-models";
+import type { AssetID, AssetInfo } from "@astral-atlas/wildspace-models";
 
-export type AssetDownloadURLMap = Map<AssetID, URL>;
+export type AssetDownloadURLMap = Map<AssetID, ?AssetInfo>;
 */

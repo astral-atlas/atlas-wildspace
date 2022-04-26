@@ -22,7 +22,7 @@ export const CornersLayout/*: Component<CornersLayoutProps>*/ = ({
   return [
     h('div', { classList: [styles.cornersLayout] }, [
       !!topLeft && h('div', { classList: [styles.top, styles.left] }, topLeft),
-      !!topRight && h('div', { classList: [styles.top, styles.right] }, topLeft),
+      !!topRight && h('div', { classList: [styles.top, styles.right] }, topRight),
   
       !!bottomLeft && h('div', { classList: [styles.bottom, styles.left] }, bottomLeft),
       !!bottomRight && h('div', { classList: [styles.bottom, styles.right] }, bottomRight),

@@ -15,6 +15,7 @@ import { createPlayersClient } from './game/players.js';
 import { createEncounterClient } from './game/encounter.js';
 import { createSceneClient } from './game/scene.js';
 import { createLocationClient } from "./game/locations.js";
+import { useEffect } from "@lukekaalim/act";
 
 /*::
 import type { SceneClient } from "./game/scene";
@@ -26,7 +27,10 @@ export type GameClient = {
   create: (name: string) => Promise<Game>,
 
   update: (gameId: GameID, updatedGame: { name?: string }) => Promise<void>,
-  connectUpdates: (gameId: GameID, onUpdate: (state: GameUpdate) => mixed) => { close: () => Promise<void> },
+  connectUpdates: (
+    gameId: GameID,
+    onUpdate: (state: GameUpdate) => mixed
+  ) => { socket: Promise<WebSocket>, close: () => Promise<void> },
 
   character: CharacterClient,
   players: PlayersClient,
@@ -66,8 +70,9 @@ export const createGameClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceCli
       const { close } = await connectionPromise;
       close();
     };
+    const socket = connectionPromise.then(c => c.socket);
 
-    return { close };
+    return { close, socket };
   }
 
   return {

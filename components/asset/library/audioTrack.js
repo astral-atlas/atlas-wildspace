@@ -11,6 +11,7 @@ import type {
 } from '@astral-atlas/wildspace-client2';
 import type { LocalAsset, StagingTrack } from "../../audio/track";
 import type { LocalTrackData } from "../../audio/upload";
+import type { GameData } from "../../game/data";
 */
 
 import { h, useMemo, useState } from '@lukekaalim/act';
@@ -33,8 +34,8 @@ import { useTaskQueue } from '../../loading/tasks';
 /*::
 export type TracksLibraryProps = {
   gameId: GameID,
-  tracksInGame: $ReadOnlyArray<AudioTrack>,
-  assetsInGame: LocalAsset[],
+
+  gameData: GameData,
 
   trackClient: { create: TrackClient['create'], remove: TrackClient['remove'], ... },
   playlistClient: { create: PlaylistClient['create'], ... },
@@ -53,7 +54,7 @@ const getTrackCoverImageAssetURL = (track, assets) => {
 
 export const TracksLibrary/*: Component<TracksLibraryProps>*/ = ({
   gameId,
-  tracksInGame, assetsInGame,
+  gameData,
   trackClient, playlistClient
 }) => {
   const [stagingTracks, setStagingTracks] = useState([]);
@@ -91,7 +92,7 @@ export const TracksLibrary/*: Component<TracksLibraryProps>*/ = ({
   )
   const stagingTrackData = useLocalTrackData(validStagingTracks);
   const assets = [
-    ...assetsInGame,
+    ...[...gameData.assets].map(([id, asset]) => asset && ({ id, url: new URL(asset.downloadURL) })),
     ...stagingTrackData.map(data => data.imageAsset),
     ...stagingTrackData.map(data => data.audioAsset),
   ].filter(Boolean);
@@ -146,13 +147,13 @@ export const TracksLibrary/*: Component<TracksLibraryProps>*/ = ({
           }))
         ),
       ],
-      tracksInGame.length > 0 && [
+      gameData.tracks.length > 0 && [
         h('hr', { style: { width: '100%', borderTop: 0, boxSizing: 'border-box' }}),
         h('h3', {}, 'All Tracks'),
         h(TrackAssetGrid, { onClick: e => e.currentTarget === e.target && replace([]) },
-          tracksInGame.map(track => h(TrackAssetGridItem, {
+          gameData.tracks.map(track => h(TrackAssetGridItem, {
             onClick: onTrackClick(track, validSelectedTrackIds.includes(track.id)),
-            onDblClick: onTrackDblCLick(tracksInGame.map(t => t.id)),
+            onDblClick: onTrackDblCLick(gameData.tracks.map(t => t.id)),
             disabled: !!removeQueue.orders.find(o => o.targets.find(t => t.id === track.id)),
             selected: validSelectedTrackIds.includes(track.id),
             coverImageURL: getTrackCoverImageAssetURL(track, assets),
@@ -164,7 +165,7 @@ export const TracksLibrary/*: Component<TracksLibraryProps>*/ = ({
     h('div', { classList: [styles.trackEditorPane] },
       h(TracksLibraryEditor, {
         assets,
-        tracks: tracksInGame,
+        tracks: gameData.tracks,
         stagingTrackData,
         stagingTracks: validStagingTracks,
         selectedTrackIds: validSelectedTrackIds,
@@ -274,6 +275,8 @@ const SingleTrackEditor = ({
     onEditingTrackDelete()
   };
   const audioAsset = assets.find(a => a.id === editingTrack.trackAudioAssetId);
+  const coverAsset = assets.find(a => a.id === editingTrack.coverImageAssetId)
+
   return h(EditorForm, {}, [
     h('h3', {}, 'Edit Single Track'),
     selectedTracks.length > 1 && h(SelectEditor, {
@@ -300,9 +303,10 @@ const SingleTrackEditor = ({
       disabled: !isStagingTrack,
       onFilesChange: imageFiles => onEditingTrackChange({ imageFile: imageFiles[0] })
     }),
+    !!coverAsset && h('img', { src: coverAsset.url.href }),
     h(EditorButton, { label: 'Delete Track', onButtonClick: onDeleteClick }),
     !!audioAsset &&
-      h('audio', { controls: true, src: audioAsset.url.href, style: { margin: '8px' } })
+      h('audio', { controls: true, src: audioAsset.url.href, style: { margin: '8px' } }),
   ]);
 };
 

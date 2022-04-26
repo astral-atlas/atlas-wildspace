@@ -13,6 +13,7 @@ import { createBufferTable, createBufferCompositeTable } from "./sources/table.j
 import { createMemoryChannel } from "./sources/channel.js";
 import { createExpiryTable } from "./sources/expiry.js";
 import { createBufferWildspaceGameData } from './game.js';
+import { createBufferWildspaceRoomData } from "./room.js";
 
 /*::
 type DataConstructors = {
@@ -32,6 +33,7 @@ export const createBufferWildspaceData = ({ createBufferStore, createBufferDB }/
   const gamePlayers = createBufferCompositeTable(createBufferStore('game_players'), c.obj({ userId: sm.castUserId, joined: c.bool }));
 
   const gameData = createBufferWildspaceGameData({ createBufferStore });
+  const roomData = createBufferWildspaceRoomData({ createBufferStore });
 
   const characters = createBufferCompositeTable(createBufferStore('characters'), m.castCharacter);
   const encounters = createBufferCompositeTable(createBufferStore('encounters'), m.castEncounter);
@@ -57,6 +59,7 @@ export const createBufferWildspaceData = ({ createBufferStore, createBufferDB }/
     gamePlayers,
 
     gameData,
+    roomData,
 
     characters,
     encounters,

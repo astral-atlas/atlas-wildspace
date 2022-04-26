@@ -1,12 +1,25 @@
 // @flow strict
 /*:: import type { AccessOptions, CacheOptions, RequestHandler, ResourceResponse, ResourceRequest, Route } from '@lukekaalim/http-server'; */
-/*:: import type { ResourceDescription, ResourceMethod, Resource } from '@lukekaalim/net-description'; */
-/*:: import type { GameID, Game } from '@astral-atlas/wildspace-models'; */
+/*:: import type {
+  ResourceDescription, ResourceMethod, Resource,
+  
+  Connection, ConnectionDescription
+} from '@lukekaalim/net-description'; */
+/*:: import type { GameID, Game, RoomID, Room } from '@astral-atlas/wildspace-models'; */
+/*::
+import type { WebSocketRoute, ClientConnection, } from "@lukekaalim/ws-server";
+import type { WebSocket } from "ws";
+import type { AuthorizedConnection } from '@astral-atlas/wildspace-models'
+import type { LinkGrant } from "@astral-atlas/sesame-models";
+
+*/
 
 /*:: import type { Identity } from "../services/auth.js"; */
 /*:: import type { GameIdentityScope } from "../services/game.js"; */
 /*:: import type { Services } from "../services.js"; */
 import { createJSONResourceRoutes } from '@lukekaalim/http-server';
+import { HTTP_STATUS } from "@lukekaalim/net-description";
+import { createJSONConnectionRoute } from '@lukekaalim/ws-server';
 
 export const defaultOptions/*: {| access?: AccessOptions, cache?: CacheOptions |} */ = {
   access: {
@@ -41,8 +54,50 @@ export type AuthorizedImplementation<T> = {|
 
 export type AuthorizedResourceConstructor = <T: Resource>(description: ResourceDescription<T>, implementation: AuthorizedImplementation<T>) => Route[];
 
+
+export type RoomMethod<T: ResourceMethod<>> = {
+  ...AuthorizedResourceMethod<T>,
+  getRoomId: ResourceRequest<T['query'], T['request']> => RoomID,
+  handler: (
+    request: { ...ResourceRequest<T['query'], T['request']>, game: Game, room: Room, identity: Identity }
+  ) => 
+    | ResourceResponse<T['response']>
+    | Promise<ResourceResponse<T['response']>>
+}
+export type RoomResourceImplementation<T> = {|
+  ...AuthorizedImplementation<T>,
+
+  GET?:     RoomMethod<T['GET']>,
+  POST?:    RoomMethod<T['POST']>,
+  DELETE?:  RoomMethod<T['DELETE']>,
+  PUT?:     RoomMethod<T['PUT']>,
+  PATCH?:   RoomMethod<T['PATCH']>,
+|};
+export type RoomResourceConstructor = <T: Resource>(
+  description: ResourceDescription<T>,
+  implementation: RoomResourceImplementation<T>
+) => Route[];
+
+export type GameConnectionImplementation<T> = {|
+  getGameId: T['query'] => GameID,
+  scope: GameIdentityScope,
+  handler: ({
+    connection: ClientConnection<T>,
+    socket: WebSocket,
+    game: Game,
+    identity: { type: 'link', grant: LinkGrant },
+  }) => mixed
+|};
+
+export type GameConnectionConstructor = <T: Connection<>>(
+  description: ConnectionDescription<AuthorizedConnection<T>>,
+  implementation: GameConnectionImplementation<T>
+) => WebSocketRoute;
+
 export type MetaRoutes = {
-  createAuthorizedResource: AuthorizedResourceConstructor
+  createAuthorizedResource: AuthorizedResourceConstructor,
+  createRoomResource: RoomResourceConstructor,
+  createGameConnection: GameConnectionConstructor
 };
 */
 
@@ -81,5 +136,83 @@ export const createMetaRoutes = (services/*: Services*/)/*: MetaRoutes*/ => {
     });
   };
 
-  return { createAuthorizedResource }
+
+  const createRoomResource = /*:: <T: Resource>*/(
+    description/*:  ResourceDescription<T>*/,
+    implementation/*:  RoomResourceImplementation<T>*/,
+  ) => {
+    const wrapHandler = (getRoomId, roomHandler) => {
+      const wrappedHandler = async (request) => {
+        const roomId = getRoomId(request);
+        try {
+          const { result: room } = await services.data.room.get(request.game.id, roomId)
+          if (!room)
+            throw new Error();
+          return roomHandler({ ...request, room });
+        } catch (error) {
+          return { status: HTTP_STATUS.not_found };
+        }
+      }
+      return wrappedHandler;
+    };
+    const wrapImplementaion = ({ scope, getGameId, getRoomId, handler }) => {
+      return {
+        scope,
+        getGameId,
+        handler: wrapHandler(getRoomId, handler)
+      }
+    }
+
+    return createAuthorizedResource(description, {
+      GET: implementation.GET && wrapImplementaion(implementation.GET),
+      POST: implementation.POST && wrapImplementaion(implementation.POST),
+      PUT: implementation.PUT && wrapImplementaion(implementation.PUT),
+      DELETE: implementation.DELETE && wrapImplementaion(implementation.DELETE),
+      PATCH: implementation.PATCH && wrapImplementaion(implementation.PATCH),
+    })
+  };
+
+  const createGameConnection = /*:: <T: Connection<>>*/(
+    description/*: ConnectionDescription<AuthorizedConnection<T>>*/,
+    implementation/*: GameConnectionImplementation<T>*/ 
+  ) => {
+    const { assertWithinScope } = services.game.createScopeAssertion(implementation.scope)
+
+    const handler = async (connection, socket, request) => {
+      const listeners = new Set();
+      const wrappedConnection = {
+        ...connection,
+        addRecieveListener: (listener) => {
+          listeners.add(listener);
+          return { removeListener: () => void listeners.delete(listener) };
+        }
+      }
+      const onAuthenticate = async (message) => {
+        const grant = await services.auth.sdk.validateProof(message.proof);
+        if (!grant)
+          return socket.close(1000, 'Bad Auth');
+        const identity = { type: 'link', grant };
+          
+        const gameId = implementation.getGameId(connection.query);
+        const { game } = await assertWithinScope(gameId, identity);
+        implementation.handler({
+          connection: wrappedConnection,
+          game,
+          identity,
+          socket,
+        })
+      };
+      connection.addRecieveListener(message => {
+        if (message.type === 'proof') {
+          onAuthenticate(message);
+        } else {
+          for (const listener of listeners)
+            listener(message)
+        }
+      })
+    }
+    return createJSONConnectionRoute(description, (c, s, r) => void handler(c, s, r))
+  }
+
+  return { createAuthorizedResource, createRoomResource, createGameConnection }
 };

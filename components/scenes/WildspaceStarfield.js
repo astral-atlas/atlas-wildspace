@@ -27,6 +27,7 @@ export const WildspaceStarfieldScene/*: Component<WildspaceStarfieldSceneProps>*
     h(ScrollingStarfield, { offset: 300 }),
     h(ScrollingStarfield, { offset: 500 }),
     h(ScrollingStarfield, { offset: 600 }),
+    h(ScrollingStarfield, { offset: 700 }),
   ];
 };
 
@@ -39,11 +40,11 @@ const ScrollingStarfield = ({ offset }) => {
   }, [])
   const geometry = useDisposable(() => {
     const geometry = new BufferGeometry();
-    const positions = Array.from({ length: 256 })
+    const positions = Array.from({ length: 512 })
       .map(() => {
         const x = (Math.random() * 512) - 256;
         const y = (Math.random() * 512) - 256;
-        const z = (Math.random() * 100) - 50;
+        const z = (Math.random() * 200) - 100;
         return [x, y, z]
       })
       .flat()
@@ -64,7 +65,7 @@ const ScrollingStarfield = ({ offset }) => {
     points.position.z = -600 + progress
     points.rotation.z = b;
 
-    material.size = b * 1;
+    material.size = b * 1.3;
     if (material.color instanceof Color)
         material.color.setRGB(b, b, b);
   }, [])

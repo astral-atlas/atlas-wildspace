@@ -25,9 +25,10 @@ declare module "ws" {
 
   declare export class WebSocketServer {
     constructor(options: WebSocketServerOptions): WebSocketServer;
+    clients: Set<WebSocket>,
     addListener('connection', cb: (w: WebSocket, i: IncomingMessage | SIncomingMessage) => void): void;
     address(): { port: number, family: string, address: string };
-    close(): void;
+    close(cb: () => mixed): void;
   }
 
   declare export class WebSocket {

@@ -1,13 +1,13 @@
 .userTablet {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 
-  border-radius: 16px;
+  border-radius: 24px;
   background-color: white;
 
   color: black;
   text-transform: lowercase;
 
-  padding: 8px 32px 8px 32px;
+  padding: 12px 32px 12px 32px;
 }
 .userTablet a {
   color: inherit;

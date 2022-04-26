@@ -2,6 +2,9 @@
 /*:: import type { HTTPClient } from '@lukekaalim/http-client'; */
 /*:: import type { AssetDescription, GameID, AudioTrackID, AudioTrack, AudioPlaylist, AudioPlaylistID } from '@astral-atlas/wildspace-models'; */
 /*:: import type { AssetClient } from './asset.js'; */
+/*::
+import type { AssetID, AssetInfo } from "../models/asset";
+*/
 
 import { createJSONResourceClient } from '@lukekaalim/http-client';
 
@@ -60,7 +63,7 @@ export type TrackClient = {
     Promise<{ track: AudioTrack, asset: AssetDescription, trackDownloadURL: URL, coverDownloadURL: ?URL }>,
   read: (gameId: GameID, trackId: AudioTrackID) =>
     Promise<{ track: AudioTrack, asset: AssetDescription, trackDownloadURL: URL, coverDownloadURL: ?URL }>,
-  list: (gameId: GameID) => Promise<$ReadOnlyArray<AudioTrack>>,
+  list: (gameId: GameID) => Promise<[$ReadOnlyArray<AudioTrack>, $ReadOnlyArray<[AssetID, ?AssetInfo]>]>,
   remove: (gameId: GameID, trackId: AudioTrackID) => Promise<void>
 };
 */
@@ -95,8 +98,8 @@ export const createAudioTracksClient = (httpClient/*: HTTPClient*/, assetClient/
     return { track, asset, trackDownloadURL, coverDownloadURL: coverImageAssetRequest ? coverImageAssetRequest.downloadURL : null };
   };
   const list = async (gameId) => {
-    const { body: { tracks }} = await allTracksResource.GET({ query: { gameId } });
-    return tracks;
+    const { body: { tracks, relatedAssets }} = await allTracksResource.GET({ query: { gameId } });
+    return [tracks, relatedAssets];
   }
   const remove = async (gameId, trackId) => {
     await tracksResource.DELETE({ query: { trackId, gameId }});

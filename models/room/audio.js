@@ -19,8 +19,8 @@ export type PlaylistPlaybackState = {
 export type RoomAudioState = {
   volume: number,
   playback:
-    | { type: 'playlist', playlist: PlaylistPlaybackState }
-    | { type: 'none' },
+    | {| type: 'playlist', playlist: PlaylistPlaybackState |}
+    | {| type: 'none' |},
 };
 */
 
@@ -63,7 +63,7 @@ export type PlaylistPlaybackTrack = {
 
 export const calculatePlaylistCurrentTrack = (
   state/*: PlaylistPlaybackState*/,
-  playlistTracks/*: AudioTrack[]*/,
+  playlistTracks/*: $ReadOnlyArray<AudioTrack>*/,
   now/*: number*/,
 )/*: ?PlaylistPlaybackTrack*/ => {
   if (playlistTracks.length === 0)

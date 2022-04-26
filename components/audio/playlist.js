@@ -9,6 +9,7 @@ import type {
 
 import type { LocalAsset } from "./track";
 import type { SelectionActions } from "../editor/selection";
+import type { AssetDownloadURLMap } from "../asset/map";
 */
 import throttle from 'lodash.throttle';
 
@@ -210,28 +211,20 @@ export const PlaylistGridItem/*: Component<PlaylistGridItemProps>*/ = ({
   disabled,
   onDblClick,
 }) => {
-  const classList = [
-    styles.audioGridItem,
-    selected && styles.selected,
-    disabled && styles.disabled
-  ]
   return h(AssetGridItem, {
-    classList,
     onClick,
-    onDblClick
-  }, [
-    !!coverImage && h('img', { src: coverImage.href }),
-    h('div', {}, [
-      h('p', { class: styles.audioGridItemInfo }, playlist.title),
-    ]),
-  ])
+    onDblClick,
+    selected,
+    disabled,
+    background: !!coverImage && h('img', { src: coverImage.href })
+  }, [playlist.title])
 }
 
 /*::
 export type PlaylistGridProps = {
   playlists: $ReadOnlyArray<AudioPlaylist>,
   tracks?: $ReadOnlyArray<AudioTrack>,
-  assets?: $ReadOnlyArray<LocalAsset>,
+  assets: AssetDownloadURLMap,
   
   selection?: AudioPlaylistID[],
   disabled?: AudioPlaylistID[],
@@ -245,7 +238,7 @@ export const PlaylistGrid/*: Component<PlaylistGridProps>*/ = ({
   select,
   selection = [],
   tracks = [],
-  assets = []
+  assets
 }) => {
   return h(AssetGrid, {
     classList: [styles.audioGrid],
@@ -253,8 +246,10 @@ export const PlaylistGrid/*: Component<PlaylistGridProps>*/ = ({
       if (event.target === event.currentTarget)
        select.replace([])
     })
-  }, playlists.map(playlist =>
-    h(PlaylistGridItem, {
+  }, playlists.map(playlist => {
+    const firstTrack = tracks.find(t => t.id === playlist.trackIds[0]);
+    const coverImage = firstTrack && firstTrack.coverImageAssetId && assets.get(firstTrack.coverImageAssetId);
+    return h(PlaylistGridItem, {
       playlist,
       onClick: select && ((event) => {
         if (!event.shiftKey)
@@ -269,9 +264,7 @@ export const PlaylistGrid/*: Component<PlaylistGridProps>*/ = ({
         select.add(playlists.map(p => p.id));
       }),
       selected: selection.includes(playlist.id),
-      coverImage: assets.find(asset =>
-        asset.id ===
-        tracks.find(track => track.id === playlist.trackIds[0])?.coverImageAssetId
-      )?.url
-    })))
+      coverImage: coverImage ? new URL(coverImage.downloadURL) : null,
+    })
+  }));
 }

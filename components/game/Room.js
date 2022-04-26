@@ -4,7 +4,8 @@ import type { Component } from "@lukekaalim/act";
 import type {
   Encounter, EncounterState, Character,
 
-  ExpositionScene
+  ExpositionScene, RoomState,
+  RoomID, GameID,
 } from "@astral-atlas/wildspace-models";
 */
 
@@ -17,14 +18,19 @@ import {
 import { Vector2 } from "three";
 import { useKeyboardTrack, useKeyboardTrackEmitter } from "../keyboard/track";
 import { useElementKeyboard } from "../keyboard";
-import { EncounterInitiativeTracker } from "../entry";
-import { SceneRenderer } from "../../docs/src/scenes/exposition";
 import { AssetLibrary } from "../asset";
+import { Lobby } from "./Lobby";
+import { SceneRenderer, SceneBackgroundRenderer } from "../scene/SceneRenderer";
+import { EditorForm, SelectEditor } from "../editor/form";
+import styles from './Room.module.css';
+import { RoomAudioPlayer } from "../audio";
+import { AudioStateEditor } from "./audio.js";
+
 
 /*::
 import type { WildspaceClient } from "@astral-atlas/wildspace-client2";
-import type { GameID } from "@astral-atlas/wildspace-models";
 import type { GameData } from "./data";
+import type { UserID } from "@astral-atlas/sesame-models";
 */
 
 const style = {
@@ -33,37 +39,75 @@ const style = {
 }
 
 const RoomScreen = ({ children }) => {
-  return h('div', { style }, children);
+  return h('div', { style, className: styles.screen }, children);
 }
 
-const scene = {
-  type: 'location',
-  name: 'Yolo',
-  location: { background: { type: 'color', color: 'green' }, content: 'Hi!' },
-}
 
-const RoomSceneScreen = ({ client, }) => {
+const RoomSceneScreen = ({ scene, gameData }) => {
   
-  return h(RoomScreen, {}, h(SceneRenderer, { scene }))
+  return h(RoomScreen, {}, !!scene && h(SceneRenderer, { scene, gameData }))
 }
-const RoomAssetLibraryScreen = ({ client, data, gameId }) => {
-  return h(RoomScreen, {}, h(AssetLibrary, { client, data, gameId }))
+const RoomLobbyScreen = ({ client, roomState, gameData, userId, gameId, roomId }) => {
+  const onMessageSubmit = async (content) => {
+    client.room.lobby.postMessage(gameId, roomId, content)
+  }
+  return h(RoomScreen, {}, h(Lobby, {
+    characters: [],
+    messages: roomState.lobby.messages,
+    userId,
+    onMessageSubmit,
+    connections: roomState.lobby.playersConnected,
+    players: gameData.players,
+  }))
+}
+const RoomAssetLibraryScreen = ({ client, gameData, gameId }) => {
+  return h(RoomScreen, {}, h(AssetLibrary, { client, data: gameData, gameId }))
+}
+const RoomManagerScreen = ({ client, gameData, roomState, roomId, gameId }) => {
+
+  const onSelectedSceneChange = async (expositionSceneId) => {
+    await client.room.scene.setActiveScene(gameId, roomId, { type: 'exposition', ref: expositionSceneId });
+  }
+
+  return h(RoomScreen, {}, [
+    h(EditorForm, {}, [
+      h(SelectEditor, {
+        values: [...gameData.scenes.exposition.map(e => ({ title: e.title, value: e.id })), { title: 'None', value: '' }],
+        selected: roomState.scene.activeScene && roomState.scene.activeScene.type === 'exposition' ? roomState.scene.activeScene.ref : '',
+        onSelectedChange: onSelectedSceneChange
+      }),
+      h(AudioStateEditor, { client: client.room, gameData, roomData: roomState }),
+    ]),
+  ])
 }
 
 /*::
 export type RoomProps = {
-  data: GameData,
+  gameData: GameData,
+  roomState: RoomState,
   client: WildspaceClient,
   gameId: GameID,
+  roomId: RoomID,
+  userId: UserID,
 };
 */
 
-export const Room/*: Component<RoomProps>*/ = ({ client, data, gameId }) => {
+export const Room/*: Component<RoomProps>*/ = ({ client, gameData, roomState, userId, roomId, gameId }) => {
+  const sceneRef = roomState.scene.activeScene;
+  const scene = sceneRef && sceneRef.type === 'exposition' && gameData.scenes.exposition.find(e => e.id === sceneRef.ref);
 
-  const screens = [
-    //{ content: h(RoomSceneScreen, { scenes }), icon: null, position: new Vector2(0, 0) },
-    { content: h(RoomAssetLibraryScreen, { client, data, gameId }), icon: null, position: new Vector2(0, 0) }
+  const gameMasterScreens = [
+    { content: h(RoomSceneScreen, { scene, gameData }), icon: null, position: new Vector2(0, 0) },
+    { content: h(RoomAssetLibraryScreen, { client, gameData, gameId }), icon: null, position: new Vector2(-1, 1) },
+    { content: h(RoomLobbyScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(0, 1) },
+    { content: h(RoomManagerScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(-1, -1) }
   ];
+  const playerScreens = [
+    { content: h(RoomSceneScreen, { scene, gameData }), icon: null, position: new Vector2(0, 0) },
+    { content: h(RoomLobbyScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(0, 1) },
+  ]
+
+  const screens = gameData.isGameMaster ? gameMasterScreens : playerScreens
 
   const ref = useRef();
   const track = useKeyboardTrack(useElementKeyboard(ref))
@@ -72,7 +116,9 @@ export const Room/*: Component<RoomProps>*/ = ({ client, data, gameId }) => {
   const [direction, setDirection] = useCompassKeysDirection(emitter, screens)
 
   return [
-    h('div', { ref, style: { width: '100%', height: '100%' } }, [
+    h('div', { ref, style: { width: '100%', height: '100%', position: 'absolute' } }, [
+      !!scene && h('div', { className: styles.background },
+        h(SceneBackgroundRenderer, { gameData, scene })),
       h(CompassLayout, { screens, direction }),
     ])
   ]

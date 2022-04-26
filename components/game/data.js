@@ -1,59 +1,94 @@
 // @flow strict
 
-import { useState, useEffect } from "@lukekaalim/act"
+import { useState, useEffect, useMemo } from "@lukekaalim/act"
 
 /*::
 import type { GameUpdateTimes } from "../utils/updates";
 import type {
-  GameID,
+  GameID, Game,
+  Player,
   AudioPlaylist, AudioTrack,
   ExpositionScene,
   Location,
+  AssetID, AssetInfo,
 } from "@astral-atlas/wildspace-models";
 import type { WildspaceClient } from "@astral-atlas/wildspace-client2";
+import type { AssetDownloadURLMap } from "../asset/map";
+import type { UserID } from "@astral-atlas/sesame-models/src/user";
 
-export type GameData = {
+export type GameData = {|
+  game: Game,
+  userId: UserID,
+  isGameMaster: boolean,
+  ...GameAssetData,
+|};
+export type GameAssetData = {|
+  players: $ReadOnlyArray<Player>,
   playlists: $ReadOnlyArray<AudioPlaylist>,
   tracks: $ReadOnlyArray<AudioTrack>,
   locations: $ReadOnlyArray<Location>,
   scenes: {
     exposition: $ReadOnlyArray<ExpositionScene>,
-  }
-};
+  },
+  assets: AssetDownloadURLMap
+|}
 */
 
 const emptyGameData = {
+  players: [],
   playlists: [],
   tracks: [],
   locations: [],
   scenes: {
     exposition: []
-  }
+  },
+  assets: new Map(),
 }
 
 export const useGameData = (
-  gameId/*: GameID*/,
+  game/*: Game*/,
+  userId/*: UserID*/,
   times/*: GameUpdateTimes*/,
   client/*: WildspaceClient*/
 )/*: GameData*/ => {
-  const [data, setData] = useState/*:: <GameData>*/(emptyGameData)
+  const [data, setData] = useState/*:: <GameAssetData>*/(emptyGameData)
+
+  const updateData = (nextData, nextAssets = []) => {
+    setData(d => ({
+      ...d,
+      ...nextData,
+      scenes: nextData.scenes ? { ...d.scenes, ...nextData.scenes } : d.scenes,
+      assets: new Map([ ...d.assets, ...nextAssets])
+    }))
+  }
   
   useEffect(() => {
-    client.audio.playlist.list(gameId)
-      .then(playlists => setData(d => ({ ...d, playlists })))
+    client.audio.playlist.list(game.id)
+      .then(playlists => updateData({ playlists }))
   }, [times.playlists])
   useEffect(() => {
-    client.audio.tracks.list(gameId)
-      .then(tracks => setData(d => ({ ...d, tracks })))
+    client.audio.tracks.list(game.id)
+      .then(([tracks, relatedAssets]) => updateData({ tracks }, relatedAssets))
   }, [times.tracks])
   useEffect(() => {
-    client.game.location.list(gameId)
-      .then(locations => setData(d => ({ ...d, locations })))
+    client.game.location.list(game.id)
+      .then(([locations, relatedAssets]) => updateData({ locations }, relatedAssets))
   }, [times.locations])
   useEffect(() => {
-    client.game.scene.list(gameId)
-      .then(exposition => setData(d => ({ ...d, scenes: { ...d.scenes, exposition } })))
+    client.game.scene.list(game.id)
+      .then(exposition => updateData({ scenes: { exposition } }))
   }, [times.scenes])
+  useEffect(() => {
+    client.game.players.list(game.id)
+      .then(players => updateData({ players }))
+  }, [times.players])
 
-  return data;
+  const memoData = useMemo(() => ({
+    ...data,
+    userId,
+    game,
+    isGameMaster: game.gameMasterId === userId
+  }), [data, game, userId])
+
+  return memoData;
 }

@@ -20,9 +20,11 @@ export type SolidColorGraphic = {
   color: string,
 }
 
+type Graphic2DImageRef =      { type: 'image', id: ImageGraphicID }
+type Graphic2DSolidColorRef = { type: 'color-solid', id: SolidColorGraphicID }
 export type Graphic2DRef =
-  | { type: 'image', id: ImageGraphicID }
-  | { type: 'color-solid', id: SolidColorGraphicID }
+  | Graphic2DImageRef
+  | Graphic2DSolidColorRef
 */
 
 export const castImageGraphicId/*: Cast<ImageGraphicID>*/ = c.str;
@@ -40,6 +42,6 @@ export const castSolidColorGraphic/*: Cast<SolidColorGraphic>*/ = c.obj({
 })
 
 export const castGraphic2DRef/*: Cast<Graphic2DRef>*/ = c.or('type', {
-  'color-solid': c.obj({ type: c.lit('color-solid'), id: castSolidColorGraphicId }),
-  'image': c.obj({ type: c.lit('image'), id: castImageGraphicId }),
+  'color-solid':  c.obj({ type: (c.lit('color-solid')/*: Cast<'color-solid'>*/),  id: castSolidColorGraphicId }),
+  'image':        c.obj({ type: (c.lit('image')/*: Cast<'image'>*/),              id: castImageGraphicId }),
 })

@@ -11,7 +11,7 @@ import { createJSONResourceRoutes } from "@lukekaalim/http-server";
 import { audioAPI } from '@astral-atlas/wildspace-models'; 
 import { defaultOptions } from './meta.js';
 
-export const createAudioRoutes = ({ data }/*: Services*/)/*: { ws: WebSocketRoute[], http: HTTPRoute[] }*/ => {
+export const createAudioRoutes = ({ data, asset }/*: Services*/)/*: { ws: WebSocketRoute[], http: HTTPRoute[] }*/ => {
 
   const trackResourceRoutes = createJSONResourceRoutes(audioAPI['/tracks'], {
     ...defaultOptions,
@@ -53,7 +53,13 @@ export const createAudioRoutes = ({ data }/*: Services*/)/*: { ws: WebSocketRout
     GET: async ({ query: { gameId }}) => {
       const { result: tracks } = await data.tracks.query(gameId);
       
-      return { status: HTTP_STATUS.ok, body: { type: 'found', tracks } };
+      const relatedAssetIds = tracks
+        .map(t => [t.coverImageAssetId, t.trackAudioAssetId])
+        .flat(1)
+        .filter(Boolean)
+      const relatedAssets = await Promise.all(relatedAssetIds.map(async id => [id, await asset.peek(id)]))
+
+      return { status: HTTP_STATUS.ok, body: { type: 'found', tracks, relatedAssets } };
     },
   })
 
@@ -109,7 +115,7 @@ export const createAudioRoutes = ({ data }/*: Services*/)/*: { ws: WebSocketRout
     GET: async ({ query: { gameId }}) => {
       const { result: playlists } = await data.playlists.query(gameId);
       
-      return { status: HTTP_STATUS.ok, body: { type: 'found', playlists } };
+      return { status: HTTP_STATUS.ok, body: { type: 'found', playlists, relatedAssets: [] } };
     },
   })
 

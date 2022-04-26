@@ -29,12 +29,12 @@ export const castNonPlayerCharacter/*: Cast<NonPlayerCharacter>*/ = c.obj({
 
   name: c.str,
   description: c.or('type', {
-    'plaintext': c.obj({ type: c.lit('plaintext'), plaintext: c.str }),
+    'plaintext': c.obj({ type: (c.lit('plaintext')/*: Cast<'plaintext'>*/), plaintext: c.str }),
   }),
   dialoguePortrait: c.or('type', {
-    'image': c.obj({ type: c.lit('image'), imageAssetId: castAssetID }),
-    'color': c.obj({ type: c.lit('color'), color: c.str }),
-    'none': c.obj({ type: c.lit('none') }),
+    'image': c.obj({ type: (c.lit('image')/*: Cast<'image'>*/), imageAssetId: castAssetID }),
+    'color': c.obj({ type: (c.lit('color')/*: Cast<'color'>*/), color: c.str }),
+    'none': c.obj({ type: (c.lit('none')/*: Cast<'none'>*/) }),
   }),
 
   tags: c.arr(c.str),

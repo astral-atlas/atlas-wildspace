@@ -10,10 +10,12 @@ import { useKeyboardTrackEmitter, useKeyboardTrackEmitterChanges } from "../keyb
 
 import styles from './CompassLayout.module.css';
 import {
+  calculateBezier2DPoint,
   useAnimatedVector2,
   useBezier2DAnimation,
 } from "../../docs/src/pages/layouts";
 import { useBezierAnimation } from "@lukekaalim/act-curve/bezier";
+import { useRefMap } from "../editor/list";
 
 const directionalKeys = [
   'KeyW', 'KeyA', 'KeyS', 'KeyD',
@@ -104,14 +106,43 @@ export type CompassLayoutProps = {
 
 export const CompassLayout/*: Component<CompassLayoutProps>*/ = ({ direction, screens }) => {
   const translatorRef = useRef();
-  const animation = useAnimatedVector2([direction.x, direction.y], [0, 0], 3, 1000)
+  const animation = useAnimatedVector2([direction.x, direction.y], [0, 0], 3, 1000);
+  const smoothAnim = useAnimatedVector2([direction.x, direction.y], [0, 0], 0, 1000);
+
+  useEffect(() => {
+    for (const [screenIndex, screenRef] of refMap) {
+      const screen = screens[screenIndex];
+      if (direction.x === screen.position.x && direction.y === screen.position.y) {
+        screenRef.style.display = 'initial';
+      }
+    }
+  }, [direction])
 
   useBezier2DAnimation(animation, (point) => {
     const { current: translator } = translatorRef;
     if (!translator)
       return;
-    translator.style.transform = `translate(${point.position[0] * -100}%, ${point.position[1] * 100}%)`;
+
+    const smoothPoint = calculateBezier2DPoint(smoothAnim, performance.now());
+    const smoothVelocity = (Math.abs(smoothPoint.velocity[0]) + Math.abs(smoothPoint.velocity[1])) / 2;
+    const spikyVelocity = (Math.pow(1.1, smoothVelocity))
+    
+    const scale = 1/spikyVelocity;
+    const x = point.position[0] * scale;
+    const y = point.position[1] * scale;
+
+    translator.style.transform = `translate(${x * -100}%, ${y * 100}%) scale(${scale})`;
+
+    if (point.progress[0] === 1 && point.progress[1] === 1) {
+      for (const [screenIndex, screenRef] of refMap) {
+        const screen = screens[screenIndex];
+        if (direction.x !== screen.position.x || direction.y !== screen.position.y) {
+          screenRef.style.display = 'none';
+        }
+      }
+    }
   })
+  const [setRef, refMap] = useRefMap()
 
   return [
     h('div', {
@@ -122,10 +153,13 @@ export const CompassLayout/*: Component<CompassLayoutProps>*/ = ({ direction, sc
         classList: [styles.compassLayoutTranslator],
         ref: translatorRef, 
       }, [
-        screens.map(screen => {
+        screens.map((screen, index) => {
           return h('div', {
             classList: [styles.compassLayoutScreen],
-            style: { transform: `translate(${screen.position.x * 100}%, ${screen.position.y * -100}%)`}
+            ref: setRef(index),
+            style: {
+              transform: `translate(${screen.position.x * 100}%, ${screen.position.y * -100}%)`,
+            }
           }, screen.content)
         })
       ]),

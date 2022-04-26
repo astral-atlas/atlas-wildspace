@@ -7,11 +7,19 @@
 } from "@astral-atlas/wildspace-models"; */
 /*:: import type { AssetClient } from './asset.js'; */
 /*:: import type { HTTPServiceClient, WSServiceClient } from './wildspace.js'; */
+/*::
+import type { RoomStateClient } from './room/index.js';
+import type { LobbyClient } from "./room/lobby";
+import type { RoomSceneClient } from "./room/scene";
+*/
 
 import { createJSONResourceClient } from '@lukekaalim/http-client';
 import { createJSONConnectionClient } from '@lukekaalim/ws-client';
 
 import { roomAPI } from "@astral-atlas/wildspace-models";
+import { createRoomStateClient } from "./room/index.js";
+import { createLobbyClient } from './room/lobby.js';
+import { createRoomSceneClient } from './room/scene.js';
 
 /*::
 export type RoomClient = {
@@ -27,6 +35,10 @@ export type RoomClient = {
   list: (gameId: GameID) => Promise<$ReadOnlyArray<Room>>,
   create: (gameId: GameID, title: string) => Promise<Room>,
   update: (gameId: GameID, roomId: RoomID, room: Room) => Promise<void>,
+
+  state: RoomStateClient,
+  lobby: LobbyClient,
+  scene: RoomSceneClient,
 };
 */
 
@@ -59,7 +71,7 @@ export const createRoomClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceCli
   const readAudio = async (gameId, roomId) => {
     const { body } = await roomAudioResource.GET({ query: { roomId, gameId }});
     if (body.type === 'not_found')
-      return null;
+      throw new Error();
     return body.audio;
   }
   const setAudio = async (gameId, roomId, audio) => {
@@ -86,6 +98,11 @@ export const createRoomClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceCli
   const update = async (gameId, roomId, room) => {
     await roomResource.PUT({ query: { gameId, roomId }, body: { room } });
   };
+
+  const state = createRoomStateClient(http, ws);
+  const lobby = createLobbyClient(http);
+  const scene = createRoomSceneClient(http);
+
   return {
     read,
     connectUpdates,
@@ -97,42 +114,8 @@ export const createRoomClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceCli
     list,
     create,
     update,
+    state,
+    lobby,
+    scene,
   };
 };
-
-/*::
-export type RoomStateClient = {
-  read: (gameId: GameID, roomId: RoomID) => Promise<RoomState>,
-  update: (gameId: GameID, roomId: RoomID, updatedState: RoomState) => Promise<void>,
-
-  connect: (gameId: GameID, roomId: string, onUpdate: (state: RoomState) => mixed) => Promise<{ close: () => Promise<void> }>,
-};
-*/
-export const createRoomStateClient = (httpClient/*: HTTPClient*/, httpOrigin/*: string*/, wsOrigin/*: string*/)/*: RoomStateClient*/ => {
-  const roomStateResource = createJSONResourceClient(roomAPI['/room/state'].resource, httpClient, httpOrigin);
-  const roomStateConnection = createJSONConnectionClient(WebSocket, roomAPI['/room/state'].connection, wsOrigin);
-
-  const read = async (gameId, roomId) => {
-    const { body: { state }} = await roomStateResource.GET({ query: { roomId, gameId }});
-    return state;
-  };
-  const update = async (gameId, roomId, updatedState) => {
-    await roomStateResource.PUT({ query: { roomId, gameId }, body: { state: updatedState }});
-  };
-  const connect = async (gameId, roomId, onUpdate) => {
-    const recieve = (message) => {
-      switch (message.type) {
-        case 'update':
-          return void onUpdate(message.state);
-      }
-    };
-    const { close } = await roomStateConnection.connect({ query: { gameId, roomId }, recieve })
-    return { close };
-  }
-
-  return {
-    read,
-    update,
-    connect,
-  };
-}

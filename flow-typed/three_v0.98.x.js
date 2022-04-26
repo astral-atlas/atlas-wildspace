@@ -625,7 +625,6 @@ declare module three {
     clone(): this;
     copy(source: Camera): void;
     getWorldDirection(target?: Vector3): Vector3;
-    lookAt(target: Vector3): void;
   }
 
   declare export class OrthographicCamera extends Camera {
@@ -1017,7 +1016,6 @@ declare module three {
   declare export var RedFormat: string;
   declare export var UnsignedByteType: string;
 
-  declare export var UVMapping: string;
   declare export var RepeatWrapping: string;
   declare export var NearestFilter: string;
 
@@ -1076,7 +1074,6 @@ declare module three {
   // declare var MeshPhoneMaterial: MeshPhongMaterial
   // declare var MultiMaterial: MultiMaterial
   // declare var MeshBasicMaterial: MeshBasicMaterial
-  declare export var RepeatWrapping: RepeatWrappingEnum
 
 }
 

@@ -4,6 +4,9 @@
 /*:: import type { WildspaceData } from "@astral-atlas/wildspace-data"; */
 /*:: import type { GameIdentityScope } from "../services/game.js"; */
 /*:: import type { Services } from "../services.js"; */
+/*::
+import type { RoutesConstructor } from '../routes.js';
+*/
 
 import { v4 as uuid } from 'uuid';
 import { c } from "@lukekaalim/cast";
@@ -14,8 +17,13 @@ import { createJSONConnectionRoute } from "@lukekaalim/ws-server";
 import { encountersAPI, getRoundedMonsterHealthPercentage, reduceEncounterState, roomAPI } from '@astral-atlas/wildspace-models'; 
 import * as m from '@astral-atlas/wildspace-models'; 
 import { createMetaRoutes, defaultOptions } from './meta.js';
+import { createStateRoutes } from './room/state.js';
+import { createLobbyRoutes } from "./room/lobby.js";
+import { createRoomSceneRoutes } from './room/scene.js';
 
-export const createRoomRoutes = ({ data, ...s }/*: Services*/)/*: { ws: WebSocketRoute[], http: HTTPRoute[] }*/ => {
+export const createRoomRoutes/*: RoutesConstructor*/ = (services) => {
+  const { data, ...s } = services
+
   const { createAuthorizedResource } = createMetaRoutes({ ...s, data });
 
   const roomResourceRoutes = createAuthorizedResource(roomAPI['/room'], {
@@ -205,18 +213,27 @@ export const createRoomRoutes = ({ data, ...s }/*: Services*/)/*: { ws: WebSocke
       clearInterval(interval);
     });
   });
+
+  const roomStateResources = createStateRoutes(services);
+  const roomLobbyRoutes = createLobbyRoutes(services);
+  const roomSceneRoutes = createRoomSceneRoutes(services);
+
   const http = [
     ...roomResourceRoutes,
     ...roomEncounterRoutes,
     ...roomAudioRoutes,
     ...roomUpdateResourceRoute,
-    //...roomStateResourceRoutes,
+    ...roomStateResources.http,
+    ...roomLobbyRoutes.http,
+    ...roomSceneRoutes.http,
     ...allRoomsResourceRoute,
     ...roomEncounterActionsRoutes,
   ];
   const ws = [
     roomUpdateConnectionRoute,
-    //roomStateConnectionRoute
+    ...roomStateResources.ws,
+    ...roomLobbyRoutes.ws,
+    ...roomSceneRoutes.ws,
   ];
   return { http, ws };
 };

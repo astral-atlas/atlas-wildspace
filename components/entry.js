@@ -36,3 +36,5 @@ export * from './ui/index.js';
 export * from './keyboard/index.js';
 export * from './subscription/index.js';
 export * from './layout/index.js';
+export * from './room/index.js';
+export * from './scene/index.js';

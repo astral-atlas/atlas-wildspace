@@ -36,8 +36,17 @@ export const createLocationsRoutes/*: RoutesConstructor*/ = (services) => {
       getGameId: r => r.query.gameId,
       async handler({ game, identity }) {
         const { result } = await services.data.gameData.locations.query(game.id);
+        const relatedAssetIds = result.map(r => {
+          switch (r.location.background.type) {
+            case 'image':
+              return r.location.background.imageAssetId;
+            default:
+              return null
+          }
+        }).filter(Boolean);
+        const relatedAssets = await Promise.all(relatedAssetIds.map(async id => [id, await services.asset.peek(id)]))
 
-        return { status: HTTP_STATUS.ok, body: { type: 'found', location: result.map(r => r.location) } };
+        return { status: HTTP_STATUS.ok, body: { type: 'found', location: result.map(r => r.location), relatedAssets } };
       }
     },
     PUT: {

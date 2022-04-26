@@ -101,9 +101,9 @@ export const FilesEditor/*: Component<SingleFileEditorProps>*/ = ({
 /*::
 export type SelectEditorProps = {
   label?: string,
-  selected?: string,
-  values?: { title: string, value: string }[],
-  onSelectedChange?: FileList => mixed,
+  selected?: ?string,
+  values?: { title?: string, value: string }[],
+  onSelectedChange?: string => mixed,
   [string]: mixed,
 };
 */
@@ -120,7 +120,7 @@ export const SelectEditor/*: Component<SelectEditorProps>*/ = ({
   return h('label', { ...props, classList: [styles.editorRoot] }, [
     h('span', {}, label),
     h('select', { onChange }, values.map(({ title, value }) =>
-      h('option', { key: value, value, selected: value === selected }, title)))
+      h('option', { key: value, value, selected: value === selected }, title || value)))
   ]);
 }
 

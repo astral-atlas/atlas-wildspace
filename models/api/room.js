@@ -11,7 +11,15 @@ import { castRoom, castRoomAudioState, castRoomId, castRoomState, castRoomUpdate
 import { castEncounterAction, castEncounterState } from "../encounter.js";
 import { createAuthorizedConnectionDescription } from './meta.js';
 
+import { lobbyApi } from "./room/lobby.js";
+import { stateApiV2 } from "./room/state.js";
+import { sceneAPI } from "./room/scene.js";
+
 /*::
+import type { LobbyAPI } from "./room/lobby.js";
+import type { StateAPIV2 } from "./room/state.js";
+import type { SceneAPI } from "./room/scene";
+
 export type RoomResource = {|
   GET: {
     query: { roomId: RoomID, gameId: GameID },
@@ -66,7 +74,7 @@ export type RoomAudio = {|
   GET: {
     query: { roomId: RoomID, gameId: GameID },
     request: empty,
-    response: { type: 'found', audio: RoomAudioState } | { type: 'not_found' }
+    response: {| type: 'found', audio: RoomAudioState |} | {| type: 'not_found' |}
   },
   PUT: {
     query: { roomId: RoomID, gameId: GameID },
@@ -94,7 +102,7 @@ export type RoomEncounterActions = {|
   },
 |};
 
-export type RoomAPI = {
+export type RoomAPI = {|
   '/room': RoomResource,
 
   '/room/updates': RoomUpdateConnection,
@@ -105,7 +113,10 @@ export type RoomAPI = {
   '/room/state': { connection: RoomStateConnection, resource: RoomStateResource },
 
   '/room/all': AllRoomsResource,
-};
+  ...LobbyAPI,
+  ...StateAPIV2,
+  ...SceneAPI
+|};
 */
 
 export const roomResourceDescription/*: ResourceDescription<RoomAPI['/room']> */ = {
@@ -206,6 +217,7 @@ export const roomStateResourceDescription/*: ResourceDescription<RoomAPI['/room/
   }
 }
 
+export * from './room/index.js';
 export const roomAPI = {
   '/room': roomResourceDescription,
   '/room/updates': roomUpdatesConnectionDescription,
@@ -214,4 +226,7 @@ export const roomAPI = {
   '/room/encounter/actions': roomEncounterActions,
   '/room/state': { connection: roomStateConnectionDescription, resource: roomStateResourceDescription },
   '/room/all': allRoomsResourceDescription,
+  ...stateApiV2,
+  ...lobbyApi,
+  ...sceneAPI
 };

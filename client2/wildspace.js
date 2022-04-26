@@ -7,7 +7,7 @@
 
 /*:: import type { AssetClient } from "./asset.js"; */
 /*:: import type { AudioClient } from "./audio.js"; */
-/*:: import type { RoomClient, RoomStateClient } from "./room"; */
+/*:: import type { RoomClient } from "./room"; */
 /*:: import type { GameClient } from "./game"; */
 
 import { createAuthorizedClient, createJSONResourceClient, createWebClient } from "@lukekaalim/http-client";
@@ -15,7 +15,7 @@ import { createJSONConnectionClient } from "@lukekaalim/ws-client";
 import { audioAPI, selfAPI } from '@astral-atlas/wildspace-models';
 import { createAssetClient } from "./asset.js";
 import { createAudioClient } from "./audio.js";
-import { createRoomClient, createRoomStateClient } from "./room.js";
+import { createRoomClient } from "./room.js";
 import { createGameClient } from "./game.js";
 import { encodeProofToken } from "@astral-atlas/sesame-models";
 
@@ -23,6 +23,7 @@ import { encodeProofToken } from "@astral-atlas/sesame-models";
 /*::
 export type HTTPServiceClient = {
   createResource: <T: Resource>(desc: ResourceDescription<T>) => ResourceClient<T>,
+  httpOrigin: string,
   httpClient: HTTPClient,
 };
 export type WSServiceClient = {
@@ -37,7 +38,7 @@ export const createHTTPServiceJSONClient = (httpOrigin/*: string*/, httpClient/*
   const createResource = /*:: <T: Resource>*/(desc/*: ResourceDescription<T>*/)/*: ResourceClient<T>*/ => {
     return createJSONResourceClient(desc, authorizedClient, httpOrigin);
   };
-  return { createResource, httpClient: authorizedClient };
+  return { createResource, httpClient: authorizedClient, httpOrigin };
 }
 export const createWSServiceJSONClient  = (
   wsOrigin/*: string*/,
@@ -72,10 +73,7 @@ export type WildspaceClient = {
   asset: AssetClient,
   audio: AudioClient,
   game: GameClient,
-  room: {
-    ...RoomClient,
-    state: RoomStateClient,
-  },
+  room: RoomClient,
   self: () => Promise<{ name: string }>,
 };
 */
@@ -90,10 +88,7 @@ export const createWildspaceClient = (proof/*: ?LinkProof*/, httpOrigin/*: strin
 
   const asset = createAssetClient(httpService, httpClient);
   const audio = createAudioClient(authorizedClient, asset, httpOrigin, wsOrigin);
-  const room = {
-    ...createRoomClient(httpService, wsService),
-    state: createRoomStateClient(authorizedClient, httpOrigin, wsOrigin)
-  };
+  const room = createRoomClient(httpService, wsService);
   const game = createGameClient(httpService, wsService);
 
   const selfResource = httpService.createResource(selfAPI['/self']);

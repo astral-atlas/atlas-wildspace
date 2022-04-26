@@ -15,6 +15,7 @@ import { createWildspaceClient } from '@astral-atlas/wildspace-client2';
 import { useStoredValue } from '../hooks/storage';
 import { identityStore } from '../lib/storage';
 import { apiContext } from '../hooks/api';
+import { configContext } from '../hooks/config';
 
 const Page = ({ nav }) => {
   switch (nav.location.pathname) {
@@ -38,9 +39,10 @@ export const Wildspace/*: Component<{}>*/ = () => {
   const api = createWildspaceClient(identity && identity.proof, config.api.wildspace.httpOrigin, config.api.wildspace.wsOrigin);
 
   return [
-    h(identityContext.Provider, { value: { identity, setIdentity, messenger: null } },
-      h(navigationContext.Provider, { value: nav },
-        h(apiContext.Provider, { value: api },
-          h(Page, { nav }))))
+    h(configContext.Provider, { value: config },
+      h(identityContext.Provider, { value: { identity, setIdentity, messenger: null } },
+        h(navigationContext.Provider, { value: nav },
+          h(apiContext.Provider, { value: api },
+            h(Page, { nav })))))
   ];
 };

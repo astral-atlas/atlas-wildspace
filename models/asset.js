@@ -43,3 +43,12 @@ export const castAssetGroup/*: Cast<AssetGroup>*/ = createObjectCaster({
   assetIds: createArrayCaster(castAssetID),
   name: castString,
 });
+
+/*::
+export type AssetInfo = {
+  downloadURL: string,
+  description: AssetDescription
+}
+
+export type AssetInfoDatabase = $ReadOnlyArray<[AssetID, ?AssetInfo]>
+*/

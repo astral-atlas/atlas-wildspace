@@ -19,6 +19,7 @@ export const createSceneRoutes/*: RoutesConstructor*/ = (services) => {
 
           title: '',
           subject: { type: 'none' },
+          description: { type: 'inherit' },
           tags: []
         };
         await services.data.gameData.scenes.expositions.set(game.id, exposition.id, { exposition })
@@ -36,7 +37,39 @@ export const createSceneRoutes/*: RoutesConstructor*/ = (services) => {
       async handler({ game, identity }) {
         const { result } = await services.data.gameData.scenes.expositions.query(game.id);
 
-        return { status: HTTP_STATUS.ok, body: { type: 'found', exposition: result.map(r => r.exposition) } };
+        return { status: HTTP_STATUS.ok, body: { type: 'found', exposition: result.map(r => r.exposition), relatedAssets: [] } };
+      }
+    },
+    PUT: {
+      scope: { type: 'game-master-in-game' },
+      getGameId: r => r.query.gameId,
+      async handler({ game, query, body: { exposition } }) {
+        const { result } = await services.data.gameData.scenes.expositions.get(game.id, query.exposition);
+        if (!result)
+          return { status: HTTP_STATUS.not_found };
+
+        const nextExposition = {
+          ...exposition,
+          id: query.exposition,
+        }
+        await services.data.gameData.scenes.expositions.set(game.id, exposition.id, { exposition: nextExposition });
+        await services.data.gameUpdates.publish(game.id, { type: 'scenes' });
+        
+        return { status: HTTP_STATUS.ok, body: { type: 'updated' } };
+      }
+    },
+    DELETE: {
+      scope: { type: 'game-master-in-game' },
+      getGameId: r => r.query.gameId,
+      async handler({ game, query: { exposition } }) {
+        const { result } = await services.data.gameData.scenes.expositions.get(game.id, exposition);
+        if (!result)
+          return { status: HTTP_STATUS.not_found };
+
+        await services.data.gameData.scenes.expositions.set(game.id, exposition, null);
+        await services.data.gameUpdates.publish(game.id, { type: 'scenes' });
+        
+        return { status: HTTP_STATUS.ok, body: { type: 'deleted' } };
       }
     }
   })

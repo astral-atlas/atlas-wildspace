@@ -3,6 +3,7 @@
 import { c } from "@lukekaalim/cast";
 import { castNonPlayerCharacterID } from "./character.js";
 import { castLocationId } from "./location.js";
+import { castEncounterId } from "../encounter.js";
 
 /*::
 import type { Cast } from "@lukekaalim/cast";
@@ -13,7 +14,7 @@ import type { LocationID } from "./location.js";
 
 export type SceneRef =
   | { type: 'exposition', ref: ExpositionSceneID }
-  | { type: 'encounter', ref: ExpositionSceneID }
+  | { type: 'encounter', ref: EncounterID }
 
 
 export type ExpositionSceneID = string;
@@ -23,8 +24,12 @@ export type ExpositionScene = {
   title: string,
   subject:
     | { type: 'none' }
-    | { type: 'npc', npc: NonPlayerCharacterID }
+    | { type: 'npc', npc: NonPlayerCharacterID, location: LocationID }
     | { type: 'location', location: LocationID },
+
+  description:
+    | {| type: 'inherit' |}
+    | {| type: 'plaintext', plaintext: string |},
 
   tags: $ReadOnlyArray<string>,
 };
@@ -46,14 +51,19 @@ export const castExpositionScene/*: Cast<ExpositionScene>*/ = c.obj({
 
   title: c.str,
   subject: c.or('type', {
-    'none': c.obj({ type: c.lit('none' )}),
-    'npc': c.obj({ type: c.lit('npc'), npc: castNonPlayerCharacterID }),
-    'location': c.obj({ type: c.lit('location'), location: castLocationId }),
+    'none':     c.obj({ type: (c.lit('none')/*: Cast<'none'>*/) }),
+    'npc':      c.obj({ type: (c.lit('npc')/*: Cast<'npc'>*/), npc: castNonPlayerCharacterID, location: castLocationId }),
+    'location': c.obj({ type: (c.lit('location')/*: Cast<'location'>*/), location: castLocationId }),
+  }),
+  description: c.or('type', {
+    'plaintext': c.obj({ type: c.lit('plaintext'), plaintext: c.str }),
+    'inherit': c.obj({ type: c.lit('inherit') })
   }),
 
   tags: c.arr(c.str),
 })
 
 export const castSceneRef/*: Cast<SceneRef>*/ = c.or('type', {
-  'exposition': c.obj({ type: c.lit('exposition'), ref: castExpositionSceneID })
+  'exposition': c.obj({ type: (c.lit('exposition')/*: Cast<'exposition'>*/), ref: castExpositionSceneID }),
+  'encounter': c.obj({ type: (c.lit('encounter')/*: Cast<'encounter'>*/), ref: castEncounterId }),
 })

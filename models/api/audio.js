@@ -6,17 +6,21 @@
 /*:: import type { GameID } from "../game.js" */
 /*:: import type { AssetID } from "../asset.js" */
 
+/*::
+import type { AssetInfo } from "../asset";
+*/
+
 import {
   createObjectCaster, createConstantCaster,
   createConstantUnionCaster, createNullableCaster,
   createArrayCaster,
-  castString, castNumber
+  castString, castNumber, c
 } from "@lukekaalim/cast";
 import { castIdentityProof } from "@astral-atlas/sesame-models";
 
 import { castGameId } from "../game.js";
 import { castAudioTrack, castAudioTrackId, castAudioPlaylistId, castAudioPlaylist } from "../audio.js";
-import { castAssetID } from "../asset.js";
+import { castAssetID, castAssetDescription } from "../asset.js";
 
 /*::
 export type AudioPlaylistResource = {|
@@ -45,7 +49,10 @@ export type AllAudioPlaylistsResource = {|
   GET: {
     query: { gameId: GameID},
     request: empty,
-    response: { type: 'found', playlists: $ReadOnlyArray<AudioPlaylist> }
+    response: {
+      type: 'found', playlists: $ReadOnlyArray<AudioPlaylist>,
+      relatedAssets: $ReadOnlyArray<[AssetID, ?AssetInfo]>
+    }
   },
 |};
 
@@ -75,7 +82,11 @@ export type AllAudioTracksResource = {|
   GET: {
     query: { gameId: GameID },
     request: empty,
-    response: { type: 'found', tracks: $ReadOnlyArray<AudioTrack> }
+    response: {
+      type: 'found',
+      tracks: $ReadOnlyArray<AudioTrack>,
+      relatedAssets: $ReadOnlyArray<[AssetID, ?AssetInfo]>
+    }
   },
 |}
 
@@ -116,7 +127,14 @@ export const allAudioTracksResourceDescription/*: ResourceDescription<AllAudioTr
 
   GET: {
     toQuery: createObjectCaster({ gameId: castGameId}),
-    toResponseBody: createObjectCaster({ type: createConstantCaster('found'), tracks: createArrayCaster(castAudioTrack) }),
+    toResponseBody: createObjectCaster({
+      type: createConstantCaster('found'),
+      tracks: createArrayCaster(castAudioTrack),
+      relatedAssets: c.arr(c.tup([
+        castAssetID,
+        c.maybe(c.obj({ description: castAssetDescription, downloadURL: c.str }))
+      ]))
+    }),
   },
 }
 
@@ -146,7 +164,14 @@ export const allAudioPlaylistsResourceDescription/*: ResourceDescription<AllAudi
 
   GET: {
     toQuery: createObjectCaster({ gameId: castGameId }),
-    toResponseBody: createObjectCaster({ type: createConstantCaster('found'), playlists: createArrayCaster(castAudioPlaylist) }),
+    toResponseBody: createObjectCaster({
+      type: createConstantCaster('found'),
+      playlists: createArrayCaster(castAudioPlaylist),
+      relatedAssets: c.arr(c.tup([
+        castAssetID,
+        c.maybe(c.obj({ description: castAssetDescription, downloadURL: c.str }))
+      ]))
+    }),
   },
 }
 

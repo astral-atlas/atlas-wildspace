@@ -32,6 +32,7 @@ label.editorRoot span {
 }
 .editorRoot textarea {
   padding: 4px;
+  height: 120px;
   resize: vertical;
 }
 .editorRoot input[type=checkbox] {

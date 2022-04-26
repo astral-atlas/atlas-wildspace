@@ -5,6 +5,7 @@ import type { Component } from '@lukekaalim/act';
 
 import type { PlaybackData } from "./player";
 import type { Asset } from "./upload";
+import type { AssetDownloadURLMap } from "../asset/map";
 */
 import { h, useEffect, useRef } from '@lukekaalim/act';
 import parseAudioMetadata from 'parse-audio-metadata';
@@ -220,19 +221,14 @@ export const TrackAssetGridItem/*: Component<TrackAssetGridItemProps>*/ = ({
   track, coverImageURL, onClick, onDblClick, selected, disabled, loading
 }) => {
   const { title, artist, trackLengthMs } = track;
-  const classList = [
-    styles.audioGridItem,
-    selected && styles.selected,
-    disabled && styles.disabled
-  ]
-  return h(AssetGridItem, { classList, onClick, onDblClick }, [
-    !!coverImageURL && h('img', { src: coverImageURL.href }),
+  return h(AssetGridItem, {
+    onClick, onDblClick,
+    selected,
+    disabled,
+    background: !!coverImageURL && h('img', { src: coverImageURL.href }),
+  }, [
     !!loading && h('progress'),
-    h('div', {}, [
-      h('p', { class: styles.trackInfoTitle }, title),
-      !!artist && h('p', {}, `${artist}`),
-      h('p', {}, `${trackLengthMs/1000}s`),
-    ]),
+    title,
   ]);
 }
 
@@ -249,6 +245,7 @@ export const TrackAssetGrid/*: Component<TrackAssetGridProps>*/ = ({
   ...props
 }) => {
   return h(AssetGrid,
+    // $FlowFixMe
     { ...props, style, classList: [styles.audioGrid] },
     children,
   );
@@ -257,7 +254,7 @@ export const TrackAssetGrid/*: Component<TrackAssetGridProps>*/ = ({
 /*::
 export type TrackGridProps = {
   tracks: $ReadOnlyArray<AudioTrack>,
-  assets: $ReadOnlyArray<LocalAsset>,
+  assets: AssetDownloadURLMap,
 
   onTrackClick?: AudioTrack => mixed,
 };
@@ -272,11 +269,11 @@ export const TrackGrid/*: Component<TrackGridProps>*/ = ({
   return h(AssetGrid,
     { classList: [styles.audioGrid] },
     tracks.map(track => {
-      const coverImageAsset = assets.find(a => a.id === track.coverImageAssetId);
+      const coverImageAsset = track.coverImageAssetId && assets.get(track.coverImageAssetId);
       return h(TrackAssetGridItem, {
         onClick: onTrackClick && (() => onTrackClick(track)),
         track,
-        coverImageURL: coverImageAsset && coverImageAsset.url
+        coverImageURL: coverImageAsset ? new URL(coverImageAsset.downloadURL) : null
       })
     }),
   );

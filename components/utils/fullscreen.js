@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "@lukekaalim/act";
 
-export const useFullscreen = () => {
+export const useFullscreen = ()/*: [?Element, (?Element) => void]*/ => {
   const [fullscreenElement, setFullscreenElement] = useState(null);
   useEffect(() => {
     document.addEventListener('fullscreenchange', (e/*: Event*/) => {

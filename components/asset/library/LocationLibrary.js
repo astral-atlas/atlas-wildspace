@@ -22,14 +22,12 @@ import type { WildspaceClient } from "@astral-atlas/wildspace-client2";
 import type { Component } from "@lukekaalim/act";
 
 import type { LocalAsset } from "../../audio/track";
-import type { AssetDownloadURLMap } from "../map";
 import type { GameData } from "../../game/data";
 
 export type LocationLibraryProps = {
   gameId: GameID,
   data: GameData,
   client: WildspaceClient,
-  assets: AssetDownloadURLMap,
 };
 */
 
@@ -41,20 +39,20 @@ export const LocationLibrary/*: Component<LocationLibraryProps>*/ = ({ gameId, c
   }
 
   const editor = [
-    h(LocationEditor, { gameId, data, client, selection })
+    h(LocationEditor, { gameId, data, client, selection, assets: data.assets })
   ];
   const content = [
     h(EditorForm, { onEditorSubmit: onNewLocationSubmit }, [
       h(EditorFormSubmit, { label: 'Create new Location' })
     ]),
     h('hr'),
-    h(LocationGrid, { locations: data.locations, select, selection, client })
+    h(LocationGrid, { locations: data.locations, select, selection, client, assets: data.assets })
   ];
 
   return h(AssetLibraryWindow, { editor, content })
 };
 
-const LocationEditor = ({ gameId, data, client, selection }) => {
+const LocationEditor = ({ gameId, data, client, selection, assets }) => {
   const editingLocation = data.locations.find(l => l.id === selection[0]);
 
   if (!editingLocation)
@@ -75,13 +73,13 @@ const LocationEditor = ({ gameId, data, client, selection }) => {
         onTextChange: title => onEditLocation({ ...editingLocation, title }) }),
       h(EditorTextAreaInput, { label: 'description', text: editingLocation.description.plaintext,
         onTextChange: plaintext => onEditLocation({ ...editingLocation, description: { type: 'plaintext', plaintext } }) }),
-      h(LocationBackgroundEditor, { editingLocation,
+      h(LocationBackgroundEditor, { editingLocation, assets,
         onBackgroundChange: background => onEditLocation({ ...editingLocation, background }), client }),
     ]),
   ]
 }
 
-const LocationBackgroundEditor = ({ editingLocation: { background }, onBackgroundChange, client }) => {
+const LocationBackgroundEditor = ({ editingLocation: { background }, onBackgroundChange, client, assets }) => {
 
   const onTypeChange = (e) => {
     switch (e.target.value) {
@@ -117,30 +115,22 @@ const LocationBackgroundEditor = ({ editingLocation: { background }, onBackgroun
       }),
     background.type === 'image' && [
       h(FilesEditor, { label: 'image file', onFilesChange: onImageFileChange, accept: 'image/*' }),
-      h(EditorTextInput, { disabled: true, label: 'imageAssetId', text: background.imageAssetId || 'null' })
+      h(EditorTextInput, { disabled: true, label: 'imageAssetId', text: background.imageAssetId || 'null' }),
+      !!background.imageAssetId && h('img', { src: assets.get(background.imageAssetId)?.downloadURL  })
     ]
   ]
 }
 
-const LocationGrid = ({ locations, select, selection, client }) => {
-  const [assetMap] = useAsync(async () => new Map(await Promise.all(locations
-    .map(l => l.background)
-    .map(b => b.type === 'image' ? b : null)
-    .filter(Boolean)
-    .map(b => b.imageAssetId ? b.imageAssetId : null)
-    .filter(Boolean)
-    .map(async i => [i, await client.asset.peek(i)]))
-  ), [locations])
-
-  console.log(assetMap);
-
+const LocationGrid = ({ locations, select, selection, client, assets }) => {
   return h(AssetGrid, {}, locations.map(location =>
     h(AssetGridItem, {
       id: location.id,
       select,
       background: [
         location.background.type === 'color' && h('div', { style: { backgroundColor: location.background.color } }),
-        location.background.type === 'image' && !!assetMap && h('img', { src: assetMap.get(location.background.imageAssetId)?.downloadURL }),
+        location.background.type === 'image' &&
+        !!location.background.imageAssetId &&
+        h('img', { src: assets.get(location.background.imageAssetId)?.downloadURL }),
       ],
       selected: !!selection.find(id => id === location.id)
     },
