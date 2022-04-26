@@ -1,0 +1,16 @@
+{
+  "www": {
+    "sesame": {
+      "httpOrigin": "https://sesame.astral-atlas.com"
+    }
+  },
+  "api": {
+    "wildspace": {
+      "httpOrigin": "https://api.wildspace.astral-atlas.com",
+      "wsOrigin": "wss://api.wildspace.astral-atlas.com"
+    },
+    "sesame": {
+      "httpOrigin": "https://api.sesame.astral-atlas.com"
+    }
+  }
+}
