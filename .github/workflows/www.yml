@@ -1,4 +1,4 @@
-name: "Publish @astral-atlas/wildspace-api"
+name: "Publish @astral-atlas/wildspace-www"
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - '@astral-atlas/wildspace-www@*'
 
 jobs:
-  release-api:
+  release-www:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
