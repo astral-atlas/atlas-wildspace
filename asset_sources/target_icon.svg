@@ -1,3 +1,65 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:8bc1027db3470f1b89614ce38846a8a7a87665a3dbecb4beb698a4cdaee2508b
-size 2252
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="180"
+   height="180"
+   viewBox="0 0 180 180"
+   version="1.1"
+   id="svg5"
+   sodipodi:docname="target_icon.svg"
+   inkscape:export-filename="/home/lukekaalim/Projects/atlas/wildspace/docs/src/controls/game/target_icon.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="px"
+     showgrid="false"
+     inkscape:zoom="3.3076884"
+     inkscape:cx="75.581485"
+     inkscape:cy="90.09313"
+     inkscape:window-width="1536"
+     inkscape:window-height="756"
+     inkscape:window-x="2273"
+     inkscape:window-y="227"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <circle
+       style="fill:#ffffff;stroke:#000000;stroke-width:4.92158;stroke-miterlimit:4;stroke-dasharray:none;fill-opacity:1"
+       id="path846"
+       cx="90"
+       cy="90"
+       r="87.539207" />
+    <circle
+       style="fill:#755070;stroke:#000000;stroke-width:5;stroke-miterlimit:4;stroke-dasharray:none;fill-opacity:1"
+       id="path1105"
+       cx="90.155281"
+       cy="90.157181"
+       r="71.709557" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:5.08027;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 90.040135,0 V 180"
+       id="path961" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:5.08027;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 179.99999,90.040135 H 0"
+       id="path961-6" />
+  </g>
+</svg>

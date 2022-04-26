@@ -1,3 +1,89 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:ac02698f7a99ef469fc1b24bd2ded132c205e9155e2afe94745b22626ddd615a
-size 5356
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="139.84251"
+   height="139.84251"
+   viewBox="0 0 37 37"
+   version="1.1"
+   id="svg1802"
+   sodipodi:docname="5e_background_box.svg"
+   inkscape:export-filename="/home/lukekaalim/Projects/atlas/wildspace/www2/public/2d/5e_background_box.png"
+   inkscape:export-xdpi="384.43243"
+   inkscape:export-ydpi="384.43243"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1804"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="px"
+     showgrid="false"
+     inkscape:zoom="4.238864"
+     inkscape:cx="39.63326"
+     inkscape:cy="77.497178"
+     inkscape:window-width="1920"
+     inkscape:window-height="1019"
+     inkscape:window-x="1920"
+     inkscape:window-y="30"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer4"
+     inkscape:snap-global="false"
+     inkscape:lockguides="true"
+     width="37mm"
+     inkscape:snap-bbox="true"
+     inkscape:bbox-paths="true"
+     inkscape:bbox-nodes="true"
+     inkscape:snap-bbox-midpoints="true"
+     inkscape:snap-object-midpoints="true"
+     inkscape:snap-page="true"
+     units="px" />
+  <defs
+     id="defs1799" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="Layer 4"
+     style="display:inline;opacity:1">
+    <g
+       id="g49"
+       transform="matrix(0.29265829,0,0,-0.29265829,42.098894,48.6077)"
+       inkscape:export-filename="/home/lukekaalim/Projects/atlas/wildspace/www2/public/2d/g49.png"
+       inkscape:export-xdpi="384.43243"
+       inkscape:export-ydpi="384.43243">
+      <path
+         d="m -19.101237,50.188226 c 0.25,1.405 0.438,3.713 -0.306,6.146 l 1.34,4.978 v -9.621 c -0.279,-0.446 -0.619,-0.956 -1.034,-1.503 m 1.034,95.011334 v 9.62 c -0.278,0.445 -0.619,0.953 -1.033,1.499 0.25,-1.406 0.436,-3.711 -0.307,-6.14 z m -124.542673,9.62 v -9.62 l 1.34,4.979 c -0.742,2.429 -0.557,4.734 -0.307,6.14 -0.414,-0.546 -0.754,-1.054 -1.033,-1.499 M -29.504237,43.637226 h -21.819484 c -0.134,-0.241 -0.383,-0.412 -0.68,-0.412 -0.434,0 -0.787,0.354 -0.787,0.787 0,0.436 0.353,0.789 0.787,0.789 0.297,0 0.547,-0.171 0.681,-0.414 h 21.818484 c 4.464,0 7.675,2.565 9.7,4.932 0.255,0.988 0.847,3.906 -0.101,6.935 l -0.022,0.07 0.019,0.07 1.841,6.841 v 80.040334 l -1.86,6.913 0.022,0.069 c 0.945,3.021 0.36,5.934 0.103,6.929 -2.026,2.368 -5.24,4.937 -9.702,4.937 h -21.819484 c -0.134,-0.242 -0.383,-0.413 -0.68,-0.413 -0.434,0 -0.787,0.354 -0.787,0.788 0,0.435 0.353,0.789 0.787,0.789 0.297,0 0.547,-0.171 0.681,-0.414 h 21.818484 c 5.729,0 9.502,-3.955 11.437,-6.704 v 1.89 c -1.828,1.984 -6.122,5.945 -12.25,7.456 l -100.050673,-0.002 c -6.127,-1.512 -10.416,-5.469 -12.242,-7.453 v -1.891 c 1.936,2.749 5.708,6.704 11.438,6.704 h 25.88291 c 0.135,0.243 0.385,0.414 0.682,0.414 0.433,0 0.787,-0.354 0.787,-0.789 0,-0.434 -0.354,-0.788 -0.787,-0.788 -0.297,0 -0.545,0.171 -0.68,0.413 h -25.88491 c -4.462,0 -7.677,-2.569 -9.702,-4.937 -0.257,-0.995 -0.842,-3.908 0.102,-6.929 l 0.023,-0.069 -0.02,-0.07 -1.841,-6.843 V 63.236226 l 1.861,-6.912 -0.023,-0.07 c -0.945,-3.022 -0.357,-5.936 -0.102,-6.93 2.025,-2.368 5.24,-4.937 9.702,-4.937 h 25.88291 c 0.135,0.243 0.385,0.414 0.682,0.414 0.433,0 0.787,-0.353 0.787,-0.789 0,-0.433 -0.354,-0.787 -0.787,-0.787 -0.297,0 -0.545,0.171 -0.68,0.412 h -25.88491 c -5.73,0 -9.502,3.956 -11.438,6.704 v -1.89 c 1.828,-1.985 6.123,-5.946 12.254,-7.455 l 100.043673,0.002 c 6.128,1.51 10.419,5.467 12.245,7.452 v 1.891 c -1.935,-2.748 -5.708,-6.704 -11.437,-6.704 m -113.105673,17.675 v -9.62 c 0.279,-0.445 0.619,-0.954 1.033,-1.5 -0.25,1.406 -0.435,3.712 0.307,6.142 z m 0,-13.59 v -2.58 c 0,0 3.647,-2.168 4.576,-4.146 h 5.874 c -4.987,1.664 -8.604,4.809 -10.45,6.726 M -18.067237,158.78956 v 2.58 c 0,0 -3.646,2.168 -4.576,4.146 h -5.871 c 4.985,-1.664 8.601,-4.81 10.447,-6.726 m -10.445,-117.791334 h 5.869 c 0.93,1.976 4.576,4.146 4.576,4.146 v 2.578 c -1.846,-1.917 -5.461,-5.06 -10.445,-6.724 M -132.16591,165.51356 h -5.868 c -0.929,-1.976 -4.576,-4.146 -4.576,-4.146 v -2.578 c 1.846,1.916 5.46,5.06 10.444,6.724"
+         style="fill:#deddde;fill-opacity:1;fill-rule:nonzero;stroke:none"
+         id="path51"
+         sodipodi:nodetypes="cccccccccccccccccssscscccccccccscssscsccccccscssscscccccccccscssscscccccccccccccccccccccccccccccccc" />
+    </g>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer5"
+     inkscape:label="Layer 5"
+     style="display:none">
+    <rect
+       style="display:inline;fill:#666666;fill-opacity:0.373408;stroke:none;stroke-width:0.305859"
+       id="rect6069-3"
+       width="12.333376"
+       height="37"
+       x="12.293583"
+       y="-0.0019222115" />
+    <rect
+       style="display:inline;fill:#666666;fill-opacity:0.373408;stroke:none;stroke-width:0.305859"
+       id="rect6069-3-6-7"
+       width="12.333376"
+       height="37"
+       x="12.331388"
+       y="-36.96027"
+       transform="rotate(90)" />
+  </g>
+</svg>

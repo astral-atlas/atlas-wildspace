@@ -1,3 +1,58 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:7a6b4934c3f58730f3280a810a71d20fc0ca40d41d66dccd0cf724cfe21900fc
-size 2306
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="door_icon.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="px"
+     showgrid="false"
+     inkscape:zoom="1.1628592"
+     inkscape:cx="227.88657"
+     inkscape:cy="222.2969"
+     inkscape:window-width="1920"
+     inkscape:window-height="1019"
+     inkscape:window-x="1920"
+     inkscape:window-y="30"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="rect846"
+       style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:2.79842;stroke-miterlimit:4;stroke-dasharray:none"
+       d="m 246.36345,4.5009219 c -84.54987,0 -204.8177,73.8357131 -204.8177,209.3569481 v 292.29655 h 204.8177 V 347.23109 C 177.13326,341.15762 123.92317,283.35315 123.59089,213.85787 123.92316,144.36257 177.13326,86.558105 246.36345,80.484634 Z"
+       sodipodi:nodetypes="cscccccc" />
+    <path
+       id="rect846-7"
+       style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:2.79842;stroke-miterlimit:4;stroke-dasharray:none"
+       d="M 267.43634,4.5009219 V 79.667522 c 70.50772,4.893979 125.20629,63.512988 125.21571,134.190348 -0.31144,70.45518 -54.9289,128.73575 -125.21571,133.6137 v 158.68285 h 204.8177 V 213.85787 C 472.25404,78.336635 351.98621,4.5009219 267.43634,4.5009219 Z"
+       sodipodi:nodetypes="ccccccsc" />
+    <circle
+       style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:2.79842;stroke-miterlimit:4;stroke-dasharray:none"
+       id="path1287"
+       cx="258.12073"
+       cy="213.85866"
+       r="57.641712" />
+  </g>
+</svg>

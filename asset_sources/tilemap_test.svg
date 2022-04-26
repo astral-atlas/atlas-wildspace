@@ -1,3 +1,246 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:7f502cef78d39a7986b9925c55a0c68a05a9ff4f5b5cf5b51fd9706aed73bfaf
-size 7723
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="128"
+   height="128"
+   viewBox="0 0 33.866666 33.866668"
+   version="1.1"
+   id="svg2524"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="tilemap_test.svg"
+   inkscape:export-filename="/home/lukekaalim/Projects/atlas/wildspace/docs/src/geometry/tilemap_test.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview2526"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     units="px"
+     inkscape:snap-object-midpoints="true"
+     inkscape:snap-bbox="true"
+     inkscape:zoom="4.2431962"
+     inkscape:cx="70.937092"
+     inkscape:cy="76.357534"
+     inkscape:window-width="1536"
+     inkscape:window-height="756"
+     inkscape:window-x="2391"
+     inkscape:window-y="115"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2521">
+    <rect
+       x="0"
+       y="0"
+       width="31.999998"
+       height="31.999998"
+       id="rect16210" />
+    <rect
+       x="-70.66897"
+       y="-106.82579"
+       width="174.65345"
+       height="204.40885"
+       id="rect11210" />
+    <rect
+       x="0"
+       y="0"
+       width="31.999998"
+       height="31.999998"
+       id="rect16210-5" />
+    <rect
+       x="0"
+       y="0"
+       width="31.999998"
+       height="31.999998"
+       id="rect16210-2" />
+    <rect
+       x="0"
+       y="0"
+       width="31.999998"
+       height="31.999998"
+       id="rect16210-1" />
+    <rect
+       x="0"
+       y="0"
+       width="31.999998"
+       height="31.999998"
+       id="rect16210-7" />
+    <rect
+       x="0"
+       y="0"
+       width="31.999998"
+       height="31.999998"
+       id="rect16210-7-0" />
+    <rect
+       x="0"
+       y="0"
+       width="31.999998"
+       height="31.999998"
+       id="rect16210-7-0-2" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       d="M 0,0 0,33.866666 M 8.4666665,0 l 0,33.866666 M 16.933333,0 l 0,33.866666 M 25.399999,0 l 0,33.866666 M 33.866666,0 l 0,33.866666 M 0,0 33.866666,0 M 0,8.4666665 l 33.866666,0 M 0,16.933333 l 33.866666,0 M 0,25.399999 l 33.866666,0 M 0,33.866666 l 33.866666,0"
+       style="fill:none;stroke:#000000;stroke-width:0.264583px"
+       id="path2807" />
+    <rect
+       style="fill:#59bfa3;fill-opacity:1;stroke:none;stroke-width:1.34013"
+       id="rect3104"
+       width="8.4666662"
+       height="8.4666662"
+       x="0"
+       y="0" />
+    <rect
+       style="fill:#59bf42;fill-opacity:1;stroke:none;stroke-width:1.34013"
+       id="rect3104-9"
+       width="8.4666662"
+       height="8.4666662"
+       x="8.4666662"
+       y="0" />
+    <rect
+       style="fill:#596fef;fill-opacity:1;stroke:none;stroke-width:1.34013"
+       id="rect3104-9-3"
+       width="8.4666662"
+       height="8.4666662"
+       x="16.933332"
+       y="-4.7683716e-07" />
+    <rect
+       style="fill:#d64938;fill-opacity:1;stroke:none;stroke-width:1.34013"
+       id="rect3104-9-6"
+       width="8.4666662"
+       height="8.4666662"
+       x="25.399998"
+       y="-9.2387199e-07" />
+    <rect
+       style="fill:#5957a3;fill-opacity:1;stroke:none;stroke-width:1.34013"
+       id="rect3104-7"
+       width="8.4666662"
+       height="8.4666662"
+       x="0"
+       y="8.4666662" />
+    <rect
+       style="fill:#c457a3;fill-opacity:1;stroke:none;stroke-width:1.34013"
+       id="rect3104-7-5"
+       width="8.4666662"
+       height="8.4666662"
+       x="0"
+       y="16.933332" />
+    <rect
+       style="fill:#313da3;fill-opacity:1;stroke:none;stroke-width:1.34013"
+       id="rect3104-7-5-3"
+       width="8.4666662"
+       height="8.4666662"
+       x="0"
+       y="25.399998" />
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text11208"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect11210);fill:#000000;fill-opacity:1;stroke:none" />
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,1.645216,1.7238495)"
+       id="text16208"
+       style="font-size:6.66667px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect16210)"><tspan
+         x="0"
+         y="5.8984403"
+         id="tspan26085">Hello
+</tspan><tspan
+         x="0"
+         y="14.231778"
+         id="tspan26087">Tile 1</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,10.634811,2.3116365)"
+       id="text16208-0"
+       style="font-size:6.66667px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect16210-7)"><tspan
+         x="0"
+         y="5.8984403"
+         id="tspan26089">Hello
+</tspan><tspan
+         x="0"
+         y="14.231778"
+         id="tspan26091">Tile 5</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,18.593306,1.9186537)"
+       id="text16208-0-6"
+       style="font-size:6.66667px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect16210-7-0)"><tspan
+         x="0"
+         y="5.8984403"
+         id="tspan26093">Hello
+</tspan><tspan
+         x="0"
+         y="14.231778"
+         id="tspan26095">Tile 6</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,27.722354,1.7916674)"
+       id="text16208-0-6-6"
+       style="font-size:6.66667px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect16210-7-0-2)"><tspan
+         x="0"
+         y="5.8984403"
+         id="tspan26097">Hello
+</tspan><tspan
+         x="0"
+         y="14.231778"
+         id="tspan26099">Tile 7</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,1.7259812,10.594157)"
+       id="text16208-6"
+       style="font-size:6.66667px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect16210-5)"><tspan
+         x="0"
+         y="5.8984403"
+         id="tspan26101">Hello
+</tspan><tspan
+         x="0"
+         y="14.231778"
+         id="tspan26103">Tile 2</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,2.0192065,19.20251)"
+       id="text16208-9"
+       style="font-size:6.66667px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect16210-2)"><tspan
+         x="0"
+         y="5.8984403"
+         id="tspan26105">Hello
+</tspan><tspan
+         x="0"
+         y="14.231778"
+         id="tspan26107">Tile 3</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,1.9751151,26.918513)"
+       id="text16208-2"
+       style="font-size:6.66667px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect16210-1)"><tspan
+         x="0"
+         y="5.8984403"
+         id="tspan26109">Hello
+</tspan><tspan
+         x="0"
+         y="14.231778"
+         id="tspan26111">Tile 4</tspan></text>
+    <rect
+       style="fill:#d64938;fill-opacity:1;stroke:none;stroke-width:1.32292"
+       id="rect26040"
+       width="22.463396"
+       height="22.59601"
+       x="9.8027992"
+       y="9.7021418" />
+  </g>
+</svg>

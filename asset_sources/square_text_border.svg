@@ -1,3 +1,56 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:474fd9e9779fcbb5bc77e1b2d5cb98eb2f79a9928cc62500d4e995fdd34bfaa7
-size 2295
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="10mm"
+   height="10mm"
+   viewBox="0 0 10 10"
+   version="1.1"
+   id="svg4521"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   sodipodi:docname="square_text_border.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview4523"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:zoom="12.001571"
+     inkscape:cx="17.497709"
+     inkscape:cy="31.62086"
+     inkscape:window-width="1920"
+     inkscape:window-height="1019"
+     inkscape:window-x="1920"
+     inkscape:window-y="30"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs4518" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-48.320071,-53.352758)">
+    <g
+       id="g1636"
+       transform="matrix(0.35277777,0,0,-0.35277777,111.82007,54.410033)">
+      <path
+         d="m -151.84764,0 v 0.903 h -2.873 v 2.094 h -1.25 c 0,0 -0.497,-0.72 -1.831,-0.72 H -174.046 c -1.334,0 -1.831,0.72 -1.831,0.72 h -1.25 V 0.903 H -180 V 0 c 1.182,0 1.247,-1.937 1.247,-1.937 v -17.104282 c 0,0 -0.065,-1.937 -1.247,-1.937 v -0.903 h 1.247 1.626 v -3.296 h 1.25 V 1.444 h 19.90636 V -23.624282 H -175.876 v -1.553 c 0,0 0.497,0.72 1.831,0.72 h 16.24436 c 1.327,0 1.825,-0.711 1.83,-0.719 v -0.001 h 1.25 v 3.296 h 1.626 1.247 v 0.903 c -1.182,0 -1.247,1.937 -1.247,1.937 V -1.937 c 0,0 0.065,1.937 1.247,1.937 M -177.127,-19.041282 h -0.876 V -2.686 h 0.876 z m 23.28236,0 h -0.876 V -2.686 h 0.876 z"
+         style="fill:#231f20;fill-opacity:1;fill-rule:nonzero;stroke:none"
+         id="path1638"
+         sodipodi:nodetypes="cccccssccccccccccccccccccsscccccccccccccccccccc" />
+    </g>
+  </g>
+</svg>

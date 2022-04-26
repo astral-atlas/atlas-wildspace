@@ -1,3 +1,55 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:5b58c25d60aafb91c648f2ca4883ce281ed4480696f4aff854d8e0934e4d8c62
-size 3437
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="63.2206mm"
+   height="9.5581608mm"
+   viewBox="0 0 63.2206 9.5581608"
+   version="1.1"
+   id="svg4241"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   sodipodi:docname="passive_bar.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview4243"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:document-units="mm"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:zoom="3.0003928"
+     inkscape:cx="106.31941"
+     inkscape:cy="20.164026"
+     inkscape:window-width="1920"
+     inkscape:window-height="1019"
+     inkscape:window-x="1920"
+     inkscape:window-y="30"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs4238" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-114.77331,-126.78981)">
+    <g
+       id="g1512"
+       transform="matrix(0.35277777,0,0,-0.35277777,117.29285,126.84978)">
+      <path
+         d="m 0,0 c -4.472,-3 -7.142,-8.001 -7.142,-13.377 0,-5.376 2.67,-10.377 7.144,-13.377 l 0.252,-0.17 h 17.407 l 0.252,0.17 c 0.94,0.63 1.795,1.354 2.566,2.145 h 147.144 l 0.2,0.336 c 0.574,0.964 2.385,3.618 3.848,4.305 l 0.395,0.186 -0.002,12.81 -0.394,0.186 c -1.463,0.687 -3.274,3.342 -3.849,4.306 l -0.2,0.335 H 20.481 C 19.708,-1.354 18.854,-0.63 17.914,0 L 17.662,0.17 H 0.253 Z m -5.142,-13.377 c 0,4.608 2.241,8.902 6.009,11.547 h 8.076 c 3.716,-1.642 8.747,-2.564 11.215,-3.023 1.845,-2.42 2.899,-5.391 2.899,-8.521 v -0.006 c 0,-3.13 -1.055,-6.1 -2.9,-8.521 -2.468,-0.459 -7.499,-1.381 -11.214,-3.023 H 0.868 c -3.768,2.645 -6.01,6.939 -6.01,11.547 m 165.658,9.857 c 2.401,-0.892 8.702,-3.556 10.173,-7.384 l 0.002,-4.943 c -1.471,-3.828 -7.775,-6.495 -10.175,-7.387 H 29.691 c -0.624,0.558 -1.975,1.427 -4.489,1.656 0.725,1.226 2.328,4.371 2.328,8.201 0,3.83 -1.603,6.975 -2.328,8.201 2.514,0.229 3.865,1.098 4.489,1.656 z M 24.351,-5.225 c 0.494,-0.783 2.429,-4.118 2.429,-8.152 0,-4.034 -1.935,-7.369 -2.429,-8.152 -0.475,0.013 -0.986,0.004 -1.535,-0.032 1.444,2.444 2.241,5.256 2.241,8.184 v 0.003 c 0,2.926 -0.797,5.738 -2.24,8.181 0.548,-0.036 1.059,-0.045 1.534,-0.032 m -7.304,-19.699 h -4.176 c 2.518,1.024 4.681,1.69 6.529,2.094 -0.7,-0.773 -1.481,-1.482 -2.353,-2.094 m 5.257,2.553 c 3.092,0.28 4.975,-0.295 6.037,-0.863 H 21.68 c 0.217,0.281 0.424,0.569 0.624,0.863 m 144.546,-0.863 h -4.298 c 2.591,1.114 6.328,3.087 8.139,5.782 v -1.485 c -1.659,-1.017 -3.276,-3.408 -3.841,-4.297 m 3.839,15.418 V -9.3 c -1.811,2.695 -5.546,4.666 -8.137,5.78 h 4.296 c 0.565,-0.889 2.183,-3.28 3.841,-4.296 M 28.341,-3.52 c -1.062,-0.568 -2.945,-1.143 -6.037,-0.863 -0.199,0.294 -0.406,0.582 -0.623,0.863 z m -8.94,-0.404 c -1.849,0.404 -4.011,1.07 -6.53,2.094 h 4.177 c 0.873,-0.612 1.653,-1.321 2.353,-2.094"
+         style="fill:#231f20;fill-opacity:1;fill-rule:nonzero;stroke:none"
+         id="path1514" />
+    </g>
+  </g>
+</svg>
