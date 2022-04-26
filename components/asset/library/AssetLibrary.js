@@ -7,6 +7,7 @@ import { SceneLibrary } from "./scene";
 import styles from './AssetLibrary.module.css';
 import { LocationLibrary } from "./LocationLibrary.js";
 import { AudioPlaylistLibrary } from "./audioPlaylist.js";
+import { RoomLibrary } from "./RoomLibrary.js";
 
 /*::
 import type { Component } from "@lukekaalim/act";
@@ -25,6 +26,7 @@ export type AssetLibraryMode =
   | 'track'
   | 'scene'
   | 'location'
+  | 'room'
   | 'none'
 */
 
@@ -66,6 +68,7 @@ const AssetLibraryModeInput = ({ mode, onModeSet }) => {
     h(AssetLibraryModeInputButton, { currentMode: mode, mode: 'track', onModeSet }),
     h(AssetLibraryModeInputButton, { currentMode: mode, mode: 'location', onModeSet }),
     h(AssetLibraryModeInputButton, { currentMode: mode, mode: 'playlist', onModeSet }),
+    h(AssetLibraryModeInputButton, { currentMode: mode, mode: 'room', onModeSet }),
     h(AssetLibraryModeInputButton, { currentMode: mode, mode: 'none', onModeSet, classList: [styles.none] }),
   ])
 }
@@ -75,6 +78,8 @@ const AssetLibrarySubLibrary = ({ mode, data, client, gameId }) => {
       return h(LocationLibrary, { assets: data.assets, data, client, gameId })
     case 'scene':
       return h(SceneLibrary, { assets: data.assets, data, client, gameId });
+    case 'room':
+      return h(RoomLibrary, { gameData: data, client });
     case 'track':
       return h(TracksLibrary, { gameData: data, gameId, playlistClient: client.audio.playlist, trackClient: client.audio.tracks })
     case 'playlist':
