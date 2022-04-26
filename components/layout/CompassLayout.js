@@ -13,7 +13,7 @@ import {
   calculateBezier2DPoint,
   useAnimatedVector2,
   useBezier2DAnimation,
-} from "../../docs/src/pages/layouts";
+} from "../animation";
 import { useBezierAnimation } from "@lukekaalim/act-curve/bezier";
 import { useRefMap } from "../editor/list";
 

@@ -38,3 +38,4 @@ export * from './subscription/index.js';
 export * from './layout/index.js';
 export * from './room/index.js';
 export * from './scene/index.js';
+export * from './animation/index.js';
