@@ -1,0 +1,20 @@
+version: 1
+applications:
+  - frontend:
+      phases:
+        preBuild:
+          commands:
+            - cd ..
+            - npm ci -w www
+        build:
+          commands:
+            - npm run build -w www
+            - cp environments/www/config.json www/dist/config.json
+      artifacts:
+        baseDirectory: /dist
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - ../node_modules/**/*
+    appRoot: www

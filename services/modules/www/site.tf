@@ -1,61 +1,51 @@
-variable "www_version" {
-  type = string
-}
 
-module "www_release_archive" {
-  source = "../github_release"
-  owner = "astral-atlas"
-  repository = "wildspace"
-  release_tag = "@astral-atlas/wildspace-www@${var.www_version}"
-  release_asset_name = "wildspace-www.zip"
-  output_directory = "./temp/www/release"
-}
 
-variable "www_config" {
-  type = any
-}
-data "external" "configure_bundle" {
-  program = ["bash", "${path.module}/configure.sh"]
+resource "random_pet" "environment_name" {}
+resource "aws_amplify_app" "site" {
+  name       = "wildspace"
+  repository = "https://github.com/astral-atlas/wildspace"
 
-  query = {
-    "output_dir": "./temp/www/objects",
-    "archive_path": module.www_release_archive.output_file
-    "config": jsonencode(merge({}, var.www_config)),
+
+  build_spec = file("${path.module}/buildspec.yaml")
+
+  custom_rule {
+    source = "/<*>"
+    status = "404"
+    target = "/index.html"
+  }
+  custom_rule {
+    source = "/room"
+    status = "200"
+    target = "/index.html"
+  }
+
+  environment_variables = {
+    AMPLIFY_DIFF_DEPLOY: false
+    AMPLIFY_MONOREPO_APP_ROOT: "www"
+    _LIVE_UPDATES: jsonencode([{"pkg":"node","type":"nvm","version":"16"}])
   }
 }
-variable "www_origin" {
+
+resource "aws_amplify_branch" "main" {
+  app_id      = aws_amplify_app.site.id
+  branch_name = "canon"
+}
+
+
+variable "domain_name" {
   type = string
 }
+resource "aws_amplify_domain_association" "main_domains" {
+  app_id      = aws_amplify_app.site.id
+  domain_name = var.domain_name
 
+  sub_domain {
+    branch_name = aws_amplify_branch.main.branch_name
+    prefix      = ""
+  }
 
-module "static_site" {
-  source = "../static_site"
-
-  site_hostname = var.www_origin
-  objects_directory = data.external.configure_bundle.result.output_dir
-}
-
-variable "record_zone_id" {
-  type = string
-}
-variable "record_name" {
-  type = string
-}
-
-module "cache" {
-  source = "../cache_front"
-
-  origin = module.static_site.bucket_regional_domain
-  functions = [{ event_type = "viewer-request", function_arn = aws_cloudfront_function.rewrite_path.arn }]
-  record_zone_id = var.record_zone_id
-  record_name = var.record_name
-}
-
-resource "random_pet" "function_name" {}
-
-resource "aws_cloudfront_function" "rewrite_path" {
-  name    = "${random_pet.function_name.id}_rewrite_path"
-  runtime = "cloudfront-js-1.0"
-  publish = true
-  code    = file("${path.module}/rewrite_path.js")
+  sub_domain {
+    branch_name = aws_amplify_branch.main.branch_name
+    prefix      = "www"
+  }
 }

@@ -6,16 +6,15 @@ resource "aws_s3_bucket" "api_data" {
 module "api" {
   source = "../modules/api"
 
-  www_origin_name = "wildspace.astral-atlas.com"
+  www_origin_names = [
+    "wildspace.astral-atlas.com",
+    "www.wildspace.astral-atlas.com"
+  ]
   certificate = {
     arn = module.api_certificate.certificate_arn
   }
-  environment_network = {
-    id = module.vpc.vpc_id
-    private_subnets = module.vpc.private_subnets
-    public_subnets = module.vpc.public_subnets
-  }
 }
+
 data "aws_elastic_beanstalk_hosted_zone" "current" { }
 resource "aws_route53_record" "api" {
   zone_id = data.aws_route53_zone.root.zone_id

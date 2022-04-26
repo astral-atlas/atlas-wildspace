@@ -30,8 +30,8 @@ data "aws_iam_policy_document" "api_role_policy" {
     resources = [
       aws_s3_bucket.api_data.arn,
       "${aws_s3_bucket.api_data.arn}/*",
-      aws_s3_bucket.assets.arn,
-      "${aws_s3_bucket.assets.arn}/*"
+      aws_s3_bucket.asset_data.arn,
+      "${aws_s3_bucket.asset_data.arn}/*"
     ]
     effect = "Allow"
   }
