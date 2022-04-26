@@ -22,7 +22,9 @@ export type RoomStateResourceV2 = {|
 export type RoomStateConnectionV2 = AuthorizedConnection<{|
   query: { roomId: RoomID, gameId: GameID },
   client: empty,
-  server: RoomStateEvent,
+  server:
+    | RoomStateEvent
+    | {| type: 'heartbeat' |},
 |}>;
 
 export type StateAPIV2 = {|
@@ -35,7 +37,17 @@ const connection/*: ConnectionDescription<RoomStateConnectionV2>*/ = {
   subprotocol: 'JSON.wildspace.room_state.v2.0.0',
 
   castQuery: c.obj({ roomId: castRoomId, gameId: castGameId }),
-  castServerMessage: castRoomStateEvent
+  castServerMessage: e => {
+    if (typeof e !== 'object' || !e)
+      throw new Error();
+    const type = c.str(e.type)
+    switch (type) {
+      case 'heartbeat':
+        return { type: 'heartbeat' };
+      default:
+        return castRoomStateEvent(e);
+    }
+  }
 };
 
 const resource/*: ResourceDescription<RoomStateResourceV2>*/ = {

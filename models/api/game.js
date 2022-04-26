@@ -46,7 +46,7 @@ export type GameAPI = {
   '/games/updates': {|
     query: { gameId: GameID },
     client: empty,
-    server: { type: 'updated', update: GameUpdate },
+    server: { type: 'updated', update: GameUpdate } | { type: 'heartbeat' },
   |},
   ...CharactersAPI,
   ...MonstersAPI,
@@ -86,6 +86,7 @@ export const gameStateConnectionDescription/*: ConnectionDescription<GameAPI['/g
 
   castQuery: c.obj({ gameId: castGameId }),
   castServerMessage:  c.or('type', {
+    'heartbeat': c.obj({ type: c.lit('heartbeat') }),
     'updated': c.obj({ type: c.lit('updated'), update: castGameUpdate }),
   })
 }

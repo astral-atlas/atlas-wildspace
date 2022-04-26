@@ -37,9 +37,9 @@ export type RoomState = {|
 |};
 
 export type RoomUpdate =
-  | { type: 'encounter', encounter: ?EncounterState }
-  | { type: 'audio', audio: RoomAudioState }
-  | { type: 'lobby', lobby: RoomLobbyState }
+  | {| type: 'encounter', encounter: ?EncounterState |}
+  | {| type: 'audio', audio: RoomAudioState |}
+  | {| type: 'lobby', lobby: RoomLobbyState |}
 */
 
 export const castRoomId/*: Cast<RoomID>*/ = castString;

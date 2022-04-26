@@ -20,12 +20,12 @@ import type { RoomState } from "../room";
 
 /*::
 export type RoomStateEvent =
-  | { type: 'game',         game: GameUpdate }
-  | { type: 'audio',        audio: RoomAudioState }
-  | { type: 'scene',        scene: RoomSceneState }
-  | { type: 'encounter',    encounter: ?EncounterState }
-  | { type: 'lobby',        lobby: RoomLobbyState }
-  | { type: 'lobby-event',  lobbyEvent: RoomLobbyEvent }
+  | {| type: 'game',         game: GameUpdate |}
+  | {| type: 'audio',        audio: RoomAudioState |}
+  | {| type: 'scene',        scene: RoomSceneState |}
+  | {| type: 'encounter',    encounter: ?EncounterState |}
+  | {| type: 'lobby',        lobby: RoomLobbyState |}
+  | {| type: 'lobby-event',  lobbyEvent: RoomLobbyEvent |}
 
 */
 

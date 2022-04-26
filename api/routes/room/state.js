@@ -108,6 +108,7 @@ export const createStateRoutes/*: RoutesConstructor*/ = (services) => {
           ...prevLobby,
           playersConnected,
         };
+        connection.send({ type: 'heartbeat' });
         await services.data.roomData.lobby.set(gameId, roomId, nextLobby);
       }, heartbeatDuration / 2)
 

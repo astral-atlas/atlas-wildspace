@@ -192,7 +192,7 @@ export const AudioPlaylistStateEditor/*: Component<AudioPlaylistStateEditorProps
   }
 
   return [
-    !!currentAsset && h('audio', { src: currentAsset.downloadURL, ref: audioRef, controls: true, onPlay, onSeeked: noopEvent, onSeeking: noopEvent }),
+    !!currentAsset && h('audio', { src: currentAsset.downloadURL, ref: audioRef, controls: true, onPlay, onSeeked: noopEvent, onSeeking: noopEvent, volume: 0 }),
     h(ProgressEditor, {
       state, activeTracks, tracks, playlists, currentTrack, volume, client, game, roomId
     }),

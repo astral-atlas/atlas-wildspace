@@ -68,8 +68,7 @@ export const WildspaceApp/*: Component<WildspaceAppProps>*/ = ({ children, initi
 
   return (
     h(wildspaceStateContext.Provider, { value: wildspaceState },
-      h(apiContext.Provider, { value: api },
-        h(navigationContext.Provider, { value: navigation }, children)))
+      h(apiContext.Provider, { value: api }, children))
   );
 };
 
