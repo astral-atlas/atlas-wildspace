@@ -18,6 +18,8 @@ import { createInitialCubicBezierAnimation, interpolateCubicBezierAnimation, use
 import { useRenderLoopManager } from "../../../docs/src/controls/loop";
 import { Color, Vector2 } from "three";
 
+import wwwPackage from '../../package.json';
+
 
 /*::
 export type SceneContext = {
@@ -193,6 +195,14 @@ export const HomePage/*: Component<{ nav: Navigation }>*/ = ({ nav }) => {
       }}, [
         h(FullscreenToggle, { onFullscreenClick })
       ]),
+      h('div', {
+        style: {
+          position: 'absolute',
+          bottom: '24px',
+          left: '24px',
+        }
+      }, h('pre', {}, `${wwwPackage.name}@${wwwPackage.version}`)
+      ),
       h('div', { classList: [styles.homePageRoomContainer] }, [
         h(HomePageContent, { nav }),
       ])
