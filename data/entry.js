@@ -95,6 +95,7 @@ export const createFileData = (dataDir/*: string*/)/*: { data: WildspaceData, di
 
 export const createAWSS3Data = (s3/*: S3*/, bucket/*: string*/, keyPrefix/*: string*/)/*: { data: WildspaceData }*/ => {
   const prefixes = [];
+
   const { data } = createBufferWildspaceData({
     createBufferDB: (name) => createAWSS3BufferDB(s3, bucket, join(keyPrefix, name)),
     createBufferStore: (name) => createS3BufferStore(s3, bucket, resolve(keyPrefix, name, `${name}.json`)),

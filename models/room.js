@@ -26,6 +26,7 @@ export type Room = {
   gameId: GameID,
 
   title: string,
+  hidden: ?boolean,
 };
 
 export type RoomState = {|
@@ -46,6 +47,7 @@ export const castRoomId/*: Cast<RoomID>*/ = castString;
 export const castRoom/*: Cast<Room>*/ = createObjectCaster({
   id: castRoomId,
   gameId: castGameId,
+  hidden: c.maybe(c.bool),
 
   title: castString,
 });

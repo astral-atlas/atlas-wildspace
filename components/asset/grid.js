@@ -53,6 +53,7 @@ export const AssetGridItem/*: Component<AssetGridItemProps>*/ = ({
   ...props
 }) => {
   const onClick = (e) => {
+    console.log('clicked', select);
     if (select && id) {
       if (e.shiftKey)
         select.add([id])

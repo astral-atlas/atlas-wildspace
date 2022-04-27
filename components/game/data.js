@@ -10,6 +10,7 @@ import type {
   AudioPlaylist, AudioTrack,
   ExpositionScene,
   Location,
+  Room,
   AssetID, AssetInfo,
 } from "@astral-atlas/wildspace-models";
 import type { WildspaceClient } from "@astral-atlas/wildspace-client2";
@@ -23,6 +24,7 @@ export type GameData = {|
   ...GameAssetData,
 |};
 export type GameAssetData = {|
+  rooms: $ReadOnlyArray<Room>,
   players: $ReadOnlyArray<Player>,
   playlists: $ReadOnlyArray<AudioPlaylist>,
   tracks: $ReadOnlyArray<AudioTrack>,
@@ -35,6 +37,7 @@ export type GameAssetData = {|
 */
 
 const emptyGameData = {
+  rooms: [],
   players: [],
   playlists: [],
   tracks: [],
@@ -82,6 +85,10 @@ export const useGameData = (
     client.game.players.list(game.id)
       .then(players => updateData({ players }))
   }, [times.players])
+  useEffect(() => {
+    client.room.list(game.id)
+      .then(rooms => updateData({ rooms }))
+  }, [times.rooms])
 
   const memoData = useMemo(() => ({
     ...data,

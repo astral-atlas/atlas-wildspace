@@ -25,7 +25,11 @@ export const createRoomStateClient = (http/*: HTTPServiceClient*/, ws/*: WSServi
 
   const connect = async (gameId, roomId, recieve) => {
 
-    const connection = await roomStateConnection.connect({ query: { gameId, roomId }, recieve })
+    const connection = await roomStateConnection.connect({ query: { gameId, roomId }, recieve: (event) => {
+      if (event.type === 'heartbeat')
+        return;
+      recieve(event)
+    } })
 
     return {
       close: connection.close

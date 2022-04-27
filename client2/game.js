@@ -62,6 +62,8 @@ export const createGameClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceCli
   }
   const connectUpdates = (gameId, onUpdate) => {
     const recieve = (event) => {
+      if (event.type === 'heartbeat')
+        return;
       onUpdate(event.update);
     };
     const connectionPromise = updates.connect({ query: { gameId }, recieve });

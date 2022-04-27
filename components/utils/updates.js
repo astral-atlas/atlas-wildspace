@@ -8,6 +8,7 @@ import type { GameID } from "@astral-atlas/wildspace-models";
 import type { GameClient } from "@astral-atlas/wildspace-client2";
 
 export type GameUpdateTimes = {
+  rooms: number,
   players: number,
   tracks: number,
   playlists: number,
@@ -21,6 +22,7 @@ export const useGameUpdateTimes = (
   gameId/*: GameID*/
 )/*: GameUpdateTimes*/ => {
   const [updateTimes, setUpdateTimes] = useState/*:: <GameUpdateTimes>*/({
+    rooms: 0,
     players: 0,
     tracks: 0,
     playlists: 0,
@@ -29,6 +31,8 @@ export const useGameUpdateTimes = (
   });
   useConnection(async () => gameClient.connectUpdates(gameId, update => {
     switch (update.type) {
+      case 'rooms':
+        return setUpdateTimes(t => ({ ...t, rooms: Date.now() }))
       case 'players':
         return setUpdateTimes(t => ({ ...t, players: Date.now() }))
       case 'tracks':

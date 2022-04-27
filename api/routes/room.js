@@ -47,6 +47,7 @@ export const createRoomRoutes/*: RoutesConstructor*/ = (services) => {
           id: uuid(),
           title,
           gameId: game.id,
+          hidden: true,
         };
   
         await data.room.set(game.id, room.id, room);
@@ -74,7 +75,21 @@ export const createRoomRoutes/*: RoutesConstructor*/ = (services) => {
       }
     }
   });
-  const allRoomsResourceRoute = createJSONResourceRoutes(roomAPI['/room/all'], {
+  const allRoomsResourceRoute = createAuthorizedResource(roomAPI['/room/all'], {
+    GET: {
+      getGameId: r => r.query.gameId,
+      scope: { type: 'player-in-game' },
+      async handler ({ query: { gameId }, game, identity }) {
+        const { result: rooms } = await data.room.query(gameId);
+        const isGameMaster = identity.type === 'link' && identity.grant.identity === game.gameMasterId;
+
+        const visibleRooms = isGameMaster ? rooms : rooms.filter(r => !r.hidden);
+
+        return { status: HTTP_STATUS.ok, body: { type: 'found', rooms: visibleRooms } };
+      }
+    }
+  });
+  createJSONResourceRoutes(roomAPI['/room/all'], {
     ...defaultOptions,
 
     GET: async ({ query: { gameId }}) => {

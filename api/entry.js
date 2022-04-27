@@ -8,13 +8,15 @@ import { createRouteListener, createFixedListener, listenServer } from "@lukekaa
 import { createRoutes } from './routes.js';
 import { createServices } from "./services.js";
 import { loadConfigFromFile } from "./config.js";
-import * as fs from "fs";
 
 const middleware = (r) => {
   const handler = async (request) => {
     try {
+      const start = Date.now();
       const response = await r.handler(request);
-      console.log(request.method, request.path, response.status);
+      const end = Date.now();
+      const duration = end - start;
+      console.log(request.method, request.path, response.status, `${duration}ms`);
       return response;
     } catch (error) {
       console.error(error);
