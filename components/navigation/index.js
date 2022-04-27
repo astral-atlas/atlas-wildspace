@@ -9,6 +9,25 @@ import { useAsync } from "../utils";
 import styles from './index.module.css';
 
 /*::
+export type HompepageLoginPromptProps = {
+  onLoginClick?: () => mixed,
+}
+*/
+
+export const HompepageLoginPrompt/*: Component<HompepageLoginPromptProps>*/ = ({
+  onLoginClick = _ => {}
+}) => {
+
+  const onSubmit = (e) => {
+    e.preventDefault();
+  }
+  
+  return h('form', { classList: [styles.roomSelectionForm], onSubmit }, [
+    h('button', { classList: [styles.roomLoginButton], onClick: () => onLoginClick() }, 'Open Sesame'),
+  ]);
+}
+
+/*::
 export type HomepageRoomSelectorProps = {
   client: WildspaceClient,
   onRoomSelect?: (game: GameID, room: RoomID) => mixed, 

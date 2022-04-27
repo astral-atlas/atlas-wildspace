@@ -2,7 +2,7 @@
 /*:: import type { Component } from '@lukekaalim/act'; */
 /*:: import type { Navigation } from "@lukekaalim/act-navigation"; */
 
-import { FullscreenToggle, HomepageRoomSelector, useAsync, useFullscreen, UserTablet, WildspaceStarfieldScene } from "@astral-atlas/wildspace-components";
+import { FullscreenToggle, HomepageRoomSelector, HompepageLoginPrompt, useAsync, useFullscreen, UserTablet, WildspaceStarfieldScene } from "@astral-atlas/wildspace-components";
 import { createContext, h, useEffect, useRef, useState } from "@lukekaalim/act";
 import { perspectiveCamera, scene, useRenderLoop, useResizingRenderer, useWebGLRenderer } from "@lukekaalim/act-three";
 
@@ -115,7 +115,7 @@ const HomePageContent = ({ nav }) => {
   const [identity, setIdentity] = useIdentity()
 
   if (!identity)
-    return h('button', { onClick: onLoginClick }, `Login`);
+    return h(HompepageLoginPrompt, { onLoginClick }, `Login`);
 
   return h(HomepageRoomSelector, { client, onRoomSelect })
 }

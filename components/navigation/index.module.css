@@ -19,6 +19,21 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+.roomLoginButton {
+  padding: 24px;
+
+  border-radius: 8px;
+  border: 1px solid white;
+
+  background-color: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  color: white;
+
+  font-size: 18px;
+  transition: background 0.2s;
+}
+
 .roomSelectionInput, .roomSelectionSubmit {
   padding: 16px;
 
@@ -35,7 +50,7 @@
   transition: background 0.2s;
 }
 
-.roomSelectionInput:hover, .roomSelectionSubmit:hover {
+.roomSelectionInput:hover, .roomSelectionSubmit:hover, .roomLoginButton:hover {
   background: white;
   color: black;
 }
