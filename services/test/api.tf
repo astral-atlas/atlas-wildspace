@@ -7,8 +7,8 @@ module "api" {
   source = "../modules/api"
 
   www_origin_names = [
-    "wildspace.astral-atlas.com",
-    "www.wildspace.astral-atlas.com"
+    "https://wildspace.astral-atlas.com",
+    "https://www.wildspace.astral-atlas.com"
   ]
   certificate = {
     arn = module.api_certificate.certificate_arn
