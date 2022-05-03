@@ -13,3 +13,26 @@ resource "aws_s3_bucket_public_access_block" "data_access" {
   ignore_public_acls = true
   restrict_public_buckets = true
 }
+
+resource "random_pet" "api_data_table_name" {
+  length = 4
+}
+resource "aws_dynamodb_table" "api_data" {
+  name           = "wildspace-data-${random_pet.api_data_table_name.id}"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 20
+  write_capacity = 20
+
+  hash_key       = "Partition"
+  range_key      = "Sort"
+
+  attribute {
+    name = "Partition"
+    type = "S"
+  }
+
+  attribute {
+    name = "Sort"
+    type = "S"
+  }
+}
