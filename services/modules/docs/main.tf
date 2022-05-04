@@ -18,7 +18,7 @@ EOT
 
   environment_variables = {
     AMPLIFY_DIFF_DEPLOY: false
-    AMPLIFY_MONOREPO_APP_ROOT: "www"
+    AMPLIFY_MONOREPO_APP_ROOT: "docs"
     _LIVE_UPDATES: jsonencode([{"pkg":"node","type":"nvm","version":"16"}])
   }
 }
