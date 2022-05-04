@@ -44,6 +44,21 @@ data "aws_iam_policy_document" "api_role_policy" {
     ]
     effect = "Allow"
   }
+
+  statement {
+    sid = "DatabaseActions"
+    actions = [
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:Query",
+      "dynamodb:Scan"
+    ]
+    resources = [
+      aws_dynamodb_table.api_data.arn,
+      "${aws_dynamodb_table.api_data.arn}/*"
+    ]
+    effect = "Allow"
+  }
 }
 resource "aws_iam_role" "api_role" {
   name = "test2_wildspace_api"
