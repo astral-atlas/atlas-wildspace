@@ -4,6 +4,9 @@
 /*:: import type { Channel } from './sources/channel.js'; */
 
 /*:: import type { WildspaceData } from "./entry"; */
+/*::
+import type { Cast } from "@lukekaalim/cast";
+*/
 
 import * as m from '@astral-atlas/wildspace-models';
 import * as sm from '@astral-atlas/sesame-models';

@@ -20,6 +20,7 @@ import type {
   NonPlayerCharacterID, NonPlayerCharacter,
   ExpositionSceneID, ExpositionScene,
 } from "@astral-atlas/wildspace-models";
+import type { TableDataConstructors } from "./wildspace/table";
 */
 
 /*::
@@ -44,6 +45,22 @@ export const createBufferWildspaceGameData = ({ createBufferStore }/*: DataConst
 
   const scenes = {
     expositions: createBufferCompositeTable(createBufferStore('expositionScenes'), c.obj({ exposition: castExpositionScene })),
+  }
+
+  return {
+    locations,
+    npcs,
+    scenes,
+  }
+}
+
+export const createTableWildspaceGameData = ({ createChannel, createCompositeTable }/*: TableDataConstructors*/)/*: WildspaceGameData*/ => {
+
+  const locations =createCompositeTable('locations', c.obj({ location: castLocation }));
+  const npcs = createCompositeTable('npcs', c.obj({ npc: castNonPlayerCharacter }));
+
+  const scenes = {
+    expositions: createCompositeTable('expositionScenes', c.obj({ exposition: castExpositionScene })),
   }
 
   return {

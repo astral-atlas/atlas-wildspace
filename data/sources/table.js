@@ -1,12 +1,15 @@
 // @flow strict
 /*:: import type { JSONValue, Cast } from '@lukekaalim/cast'; */
+/*::
+import type { DynamoDB, DynamoDBValueType } from '@aws-sdk/client-dynamodb'
+*/
 
 /*:: import type { BufferStore } from './buffer.js'; */
 import { c, castArray } from '@lukekaalim/cast';
 import { createLockFunction } from './lock.js';
 
 /*::
-export type Page<Key, Value> = { result: Value[], next: Key | null };
+export type Page<Key, Value> = { result: Value[], keys: Key[], next: Key | null };
 
 export type Table<Key, Value> = {
   get: (key: Key) => Promise<{ result: Value | null }>,
@@ -17,7 +20,7 @@ export type Table<Key, Value> = {
 export type CompositeTable<PartitionKey, SortKey, Value> = {
   get: (partition: PartitionKey, sort: SortKey) => Promise<{ result: Value | null }>,
   set: (partition: PartitionKey, sort: SortKey, value: null | Value) => Promise<void>,
-  scan: (from: { partition: ?PartitionKey, sort: ?SortKey }, limit: null | number) => Promise<Page<{ partition: PartitionKey, sort: SortKey }, Value>>,
+  scan: (from?: { partition?: ?PartitionKey, sort?: ?SortKey }, limit?: null | number) => Promise<Page<{ partition: PartitionKey, sort: SortKey }, Value>>,
   query: (partition: PartitionKey) => Promise<Page<SortKey, Value>>
 };
 */
@@ -72,12 +75,11 @@ export const createBufferTable = /*:: <T>*/(store/*: BufferStore*/, castValue/*:
     [...table.filter(e => e.key !== key), { key, value: newValue }] :
       table.filter(e => e.key !== key);
     await store.set(Buffer.from(JSON.stringify(updatedTable, null, 2)));
-    console.log('Set Store')
   };
   const scan = async () => {
     const table = await loadTable();
     // TODO: this is broken!
-    return { result: table.map(e => e.value), next: null };
+    return { result: table.map(e => e.value), keys: table.map(e => e.key), next: null };
   }
   return createMemoryTableLock({ get, set, scan, });
 };
@@ -108,21 +110,185 @@ export const createBufferCompositeTable = /*:: <T>*/(
       table.filter(e => !matchEntry(partition, sort, e));
     await store.set(Buffer.from(JSON.stringify(updatedTable, null, 2)));
   }
-  const scan = async ({ partition = null, sort }, limit) => {
+  const scan = async ({ partition = null, sort } = {}, limit) => {
     // we assume buffer tables have no limit
     const table = await loadTable();
     // TODO: this is broken!
-    const entries = table
-      .filter(e => !partition || e.partition === partition)
-      .map(e => e.value)
-    return { result: entries, next: null };
+    const validKeys = table
+      .filter(e => !partition || e.partition === partition);
+    const result = validKeys.map(e => e.value);
+    const keys = validKeys.map(e => ({ partition: e.partition, sort: e.sort }))
+    return { result, keys, next: null };
   };
   const query = async (partition) => {
     const table = await loadTable();
     const entries = table
       .filter(e => e.partition === partition)
-      .map(e => e.value);
-    return { result: entries, next: null };
+    const result = entries.map(e => e.value);
+    const keys = entries.map(e => e.sort)
+    return { result, keys, next: null };
   };
   return createMemoryCompositeTableLock({ get, set, scan, query });
 };
+
+export const writeValueTypes = (value/*: mixed*/)/*: DynamoDBValueType*/ => {
+  switch (typeof value) {
+    case 'string':
+      return { S: value };
+    case 'number':
+      return { N: value.toString() };
+    case 'boolean':
+      return { BOOL: value };
+    case 'object':
+      if (value === null)
+        return { NULL: true };
+      else if (Array.isArray(value))
+        return { L: value.map(writeValueTypes) }
+      else
+        return { M: Object.fromEntries(Object.entries(value).map(([name, value]) => [name, writeValueTypes(value)])) }
+    case 'undefined':
+      return { NULL: true };
+    default:
+      console.log(value);
+      throw new Error();
+  }
+}
+export const readValueTypes = (value/*: DynamoDBValueType*/)/*: mixed*/ => {
+  if ('S' in value)
+  // $FlowFixMe
+    return value.S;
+  else if ('N' in value)
+  // $FlowFixMe
+    return Number.parseFloat(value.N);
+  else if ('BOOL' in value)
+  // $FlowFixMe
+    return value.BOOL;
+  else if ('NULL' in value)
+    return null
+  else if ('M' in value) {
+    //console.log(value);
+    // $FlowFixMe
+    return Object.fromEntries(Object.entries(value.M).map(([name, type]) => [name, readValueTypes(type)]));
+  } else if ('L' in value) {
+    //console.log(value);
+    // $FlowFixMe
+    return value.L.map(readValueTypes);
+  }
+  
+  throw new Error();
+}
+
+export const createDynamoDBCompositeTable = /*:: <PartitionKey, SortKey, Item>*/(
+  tableName/*: string*/,
+  partitionKeyName/*: string*/,
+  sortKeyName/*: string*/,
+  createPK/*: PartitionKey => string*/,
+  createSK/*: SortKey => string*/,
+  castItem/*: Cast<Item>*/,
+  client/*: DynamoDB*/,
+)/*: CompositeTable<PartitionKey, SortKey, Item>*/ => {
+
+  const get = async (pk, sk) => {
+    try {
+      const { Item } = await client.getItem({
+        TableName: tableName,
+        Key: { [partitionKeyName]: { S: createPK(pk) }, [sortKeyName]: { S: createSK(sk) } }
+      });
+      if (!Item)
+        return { result: null };
+      const result = castItem(readValueTypes({ M: Item }));
+      return { result };
+    } catch (error) {
+      console.warn(error);
+      return { result: null };
+    }
+  };
+  const set = async (pk, sk, item) => {
+    if (!item)
+      throw new Error();
+    
+    const Item = {
+      ...Object.fromEntries(Object.entries(item).map(([name, value]) => [name, writeValueTypes(value)])),
+      [partitionKeyName]: { S: createPK(pk) },
+      [sortKeyName]: { S: createSK(sk) }
+    };
+    console.log(Item);
+    await client.putItem({ TableName: tableName, Item })
+  };
+  const scan = async () => {
+    const { Items } = await client.scan({ TableName: tableName })
+    const result = Items.map(item => readValueTypes({ M: item })).map(castItem);
+    return { result, keys: [], next: null };
+  };
+  const query = async (pk) => {
+    const { Items } = await client.query({
+      TableName: tableName,
+      KeyConditionExpression: `#pkn=:pk`,
+      ExpressionAttributeNames: {
+        [`#pkn`]: partitionKeyName,
+      },
+      ExpressionAttributeValues: {
+        [`:pk`]: { S: createPK(pk) },
+      }
+    })
+    const itemValue = Items.map(item => readValueTypes({ M: item }))
+    const keys/*: any*/ = itemValue.map(item => (typeof item === 'object' && item) ? item[sortKeyName] : '<NONE>')
+    const result = itemValue.map(castItem);
+    return { result, keys, next: null };
+  };
+  return {
+    get,
+    set,
+    scan,
+    query,
+  };
+}
+
+export const createDynamoDBSimpleTable = /*:: <Key, Item>*/(
+  tableName/*: string*/,
+  keyName/*: string*/,
+  sortKeyName/*: string*/,
+  createKey/*: Key => string*/,
+  castItem/*: Cast<Item>*/,
+  client/*: DynamoDB*/,
+)/*: Table<Key, Item>*/ => {
+  const get = async (key) => {
+    const { Item } = await client.getItem({ TableName: tableName, Key: { [keyName]: { S: createKey(key) }, [sortKeyName]: { S: "_" } } })
+    if (!Item)
+      return { result: null };
+    const result = castItem(readValueTypes({ M: Item }))
+    return { result };
+  };
+  const scan = async () => {
+    return { result: [], keys: [], next: null };
+  };
+  const set = async (key, item) => {
+    if (!item)
+      throw new Error();
+    
+    const Item = {
+      ...Object.fromEntries(Object.entries(item).map(([name, value]) => [name, writeValueTypes(value)])),
+      [keyName]: { S: createKey(key) },
+      [sortKeyName]: { S: "_" }
+    };
+    console.log(Item);
+    await client.putItem({ TableName: tableName, Item });
+  };
+  return { get, scan, set };
+}
+
+export const createFakeCompositeTable = ()/*: CompositeTable<any, any, any>*/ => {
+  const get = () => {
+    throw new Error()
+  };
+  const set = () => {
+    throw new Error()
+  };
+  const scan = () => {
+    throw new Error()
+  };
+  const query = () => {
+    throw new Error()
+  }
+  return { get, set, scan, query };
+}

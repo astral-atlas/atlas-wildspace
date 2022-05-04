@@ -5,8 +5,11 @@
 
 import { createBufferCompositeTable } from "./sources/table.js"
 import {
+  castRoomLobbyEvent,
   castRoomLobbyState,
-  castRoomSceneState
+  castRoomSceneState,
+  castRoomStateEvent,
+  castRoomUpdate
 } from "@astral-atlas/wildspace-models"
 import { createMemoryChannel } from "./sources/channel.js";
 
@@ -22,6 +25,7 @@ import type {
   RoomSceneState,
   RoomStateEvent
 } from "@astral-atlas/wildspace-models";
+import type { TableDataConstructors } from "./wildspace/table";
 */
 
 /*::
@@ -40,6 +44,18 @@ export const createBufferWildspaceRoomData = ({ createBufferStore }/*: DataConst
   const lobby = createBufferCompositeTable(createBufferStore('room_lobby'), castRoomLobbyState);
   const scene = createBufferCompositeTable(createBufferStore('room_scene'), castRoomSceneState);
   const updates = createMemoryChannel();
+
+  return {
+    lobby,
+    scene,
+    updates
+  }
+}
+
+export const createTableWildspaceRoomData = ({ createChannel, createCompositeTable }/*: TableDataConstructors*/)/*: WildspaceRoomData*/ => {
+  const lobby = createCompositeTable('room_lobby', castRoomLobbyState);
+  const scene = createCompositeTable('room_scene', castRoomSceneState);
+  const updates = createChannel('updates', castRoomStateEvent);
 
   return {
     lobby,

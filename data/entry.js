@@ -33,6 +33,11 @@ import {
 } from "./sources/buffer.js";
 
 import { createBufferWildspaceData } from "./data.js";
+import { createTableWildspaceData } from './wildspace/index.js';
+import { createMemoryChannel } from "./sources/channel.js";
+import { createDynamoDBCompositeTable } from './sources/table.js';
+import { createDynamoDBSimpleTable } from "./sources/table.js";
+import { DynamoDB } from "@aws-sdk/client-dynamodb";
 
 /*::
 export type WildspaceData = {
@@ -73,6 +78,9 @@ export const createData = (config/*: APIConfig*/)/*: { data: WildspaceData }*/ =
     case 'awsS3':
       const s3 = new S3({ region: dataConfig.region })
       return createAWSS3Data(s3, dataConfig.bucket, dataConfig.keyPrefix);
+    case 'dynamodb':
+      const db = new DynamoDB({ region: dataConfig.region });
+      return { data: createDynamoDBData(db, dataConfig.tableName) };
   }
 }
 
@@ -102,3 +110,14 @@ export const createAWSS3Data = (s3/*: S3*/, bucket/*: string*/, keyPrefix/*: str
   });
   return { data };
 };
+
+export const createDynamoDBData = (dynamodb/*: DynamoDB*/, tableName/*: string*/)/*: WildspaceData*/ => {
+  const constructors = {
+    createChannel: createMemoryChannel,
+    createTable: /*:: <K: string, V>*/(key, cast)/*: Table<K, V>*/ => createDynamoDBSimpleTable(tableName, 'Partition', 'Sort', pk => `${key}:${pk}`, cast, dynamodb),
+    createCompositeTable: /*:: <PK: string, SK: string, V>*/(key, cast)/*: CompositeTable<PK, SK, V>*/ => createDynamoDBCompositeTable(tableName, 'Partition', 'Sort', pk => `${key}:${pk}`, sk => sk, cast, dynamodb),
+  }
+  return createTableWildspaceData(constructors)
+}
+
+export * from './wildspace/index.js';
