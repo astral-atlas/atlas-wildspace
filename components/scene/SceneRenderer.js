@@ -8,7 +8,10 @@ import type { GameData } from "../game/data";
 import { h, useRef } from "@lukekaalim/act";
 import styles from './SceneRenderer.module.css';
 import { MarkdownRenderer } from "@lukekaalim/act-markdown/entry";
-import { useAnimatedList, useBezierAnimation } from "@lukekaalim/act-curve";
+import { calculateCubicBezierAnimationPoint, createInitialCubicBezierAnimation, getCubicPoint, interpolateCubicBezierAnimation, maxSpan, useAnimatedList, useBezierAnimation, useTimeSpan } from "@lukekaalim/act-curve";
+import { useAnimatedKeyedList } from "../animation/list";
+import { useRefMap } from "../editor";
+import { hash } from 'spark-md5';
 
 /*::
 export type SceneRendererProps = {
@@ -37,19 +40,42 @@ const getContentForScene = (scene, npcs, locations) => {
   }
 }
 
+const textReducer = {
+  enter: (v, i, t) => ({ anim: interpolateCubicBezierAnimation(createInitialCubicBezierAnimation(-1), 0, 3000, 0, t), v }),
+  move: (s, i1, i2, t) => s,
+  update: (s, v, t) => ({ ...s, v }),
+  exit: (s, t) => ({ ...s, anim: interpolateCubicBezierAnimation(s.anim, 1, 3000, 0, t) }),
+}
+
 export const SceneRenderer/*: Component<SceneRendererProps>*/ = ({ scene, gameData }) => {
   const description = getContentForScene(scene, [], gameData.locations);
 
   if (!description)
     return null;
 
-  return h('div', { className: styles.scene }, [
-    h('article', { className: styles.content }, [
-      h('div', {}, [
-        h(MarkdownRenderer, { markdownText: description.plaintext }),
-      ])
-    ])
-  ])
+  const textAnims = useAnimatedKeyedList([description.plaintext], p => p, s => s.anim.span.start + s.anim.span.durationMs, textReducer, [description.plaintext])
+
+
+  const [refKey, refMap] = useRefMap()
+  useTimeSpan(maxSpan(textAnims.map(a => a.anim.span)), now => {
+    for (const { anim, v } of textAnims) {
+      const point = calculateCubicBezierAnimationPoint(anim, now);
+      const div = refMap.get(v);
+      if (div) {
+        div.style.transform = `translate(0px, ${(point.position * 400)}px)`
+        div.style.opacity = 1 - Math.abs(point.position) * 4;
+      }
+    }
+  }, [textAnims])
+
+  const textElements = textAnims.map(({ v, anim }) =>
+    h('div', { key: hash(v), ref: refKey(v), className: styles.contentContainer }, [
+      h(MarkdownRenderer, { markdownText: v }),
+    ]))
+
+  return h('div', { className: styles.scene },
+    h('article', { className: styles.content }, textElements)
+  )
 };
 
 /*::
@@ -94,31 +120,86 @@ const SceneBackgroundImage = ({ animation }) => {
   });
 }
 
-const SceneBackgroundImageRenderer = ({ background, assets }) => {
+const SceneBackgroundImageRenderer = ({ anim, background, assets }) => {
   if (!background.imageAssetId)
     return '<NO ID>';
   const asset = assets.get(background.imageAssetId)
+
   if (!asset)
     return '<NO ASSET>';
 
+  const ref = useFadeBezierRef(anim)
+
   const [imageAnimations] = useAnimatedList([asset.downloadURL], [], { statusDurationMs: 3000, statusImpulse: 0, indexDurationMs: 0, indexImpulse: 0 })
 
-  return h('div', { className: styles.backgroundContainer }, [
+  return h('div', { ref }, [
     imageAnimations.map(animation => h(SceneBackgroundImage, { animation }))
   ]);
 }
+
+const reducers = {
+  enter(background, i, t) {
+    return {
+      background,
+      anim: interpolateCubicBezierAnimation(
+        createInitialCubicBezierAnimation(-1),
+        0,
+        3000,
+        0,
+        t
+      )
+    }
+  },
+  move(v) {
+    return v;
+  },
+  update(s, background) {
+    return {
+      ...s,
+      background,
+    }
+  },
+  exit(s, t) {
+    return {
+      ...s,
+      anim: interpolateCubicBezierAnimation(s.anim, 1, 3000, 0, t)
+    };
+  }
+};
 
 export const SceneBackgroundRenderer/*: Component<SceneBackgroundRendererProps>*/ = ({ scene, gameData }) => {
   const background = getBackgroundForSubject(scene.subject, gameData.locations);
 
   if (!background)
-    return '<NO BG>';
+    return null;
+  
+  const backgroundAnim = useAnimatedKeyedList([background], s => s.type, s => s.anim.span.start + s.anim.span.durationMs, reducers, [background], {
+    initial: new Map([[background.type, { background, anim: createInitialCubicBezierAnimation(0) }]])
+  })
 
-  switch (background.type) {
-    case 'image':
-      return h(SceneBackgroundImageRenderer, { assets: gameData.assets, background });
-    case 'color':
-      return h('div', { className: styles.background, style: { backgroundColor: background.color } });
-  }
+  const backgroundElements = [...backgroundAnim].sort((a, b) => a.background.type === 'image' ? 1 : -1).map(({ anim, background }) => {
+    switch (background.type) {
+      case 'image':
+        return h(SceneBackgroundImageRenderer, { key: background.type, anim, assets: gameData.assets, background });
+      case 'color':
+        return h(SceneBackgrouncColorRenderer, { key: background.type, anim, color: background.color });
+    }
+  })
+  return h('div', { className: styles.backgroundContainer }, backgroundElements);
 }
 
+const useFadeBezierRef = (anim) => {
+  const ref = useRef();
+  useBezierAnimation(anim, point => {
+    const { current: div } = ref;
+    if (!div)
+      return;
+    div.style.opacity = (1 - Math.abs(point.position) * 4);
+  });
+  return ref;
+}
+
+const SceneBackgrouncColorRenderer = ({ anim, color }) => {
+  const ref = useFadeBezierRef(anim)
+  return h('div', { ref, className: styles.background, style: { backgroundColor: color } });
+}

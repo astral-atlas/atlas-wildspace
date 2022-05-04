@@ -11,6 +11,7 @@ export type DataConfig =
   | {| type: 'file', directory: string |}
   | {| type: 'memory' |}
   | {| type: 'awsS3', bucket: string, keyPrefix: string, region: string |}
+  | {| type: 'dynamodb', tableName: string, region: string |}
 
 export type AWSS3AssetConfig = { type: 'awsS3', bucket: string, keyPrefix: string, region: string };
 export type LocalAssetConfig = { type: 'local' };
@@ -54,6 +55,7 @@ export const castDataConfig/*: Cast<DataConfig>*/ = c.or('type', {
   'file': c.obj({ type: c.lit('file'), directory: c.str }),
   'awsS3': c.obj({ type: c.lit('awsS3'), bucket: c.str, keyPrefix: c.str, region: c.str }),
   'memory': c.obj({ type: c.lit('memory') }),
+  'dynamodb': c.obj({ type: c.lit('dynamodb'), tableName: c.str, region: c.str }),
 })
 export const castAWSS3AssetConfig/*: Cast<AWSS3AssetConfig>*/ = c.obj({ type: c.lit('awsS3'), bucket: c.str, keyPrefix: c.str, region: c.str });
 export const castLocalAssetConfig/*: Cast<LocalAssetConfig>*/ = c.obj({ type: c.lit('local') });

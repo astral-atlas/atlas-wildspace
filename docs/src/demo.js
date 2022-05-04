@@ -139,3 +139,18 @@ export const DOMDemo/*: Component<DOMDemoProps>*/ = () => {
     
   ])
 }
+
+
+export const LayoutDemo/*: Component<>*/ = ({ children }) => {
+  return h('div', { style: { position: 'relative', width: '100%', height: '512px', overflow: 'auto' } }, [
+    h('div', {  style: {
+      position: 'relative',
+      width: '100%', height: '100%',
+      maxWidth: '100%', maxHeight: '100%',
+      border: '1px solid black', boxSizing: 'border-box',
+      resize: 'both', overflow: 'hidden'
+    } }, [
+      children
+    ]),
+  ])
+}

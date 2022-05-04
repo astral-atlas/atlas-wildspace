@@ -6,6 +6,7 @@
   width: 100%;
   height: 100%;
   position: absolute;
+  overflow: hidden;
 }
 .background {
   width: 100%;
@@ -15,6 +16,8 @@
 
   background-size: cover;
   background-position: center center;
+
+  transition: background-color 3s;
 }
 
 .scene {
@@ -36,6 +39,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+  overflow-y: auto;
 
   margin: 0 0 0 8%;
   width: 20em;
@@ -47,6 +51,11 @@
   -webkit-backdrop-filter: blur(10px);
 
   padding: 64px;
+  position: relative;
+}
+
+.contentContainer {
+  position: absolute;
 }
 
 .content p {

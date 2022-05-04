@@ -1,3 +1,4 @@
+// @flow strict
 // flow-typed signature: b2bfca5bb6a4ae509612fd0cc8819966
 // flow-typed version: <<STUB>>/@aws-sdk/client-s3_v3.34.0/flow_v0.160.2
 
@@ -12,7 +13,6 @@
  * community by sending a pull request to:
  * https://github.com/flowtype/flow-typed
  */
-// @flow strict
 
 /*::
 
@@ -107,8 +107,12 @@ declare module '@aws-sdk/client-s3' {
     constructor(input: GetObjectCommandInput): GetObjectCommand,
   }
 
-  declare export type S3ClientConfig = {
+  declare export type AWSClientSharedConfig = {
     region?: string,
+  }
+
+  declare export type S3ClientConfig = {
+    ...AWSClientSharedConfig,
   }
 }
 

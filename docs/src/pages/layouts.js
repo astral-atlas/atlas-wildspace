@@ -243,7 +243,7 @@ export const Components/*: Component<{}>*/ = () => {
   ];
 };
 
-const LayoutDemo = ({ children }) => {
+export const LayoutDemo/*: Component<>*/ = ({ children }) => {
   return h('div', { style: { position: 'relative', width: '100%', height: '512px', overflow: 'auto' } }, [
     h('div', {  style: {
       position: 'relative',

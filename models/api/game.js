@@ -46,7 +46,7 @@ export type GameAPI = {
   '/games/updates': {|
     query: { gameId: GameID },
     client: empty,
-    server: { type: 'updated', update: GameUpdate } | { type: 'heartbeat' },
+    server: {| type: 'updated', update: GameUpdate |} | {| type: 'heartbeat' |},
   |},
   ...CharactersAPI,
   ...MonstersAPI,
