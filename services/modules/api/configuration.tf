@@ -2,11 +2,16 @@ resource "aws_ssm_parameter" "api_config" {
   name  = "/wildspace/api/v1"
   type  = "String"
   value = jsonencode({
-    "port": 8080
-    "data": {
+    "port": 8080,
+    "dataOld": {
       type: "awsS3",
       bucket: aws_s3_bucket.api_data.bucket,
       keyPrefix: "/wildspace",
+      region: "ap-southeast-2"
+    },
+    "dataOld": {
+      type: "dynamodb",
+      tableName: aws_dynamodb_table.api_data.name,
       region: "ap-southeast-2"
     },
     "asset": {
