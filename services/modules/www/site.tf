@@ -18,6 +18,11 @@ resource "aws_amplify_app" "site" {
     status = "200"
     target = "/index.html"
   }
+  custom_rule {
+    source = "/magic-item"
+    status = "200"
+    target = "/index.html"
+  }
 
   environment_variables = {
     AMPLIFY_DIFF_DEPLOY: false
