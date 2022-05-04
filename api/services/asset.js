@@ -20,7 +20,6 @@ export const createS3AssetService = (data/*: WildspaceData*/, config/*: AWSS3Ass
   const calculateDownloadURL = async (key) => {
     const { result } = await data.assetLinkCache.get(key, Date.now());
     if (result) {
-      console.log('Resuing URL')
       return result.downloadURL;
     }
 
@@ -29,8 +28,7 @@ export const createS3AssetService = (data/*: WildspaceData*/, config/*: AWSS3Ass
       Bucket: config.bucket,
     });
     const durationSeconds = 60 * 60 * 24;
-    console.log('Generating signed URL');
-    const downloadURL = await getSignedUrl(client, getObject, { expiresIn: durationSeconds })
+    const downloadURL = await getSignedUrl(client, getObject, { expiresIn: durationSeconds, ExpiresIn: durationSeconds })
     await data.assetLinkCache.set(key, { downloadURL }, (durationSeconds * 1000) + Date.now())
 
     return downloadURL;
@@ -54,7 +52,7 @@ export const createS3AssetService = (data/*: WildspaceData*/, config/*: AWSS3Ass
       creator: '',
       uploaded: Date.now(),
     };
-    const key = join(config.keyPrefix, description.id);
+    const key = [config.keyPrefix, description.id].join('/');
     const putObject = new PutObjectCommand({
       Key: key,
       Bucket: config.bucket,
