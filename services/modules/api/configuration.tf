@@ -9,7 +9,7 @@ resource "aws_ssm_parameter" "api_config" {
       keyPrefix: "/wildspace",
       region: "ap-southeast-2"
     },
-    "dataOld": {
+    "data": {
       type: "dynamodb",
       tableName: aws_dynamodb_table.api_data.name,
       region: "ap-southeast-2"
