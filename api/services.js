@@ -16,7 +16,8 @@ export type Services = {
   data: WildspaceData,
   auth: AuthService,
   game: GameService,
-  asset: AssetService
+  asset: AssetService,
+  config: APIConfig
 };
 */
 
@@ -31,5 +32,6 @@ export const createServices = (config/*: APIConfig*/)/*: Services*/ => {
     data,
     game,
     asset,
+    config,
   };
 };

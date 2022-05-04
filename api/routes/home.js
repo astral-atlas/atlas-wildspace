@@ -19,7 +19,11 @@ export const createHomeRoutes/*: RoutesConstructor*/ = (services) => {
       async GET(request) {
         console.log(packagePath);
         const { name, version } = JSON.parse(await promises.readFile(packagePath, 'utf-8'));
-        return { status: HTTP_STATUS.ok, headers: { ['Content-Type']: 'application/json' }, body: Readable.from(JSON.stringify({ name, version })) }
+        return {
+          status: HTTP_STATUS.ok,
+          headers: { ['Content-Type']: 'application/json' },
+          body: Readable.from(JSON.stringify({ name, version, config: services.config }))
+        }
       }
     }
   })
