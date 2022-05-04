@@ -13,6 +13,7 @@ import { createRoomRoutes } from './routes/room.js';
 import { createGameRoutes } from './routes/game.js';
 import { selfAPI } from '@astral-atlas/wildspace-models';
 import { defaultOptions } from './routes/meta.js';
+import { createHomeRoutes } from "./routes/home.js";
 
 /*::
 export type RoutesConstructor = (services: Services) => { ws: WebSocketRoute[], http: HTTPRoute[] };
@@ -36,15 +37,7 @@ export const createRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute[], 
       return { status: HTTP_STATUS.ok, body: { type: 'found', name } };
     }
   })
-  const healthCheckRoutes = createResourceRoutes({
-    path: '/',
-
-    methods: {
-      GET: () => {
-        return { status: HTTP_STATUS.ok, headers: {}, body: null };
-      }
-    }
-  })
+  const homeRoutes = createHomeRoutes(services);
 
   const ws = [
     ...audioRoutes.ws,
@@ -58,7 +51,7 @@ export const createRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute[], 
     ...roomRoutes.http,
     ...gameRoutes.http,
     ...selfRoutes,
-    ...healthCheckRoutes,
+    ...homeRoutes.http,
   ];
   return { ws, http }
 };
