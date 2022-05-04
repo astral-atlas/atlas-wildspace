@@ -2,7 +2,7 @@
 
 resource "random_pet" "environment_name" {}
 resource "aws_amplify_app" "site" {
-  name       = "wildspace_docs"
+  name       = "wildspace-docs"
   repository = "https://github.com/astral-atlas/wildspace"
 
 
