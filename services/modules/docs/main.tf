@@ -26,6 +26,8 @@ EOT
 resource "aws_amplify_branch" "main" {
   app_id      = aws_amplify_app.site.id
   branch_name = "canon"
+  framework = "Web"
+  stage = "PRODUCTION"
 }
 
 
