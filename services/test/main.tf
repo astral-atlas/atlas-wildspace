@@ -26,3 +26,9 @@ module "www" {
 
   domain_name = "wildspace.astral-atlas.com"
 }
+
+module "docs" {
+  source = "../modules/docs"
+
+  domain_name = "docs.wildspace.astral-atlas.com"
+}
