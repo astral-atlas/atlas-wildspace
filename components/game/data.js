@@ -16,6 +16,7 @@ import type {
 import type { WildspaceClient } from "@astral-atlas/wildspace-client2";
 import type { AssetDownloadURLMap } from "../asset/map";
 import type { UserID } from "@astral-atlas/sesame-models/src/user";
+import type { MagicItem } from "../../models/game/magicItem";
 
 export type GameData = {|
   game: Game,
@@ -29,6 +30,7 @@ export type GameAssetData = {|
   playlists: $ReadOnlyArray<AudioPlaylist>,
   tracks: $ReadOnlyArray<AudioTrack>,
   locations: $ReadOnlyArray<Location>,
+  magicItems: $ReadOnlyArray<MagicItem>,
   scenes: {
     exposition: $ReadOnlyArray<ExpositionScene>,
   },
@@ -42,6 +44,7 @@ const emptyGameData = {
   playlists: [],
   tracks: [],
   locations: [],
+  magicItems: [],
   scenes: {
     exposition: []
   },
@@ -89,6 +92,10 @@ export const useGameData = (
     client.room.list(game.id)
       .then(rooms => updateData({ rooms }))
   }, [times.rooms])
+  useEffect(() => {
+    client.game.magicItem.list(game.id)
+      .then(magicItems => updateData({ magicItems }))
+  }, [times.magicItems])
 
   const memoData = useMemo(() => ({
     ...data,

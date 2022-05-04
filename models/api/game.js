@@ -7,6 +7,9 @@
 /*:: import type { PlayersAPI } from './game/players.js'; */
 /*:: import type { MonstersAPI } from "./game/monsters.js"; */
 /*:: import type { EncounterAPI } from "./game/encounters.js"; */
+/*::
+import type { MagicItemAPI } from "./game/magicItem";
+*/
 
 import {
   createObjectCaster as obj, castString as str,
@@ -22,7 +25,7 @@ import { charactersAPI } from './game/characters.js';
 import { playersAPI } from './game/players.js';
 import { monstersAPI } from './game/monsters.js';
 import { encountersAPI } from './game/encounters.js';
-
+import { magicItemAPI } from './game/magicItem.js';
 
 /*::
 export type GameAPI = {
@@ -59,6 +62,7 @@ export type GameAPI = {
       response: { type: 'found', games: $ReadOnlyArray<Game> },
     },
   |},
+  ...MagicItemAPI,
 };
 */
 
@@ -104,6 +108,7 @@ export const gameAPI = {
   ...playersAPI,
   ...monstersAPI,
   ...encountersAPI,
+  ...magicItemAPI,
   '/games': gameResourceDescription,
   '/games/all': allGamesResourceDescription,
   '/games/updates': gameStateConnectionDescription,
@@ -114,3 +119,4 @@ export * from './game/monsters.js';
 export * from './game/encounters.js';
 export * from './game/scene.js';
 export * from './game/location.js';
+export * from './game/magicItem.js';

@@ -17,6 +17,7 @@ import { useEffect } from "@lukekaalim/act/hooks";
 import { assetPage, assetPages } from './asset';
 import { editorsPages, editorsPage } from './editors';
 import { gmPage, gmPages } from "./gm";
+import { paperPage, paperPages } from "./paper";
 
 /*::
 export type Page = {
@@ -41,6 +42,7 @@ const rootPage = {
       assetPage.link,
       editorsPage.link,
       gmPage.link,
+      paperPage.link,
     ],
     href: '/',
   }
@@ -54,7 +56,8 @@ const pages = [
   ...geometryPages,
   ...assetPages,
   ...editorsPages,
-  ...gmPages
+  ...gmPages,
+  ...paperPages
 ];
 
 const App = () => {

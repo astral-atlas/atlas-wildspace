@@ -16,8 +16,10 @@ import { defaultOptions } from './meta.js';
 import { createEncounterRoutes } from './game/encounters.js';
 import { createSceneRoutes } from './game/scene.js';
 import { createLocationsRoutes } from "./game/locations.js";
+import { createMagicItemRoutes } from './game/magicItem.js';
 
-export const createGameRoutes = ({ data, auth, ...s }/*: Services*/)/*: { ws: WebSocketRoute[], http: HTTPRoute[] }*/ => {
+export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute[], http: HTTPRoute[] }*/ => {
+  const { data, auth, ...s } = services;
   const gameResourceRoutes = createJSONResourceRoutes(gameAPI['/games'], {
     ...defaultOptions,
 
@@ -76,6 +78,7 @@ export const createGameRoutes = ({ data, auth, ...s }/*: Services*/)/*: { ws: We
   const encounterRoutes= createEncounterRoutes({ ...s, auth, data });
   const sceneRoutes = createSceneRoutes({ ...s, auth, data });
   const locationRoutes = createLocationsRoutes({ ...s, auth, data });
+  const magicItemRoutes = createMagicItemRoutes(services);
   const http = [
     ...playersRoutes.http,
     ...encounterRoutes.http,
@@ -85,6 +88,7 @@ export const createGameRoutes = ({ data, auth, ...s }/*: Services*/)/*: { ws: We
     ...gameUpdatesRoute,
     ...sceneRoutes.http,
     ...locationRoutes.http,
+    ...magicItemRoutes.http,
   ];
   const ws = [
     ...characterRoutes.ws,

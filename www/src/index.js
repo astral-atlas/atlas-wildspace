@@ -16,12 +16,15 @@ import { useStoredValue } from '../hooks/storage';
 import { identityStore } from '../lib/storage';
 import { apiContext } from '../hooks/api';
 import { configContext } from '../hooks/config';
+import { MagicItemPage } from './magicItem';
 
 const Page = ({ nav }) => {
   switch (nav.location.pathname) {
     default:
     case '/':
       return h(HomePage, { nav })
+    case '/magic-item':
+      return h(MagicItemPage, { nav })
     case '/room':
       return h(RoomPage)
   }

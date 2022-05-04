@@ -8,6 +8,7 @@ import { createBufferCompositeTable } from "./sources/table.js"
 import {
   castExpositionScene,
   castLocation,
+  castMagicItem,
   castNonPlayerCharacter
 } from "@astral-atlas/wildspace-models"
 
@@ -21,12 +22,14 @@ import type {
   ExpositionSceneID, ExpositionScene,
 } from "@astral-atlas/wildspace-models";
 import type { TableDataConstructors } from "./wildspace/table";
+import type { MagicItem, MagicItemID } from "../models/game/magicItem";
 */
 
 /*::
 export type WildspaceGameData = {
   locations:  CompositeTable<GameID, LocationID,            { location: Location }>,
   npcs:       CompositeTable<GameID, NonPlayerCharacterID,  { npc: NonPlayerCharacter }>,
+  magicItems: CompositeTable<GameID, MagicItemID, MagicItem>,
 
   scenes: {
     expositions: CompositeTable<GameID, ExpositionSceneID, { exposition: ExpositionScene }>,
@@ -42,6 +45,7 @@ export const createBufferWildspaceGameData = ({ createBufferStore }/*: DataConst
 
   const locations = createBufferCompositeTable(createBufferStore('locations'), c.obj({ location: castLocation }));
   const npcs = createBufferCompositeTable(createBufferStore('npcs'), c.obj({ npc: castNonPlayerCharacter }));
+  const magicItems = createBufferCompositeTable(createBufferStore('magicItems'), castMagicItem);
 
   const scenes = {
     expositions: createBufferCompositeTable(createBufferStore('expositionScenes'), c.obj({ exposition: castExpositionScene })),
@@ -51,13 +55,15 @@ export const createBufferWildspaceGameData = ({ createBufferStore }/*: DataConst
     locations,
     npcs,
     scenes,
+    magicItems,
   }
 }
 
 export const createTableWildspaceGameData = ({ createChannel, createCompositeTable }/*: TableDataConstructors*/)/*: WildspaceGameData*/ => {
 
-  const locations =createCompositeTable('locations', c.obj({ location: castLocation }));
+  const locations = createCompositeTable('locations', c.obj({ location: castLocation }));
   const npcs = createCompositeTable('npcs', c.obj({ npc: castNonPlayerCharacter }));
+  const magicItems = createCompositeTable('magicItems', castMagicItem);
 
   const scenes = {
     expositions: createCompositeTable('expositionScenes', c.obj({ exposition: castExpositionScene })),
@@ -65,6 +71,7 @@ export const createTableWildspaceGameData = ({ createChannel, createCompositeTab
 
   return {
     locations,
+    magicItems,
     npcs,
     scenes,
   }

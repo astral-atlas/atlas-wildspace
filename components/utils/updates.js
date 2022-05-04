@@ -14,6 +14,7 @@ export type GameUpdateTimes = {
   playlists: number,
   locations: number,
   scenes: number,
+  magicItems: number,
 }
 */
 
@@ -28,6 +29,7 @@ export const useGameUpdateTimes = (
     playlists: 0,
     scenes: 0,
     locations: 0,
+    magicItems: 0,
   });
   useConnection(async () => gameClient.connectUpdates(gameId, update => {
     switch (update.type) {
@@ -43,6 +45,8 @@ export const useGameUpdateTimes = (
         return setUpdateTimes(t => ({ ...t, scenes: Date.now() }))
       case 'locations':
         return setUpdateTimes(t => ({ ...t, locations: Date.now() }))
+      case 'magicItem':
+        return setUpdateTimes(t => ({ ...t, magicItems: Date.now() }))
     }
   }).close)
   return updateTimes;

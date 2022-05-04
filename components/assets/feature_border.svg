@@ -7,7 +7,7 @@
    viewBox="0 0 65.263184 70.226768"
    version="1.1"
    id="svg4393"
-   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
    sodipodi:docname="feature_border.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -20,24 +20,34 @@
      borderopacity="1.0"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="0"
+     inkscape:pagecheckerboard="true"
      inkscape:document-units="mm"
      showgrid="false"
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:zoom="0.7500982"
-     inkscape:cx="-13.331588"
-     inkscape:cy="353.95365"
+     inkscape:zoom="4.2431962"
+     inkscape:cx="124.4345"
+     inkscape:cy="96.271768"
      inkscape:window-width="1920"
      inkscape:window-height="1019"
      inkscape:window-x="1920"
      inkscape:window-y="30"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer1" />
+     inkscape:current-layer="layer2"
+     inkscape:snap-global="false" />
   <defs
      id="defs4390" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Layer 2">
+    <path
+       style="fill:#fafafa;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
+       d="m 2.6705245,0.23302148 -0.15994,0.61687992 -1.4587063,0.7136117 0.016169,60.5984509 -0.3328845,0.24665 -0.27600483,0.377865 -0.32007206,0.09532 0.1463328,1.64797 0.38170429,1.28088 0.4368024,0.881753 0.026572,1.99702 0.7518098,0.224951 0.6408223,0.552413 0.2374223,0.59849 24.0901453,-0.08215 35.744647,1.98e-4 0.364622,-0.718373 0.931622,-0.558606 0.205028,-0.103273 0.06764,-2.057725 0.437988,-0.683469 0.503267,-2.081805 -0.04338,-0.88686 L 64.530456,62.399848 64.216242,61.401451 64.155221,1.5821484 63.533278,1.3559106 63.039992,1.0062227 62.52402,0.33950132 62.504256,0.2039724 Z"
+       id="path857" />
+  </g>
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"

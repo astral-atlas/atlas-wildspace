@@ -16,10 +16,12 @@ import { createEncounterClient } from './game/encounter.js';
 import { createSceneClient } from './game/scene.js';
 import { createLocationClient } from "./game/locations.js";
 import { useEffect } from "@lukekaalim/act";
+import { createMagicItemClient } from "./game/magicItem.js";
 
 /*::
 import type { SceneClient } from "./game/scene";
 import type { LocationClient } from "./game/locations";
+import type { MagicItemClient } from "./game/magicItem";
 
 export type GameClient = {
   read: (gameId: GameID) => Promise<Game>,
@@ -36,7 +38,8 @@ export type GameClient = {
   players: PlayersClient,
   encounter: EncounterClient,
   scene: SceneClient,
-  location: LocationClient
+  location: LocationClient,
+  magicItem: MagicItemClient,
 };
 */
 
@@ -89,5 +92,6 @@ export const createGameClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceCli
     encounter: createEncounterClient(http),
     scene: createSceneClient(http),
     location: createLocationClient(http),
+    magicItem: createMagicItemClient(http)
   };
 }

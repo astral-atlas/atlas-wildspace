@@ -63,6 +63,7 @@ export type GameUpdate = {|
     | 'locations'
     | 'non-player-characters'
     | 'scenes'
+    | 'magicItem'
 |}
 */
 
@@ -77,5 +78,6 @@ export const castGameUpdate/*: Cast<GameUpdate>*/ = c.obj({
     'locations',
     'non-player-characters',
     'scenes',
+    'magicItem'
   ])
 })
