@@ -60,6 +60,9 @@ const pages = [
   ...paperPages
 ];
 
+const normalizeURLPathname = pathname =>
+  pathname.split('/').filter(Boolean).join('/');
+
 const App = () => {
   const navigation = useRootNavigation(document.location.href);
   
@@ -71,7 +74,7 @@ const App = () => {
 
   const page = pages.find(p => {
     const url = new URL(p.link.href || '/', document.location.href);
-    return url.pathname === navigation.location.pathname;
+    return normalizeURLPathname(url.pathname) === normalizeURLPathname(navigation.location.pathname);
   })
 
   if (!page)
