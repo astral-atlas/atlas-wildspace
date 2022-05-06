@@ -9,9 +9,8 @@ resource "aws_amplify_app" "site" {
   build_spec = file("${path.module}/buildspec.yaml")
 
   custom_rule {
-    source = <<EOT
-</^[^.]+$/>
-EOT
+    source = "</^[^.]+$/>"
+
     status = "200"
     target = "/index.html"
   }
