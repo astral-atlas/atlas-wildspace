@@ -10,7 +10,7 @@ resource "aws_amplify_app" "site" {
 
   custom_rule {
     source = <<EOT
-</^[^.]+$|^.+\.html$/>
+</^[^.]+$/>
 EOT
     status = "200"
     target = "/index.html"
