@@ -128,7 +128,7 @@ div.segmentedBottom {
 div.copperCoin {
   border-style: solid;
   border-image: url('./copper_coin_divider.svg');
-  border-image-slice: 15 15 15 15 fill;
+  border-image-slice: 14 fill;
   border-image-width: calc(var(--scale, 1.5) * 18px);
   border-image-repeat: repeat; 
   
@@ -138,7 +138,7 @@ div.copperCoin {
 div.coinLabel {
   border-style: solid;
   border-image: url('./coin_label_divider.svg');
-  border-image-slice: 12 12 12 12 fill;
+  border-image-slice: 11 fill;
   border-image-width: calc(var(--scale, 1.5) * 12px);
   border-image-repeat: repeat; 
 }

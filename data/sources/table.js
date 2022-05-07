@@ -204,15 +204,17 @@ export const createDynamoDBCompositeTable = /*:: <PartitionKey, SortKey, Item>*/
     }
   };
   const set = async (pk, sk, item) => {
+    const key = {
+      [partitionKeyName]: { S: createPK(pk) },
+      [sortKeyName]: { S: createSK(sk) },
+    }
+
     if (!item)
-      throw new Error();
-    
+      return void await client.deleteItem({ TableName: tableName, Key: key });
     const Item = {
       ...Object.fromEntries(Object.entries(item).map(([name, value]) => [name, writeValueTypes(value)])),
-      [partitionKeyName]: { S: createPK(pk) },
-      [sortKeyName]: { S: createSK(sk) }
+      ...key,
     };
-    console.log(Item);
     await client.putItem({ TableName: tableName, Item })
   };
   const scan = async () => {

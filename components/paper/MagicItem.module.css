@@ -9,6 +9,7 @@
   position: relative;
 
   font-family: 'Crimson Pro', serif;
+  min-width: 256px;
 }
 
 .titleContainer {
@@ -25,6 +26,7 @@
   text-transform: uppercase;
   font-size: 28px;
   font-family: 'Roboto';
+  min-width: 128px;
   margin: 0;
 }
 

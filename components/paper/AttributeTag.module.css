@@ -7,26 +7,26 @@
 }
 
 .attributeTagRoot.left > .label {
-  padding: 4px 32px 4px 16px;
-  position: relative;
+  padding: 8px 32px 8px 24px;
 }
-
 .attributeTagRoot.right > .label {
-  padding: 4px 16px 4px 32px;
+  padding: 8px 24px 8px 32px;
+}
+.attributeTagRoot > .label {
   position: relative;
 }
 
 .attributeTagRoot.right > .value {
   margin: 0 -28px 0 0;
-  padding: 16px;
-
-  position: relative;
-  z-index: 2;
 }
 .attributeTagRoot.left > .value {
   margin: 0 0 0 -28px;
+}
+
+.attributeTagRoot > .value {
   padding: 16px;
 
   position: relative;
   z-index: 2;
+  text-align: center;
 }

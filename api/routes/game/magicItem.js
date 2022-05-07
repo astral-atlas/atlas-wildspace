@@ -15,10 +15,14 @@ export const createMagicItemRoutes/*: RoutesConstructor*/ = (services) => {
     GET: {
       getGameId: r => r.query.gameId,
       scope: { type: 'player-in-game' },
-      async handler({ game }) {
+      async handler({ game, identity }) {
         const { result: magicItem } = await services.data.gameData.magicItems.query(game.id);
 
-        return { status: HTTP_STATUS.ok, body: { type: 'found', relatedAssets: [], magicItem }}
+        if (identity.type === 'link' && game.gameMasterId == identity.grant.identity)
+          return { status: HTTP_STATUS.ok, body: { type: 'found', relatedAssets: [], magicItem }}
+
+        const visibleMagicItems = magicItem.filter(m => m.visibility && m.visibility.type === 'players-in-game');
+        return { status: HTTP_STATUS.ok, body: { type: 'found', relatedAssets: [], magicItem: visibleMagicItems }}
       }
     },
     POST: {
@@ -31,6 +35,7 @@ export const createMagicItemRoutes/*: RoutesConstructor*/ = (services) => {
           description: '',
           type: '',
           requiresAttunement: false,
+          visibility: { type: 'game-master-in-game' },
           rarity: '',
         }
         await services.data.gameData.magicItems.set(game.id, magicItem.id, magicItem);

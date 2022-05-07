@@ -44,7 +44,7 @@ export const MagicItemPage/*: Component<>*/ = () => {
       h(WildspaceStarfieldScene)
     ]),
     h('div', { class: styles.magicItemPage }, [
-      h('div', { class: styles.magicItemPageContent}, [
+      h('div', { class: styles.magicItemPageContent }, [
         h(MagicItemCard, { magicItem: selectedMagicItem })
       ]),
     ])

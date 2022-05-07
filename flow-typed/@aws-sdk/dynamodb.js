@@ -74,12 +74,20 @@ declare module '@aws-sdk/client-dynamodb' {
       Items: { [string]: DynamoDBValueType }[]
     }
   }
+  declare export type DeleteItemCommand = {
+    Input: {
+      TableName: string,
+      Key: { [string]: DynamoDBValueType },
+    },
+    Output: { }
+  }
 
   declare export class DynamoDB {
     constructor(config: DynamoDBClientConfig): DynamoDB,
 
     getItem(input: GetItemCommand["Input"]): Promise<GetItemCommand["Output"]>,
     putItem(input: PutItemCommand["Input"]): Promise<PutItemCommand["Output"]>,
+    deleteItem(input: DeleteItemCommand["Input"]): Promise<DeleteItemCommand["Output"]>,
     query(input: QueryItemCommand["Input"]): Promise<QueryItemCommand["Output"]>,
     scan(input: ScanCommand["Input"]): Promise<ScanCommand["Output"]>,
   }

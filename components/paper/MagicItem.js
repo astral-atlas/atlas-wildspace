@@ -46,6 +46,7 @@ export const MagicItemCard/*: Component<MagicItemCardProps>*/ = ({ magicItem }) 
 
   return [
     h('div', { ref: rootRef, class: styles.magicItemRoot }, [
+      h(SquareDivider, { ref: titleRef, class: styles.titleContainer }, h('h3', { class: styles.title }, magicItem.title)),
       h(FeatureDivider, { ref: contentRef, class: styles.contentBorder }, [
         h('div', { class: styles.description }, [
           h('div', { class: styles.descriptionContent }, [
@@ -54,7 +55,6 @@ export const MagicItemCard/*: Component<MagicItemCardProps>*/ = ({ magicItem }) 
         ]),
         h(MagicItemCardAttributes, { magicItem, titleRef, rootRef, contentRef }),
       ]),
-      h(SquareDivider, { ref: titleRef, class: styles.titleContainer }, h('h3', { class: styles.title }, magicItem.title)),
     ]),
   ];
 };
@@ -94,6 +94,11 @@ const MagicItemCardAttributes = ({ magicItem, rootRef, contentRef, titleRef }) =
       label: h('span', { class: styles.attributeLabel }, 'Rarity'),
       alignment: 'right'
     }, h('span', { class: styles.attributeValue }, magicItem.rarity))),
+    magicItem.requiresAttunement && h('li', {}, h(CopperAttributeTag, {
+      classList: [styles.attribute],
+      label: h('span', { class: styles.attributeLabel }, 'Requires'),
+      alignment: 'right'
+    }, h('span', { class: styles.attributeValue }, 'Attunement'))),
     
   ])
 }

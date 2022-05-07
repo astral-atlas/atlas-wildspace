@@ -5,12 +5,14 @@ import colorString from 'color-string'
 import { AssetLibraryWindow } from "./window";
 import {
   EditorButton,
+  EditorCheckboxInput,
   EditorForm,
   EditorFormSubmit,
   EditorHorizontalSection,
   EditorTextAreaInput,
   EditorTextInput,
   FilesEditor,
+  SelectEditor,
 } from "../../editor/form";
 import { AssetGrid, AssetGridItem } from "../grid";
 import { useSelection } from "../../editor/selection";
@@ -42,20 +44,45 @@ export const MagicItemLibrary/*: Component<MagicItemLibraryProps>*/ = ({ gameId,
       return;
     await client.game.magicItem.update(gameId, selectedMagicItem.id, { ...selectedMagicItem, ...nextProps });
   }
+  const onDeleteMagicItem = async () => {
+    if (!selectedMagicItem)
+      return;
+    await client.game.magicItem.destroy(gameId, selectedMagicItem.id);
+  }
 
   const selectedMagicItem = data.magicItems.find(m => m.id === selection[0]);
 
   const editor = [
     !!selectedMagicItem && h(EditorForm, {}, [
       h('a', { href: `/magic-item?gameId=${data.game.id}&magicItemId=${selectedMagicItem.id}` }, 'Web Link'),
+      h(EditorButton, { label: 'Delete Magic Item', onButtonClick: onDeleteMagicItem }),
       h(EditorTextInput, {
         label: 'title',
         text: selectedMagicItem.title,
         onTextChange: title => onUpdateSelectedMagicItem({ title }) }),
+      h(SelectEditor, {
+        label: 'visibility',
+        values: [{ value: 'players-in-game' }, { value: 'game-master-in-game' }],
+        selected: selectedMagicItem.visibility && selectedMagicItem.visibility.type || 'game-master-in-game',
+        onSelectedChange: (type) => onUpdateSelectedMagicItem({
+          visibility: type === 'players-in-game' ? { type: 'players-in-game' } : { type: 'game-master-in-game' } })
+      }),
       h(EditorTextAreaInput, {
-        label: 'descrition',
+        label: 'description',
         text: selectedMagicItem.description,
         onTextChange: description => onUpdateSelectedMagicItem({ description }) }),
+      h(EditorTextAreaInput, {
+        label: 'rarity',
+        text: selectedMagicItem.rarity,
+        onTextChange: rarity => onUpdateSelectedMagicItem({ rarity }) }),
+      h(EditorCheckboxInput, {
+        label: 'requiresAttunement',
+        checked: selectedMagicItem.requiresAttunement,
+        onCheckedChange: requiresAttunement => onUpdateSelectedMagicItem({ requiresAttunement }) }),
+      h(EditorTextAreaInput, {
+        label: 'type',
+        text: selectedMagicItem.type,
+        onTextChange: type => onUpdateSelectedMagicItem({ type }) }),
     ])
   ];
   const content = [
