@@ -10,13 +10,13 @@ import { h } from "@lukekaalim/act";
 export const MagicItemCardDemo/*: Component<>*/ = () => {
   const magicItem = {
     id: '0',
-    title: 'The Black hand of Jermaggadon',
+    title: 'the black hand',
     type: 'gauntlet',
     description: `
-A Magic Sword passed down from the ages.
+The dark fires of the infernal realm forged this gauntlet, dripping with malice.
 
-#### Special Props
-This sword has **three** charges.
+### Special Abilities
+ - It can hold ice cream cones, and they won't drip on the user when they melt.
 
 `,
     rarity: 'common',

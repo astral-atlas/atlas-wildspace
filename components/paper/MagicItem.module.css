@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@200;300;400;500;700;900&display=swap');
 
-.magicItem {
+.contentBorder {
   display: flex;
   flex-direction: column;
 
@@ -9,24 +9,22 @@
   position: relative;
 
   font-family: 'Crimson Pro', serif;
-
-  margin-top: 40px;
 }
 
 .titleContainer {
-  display: inline-block;
-  height: 24px;
   position: absolute;
-  top: -22px;
-  background-color: white;
-
+  top: 0px;
+  right:  64px;
+  left: 64px;
+  z-index: 2;
 }
 .title {
-  padding: 0px 32px 0px 32px;
+  padding: 16px 32px 20px 32px;
+  overflow-x: auto;
   text-align: center;
-  font-family: 'Crimson Pro', serif;
   text-transform: uppercase;
-  font-size: 24px;
+  font-size: 28px;
+  font-family: 'Roboto';
   margin: 0;
 }
 
@@ -36,14 +34,43 @@
 
 .description {
   width: 100%;
+  font-size: 22px;
 }
 .descriptionContent {
   padding: 0px 48px 0px 48px;
 }
-.magicItemRoot {
-  transform: scale(1);
-  transition: transform 0.3s;
+.descriptionContent p {
+  font-size: inherit;
 }
-.magicItemRoot:hover {
-  /*transform: scale(1.1);*/
+.descriptionContent > blockquote {
+  background-color: #e3e3e3;
+  padding: 12px;
+}
+.descriptionContent > blockquote > p {
+  margin: 0;
+}
+.magicItemRoot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  font-size: 22px;
+}
+
+.attributeColumn {
+  position: absolute;
+  top: 32px;
+
+  display: flex;
+  flex-direction: column;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.attributeValue {
+  font-weight: bold;
+  text-transform: capitalize;
+}
+.attributeLabel {
+  text-decoration: underline;
 }

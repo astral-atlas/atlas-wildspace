@@ -19,7 +19,6 @@ export type WildspaceStarfieldSceneProps = {
 
 
 export const WildspaceStarfieldScene/*: Component<WildspaceStarfieldSceneProps>*/ = () => {
-  console.log('render')
   return [
     h(ScrollingStarfield, { offset: 0 }),
     h(ScrollingStarfield, { offset: 100 }),

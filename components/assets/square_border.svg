@@ -7,8 +7,8 @@
    viewBox="0 0 10 10"
    version="1.1"
    id="svg4521"
-   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
-   sodipodi:docname="long_text_border.svg"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="square_border.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -20,22 +20,23 @@
      borderopacity="1.0"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="0"
+     inkscape:pagecheckerboard="true"
      inkscape:document-units="mm"
      showgrid="false"
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:zoom="12.001571"
-     inkscape:cx="17.497709"
-     inkscape:cy="31.62086"
+     inkscape:zoom="16.972784"
+     inkscape:cx="15.024052"
+     inkscape:cy="22.712832"
      inkscape:window-width="1920"
      inkscape:window-height="1019"
      inkscape:window-x="1920"
      inkscape:window-y="30"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer1" />
+     inkscape:current-layer="layer1"
+     inkscape:snap-global="false" />
   <defs
      id="defs4518" />
   <g
@@ -43,6 +44,10 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(-48.320071,-53.352758)">
+    <path
+       style="fill:#ffffff;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
+       d="m 49.541567,53.6345 0.07947,0.681632 -0.78375,0.01004 0.09361,7.57416 0.588678,0.0071 -0.0056,0.941494 7.433635,0.02761 0.04155,-1.259577 0.745784,-0.297558 -0.02805,-6.625323 -0.637283,-0.287994 -0.08009,-0.67096 -7.103301,-0.01882 z"
+       id="path6317" />
     <g
        id="g1636"
        transform="matrix(0.35277777,0,0,-0.35277777,111.82007,54.410033)">

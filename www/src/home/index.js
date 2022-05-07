@@ -1,6 +1,10 @@
 // @flow strict
 /*:: import type { Component } from '@lukekaalim/act'; */
 /*:: import type { Navigation } from "@lukekaalim/act-navigation"; */
+/*::
+import type { Ref } from "@lukekaalim/act";
+import type { Camera, PerspectiveCamera } from "three";
+*/
 
 import { FullscreenToggle, HomepageRoomSelector, HompepageLoginPrompt, useAsync, useFullscreen, UserTablet, WildspaceStarfieldScene } from "@astral-atlas/wildspace-components";
 import { createContext, h, useEffect, useRef, useState } from "@lukekaalim/act";
@@ -70,7 +74,7 @@ const useHalfResizingRenderer = (
   return size;
 }
 
-const FullscreenCanvasScene = ({ children, cameraRef, ...props }) => {
+export const FullscreenCanvasScene/*: Component<{ cameraRef: Ref<?PerspectiveCamera> }>*/ = ({ children, cameraRef, ...props }) => {
   const style = {
     position: 'absolute',
     width: '100%',

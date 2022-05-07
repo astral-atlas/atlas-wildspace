@@ -1,7 +1,7 @@
 // @flow strict
 /*:: import type { NavigationLink } from "@lukekaalim/act-rehersal"; */
 /*:: import type { ElementNode } from "@lukekaalim/act"; */
-import { Boundary, h } from '@lukekaalim/act'; 
+import { Boundary, h, useState } from '@lukekaalim/act'; 
 import { render } from '@lukekaalim/act-three';
 import { Document, Markdown, Rehersal } from '@lukekaalim/act-rehersal';
 import { useRootNavigation, navigationContext } from '@lukekaalim/act-navigation';
@@ -114,10 +114,17 @@ const App = () => {
           page.content)));
 };
 
+App.coolProperty = 'wha';
+
 const main = () => {
+  if (window.wildspace_loaded)
+    return;
+  window.wildspace_loaded = true
   const { body } = document;
-  if (body)
-    render(h(App), body);
+  if (!body)
+    return;
+
+  render(h(App), body);
 };
 
 main();

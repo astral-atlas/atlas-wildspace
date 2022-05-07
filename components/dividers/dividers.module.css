@@ -3,11 +3,11 @@ div.beveled {
   border-style: solid;
   border-image: url('../assets/beveled_border.svg');
   border-image-slice: 25%;
-  border-image-width: calc(var(--scale, 1.5) * 22px);
+  border-image-width: calc(var(--scale, 1.5) * 11px);
   border-image-repeat: stretch stretch; 
-  padding: calc(var(--scale, 1.5) * 8px);
-  min-height: calc(var(--scale, 1.5) * 40px);
-  min-width: calc(var(--scale, 1.5) * 30px);
+  
+  min-height: calc(var(--scale, 1.5) * 20px);
+  min-width: calc(var(--scale, 1.5) * 15px);
 }
 
 div.banner {
@@ -20,17 +20,17 @@ div.banner {
     calc(var(--scale, 1.5) * 27px)
     calc(var(--scale, 1.5) * 70px);
   border-image-repeat: repeat; 
-  padding: calc(var(--scale, 1.5) * 16px);
+  
   min-height: calc(var(--scale, 1.5) * 40px);
   min-width: calc(var(--scale, 1.5) * 115px);
 }
 div.square {
   border-style: solid;
   border-image: url('../assets/square_border.svg');
-  border-image-slice: 33%;
+  border-image-slice: 33% fill;
   border-image-width: calc(var(--scale, 1.5) * 18px);
   border-image-repeat: repeat; 
-  padding: calc(var(--scale, 1.5) * 16px);
+  
   min-width: calc(var(--scale, 1.5) * 44px);
 }
 div.plain {
@@ -39,7 +39,7 @@ div.plain {
   border-image-slice: 20% 10% 20% 10% fill;
   border-image-width: calc(var(--scale, 1.5) * 4px);
   border-image-repeat: repeat; 
-  padding: 0 calc(var(--scale, 1.5) * 4px) 0 calc(var(--scale, 1.5) * 4px);
+  
   min-height: 25px;
   min-width: 25px;
 }
@@ -55,7 +55,7 @@ div.skillSave {
     calc(var(--scale, 1.5) * 30px);
   border-image-outset: 0px 0px 0px 0px;
   border-image-repeat: stretch stretch; 
-  padding: calc(var(--scale, 1.5) * 15px);
+  
   min-height: calc(var(--scale, 1.5) * 90px);
   min-width: calc(var(--scale, 1.5) * 44px);
 }
@@ -71,7 +71,7 @@ div.health {
     calc(var(--scale, 1.5) * 105px);
   border-image-outset: 0px 0px 0px 0px;
   border-image-repeat: stretch stretch; 
-  padding: calc(var(--scale, 1.5) * 15px);
+  
   min-height: calc(var(--scale, 1.5) * 60px);
   min-width: calc(var(--scale, 1.5) * 210px);
 }
@@ -87,7 +87,7 @@ div.feature {
     calc(var(--scale, 1.5) * 30px);
   border-image-outset: 0px 0px 0px 0px;
   border-image-repeat: stretch stretch; 
-  padding: calc(var(--scale, 1.5) * 15px);
+  
   min-height: calc(var(--scale, 1.5) * 60px);
   min-width: calc(var(--scale, 1.5) * 30px);
 }
@@ -98,7 +98,7 @@ div.segmentedTop {
   border-image-width: calc(var(--scale, 1.5) * 40px);
   border-image-outset: 0px 0px 0px 0px;
   border-image-repeat: stretch stretch; 
-  padding: calc(var(--scale, 1.5) * 15px);
+  
   min-height: calc(var(--scale, 1.5) * 45px);
   min-width: calc(var(--scale, 1.5) * 45px);
 }
@@ -109,7 +109,7 @@ div.segmentedMiddle {
   border-image-width: calc(var(--scale, 1.5) * 40px);
   border-image-outset: 0px 0px 0px 0px;
   border-image-repeat: stretch stretch; 
-  padding: calc(var(--scale, 1.5) * 15px);
+  
   min-height: calc(var(--scale, 1.5) * 45px);
   min-width: calc(var(--scale, 1.5) * 45px);
 }
@@ -120,7 +120,25 @@ div.segmentedBottom {
   border-image-width: calc(var(--scale, 1.5) * 40px);
   border-image-outset: 0px 0px 0px 0px;
   border-image-repeat: stretch stretch; 
-  padding: calc(var(--scale, 1.5) * 15px);
+  
   min-height: calc(var(--scale, 1.5) * 45px);
   min-width: calc(var(--scale, 1.5) * 45px);
+}
+
+div.copperCoin {
+  border-style: solid;
+  border-image: url('./copper_coin_divider.svg');
+  border-image-slice: 15 15 15 15 fill;
+  border-image-width: calc(var(--scale, 1.5) * 18px);
+  border-image-repeat: repeat; 
+  
+  min-width: calc(var(--scale, 1.5) * 44px);
+}
+
+div.coinLabel {
+  border-style: solid;
+  border-image: url('./coin_label_divider.svg');
+  border-image-slice: 12 12 12 12 fill;
+  border-image-width: calc(var(--scale, 1.5) * 12px);
+  border-image-repeat: repeat; 
 }

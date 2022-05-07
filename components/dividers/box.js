@@ -12,6 +12,7 @@ export type StyleCustomizationProps = {|
   },
   class?: string,
   className?: string,
+  classList?: string[],
 |};
 
 export type BoxDividerProps = {
@@ -22,52 +23,74 @@ export type BoxDividerProps = {
 export const BeveledDivider/*: Component<BoxDividerProps>*/ = (props) => {
   const { style: { scale = 1.5, ...style } = {} } = props;
   const className = [dividerStyles.beveled, props.class, props.className].filter(Boolean).join(' ');
-  return h('div', { className, style: { ...style, '--scale': scale } }, props.children)
+  return h('div', { ...props, className, style: { ...style, '--scale': scale } }, props.children)
 };
 export const BannerDivider/*: Component<BoxDividerProps>*/ = (props) => {
   const { style: { scale = 1.5, ...style } = {} } = props;
   const className = [dividerStyles.banner, props.class, props.className].filter(Boolean).join(' ');
-  return h('div', { className, style: { ...style, '--scale': scale } }, props.children)
+  return h('div', { ...props, className, style: { ...style, '--scale': scale } }, props.children)
 };
 export const SquareDivider/*: Component<BoxDividerProps>*/ = (props) => {
   const { style: { scale = 1.5, ...style } = {} } = props;
   const className = [dividerStyles.square, props.class, props.className].filter(Boolean).join(' ');
-  return h('div', { className, style: { ...style, '--scale': scale } }, props.children)
+  return h('div', { ...props, className, style: { ...style, '--scale': scale } }, props.children)
 };
 export const PlainDivider/*: Component<BoxDividerProps>*/ = (props) => {
   const { style: { scale = 1.5, ...style } = {} } = props;
   const className = [dividerStyles.plain, props.class, props.className].filter(Boolean).join(' ');
-  return h('div', { className, style: { ...style, '--scale': scale } }, props.children)
+  return h('div', { ...props, className, style: { ...style, '--scale': scale } }, props.children)
 };
 export const SkillSaveDivider/*: Component<BoxDividerProps>*/ = (props) => {
   const { style: { scale = 1.5, ...style } = {} } = props;
   const className = [dividerStyles.skillSave, props.class, props.className].filter(Boolean).join(' ');
-  return h('div', { className, style: { ...style, '--scale': scale } }, props.children)
+  return h('div', { ...props, className, style: { ...style, '--scale': scale } }, props.children)
 };
 export const HealthDivider/*: Component<BoxDividerProps>*/ = (props) => {
   const { style: { scale = 1.5, ...style } = {} } = props;
   const className = [dividerStyles.health, props.class, props.className].filter(Boolean).join(' ');
-  return h('div', { className, style: { ...style, '--scale': scale } }, props.children)
+  return h('div', { ...props, className, style: { ...style, '--scale': scale } }, props.children)
 };
 export const FeatureDivider/*: Component<BoxDividerProps>*/ = (props) => {
   const { style: { scale = 1.5, ...style } = {} } = props;
   const className = [dividerStyles.feature, props.class, props.className].filter(Boolean).join(' ');
-  return h('div', { className, style: { ...style, '--scale': scale } }, props.children)
+  return h('div', { ...props, className, style: { ...style, '--scale': scale } }, props.children)
 };
 
 
 export const SegmentedTop/*: Component<BoxDividerProps>*/ = (props) => {
   const { style: { scale = 1.5, ...style } = {} } = props;
   const className = [dividerStyles.segmentedTop, props.class, props.className].filter(Boolean).join(' ');
-  return h('div', { className, style: { ...style, '--scale': scale } }, props.children)
+  return h('div', { ...props, className, style: { ...style, '--scale': scale } }, props.children)
 };
 export const SegmentedMiddle/*: Component<BoxDividerProps>*/ = (props) => {
   const { style: { scale = 1.5, ...style } = {} } = props;
   const className = [dividerStyles.segmentedMiddle, props.class, props.className].filter(Boolean).join(' ');
-  return h('div', { className, style: { ...style, '--scale': scale } }, props.children)
+  return h('div', { ...props, className, style: { ...style, '--scale': scale } }, props.children)
 };
 export const SegmentedBottom/*: Component<BoxDividerProps>*/ = (props) => {
   const { style: { scale = 1.5, ...style } = {} } = props;
   const className = [dividerStyles.segmentedBottom, props.class, props.className].filter(Boolean).join(' ');
-  return h('div', { className, style: { ...style, '--scale': scale } }, props.children)
+  return h('div', { ...props, className, style: { ...style, '--scale': scale } }, props.children)
 };
+
+
+const BoxDivider/*: Component<{ ...BoxDividerProps, type: string }>*/ = ({
+  type,
+  children,
+  style: { scale = 1.5, ...style } = {},
+  classList = [],
+  ...props
+}) => {
+
+  return h('div', {
+    ...props,
+    style: { ...style, ['--scale']: scale },
+    classList: [...classList, dividerStyles[type]]
+  }, children)
+}
+
+export const CopperCoinDivider/*: Component<BoxDividerProps>*/ = (props) =>
+  h(BoxDivider, { ...props, type: 'copperCoin' }, props.children)
+
+export const CoinLabelDivider/*: Component<BoxDividerProps>*/ = (props) =>
+  h(BoxDivider, { ...props, type: 'coinLabel' }, props.children)

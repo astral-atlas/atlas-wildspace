@@ -1,0 +1,32 @@
+.attributeTagRoot {
+  display: flex;
+  flex-direction: row;
+
+  align-items: center;
+  margin: 4px;
+}
+
+.attributeTagRoot.left > .label {
+  padding: 4px 32px 4px 16px;
+  position: relative;
+}
+
+.attributeTagRoot.right > .label {
+  padding: 4px 16px 4px 32px;
+  position: relative;
+}
+
+.attributeTagRoot.right > .value {
+  margin: 0 -28px 0 0;
+  padding: 16px;
+
+  position: relative;
+  z-index: 2;
+}
+.attributeTagRoot.left > .value {
+  margin: 0 0 0 -28px;
+  padding: 16px;
+
+  position: relative;
+  z-index: 2;
+}
