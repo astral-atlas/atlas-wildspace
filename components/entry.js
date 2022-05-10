@@ -40,3 +40,4 @@ export * from './room/index.js';
 export * from './scene/index.js';
 export * from './animation/index.js';
 export * from './paper/index.js';
+export * from './richText/index.js';

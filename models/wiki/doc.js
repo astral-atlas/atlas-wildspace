@@ -8,6 +8,10 @@ import { castUserId } from "@astral-atlas/sesame-models";
 import { c } from "@lukekaalim/cast";
 import { castGameId } from "../game.js";
 
+import { Step } from 'prosemirror-transform';
+import { Node } from 'prosemirror-model';
+import { proseSchema } from "../prose.js";
+
 /*::
 
 export type WikiDocID = string;
@@ -18,8 +22,8 @@ export type WikiDoc = {
   title: string,
 
   version: number,
+  lastUpdatedBy: UserID,
   rootNode: mixed,
-  steps: $ReadOnlyArray<mixed>,
 };
 */
 
@@ -31,15 +35,14 @@ export const castWikiDoc/*: Cast<WikiDoc>*/ = c.obj({
   title: c.str,
 
   version: c.num,
+  lastUpdatedBy: castUserId,
   rootNode: (n) => n,
-  steps: c.arr(s => s)
 });
 
 /*::
 export type WikiDocUpdate = {
-  docId: WikiDocID,
-  gameId: GameID,
   userId: UserID,
+  clientId: number,
 
   version: number,
   steps: $ReadOnlyArray<mixed>,
@@ -47,14 +50,28 @@ export type WikiDocUpdate = {
 */
 
 export const castWikiDocUpdate/*: Cast<WikiDocUpdate>*/ = c.obj({
-  docId: castWikiDocId,
-  gameId: castGameId,
   userId: castUserId,
+  clientId: c.num,
 
   version: c.num,
   steps: c.arr(s => s),
 })
 
-export const applyUpdate = (doc/*: WikiDoc*/, update/*: WikiDocUpdate*/)/*: WikiDoc*/ => {
+export const applyWikiDocUpdate = (doc/*: WikiDoc*/, update/*: WikiDocUpdate*/)/*: WikiDoc*/ => {
+  const initialNode = Node.fromJSON(proseSchema, doc.rootNode);
 
+  const nextNode = update.steps
+    .map(step => Step.fromJSON(proseSchema, step))
+    .reduce((node, step) => {
+      const result = step.apply(node)
+      if (!result.doc)
+        throw new Error(result.failed);
+      return result.doc;
+    }, initialNode)
+
+  return {
+    ...doc,
+    rootNode: nextNode.toJSON(),
+    version: doc.version + update.steps.length,
+  }
 }

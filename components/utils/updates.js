@@ -15,6 +15,7 @@ export type GameUpdateTimes = {
   locations: number,
   scenes: number,
   magicItems: number,
+  wikiDoc: number,
 }
 */
 
@@ -30,24 +31,30 @@ export const useGameUpdateTimes = (
     scenes: 0,
     locations: 0,
     magicItems: 0,
+    wikiDoc: 0,
   });
-  useConnection(async () => gameClient.connectUpdates(gameId, update => {
-    switch (update.type) {
-      case 'rooms':
-        return setUpdateTimes(t => ({ ...t, rooms: Date.now() }))
-      case 'players':
-        return setUpdateTimes(t => ({ ...t, players: Date.now() }))
-      case 'tracks':
-        return setUpdateTimes(t => ({ ...t, tracks: Date.now() }))
-      case 'playlists':
-        return setUpdateTimes(t => ({ ...t, playlists: Date.now() }))
-      case 'scenes':
-        return setUpdateTimes(t => ({ ...t, scenes: Date.now() }))
-      case 'locations':
-        return setUpdateTimes(t => ({ ...t, locations: Date.now() }))
-      case 'magicItem':
-        return setUpdateTimes(t => ({ ...t, magicItems: Date.now() }))
-    }
-  }).close)
+  useConnection(async () => {
+    const { close } = await gameClient.connectUpdates(gameId, update => {
+      switch (update.type) {
+        case 'rooms':
+          return setUpdateTimes(t => ({ ...t, rooms: Date.now() }))
+        case 'players':
+          return setUpdateTimes(t => ({ ...t, players: Date.now() }))
+        case 'tracks':
+          return setUpdateTimes(t => ({ ...t, tracks: Date.now() }))
+        case 'playlists':
+          return setUpdateTimes(t => ({ ...t, playlists: Date.now() }))
+        case 'scenes':
+          return setUpdateTimes(t => ({ ...t, scenes: Date.now() }))
+        case 'locations':
+          return setUpdateTimes(t => ({ ...t, locations: Date.now() }))
+        case 'magicItem':
+          return setUpdateTimes(t => ({ ...t, magicItems: Date.now() }))
+        case 'wikiDoc':
+          return setUpdateTimes(t => ({ ...t, wikiDoc: Date.now() }))
+      }
+    })
+    return close;
+  })
   return updateTimes;
 };

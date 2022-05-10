@@ -4,8 +4,12 @@ import type { UserID } from '@astral-atlas/sesame-models';
 import type { Game, GameID, Player } from '@astral-atlas/wildspace-models';
 import type { WildspaceData } from '@astral-atlas/wildspace-data';
 import type { AuthService, Identity } from "./auth.js";
+import type { WikiService } from "./game/wiki";
+import type { GameConnectionService } from "./game/connection";
 */
 import { v4 as uuid } from 'uuid';
+import { createWikiService } from './game/wiki.js';
+import { createGameConnectionService } from "./game/connection.js";
 
 /*::
 export type GameService = {
@@ -19,6 +23,9 @@ export type GameService = {
   listPlayers: (gameId: GameID, authorizer: Identity) => Promise<Player[]>,
   addPlayer: (gameId: GameID, playerId: UserID, authorizer: Identity) => Promise<void>,
   removePlayer: (gameId: GameID, playerId: UserID, authorizer: Identity) => Promise<void>,
+
+  wiki: WikiService,
+  connection: GameConnectionService,
 };
 
 export type GameIdentityScope =
@@ -139,5 +146,12 @@ export const createGameService = (data/*: WildspaceData*/, auth/*: AuthService*/
     await data.gameParticipation.set(playerId, game.id, { joined: false, gameId: game.id });
   }
 
-  return { create, update, get, all, createScopeAssertion, removePlayer, addPlayer, listPlayers };
+  const connection = createGameConnectionService(data);
+  const wiki = createWikiService(data, connection);
+
+  return {
+    create, update, get, all, createScopeAssertion, removePlayer, addPlayer, listPlayers,
+    wiki,
+    connection,
+  };
 };

@@ -15,11 +15,11 @@ users to an individual client
 import type { UserID } from "@astral-atlas/sesame-models";
 import type { Cast } from "@lukekaalim/cast";
 import type { CharacterID } from "../character.js";
+import type { WikiDocID } from "../wiki/doc";
 
 export type RoomLobbyEvent =
   | {| type: 'append-messages', messages: $ReadOnlyArray<LobbyMessage> |}
   | {| type: 'connection', playersConnected: $ReadOnlyArray<LobbyConnection> |}
-
 
 export type LobbyMessageID = string;
 export type LobbyMessage = {

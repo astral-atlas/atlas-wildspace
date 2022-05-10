@@ -9,6 +9,8 @@
 /*:: import type { EncounterAPI } from "./game/encounters.js"; */
 /*::
 import type { MagicItemAPI } from "./game/magicItem";
+import type { WikiDocEvent, WikiDocAction} from "../wiki.js";
+import type { AuthorizedConnection } from "./meta";
 */
 
 import {
@@ -26,6 +28,10 @@ import { playersAPI } from './game/players.js';
 import { monstersAPI } from './game/monsters.js';
 import { encountersAPI } from './game/encounters.js';
 import { magicItemAPI } from './game/magicItem.js';
+
+import { castWikiDocAction, castWikiDocEvent } from "../wiki.js";
+import { wikiAPI } from './game/wiki.js';
+import { createAuthorizedConnectionDescription } from './meta.js';
 
 /*::
 export type GameAPI = {
@@ -46,11 +52,15 @@ export type GameAPI = {
       response: { type: 'updated' },
     }
   |},
-  '/games/updates': {|
+  '/games/updates': AuthorizedConnection<{|
     query: { gameId: GameID },
-    client: empty,
-    server: {| type: 'updated', update: GameUpdate |} | {| type: 'heartbeat' |},
-  |},
+    client:
+      | {| type: 'wiki', action: WikiDocAction |},
+    server:
+      | {| type: 'updated', update: GameUpdate |}
+      | {| type: 'heartbeat' |}
+      | {| type: 'wiki', event: WikiDocEvent |},
+  |}>,
   ...CharactersAPI,
   ...MonstersAPI,
   ...EncounterAPI,
@@ -84,16 +94,20 @@ export const gameResourceDescription/*: ResourceDescription<GameAPI['/games']>*/
   },
 };
 
-export const gameStateConnectionDescription/*: ConnectionDescription<GameAPI['/games/updates']>*/ = {
+export const gameStateConnectionDescription/*: ConnectionDescription<GameAPI['/games/updates']>*/ = createAuthorizedConnectionDescription({
   path: '/games/updates',
   subprotocol: 'JSON.wildspace.game_updates.v1.0.0',
 
   castQuery: c.obj({ gameId: castGameId }),
+  castClientMessage: c.or('type', {
+    'wiki': c.obj({ type: c.lit('wiki'), action: castWikiDocAction })
+  }),
   castServerMessage:  c.or('type', {
     'heartbeat': c.obj({ type: c.lit('heartbeat') }),
     'updated': c.obj({ type: c.lit('updated'), update: castGameUpdate }),
+    'wiki': c.obj({ type: c.lit('wiki'), event: castWikiDocEvent }),
   })
-}
+});
 
 export const allGamesResourceDescription/*: ResourceDescription<GameAPI['/games/all']>*/ = {
   path: '/games/all',
@@ -109,6 +123,7 @@ export const gameAPI = {
   ...monstersAPI,
   ...encountersAPI,
   ...magicItemAPI,
+  ...wikiAPI,
   '/games': gameResourceDescription,
   '/games/all': allGamesResourceDescription,
   '/games/updates': gameStateConnectionDescription,
@@ -120,3 +135,5 @@ export * from './game/encounters.js';
 export * from './game/scene.js';
 export * from './game/location.js';
 export * from './game/magicItem.js';
+export * from './game/wiki.js';
+export * from './game/meta.js';

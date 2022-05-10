@@ -53,7 +53,8 @@ export const useElementKeyboard = /*:: <T: Element>*/(
     const currentKeys = new Set(initKeys);
 
     const onKeyDown = (event/*: KeyboardEvent*/) => {
-      if (event.target instanceof HTMLElement && elementBlocklist.has(event.target.tagName))
+      const { target } = event;
+      if (target instanceof HTMLElement && (elementBlocklist.has(target.tagName) || target.isContentEditable))
         return;
       if (event.code === 'CapsLock')
         return;

@@ -5,6 +5,8 @@
   position: relative;
   height: 100%;
   width: 100%;
+
+  background-color: rgba(216, 216, 216, 0.637);
 }
 
 .modeInput {

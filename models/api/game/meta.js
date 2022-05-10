@@ -79,3 +79,94 @@ export const createCRUDGameAPI = /*:: <Resource, ResourceName: string, ResourceI
     },
   }
 };
+
+
+/*::
+export type AdvancedGameCRUDAPIDescription = {
+  resource: any,
+  resourceName: any,
+  resourceId: any,
+  resourceIdName: any,
+
+  resourcePostInput: any,
+  resourcePutInput: any,
+}
+export type DeriveGameCRUDDescription<T> = $Call<<A>(a: AdvancedGameCRUDAPI<A>) => A, T>;
+
+export type AdvancedGameCRUDAPIConstructorInput<T: AdvancedGameCRUDAPIDescription> = {
+  path: string,
+
+  castResource: Cast<T["resource"]>,
+  resourceName: T["resourceName"],
+  resourceIdName: T["resourceIdName"],
+
+  castPostResource: Cast<T["resourcePostInput"]>,
+  castPutResource: Cast<T["resourcePutInput"]>,
+}
+
+export type AdvancedGameCRUDAPI<T: AdvancedGameCRUDAPIDescription> = {|
+  GET: {
+    query: { gameId: GameID },
+    request: empty,
+    response: {
+      type: 'found',
+      [T["resourceName"]]: $ReadOnlyArray<T["resource"]>,
+      relatedAssets: $ReadOnlyArray<[AssetID, ?AssetInfo]>
+    },
+  },
+  POST: {
+    query: empty,
+    request: { gameId: GameID, [T["resourceName"]]: T["resourcePostInput"] },
+    response: { type: 'created', [T["resourceName"]]: T["resource"] },
+  },
+  PUT: {
+    query: { gameId: GameID, [T["resourceIdName"]]: T["resourceId"] },
+    request: { [T["resourceName"]]: T["resourcePutInput"] },
+    response: { type: 'updated' },
+  },
+  DELETE: {
+    query: { gameId: GameID, [T["resourceIdName"]]: T["resourceId"] },
+    request: empty,
+    response: { type: 'deleted' },
+  },
+  PATCH: any,
+|}
+*/
+
+export const createAdvancedCRUDGameAPI = /*:: <T: AdvancedGameCRUDAPIDescription>*/({
+  path,
+  castResource,
+  resourceName,
+  resourceIdName,
+  castPostResource,
+  castPutResource,
+}/*: AdvancedGameCRUDAPIConstructorInput<T>*/)/*: ResourceDescription<AdvancedGameCRUDAPI<T>>*/ => {
+  return {
+    path,
+
+    GET: {
+      toQuery: c.obj({ gameId: castGameId }),
+      toResponseBody: c.obj({
+        type: c.lit('found'),
+        [resourceName]: c.arr(castResource),
+        relatedAssets: c.arr(c.tup([
+          castAssetID,
+          c.maybe(c.obj({ description: castAssetDescription, downloadURL: c.str }))
+        ]))
+      }),
+    },
+    POST: {
+      toRequestBody: c.obj({ gameId: castGameId, [resourceName]: castPostResource }),
+      toResponseBody: c.obj({ type: c.lit('created') }),
+    },
+    PUT: {
+      toQuery: c.obj({ gameId: castGameId, [resourceIdName]: c.str }),
+      toRequestBody: c.obj({ [resourceName]: castPutResource }),
+      toResponseBody: c.obj({ type: c.lit('updated') }),
+    },
+    DELETE: {
+      toQuery: c.obj({ gameId: castGameId, [resourceIdName]: c.str }),
+      toResponseBody: c.obj({ type: c.lit('deleted') }),
+    },
+  }
+};

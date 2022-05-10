@@ -107,7 +107,7 @@ export const Room/*: Component<RoomProps>*/ = ({ client, gameData, roomState, us
     { content: h(RoomLobbyScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(0, 1) },
   ]
 
-  const screens = gameData.isGameMaster ? gameMasterScreens : playerScreens
+  const screens = gameMasterScreens;//gameData.isGameMaster ? gameMasterScreens : playerScreens
 
   const ref = useRef();
   const track = useKeyboardTrack(useElementKeyboard(ref))

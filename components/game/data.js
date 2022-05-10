@@ -12,8 +12,9 @@ import type {
   Location,
   Room,
   AssetID, AssetInfo,
+  WikiDoc,
 } from "@astral-atlas/wildspace-models";
-import type { WildspaceClient } from "@astral-atlas/wildspace-client2";
+import type { WildspaceClient, WikiConnectionClient } from "@astral-atlas/wildspace-client2";
 import type { AssetDownloadURLMap } from "../asset/map";
 import type { UserID } from "@astral-atlas/sesame-models/src/user";
 import type { MagicItem } from "../../models/game/magicItem";
@@ -31,12 +32,14 @@ export type GameAssetData = {|
   tracks: $ReadOnlyArray<AudioTrack>,
   locations: $ReadOnlyArray<Location>,
   magicItems: $ReadOnlyArray<MagicItem>,
+  wikiDocs: $ReadOnlyArray<WikiDoc>,
   scenes: {
     exposition: $ReadOnlyArray<ExpositionScene>,
   },
   assets: AssetDownloadURLMap
 |}
 */
+import { useConnection } from "../utils/connect";
 
 const emptyGameData = {
   rooms: [],
@@ -45,6 +48,7 @@ const emptyGameData = {
   tracks: [],
   locations: [],
   magicItems: [],
+  wikiDocs: [],
   scenes: {
     exposition: []
   },
@@ -96,6 +100,10 @@ export const useGameData = (
     client.game.magicItem.list(game.id)
       .then(magicItems => updateData({ magicItems }))
   }, [times.magicItems])
+  useEffect(() => {
+    client.game.wiki.read(game.id)
+      .then(wikiDocs => updateData({ wikiDocs }))
+  }, [times.wikiDoc])
 
   const memoData = useMemo(() => ({
     ...data,
@@ -106,3 +114,45 @@ export const useGameData = (
 
   return memoData;
 }
+
+export const useGameConnection = (
+  api/*: WildspaceClient*/,
+  gameId/*: GameID*/,
+)/*: [GameUpdateTimes, ?WikiConnectionClient]*/ => {
+  const [updateTimes, setUpdateTimes] = useState/*:: <GameUpdateTimes>*/({
+    rooms: 0,
+    players: 0,
+    tracks: 0,
+    playlists: 0,
+    scenes: 0,
+    locations: 0,
+    magicItems: 0,
+    wikiDoc: 0,
+  });
+  const [wiki, setWiki] = useState();
+
+  useConnection(async () => {
+    const { close, wiki } = await api.game.connectUpdates(gameId, update => {
+      switch (update.type) {
+        case 'rooms':
+          return setUpdateTimes(t => ({ ...t, rooms: Date.now() }))
+        case 'players':
+          return setUpdateTimes(t => ({ ...t, players: Date.now() }))
+        case 'tracks':
+          return setUpdateTimes(t => ({ ...t, tracks: Date.now() }))
+        case 'playlists':
+          return setUpdateTimes(t => ({ ...t, playlists: Date.now() }))
+        case 'scenes':
+          return setUpdateTimes(t => ({ ...t, scenes: Date.now() }))
+        case 'locations':
+          return setUpdateTimes(t => ({ ...t, locations: Date.now() }))
+        case 'magicItem':
+          return setUpdateTimes(t => ({ ...t, magicItems: Date.now() }))
+      }
+    })
+    setWiki(wiki);
+    return close;
+  }, [gameId])
+  
+  return [updateTimes, wiki];
+};

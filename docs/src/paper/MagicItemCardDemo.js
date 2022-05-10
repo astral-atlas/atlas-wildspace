@@ -10,6 +10,7 @@ import { h } from "@lukekaalim/act";
 export const MagicItemCardDemo/*: Component<>*/ = () => {
   const magicItem = {
     id: '0',
+    visibility: { type: 'players-in-game' },
     title: 'the black hand',
     type: 'gauntlet',
     description: `

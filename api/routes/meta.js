@@ -12,6 +12,11 @@ import type { WebSocket } from "ws";
 import type { AuthorizedConnection } from '@astral-atlas/wildspace-models'
 import type { LinkGrant } from "@astral-atlas/sesame-models";
 
+import type {
+  AdvancedGameCRUDAPI,
+  AdvancedGameCRUDAPIDescription,
+  GameUpdate,
+} from "@astral-atlas/wildspace-models";
 */
 
 /*:: import type { Identity } from "../services/auth.js"; */
@@ -31,12 +36,20 @@ export const defaultOptions/*: {| access?: AccessOptions, cache?: CacheOptions |
 };
 
 /*::
+export type Awaitable<T> =
+  | T
+  | Promise<T>
+
+export type GameResourceRequest<T: ResourceMethod<>> = {
+  ...ResourceRequest<T['query'], T['request']>,
+  game: Game,
+  identity: Identity
+}
+
 export type AuthorizedResourceMethod <T: ResourceMethod<>> = {
   scope: GameIdentityScope,
   getGameId: ResourceRequest<T['query'], T['request']> => GameID,
-  handler: (
-    request: { ...ResourceRequest<T['query'], T['request']>, game: Game, identity: Identity }
-  ) => 
+  handler: (request: GameResourceRequest<T>) => 
     | ResourceResponse<T['response']>
     | Promise<ResourceResponse<T['response']>>
 };
@@ -55,12 +68,14 @@ export type AuthorizedImplementation<T> = {|
 export type AuthorizedResourceConstructor = <T: Resource>(description: ResourceDescription<T>, implementation: AuthorizedImplementation<T>) => Route[];
 
 
+export type RoomResourceRequest<T: ResourceMethod<>> = {
+  ...GameResourceRequest<T>,
+  room: Room
+}
 export type RoomMethod<T: ResourceMethod<>> = {
   ...AuthorizedResourceMethod<T>,
   getRoomId: ResourceRequest<T['query'], T['request']> => RoomID,
-  handler: (
-    request: { ...ResourceRequest<T['query'], T['request']>, game: Game, room: Room, identity: Identity }
-  ) => 
+  handler: (request: RoomResourceRequest<T>) => 
     | ResourceResponse<T['response']>
     | Promise<ResourceResponse<T['response']>>
 }
@@ -216,3 +231,89 @@ export const createMetaRoutes = (services/*: Services*/)/*: MetaRoutes*/ => {
 
   return { createAuthorizedResource, createRoomResource, createGameConnection }
 };
+
+/*::
+export type GameCRUDResourceRequest<T: AdvancedGameCRUDAPIDescription, M> = {
+  ...GameResourceRequest<AdvancedGameCRUDAPI<T>[M]>,
+  grant: LinkGrant,
+}
+export type GameCRUDResourceImplementation<T: AdvancedGameCRUDAPIDescription> = {
+  name: T["resourceName"],
+  idName: T["resourceIdName"],
+
+  create: (request: GameCRUDResourceRequest<T, "POST">, input: T["resourcePostInput"]) => Awaitable<T["resource"]>,
+  read:   (request: GameCRUDResourceRequest<T, "GET">) => Awaitable<T["resource"][]>,
+  update: (request: GameCRUDResourceRequest<T, "PUT">, id: T["resourceId"], input: T["resourcePutInput"]) => Awaitable<T["resource"]>,
+  destroy: (request: GameCRUDResourceRequest<T, "DELETE">, id: T["resourceId"]) => Awaitable<void>,
+
+  gameUpdateType?: GameUpdate["type"],
+}
+
+export type CRUDConstructors = {
+  createGameCRUDRoutes: <T: AdvancedGameCRUDAPIDescription>(
+    resource: ResourceDescription<AdvancedGameCRUDAPI<T>>,
+    implementation: GameCRUDResourceImplementation<T>
+  ) => Route[],
+}
+*/
+
+export const createCRUDConstructors = (services/*: Services*/)/*: CRUDConstructors*/ => {
+  const { createAuthorizedResource } = createMetaRoutes(services);
+
+  const createGameCRUDRoutes = /*:: <T: AdvancedGameCRUDAPIDescription>*/(
+    resource/*: ResourceDescription<AdvancedGameCRUDAPI<T>>*/,
+    implementation/*: GameCRUDResourceImplementation<T>*/,
+  ) => {
+    return createAuthorizedResource(resource, {
+      GET: {
+        scope: { type: 'player-in-game' },
+        getGameId: r => r.query.gameId,
+        async handler(request) {
+          if (request.identity.type === 'guest')
+            return { status: HTTP_STATUS.unauthorized };
+          const { grant } = request.identity;
+          const resources = await implementation.read({ ...request, grant });
+
+          return { status: HTTP_STATUS.ok, body: { type: 'found', [implementation.name]: resources, relatedAssets: [] } }
+        }
+      },
+      POST: {
+        scope: { type: 'game-master-in-game' },
+        getGameId: r => r.body.gameId,
+        async handler(request) {
+          if (request.identity.type === 'guest')
+            return { status: HTTP_STATUS.unauthorized };
+          const { grant } = request.identity;
+          console.log(request.body);
+          const resource = await implementation.create({ ...request, grant }, request.body[implementation.name] );
+
+          if (implementation.gameUpdateType)
+            services.data.gameUpdates.publish(request.game.id, { type: implementation.gameUpdateType });
+
+          return { status: HTTP_STATUS.ok, body: { type: 'created', [implementation.name]: resource } }
+        }
+      },
+      PUT: {
+        scope: { type: 'game-master-in-game' },
+        getGameId: r => r.query.gameId,
+        async handler(request) {
+          if (request.identity.type === 'guest')
+            return { status: HTTP_STATUS.unauthorized };
+          const { grant } = request.identity;
+          const resourceId = request.query[implementation.idName];
+          const resourceInput = request.body[implementation.name];
+          const resource = await implementation.update({ ...request, grant }, resourceId, resourceInput);
+          
+          if (implementation.gameUpdateType)
+            services.data.gameUpdates.publish(request.game.id, { type: implementation.gameUpdateType });
+
+          return { status: HTTP_STATUS.ok, body: { type: 'updated', [implementation.name]: resource } }
+        }
+      },
+    })
+  }
+
+  return {
+    createGameCRUDRoutes,
+  }
+}

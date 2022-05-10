@@ -23,6 +23,7 @@ import { encodeProofToken } from "@astral-atlas/sesame-models";
 /*::
 export type HTTPServiceClient = {
   createResource: <T: Resource>(desc: ResourceDescription<T>) => ResourceClient<T>,
+  proof: ?LinkProof,
   httpOrigin: string,
   httpClient: HTTPClient,
 };
@@ -38,7 +39,7 @@ export const createHTTPServiceJSONClient = (httpOrigin/*: string*/, httpClient/*
   const createResource = /*:: <T: Resource>*/(desc/*: ResourceDescription<T>*/)/*: ResourceClient<T>*/ => {
     return createJSONResourceClient(desc, authorizedClient, httpOrigin);
   };
-  return { createResource, httpClient: authorizedClient, httpOrigin };
+  return { createResource, httpClient: authorizedClient, httpOrigin, proof };
 }
 export const createWSServiceJSONClient  = (
   wsOrigin/*: string*/,

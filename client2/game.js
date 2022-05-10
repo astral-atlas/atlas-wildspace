@@ -15,13 +15,15 @@ import { createPlayersClient } from './game/players.js';
 import { createEncounterClient } from './game/encounter.js';
 import { createSceneClient } from './game/scene.js';
 import { createLocationClient } from "./game/locations.js";
-import { useEffect } from "@lukekaalim/act";
 import { createMagicItemClient } from "./game/magicItem.js";
+import { createWikiConnectionManager, createWikidocClient } from "./game/wiki.js";
 
 /*::
+import type { WikiDocID, WikiDocEvent, WikiDocAction } from '@astral-atlas/wildspace-models';
 import type { SceneClient } from "./game/scene";
 import type { LocationClient } from "./game/locations";
 import type { MagicItemClient } from "./game/magicItem";
+import type { WikiConnectionClient, WikidocClient } from "./game/wiki";
 
 export type GameClient = {
   read: (gameId: GameID) => Promise<Game>,
@@ -32,7 +34,7 @@ export type GameClient = {
   connectUpdates: (
     gameId: GameID,
     onUpdate: (state: GameUpdate) => mixed
-  ) => { socket: Promise<WebSocket>, close: () => Promise<void> },
+  ) => Promise<{ wiki: WikiConnectionClient, socket: WebSocket, close: () => void }>,
 
   character: CharacterClient,
   players: PlayersClient,
@@ -40,13 +42,16 @@ export type GameClient = {
   scene: SceneClient,
   location: LocationClient,
   magicItem: MagicItemClient,
+  wiki: WikidocClient,
 };
+
+export * from './game/wiki';
 */
 
 export const createGameClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceClient*/)/*: GameClient*/ => {
   const gameResource = http.createResource(gameAPI['/games']);
   const allGamesResource = http.createResource(gameAPI['/games/all']);
-  const updates = ws.createConnection(gameAPI['/games/updates']);
+  const updates = ws.createAuthorizedConnection(gameAPI['/games/updates']);
 
   const read = async (gameId) => {
     const { body: { game } } = await gameResource.GET({ query: { gameId }});
@@ -63,21 +68,29 @@ export const createGameClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceCli
   const update = async (gameId, { name = null, }) => {
     await gameResource.PUT({ query: { gameId },  body: { name }});
   }
-  const connectUpdates = (gameId, onUpdate) => {
+  const connectUpdates = async (gameId, onUpdate) => {
+
     const recieve = (event) => {
       if (event.type === 'heartbeat')
         return;
-      onUpdate(event.update);
+      switch (event.type) {
+        case 'heartbeat':
+          return;
+        case 'wiki':
+          return wikiManager.recieve(event.event);
+        case 'updated':
+          return onUpdate(event.update);
+      }
     };
-    const connectionPromise = updates.connect({ query: { gameId }, recieve });
+    const wikiManager = createWikiConnectionManager(action => connection.send({ type: 'wiki', action }));
+    const connection = await updates.connect({ query: { gameId }, recieve: e => void recieve(e) });
 
-    const close = async () => {
-      const { close } = await connectionPromise;
-      close();
+
+    const close = () => {
+      connection.close()
     };
-    const socket = connectionPromise.then(c => c.socket);
 
-    return { close, socket };
+    return { close, socket: connection.socket, wiki: wikiManager.client };
   }
 
   return {
@@ -92,6 +105,7 @@ export const createGameClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceCli
     encounter: createEncounterClient(http),
     scene: createSceneClient(http),
     location: createLocationClient(http),
-    magicItem: createMagicItemClient(http)
+    magicItem: createMagicItemClient(http),
+    wiki: createWikidocClient(http),
   };
 }

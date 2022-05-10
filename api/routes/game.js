@@ -12,14 +12,17 @@ import { createCharacterRoutes } from './game/characters.js';
 import { createPlayersRoutes } from './game/players.js';
 
 import { gameAPI } from '@astral-atlas/wildspace-models'; 
-import { defaultOptions } from './meta.js';
+import { createMetaRoutes, defaultOptions } from './meta.js';
 import { createEncounterRoutes } from './game/encounters.js';
 import { createSceneRoutes } from './game/scene.js';
 import { createLocationsRoutes } from "./game/locations.js";
 import { createMagicItemRoutes } from './game/magicItem.js';
+import { createWikiRoutes } from "./game/wiki.js";
 
 export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute[], http: HTTPRoute[] }*/ => {
   const { data, auth, ...s } = services;
+  const { createGameConnection } = createMetaRoutes(services);
+
   const gameResourceRoutes = createJSONResourceRoutes(gameAPI['/games'], {
     ...defaultOptions,
 
@@ -61,17 +64,44 @@ export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute
       }
     }
   });
-  const gameUpdates = createJSONConnectionRoute(gameAPI['/games/updates'], ({ query: { gameId }, send }, socket) => {
-    const { unsubscribe } = data.gameUpdates.subscribe(gameId, update => {
-      send({ type: 'updated', update });
-    });
+  const gameUpdates = createGameConnection(gameAPI['/games/updates'], {
+    getGameId: r => r.gameId,
+    scope: { type: 'player-in-game' },
+    async handler({ connection: { query: { gameId }, send, addRecieveListener }, socket, identity }) {
+      const connectionId = uuid();
 
-    const interval = setInterval(() => socket.ping(Date.now()), 1000)
-    socket.addEventListener('close', () => {
-      clearInterval(interval)
-      unsubscribe()
-    });
-  });
+      const { unsubscribe } = data.gameUpdates.subscribe(gameId, update => {
+        send({ type: 'updated', update });
+      });
+  
+      const interval = setInterval(() => {
+        socket.ping(Date.now());
+        services.game.connection.heartbeat(gameId, connectionId, identity.grant.identity, Date.now())
+      }, 1000)
+  
+
+      const wikiClient = services.game.wiki.connectClient(gameId, connectionId, identity.grant, event => send({ type: 'wiki', event }))
+      const { removeListener } = addRecieveListener(m => void (async (message) => {
+        try {
+          switch (message.type) {
+            case 'wiki':
+              return await wikiClient.handleAction(message.action);
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      })(m))
+  
+      socket.addEventListener('close', () => {
+        clearInterval(interval)
+        unsubscribe()
+        removeListener();
+        wikiClient.disconnect();
+        services.game.connection.disconnect(gameId, connectionId);
+        services.game.connection.getValidConnections(gameId, Date.now());
+      });
+    }
+  })
 
   const characterRoutes = createCharacterRoutes({ ...s, auth, data });
   const playersRoutes= createPlayersRoutes({ ...s, auth, data });
@@ -79,6 +109,7 @@ export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute
   const sceneRoutes = createSceneRoutes({ ...s, auth, data });
   const locationRoutes = createLocationsRoutes({ ...s, auth, data });
   const magicItemRoutes = createMagicItemRoutes(services);
+  const wikiRoutes = createWikiRoutes(services);
   const http = [
     ...playersRoutes.http,
     ...encounterRoutes.http,
@@ -89,6 +120,7 @@ export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute
     ...sceneRoutes.http,
     ...locationRoutes.http,
     ...magicItemRoutes.http,
+    ...wikiRoutes.http,
   ];
   const ws = [
     ...characterRoutes.ws,

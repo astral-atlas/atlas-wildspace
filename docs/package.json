@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Documentation site for Wildspacew",
   "scripts": {
-    "dev": "vite --port 5568",
+    "dev": "vite --port 5568 --force",
     "build": "vite build",
     "build:github": "node add_github.js"
   },

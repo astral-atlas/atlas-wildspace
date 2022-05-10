@@ -1,4 +1,10 @@
 // @flow strict
+/*::
+import type { Component } from "@lukekaalim/act";
+import type { WildspaceClient } from "@astral-atlas/wildspace-client2";
+import type { GameID } from "@astral-atlas/wildspace-models";
+import type { GameData } from "../../game/data";
+*/
 
 import { h, useState } from "@lukekaalim/act"
 import { TracksLibrary } from "./audioTrack.js"
@@ -9,13 +15,9 @@ import { LocationLibrary } from "./LocationLibrary.js";
 import { AudioPlaylistLibrary } from "./audioPlaylist.js";
 import { RoomLibrary } from "./RoomLibrary.js";
 import { MagicItemLibrary } from "./MagicItemLibrary.js";
+import { WikiLibrary } from "./WikiLibrary";
 
 /*::
-import type { Component } from "@lukekaalim/act";
-import type { WildspaceClient } from "@astral-atlas/wildspace-client2";
-import type { GameID } from "@astral-atlas/wildspace-models";
-import type { GameData } from "../../game/data";
-
 export type AssetLibraryProps = {
   gameId: GameID,
   data: GameData,
@@ -29,6 +31,7 @@ export type AssetLibraryMode =
   | 'location'
   | 'room'
   | 'magicItem'
+  | 'wikiDoc'
   | 'none'
 */
 
@@ -72,6 +75,7 @@ const AssetLibraryModeInput = ({ mode, onModeSet }) => {
     h(AssetLibraryModeInputButton, { currentMode: mode, mode: 'playlist', onModeSet }),
     h(AssetLibraryModeInputButton, { currentMode: mode, mode: 'room', onModeSet }),
     h(AssetLibraryModeInputButton, { currentMode: mode, mode: 'magicItem', onModeSet }),
+    h(AssetLibraryModeInputButton, { currentMode: mode, mode: 'wikiDoc', onModeSet }),
     h(AssetLibraryModeInputButton, { currentMode: mode, mode: 'none', onModeSet, classList: [styles.none] }),
   ])
 }
@@ -83,6 +87,8 @@ const AssetLibrarySubLibrary = ({ mode, data, client, gameId }) => {
       return h(SceneLibrary, { assets: data.assets, data, client, gameId });
     case 'room':
       return h(RoomLibrary, { gameData: data, client });
+    case 'wikiDoc':
+      return h(WikiLibrary, { gameData: data, client });
     case 'magicItem':
       return h(MagicItemLibrary, { assets: data.assets, data, client, gameId });
     case 'track':
