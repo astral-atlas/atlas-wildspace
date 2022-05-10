@@ -19,6 +19,7 @@ import { createBufferWildspaceGameData } from '../../game.js';
 import { createBufferWildspaceRoomData, createTableWildspaceRoomData } from "../../room.js";
 import { createMemoryBufferStore } from '../../sources/buffer.js';
 import { createTableWildspaceGameData } from "../../game.js";
+import { createTableWikiData } from './wiki.js';
 
 /*::
 export type TableDataConstructors = {
@@ -46,6 +47,7 @@ export const createTableWildspaceData = (constructors/*: TableDataConstructors*/
 
   const gameData = createTableWildspaceGameData(constructors);
   const roomData = createTableWildspaceRoomData(constructors);
+  const wiki =     createTableWikiData(constructors);
 
   const room =          constructors.createCompositeTable('room', m.castRoom);
   const roomAudio =     constructors.createCompositeTable('roomAudio', m.castRoomAudioState);
@@ -78,5 +80,6 @@ export const createTableWildspaceData = (constructors/*: TableDataConstructors*/
 
     playlists,
     tracks,
+    wiki,
   };
 }

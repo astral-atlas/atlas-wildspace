@@ -37,6 +37,10 @@ export const createBufferWildspaceData = ({ createBufferStore, createBufferDB }/
 
   const gameData = createBufferWildspaceGameData({ createBufferStore });
   const roomData = createBufferWildspaceRoomData({ createBufferStore });
+  const wiki = {
+    documents: createBufferCompositeTable(createBufferStore('wiki_documents'), m.castWikiDoc),
+    documentUpdates: createMemoryChannel(),
+  };
 
   const characters = createBufferCompositeTable(createBufferStore('characters'), m.castCharacter);
   const encounters = createBufferCompositeTable(createBufferStore('encounters'), m.castEncounter);
@@ -63,6 +67,7 @@ export const createBufferWildspaceData = ({ createBufferStore, createBufferDB }/
 
     gameData,
     roomData,
+    wiki,
 
     characters,
     encounters,

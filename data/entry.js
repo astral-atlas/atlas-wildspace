@@ -21,6 +21,8 @@ import type {
 
 import type { WildspaceGameData } from "./game";
 import type { WildspaceRoomData } from "./room";
+import type { WikiData } from "./wiki.js";
+
 */
 import { join, resolve } from 'path';
 import { S3 } from "@aws-sdk/client-s3";
@@ -57,6 +59,8 @@ export type WildspaceData = {
 
   gameData: WildspaceGameData,
   roomData: WildspaceRoomData,
+
+  wiki: WikiData,
 
   room: CompositeTable<GameID, RoomID, Room>,
   roomAudio: CompositeTable<GameID, RoomID, RoomAudioState>,
