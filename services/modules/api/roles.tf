@@ -50,6 +50,7 @@ data "aws_iam_policy_document" "api_role_policy" {
     actions = [
       "dynamodb:GetItem",
       "dynamodb:PutItem",
+      "dynamodb:DeleteItem",
       "dynamodb:Query",
       "dynamodb:Scan"
     ]
