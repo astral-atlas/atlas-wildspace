@@ -112,6 +112,8 @@ const SceneEditor = ({ client, selected, data, onExpositionSceneChange, onExposi
   }
   const onDescriptionTypeChange = (type) => {
     switch (type) {
+      case 'none':
+        return onExpositionSceneChange({ ...editingExposition, description: { type: 'none' }})
       case 'inherit':
         return onExpositionSceneChange({ ...editingExposition, description: { type: 'inherit' } });
       case 'plaintext':
@@ -144,7 +146,7 @@ const SceneEditor = ({ client, selected, data, onExpositionSceneChange, onExposi
 
       h(SelectEditor, {
         label: 'description type',
-        values: [{ value: 'inherit' }, { value: 'plaintext' }], 
+        values: [{ value: 'inherit' }, { value: 'plaintext' }, { value: 'none' }], 
         selected: editingExposition.description.type,
         onSelectedChange: type => onDescriptionTypeChange(type)
       }),

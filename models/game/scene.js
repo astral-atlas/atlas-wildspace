@@ -29,6 +29,7 @@ export type ExpositionScene = {
 
   description:
     | {| type: 'inherit' |}
+    | {| type: 'none' |}
     | {| type: 'plaintext', plaintext: string |},
 
   tags: $ReadOnlyArray<string>,
@@ -56,6 +57,7 @@ export const castExpositionScene/*: Cast<ExpositionScene>*/ = c.obj({
     'location': c.obj({ type: (c.lit('location')/*: Cast<'location'>*/), location: castLocationId }),
   }),
   description: c.or('type', {
+    'none':     c.obj({ type: c.lit('none') }),
     'plaintext': c.obj({ type: c.lit('plaintext'), plaintext: c.str }),
     'inherit': c.obj({ type: c.lit('inherit') })
   }),

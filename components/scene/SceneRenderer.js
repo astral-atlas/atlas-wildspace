@@ -37,6 +37,8 @@ const getContentForScene = (scene, npcs, locations) => {
       return getContentForSubject(scene.subject, npcs, locations)
     case 'plaintext':
       return scene.description;
+    case 'none':
+      return null;
   }
 }
 
