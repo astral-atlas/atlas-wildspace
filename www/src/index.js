@@ -39,7 +39,7 @@ export const Wildspace/*: Component<{}>*/ = () => {
   if (!config)
     return 'Loading';
 
-  const api = createWildspaceClient(identity && identity.proof, config.api.wildspace.httpOrigin, config.api.wildspace.wsOrigin);
+  const api = createWildspaceClient({ userId: '100' }, config.api.wildspace.httpOrigin, config.api.wildspace.wsOrigin);
 
   return [
     h(configContext.Provider, { value: config },

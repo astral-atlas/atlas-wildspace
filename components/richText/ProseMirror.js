@@ -14,7 +14,7 @@ import 'prosemirror-view/style/prosemirror.css';
 import 'prosemirror-menu/style/menu.css';
 import 'prosemirror-example-setup/style/style.css';
 
-export const prosePlugins/*: Plugin<any>[]*/ = [
+export const prosePlugins/*: Plugin<any, any>[]*/ = [
   ...exampleSetup({ schema })
 ];
 
@@ -73,5 +73,5 @@ export const ProseMirror/*: Component<ProseMirrorProps>*/ = ({
     })
   }, [view, dispatchTransaction, decorations]);
 
-  return h('div', { ref })
+  return h('div', { ref, style: { flex: 1 } })
 }

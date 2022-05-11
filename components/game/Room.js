@@ -25,6 +25,7 @@ import { EditorForm, SelectEditor } from "../editor/form";
 import styles from './Room.module.css';
 import { RoomAudioPlayer } from "../audio";
 import { AudioStateEditor } from "./audio.js";
+import { Wiki } from "./Wiki.js";
 
 
 /*::
@@ -80,6 +81,9 @@ const RoomManagerScreen = ({ client, gameData, roomState, roomId, gameId }) => {
     ]),
   ])
 }
+const RoomWikiScreen = ({ client, gameData }) => {
+  return h(Wiki, { api: client, docs: gameData.wikiDocs, gameId: gameData.game.id, userId: gameData.userId })
+}
 
 /*::
 export type RoomProps = {
@@ -100,14 +104,17 @@ export const Room/*: Component<RoomProps>*/ = ({ client, gameData, roomState, us
     { content: h(RoomSceneScreen, { scene, gameData }), icon: null, position: new Vector2(0, 0) },
     { content: h(RoomAssetLibraryScreen, { client, gameData, gameId }), icon: null, position: new Vector2(-1, 1) },
     { content: h(RoomLobbyScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(0, 1) },
-    { content: h(RoomManagerScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(-1, -1) }
+    { content: h(RoomManagerScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(-1, -1) },
+    { content: h(RoomWikiScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(1, 0) },
   ];
   const playerScreens = [
     { content: h(RoomSceneScreen, { scene, gameData }), icon: null, position: new Vector2(0, 0) },
     { content: h(RoomLobbyScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(0, 1) },
+    { content: h(RoomWikiScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(1, 0) },
   ]
+  console.log(gameData);
 
-  const screens = gameMasterScreens;//gameData.isGameMaster ? gameMasterScreens : playerScreens
+  const screens = gameData.isGameMaster ? gameMasterScreens : playerScreens
 
   const ref = useRef();
   const track = useKeyboardTrack(useElementKeyboard(ref))

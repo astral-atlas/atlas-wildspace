@@ -182,9 +182,9 @@ export const HomePage/*: Component<{ nav: Navigation }>*/ = ({ nav }) => {
         flex: 1, flexBasis: 0, display: 'flex', flexDirection: 'column',
         justifyContent: 'center',
         position: 'relative'
-      } },
-        h('h1', { ref: titleRef, classList: [styles.wildspaceTitle] }, 'WildSpace')
-      ),
+      } }, [
+        h('h1', { ref: titleRef, classList: [styles.wildspaceTitle] }, 'WildSpace'),
+      ]),
       h('div', { style: {
         position: 'absolute',
         right: '24px',

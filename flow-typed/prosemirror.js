@@ -3,7 +3,6 @@
 /*::
 declare module "prosemirror-state" {
   import type { Schema } from "prosemirror-model";
-  import type { Transaction } from "prosemirror-transform";
   import type { EditorView } from "prosemirror-view";
 
   declare export class EditorState<TNodes, TMarks> {
@@ -14,7 +13,7 @@ declare module "prosemirror-state" {
     selection: any;
     tr: Transaction;
   }
-  declare export class Plugin<T> {
+  declare export class Plugin<T, M> {
     constructor<T>({
       state?: {
         init: () => T,
@@ -23,8 +22,14 @@ declare module "prosemirror-state" {
       view?: (view: EditorView) => {
         update: (view: EditorView, prev: EditorState<any, any>) => void,
         destroy: () => void,
-      }
-    }): Plugin<T>
+      },
+    }): Plugin<T, M>;
+    getState(state: EditorState<any, any>): T;
+  }
+  declare export class Transaction {
+    selection: any;
+    setMeta: <M>(Plugin<any, M>, M) => void;
+    getMeta: <M>(Plugin<any, M>) => M;
   }
 }
 
@@ -36,18 +41,18 @@ declare module "prosemirror-view" {
     destroy(): void;
     hasFocus(): boolean;
     setProps(props: mixed): void;
-    state: EditorState;
+    updateState(state: EditorState<any, any>): void;
+    domAtPos(number, number): { offset: number, node: HTMLElement };
+    state: EditorState<any, any>;
   }
 }
 declare module "prosemirror-transform" {
   import type { Schema, Node } from "prosemirror-model";
+  import type { Plugin } from "prosemirror-state";
 
   declare export class Step {
     static fromJSON(schema: Schema<any>, input: mixed): Step;
     apply(node: Node): { doc: Node },
-  }
-  declare export class Transaction {
-    selection: any,
   }
 }
 

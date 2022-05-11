@@ -37,7 +37,7 @@ const createFakeAuthService = (config/*: FakeAuthConfig*/)/*: AuthService*/ => {
   };
   const sdk = {
     validateHeader: async () => { throw new Error() },
-    validateProof: async () => { throw new Error() },
+    validateProof: async () => grant,
     getUser: async () => config.user,
   };
   return {

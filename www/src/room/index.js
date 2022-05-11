@@ -28,7 +28,7 @@ export const RoomPage/*: Component<>*/ = () => {
     return 'Loading (Game)'
   
   const times = useGameUpdateTimes(client.game, gameId);
-  const gameData = useGameData(game, identity.proof.userId, times, client);
+  const gameData = useGameData(game, "100", times, client);
   const roomState = useRoomState(gameId, roomId, client);
 
   if (!gameData)
