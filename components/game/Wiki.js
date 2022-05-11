@@ -36,10 +36,10 @@ export const Wiki/*: Component<WikiProps>*/ = ({
   return h('div', { className: styles.wiki }, [
     h('div', { className: styles.wikiContent }, [
       h('div', { className: styles.wikiControls }, [
-        h('select', { onInput: e => setActiveDoc(e.target.value) }, [
+        h('select', { onInput: e => setActiveDoc(e.target.value || null) }, [
           docs.map(doc =>
             h('option', { value: doc.id, selected: doc.id === activeDoc }, doc.title)),
-          h('option', { value: null, selected: activeDoc === null }, 'None')
+          h('option', { value: '', selected: activeDoc === null }, 'None')
         ]),
       ]),
       activeDoc && h(ProseMirror, { state, dispatchTransaction })
