@@ -34,24 +34,24 @@ export const createWikiService = (data/*: WildspaceData*/, connection/*: GameCon
       if (!doc)
         return;
 
+      if (!docStates.has(doc.id)) {
+        const { unsubscribe } = data.wiki.documentEvents.subscribe(doc.id, onWikiEvent)
+        docStates.set(doc.id, { unsubscribe });
+      }
       const { result: focus } = await data.wiki.documentFocus.query(docId);
       const connections = await connection.getValidConnections(gameId, Date.now());
-      const { unsubscribe } = data.wiki.documentEvents.subscribe(doc.id, onWikiEvent)
-      docStates.set(doc.id, { unsubscribe });
       onWikiEvent({ type: 'load', focus: focus.filter(f => connections.find(c => c.id === f.connectionId)), doc })
     };
     const closeDoc = async (docId) => {
       const docState = docStates.get(docId);
       if (!docState)
         return;
+      docStates.delete(docId);
       docState.unsubscribe();
     };
 
 
     const update = async (docId, version, steps, clientId) => {
-      if (!docStates.has(docId))
-        return;
-      
       const { result: doc } = await data.wiki.documents.get(gameId, docId);
       if (!doc)
         return;
@@ -86,6 +86,8 @@ export const createWikiService = (data/*: WildspaceData*/, connection/*: GameCon
           return focus(action.docId, action.focus)
         case 'open':
           return openDoc(action.docId);
+        case 'close':
+          return closeDoc(action.docId);
         case 'update':
           return update(action.docId, action.version, action.steps, action.clientId);
     }

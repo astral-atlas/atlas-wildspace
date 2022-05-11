@@ -19,7 +19,7 @@ export type WikiConnectionManager = {
   client: WikiConnectionClient,
 };
 export type WikiConnection = {
-  update: (steps: mixed[], clientId: number) => void,
+  update: (steps: mixed[], clientId: number, version: number) => void,
   focus: (from: number, to: number) => void,
   disconnect: () => void,
 }
@@ -93,11 +93,8 @@ export const createWikiConnectionManager = (
     docConnection.loadSubscribers.add(onDocLoad);
     docConnection.focusSubscribers.add(onFocusUpdate);
 
-    const update = (steps, clientId) => {
-      const d = docConnections.get(docId);
-      if (!d || !d.doc)
-        return;
-      send({ type: 'update', docId, version: d.doc.version, steps, clientId })
+    const update = (steps, clientId, version) => {
+      send({ type: 'update', docId, version, steps, clientId })
     };
     const focus = (from, to) => {
       send({ type: 'focus', docId, focus: { from, to }})
@@ -106,8 +103,10 @@ export const createWikiConnectionManager = (
       docConnection.subscribers.delete(onDocUpdate);
       docConnection.focusSubscribers.delete(onFocusUpdate);
       docConnection.loadSubscribers.delete(onDocLoad);
-      if (docConnection.subscribers.size === 0)
+      if (docConnection.subscribers.size === 0) {
+        send({ type: 'close', docId });
         docConnections.delete(docId);
+      }
     }
 
     const connection = {

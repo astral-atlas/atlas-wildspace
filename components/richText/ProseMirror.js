@@ -1,8 +1,8 @@
 // @flow strict
 /*::
-import type { Component, SetValue } from "@lukekaalim/act";
+import type { Component, SetValue, Ref } from "@lukekaalim/act";
 import type {  } from "@astral-atlas/wildspace-models";
-import type { Plugin } from 'prosemirror-state'; 
+import type { Plugin, Transaction } from "prosemirror-state"; 
 */
 import { EditorView } from 'prosemirror-view'; 
 import { EditorState } from 'prosemirror-state'; 
@@ -31,6 +31,37 @@ export const useProseMirrorEditorState = (
 
   return useMemo(() => [state, dispatchTransaction, setState], [state]);
 }
+
+export const useProseMirrorView = (
+  ref/*: Ref<?HTMLElement>*/,
+  initialState/*: EditorState<any, any>*/,
+  deps/*: mixed[]*/ = [],
+)/*: ?EditorView*/ => {
+  const [view, setView] = useState/*:: <?EditorView>*/()
+  useEffect(() => {
+    const { current: container } = ref;
+    if (!container)
+      return;
+    const view = new EditorView(container, { state: initialState });
+    setView(view);
+    return () => (view.destroy(), setView(null));
+  }, deps)
+
+  return view;
+}
+export const useProseMirrorProps = (
+  view/*: ?EditorView*/,
+  props/*: {
+    dispatchTransaction?: Transaction => mixed,
+  }*/ = {}, 
+  deps/*: mixed[]*/ = []
+) => {
+  useEffect(() => {
+    if (!view)
+      return;
+    view.setProps(props);
+  }, [view, ...deps])
+};
 
 /*::
 export type ProseMirrorProps = {

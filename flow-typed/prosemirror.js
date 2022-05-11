@@ -37,11 +37,12 @@ declare module "prosemirror-view" {
   import type { EditorState } from "prosemirror-state";
 
   declare export class EditorView {
-    constructor(target: Element, { state: EditorState<any, any> }): EditorView;
+    constructor(target: Element, props?: { state: EditorState<any, any> }): EditorView;
     destroy(): void;
     hasFocus(): boolean;
     setProps(props: mixed): void;
     updateState(state: EditorState<any, any>): void;
+    dispatch(state: EditorState<any, any>): void;
     domAtPos(number, number): { offset: number, node: HTMLElement };
     state: EditorState<any, any>;
   }

@@ -1,7 +1,10 @@
 // @flow strict
 /*::
 import type { WikiConnection, WikiConnectionClient, WildspaceClient } from '@astral-atlas/wildspace-client2';
-import type { WikiDocID } from "@astral-atlas/wildspace-models";
+import type {
+  WikiDoc, WikiDocID,
+  WikiDocUpdate, WikiDocFocus
+} from "@astral-atlas/wildspace-models";
 import type { UserID } from "@astral-atlas/sesame-models";
 
 import type { GameData } from "../game/data";
@@ -16,6 +19,31 @@ import { proseSchema } from '@astral-atlas/wildspace-models';
 import { prosePlugins } from "./ProseMirror";
 import { useGameConnection } from '../game';
 import { createFocusDecorationPlugin } from './focusDecorationPlugin';
+
+export const useWikiDocConnection = (
+  wiki/*: ?WikiConnectionClient*/,
+  docId/*: ?WikiDocID*/,
+
+  onLoad/*: WikiDoc => mixed*/,
+  onUpdate/*: WikiDocUpdate => mixed*/,
+  onFocus/*: $ReadOnlyArray<WikiDocFocus> => mixed*/,
+
+  deps/*: mixed[]*/ = []
+)/*: ?WikiConnection*/ => {
+  const [connection, setConnection] = useState/*:: <?WikiConnection>*/();
+  
+  useEffect(() => {
+    if (!wiki || !docId)
+      return;
+    const connection = wiki.connect(docId, onLoad, onUpdate, onFocus);
+    setConnection(connection);
+    return () => {
+      connection.disconnect();
+    }
+  }, [docId, wiki, ...deps]);
+
+  return connection;
+};
 
 export const useCollaboratedEditorState = (
   wiki/*: ?WikiConnectionClient*/,

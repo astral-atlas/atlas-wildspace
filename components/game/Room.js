@@ -112,7 +112,6 @@ export const Room/*: Component<RoomProps>*/ = ({ client, gameData, roomState, us
     { content: h(RoomLobbyScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(0, 1) },
     { content: h(RoomWikiScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(1, 0) },
   ]
-  console.log(gameData);
 
   const screens = gameData.isGameMaster ? gameMasterScreens : playerScreens
 

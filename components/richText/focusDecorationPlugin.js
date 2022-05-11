@@ -17,18 +17,20 @@ export type FocusDecorationMeta = $ReadOnlyArray<WikiDocFocus>
 
 export const createFocusDecorationPlugin = (
   onFocusChange/*: (from: number, to: number) => mixed*/, 
-  userId/*: UserID*/
+  userId/*: UserID*/,
+  key/*: PluginKey*/ = null,
 )/*: Plugin<FocusDecorationState, FocusDecorationMeta>*/ => {
 
   const plugin = new Plugin/*:: <FocusDecorationState, FocusDecorationMeta>*/({
+    key,
     state: {
       init() {
         return { focus: [], to: 0, from: 0 }
       },
-      apply(tr, pluginState, prev) {
-        const from = tr.selection.from;
-        const to = tr.selection.to;
-        if (pluginState.from !== from || pluginState.to !== to) {
+      apply(tr, pluginState, prev, next) {
+        const from = next.selection.from;
+        const to = next.selection.to;
+        if (prev.selection.from !== from || prev.selection.to !== to) {
           onFocusChange(from, to);
         }
         return { focus: tr.getMeta(plugin) || pluginState.focus, to, from }
@@ -46,8 +48,8 @@ export const createFocusDecorationPlugin = (
           elements.clear();
           
           const { focus: focusList } = plugin.getState(view.state);
-          const validFocusList = focusList.filter(focus => focus.userId !== userId);
-          for (const focus of validFocusList) {
+          //const validFocusList = focusList.filter(focus => focus.userId !== userId);
+          for (const focus of focusList) {
             const { node: startNode, offset: startOffset } = view.domAtPos(focus.selection.from, +1)
             const { node: endNode, offset: endOffset } = view.domAtPos(focus.selection.to, -1)
             const range = document.createRange();

@@ -60,6 +60,9 @@ export const castWikiDocUpdate/*: Cast<WikiDocUpdate>*/ = c.obj({
 export const applyWikiDocUpdate = (doc/*: WikiDoc*/, update/*: WikiDocUpdate*/)/*: WikiDoc*/ => {
   const initialNode = Node.fromJSON(proseSchema, doc.rootNode);
 
+  if (doc.version !== update.version)
+    throw new Error(`Mismatched Version (Got ${update.version}, expected ${doc.version})`);
+
   const nextNode = update.steps
     .map(step => Step.fromJSON(proseSchema, step))
     .reduce((node, step) => {

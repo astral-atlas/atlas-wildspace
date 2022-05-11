@@ -35,7 +35,6 @@ export const createFileBufferStore = (path/*: string*/)/*: BufferStore*/ => crea
     return await readFile(path);
   },
   async set(newBuffer) {
-    console.log('write file')
     await writeFile(path, newBuffer);
   }
 });
