@@ -20,7 +20,8 @@ import { createFocusDecorationPlugin } from './focusDecorationPlugin';
 export const useCollaboratedEditorState = (
   wiki/*: ?WikiConnectionClient*/,
   doc/*: ?WikiDocID*/,
-  userId/*: UserID*/
+  userId/*: UserID*/,
+  deps/*: mixed[]*/ = []
 )/*: [EditorState<any, any>, Transaction => mixed]*/ => {
   const [connection, setConnection] = useState/*:: <?WikiConnection>*/()
   const [state, setState] = useState/*:: <EditorState<any, any>>*/(
@@ -77,7 +78,7 @@ export const useCollaboratedEditorState = (
     return () => {
       connection.disconnect();
     }
-  }, [wiki, doc])
+  }, [wiki, doc, ...deps])
 
   return [state, dispatch];
 }

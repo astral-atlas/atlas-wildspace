@@ -30,8 +30,9 @@ export const Wiki/*: Component<WikiProps>*/ = ({
   const [, wiki] = useGameConnection(api, gameId);
 
   const [activeDoc, setActiveDoc] = useState(null)
+  const [refreshTime, setRefreshTime] = useState/*:: <number>*/(() => Date.now());
 
-  const [state, dispatchTransaction] = useCollaboratedEditorState(wiki, activeDoc, userId)
+  const [state, dispatchTransaction] = useCollaboratedEditorState(wiki, activeDoc, userId, [refreshTime])
 
   return h('div', { className: styles.wiki }, [
     h('div', { className: styles.wikiContent }, [
@@ -41,6 +42,7 @@ export const Wiki/*: Component<WikiProps>*/ = ({
             h('option', { value: doc.id, selected: doc.id === activeDoc }, doc.title)),
           h('option', { value: '', selected: activeDoc === null }, 'None')
         ]),
+        h('button', { onClick: () => setRefreshTime(Date.now()) }, 'Reload')
       ]),
       activeDoc && h(ProseMirror, { state, dispatchTransaction })
     ])
