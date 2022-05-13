@@ -15,7 +15,7 @@ export type Transactable<PK, SK, V> = {|
   transaction(
     partitionKey: PK,
     sorkKey: SK,
-    updater: (input: V) => Promise<V>,
+    updater: (input: V) => V | Promise<V>,
     retries?: number
   ): Promise<{ prev: V, next: V }>,
 |}
@@ -33,12 +33,13 @@ export const createDynamoDBTrasactable = /*:: <PK: string, SK: string, V: {}>*/(
     const output = await db.getItem({ TableName: tableName, Key });
     const prevValue = castValue(readValueTypes({ M: output.Item }));
     const version = createVersionAttributes(prevValue);
-    const nextValue = await updater(prevValue);
-    const nextItem = {
-      ...writeObjectAttributes(nextValue),
-      ...Key,
-    };
     try {
+      const nextValue = await updater(prevValue);
+      const nextItem = {
+        ...writeObjectAttributes(nextValue),
+        ...Key,
+      };
+      console.log('Attempting Transaction', version.value);
       await db.putItem({
         Item: nextItem,
         TableName: tableName,
@@ -46,12 +47,13 @@ export const createDynamoDBTrasactable = /*:: <PK: string, SK: string, V: {}>*/(
         ExpressionAttributeNames: { '#v': version.key },
         ExpressionAttributeValues: { ':v': writeValueTypes(version.value) }
       });
+      return { prev: prevValue, next: nextValue };
     } catch (error) {
+      console.error(error);
       if (retries < 1)
         throw error;
       return transaction(partitionKey, sortKey, updater, retries - 1);
     }
-    return { prev: prevValue, next: nextValue };
   }
   return {
     transaction,

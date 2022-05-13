@@ -68,6 +68,7 @@ export const Wiki/*: Component<WikiProps>*/ = ({
       return;
     const steps = update.steps.map(s => Step.fromJSON(proseSchema, s));
     const transaction = receiveTransaction(view.state, steps, steps.map(s => update.clientId));
+    console.log('Recieved transaction!, dispatching');
     view.dispatch(transaction);
   };
   const onFocus = (focus) => {
@@ -80,10 +81,13 @@ export const Wiki/*: Component<WikiProps>*/ = ({
   const dispatchTransaction = (transaction) => {
     if (!view || !wikiCon)
       return;
+      
     const nextState = view.state.apply(transaction);
     const sendable = sendableSteps(nextState)
+    console.log(`UPDATING STATE, ${transaction.time} ${getVersion(view.state)}`)
     view.updateState(nextState);
     if (sendable) {
+      console.log(`SENDING VERSION ${sendable.version}`);
       wikiCon.update(sendable.steps, sendable.clientID, sendable.version);
     }
   }

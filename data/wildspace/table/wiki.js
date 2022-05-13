@@ -8,7 +8,7 @@ import { castWikiDoc, castWikiDocEvent, castWikiDocFocus, castWikiDocUpdate } fr
 export const createTableWikiData = (constructors/*: TableDataConstructors*/)/*: WikiData*/ => {
   const documents = {
     ...constructors.createCompositeTable('wiki_documents', castWikiDoc),
-    ...constructors.createTransactable('wiki_documents', castWikiDoc,
+    t: constructors.createTransactable('wiki_documents', castWikiDoc,
       doc => ({ key: 'version', value: doc.version }))
   };
   const documentEvents = constructors.createChannel('wiki_document_events', castWikiDocEvent);
