@@ -62,7 +62,7 @@ export const useCollaboratedEditorState = (
       if (connection) {
         const sendable = sendableSteps(nextState);
         if (sendable)
-          connection.update(sendable.steps, sendable.clientID);
+          connection.update(sendable.steps, sendable.clientID, sendable.version);
       }
       
       return nextState;

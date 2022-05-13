@@ -46,7 +46,7 @@ export const Wiki/*: Component<WikiProps>*/ = ({
   const [activeDoc, setActiveDoc] = useState(null)
   const [refreshTime, setRefreshTime] = useState/*:: <number>*/(() => Date.now());
 
-  const [pluginKey] = useState(() => new PluginKey('focus'))
+  const [pluginKey] = useState/*:: <PluginKey<any>>*/(() => new PluginKey('focus'))
   const onLoad = (doc) => {
     if (!view || !wikiCon)
       return;

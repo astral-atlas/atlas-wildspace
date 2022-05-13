@@ -26,15 +26,18 @@ declare module "prosemirror-state" {
     }): Plugin<T, M>;
     getState(state: EditorState<any, any>): T;
   }
+  declare export class PluginKey<M> {
+    constructor<M>(name?: string): PluginKey<M>
+  }
   declare export class Transaction {
     selection: any;
-    setMeta: <M>(Plugin<any, M>, M) => void;
-    getMeta: <M>(Plugin<any, M>) => M;
+    setMeta: <M>(key: Plugin<any, M> | PluginKey<M>, value: M) => void;
+    getMeta: <M>(key: Plugin<any, M> | PluginKey<M>) => M;
   }
 }
 
 declare module "prosemirror-view" {
-  import type { EditorState } from "prosemirror-state";
+  import type { EditorState, Transaction } from "prosemirror-state";
 
   declare export class EditorView {
     constructor(target: Element, props?: { state: EditorState<any, any> }): EditorView;
@@ -42,7 +45,7 @@ declare module "prosemirror-view" {
     hasFocus(): boolean;
     setProps(props: mixed): void;
     updateState(state: EditorState<any, any>): void;
-    dispatch(state: EditorState<any, any>): void;
+    dispatch(state: Transaction): void;
     domAtPos(number, number): { offset: number, node: HTMLElement };
     state: EditorState<any, any>;
   }

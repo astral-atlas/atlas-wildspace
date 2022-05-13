@@ -2,6 +2,7 @@
 /*::
 import type { UserID } from "@astral-atlas/sesame-models";
 import type { WikiDocFocus } from "@astral-atlas/wildspace-models";
+import { PluginKey } from "prosemirror-state";
 */
 
 import { Plugin } from 'prosemirror-state';
@@ -18,7 +19,7 @@ export type FocusDecorationMeta = $ReadOnlyArray<WikiDocFocus>
 export const createFocusDecorationPlugin = (
   onFocusChange/*: (from: number, to: number) => mixed*/, 
   userId/*: UserID*/,
-  key/*: PluginKey*/ = null,
+  key/*: ?PluginKey<FocusDecorationMeta>*/ = null,
 )/*: Plugin<FocusDecorationState, FocusDecorationMeta>*/ => {
 
   const plugin = new Plugin/*:: <FocusDecorationState, FocusDecorationMeta>*/({
