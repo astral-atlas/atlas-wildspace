@@ -19,21 +19,23 @@ export type WikiConnectionManager = {
   client: WikiConnectionClient,
 };
 export type WikiConnection = {
+  addLoadListener: (WikiDoc => mixed) => () => void, 
+
+  addUpdateListener: (WikiDocUpdate => mixed) => () => void, 
   update: (steps: mixed[], clientId: number, version: number) => void,
+
   focus: (from: number, to: number) => void,
+  addFocusListener: ($ReadOnlyArray<WikiDocFocus> => mixed) => () => void, 
+
   disconnect: () => void,
+  //addDisconnectListener: () => () => void, 
 }
 export type WikiConnectionClient = {
-  connect: (
-    docId: WikiDocID,
-    onLoad: WikiDoc => mixed,
-    onDocUpdate: WikiDocUpdate => mixed,
-    onFocusUpdate: $ReadOnlyArray<WikiDocFocus> => mixed
-  ) => WikiConnection
+  connect: (docId: WikiDocID) => WikiConnection
 };
 */
 
-import { applyWikiDocUpdate, wikiAPI } from "@astral-atlas/wildspace-models";
+import { wikiAPI } from "@astral-atlas/wildspace-models";
 
 export const createWikiConnectionManager = (
   send/*: WikiDocAction => mixed*/,
@@ -82,16 +84,15 @@ export const createWikiConnectionManager = (
     }
   };
 
-  const connect = (docId, onDocLoad, onDocUpdate, onFocusUpdate) => {
+  const connect = (docId) => {
     const docConnection = docConnections.get(docId) || { doc: null, focus: [], loadSubscribers: new Set(), subscribers: new Set(), focusSubscribers: new Set() };
 
     if (!docConnections.has(docId)) {
       docConnections.set(docId, docConnection);
       send({ type: 'open', docId });
     }
-    docConnection.subscribers.add(onDocUpdate);
-    docConnection.loadSubscribers.add(onDocLoad);
-    docConnection.focusSubscribers.add(onFocusUpdate);
+    //docConnection.loadSubscribers.add(onDocLoad);
+    //docConnection.focusSubscribers.add(onFocusUpdate);
 
     const update = (steps, clientId, version) => {
       send({ type: 'update', docId, version, steps, clientId })
@@ -100,16 +101,53 @@ export const createWikiConnectionManager = (
       send({ type: 'focus', docId, focus: { from, to }})
     };
     const disconnect = () => {
-      docConnection.subscribers.delete(onDocUpdate);
-      docConnection.focusSubscribers.delete(onFocusUpdate);
-      docConnection.loadSubscribers.delete(onDocLoad);
+      for (const onUpdate of updateListeners)
+        docConnection.subscribers.delete(onUpdate);
+      for (const onFocus of focusListeners)
+        docConnection.focusSubscribers.delete(onFocus);
+      for (const onLoad of loadListeners)
+        docConnection.loadSubscribers.delete(onLoad);
+
       if (docConnection.subscribers.size === 0) {
         send({ type: 'close', docId });
         docConnections.delete(docId);
       }
     }
 
+    const focusListeners = new Set();
+    const updateListeners = new Set();
+    const loadListeners = new Set();
+    const unloadListeners = new Set();
+
+    const addUpdateListener = (onUpdate) => {
+      updateListeners.add(onUpdate);
+      docConnection.subscribers.add(onUpdate);
+      return () => {
+        updateListeners.delete(onUpdate);
+        docConnection.subscribers.delete(onUpdate);
+      }
+    };
+    const addFocusListener = (onFocus) => {
+      focusListeners.add(onFocus);
+      docConnection.focusSubscribers.add(onFocus);
+      return () => {
+        focusListeners.delete(onFocus);
+        docConnection.focusSubscribers.delete(onFocus);
+      }
+    };
+    const addLoadListener = (onLoad) => {
+      loadListeners.add(onLoad);
+      docConnection.loadSubscribers.add(onLoad);
+      return () => {
+        loadListeners.delete(onLoad);
+        docConnection.loadSubscribers.delete(onLoad);
+      }
+    };
+
     const connection = {
+      addUpdateListener,
+      addFocusListener,
+      addLoadListener,
       update,
       focus,
       disconnect,

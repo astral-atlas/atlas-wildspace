@@ -23,26 +23,19 @@ import { createFocusDecorationPlugin } from './focusDecorationPlugin';
 export const useWikiDocConnection = (
   wiki/*: ?WikiConnectionClient*/,
   docId/*: ?WikiDocID*/,
-
-  onLoad/*: WikiDoc => mixed*/,
-  onUpdate/*: WikiDocUpdate => mixed*/,
-  onFocus/*: $ReadOnlyArray<WikiDocFocus> => mixed*/,
-
+  onConnection/*: WikiConnection => ?(() => mixed)*/,
   deps/*: mixed[]*/ = []
-)/*: ?WikiConnection*/ => {
-  const [connection, setConnection] = useState/*:: <?WikiConnection>*/();
-  
+) => {
   useEffect(() => {
     if (!wiki || !docId)
       return;
-    const connection = wiki.connect(docId, onLoad, onUpdate, onFocus);
-    setConnection(connection);
+    const connection = wiki.connect(docId);
+    const onConnectionDisconnect = onConnection(connection);
     return () => {
+      onConnectionDisconnect && onConnectionDisconnect();
       connection.disconnect();
     }
   }, [docId, wiki, ...deps]);
-
-  return connection;
 };
 
 export const useCollaboratedEditorState = (

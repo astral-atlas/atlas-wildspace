@@ -10,14 +10,19 @@ declare module "prosemirror-state" {
     static create<Nodes, Marks>({ schema: Schema<any> }): EditorState<Nodes, Marks>;
 
     apply(...any): EditorState<any, any>;
-    selection: any;
+    selection: Selection;
     tr: Transaction;
   }
   declare export class Plugin<T, M> {
     constructor<T>({
       state?: {
         init: () => T,
-        apply: (tr: Transaction, prev: T) => T,
+        apply: (
+          transaction: Transaction,
+          prevPluginState: T,
+          prevEditorState: EditorState<any, any>,
+          nextEditorState: EditorState<any, any>
+        ) => T,
       },
       view?: (view: EditorView) => {
         update: (view: EditorView, prev: EditorState<any, any>) => void,
@@ -29,10 +34,15 @@ declare module "prosemirror-state" {
   declare export class PluginKey<M> {
     constructor<M>(name?: string): PluginKey<M>
   }
+  declare export class Selection {
+    to: number,
+    from: number,
+  }
   declare export class Transaction {
-    selection: any;
+    selection: Selection;
     setMeta: <M>(key: Plugin<any, M> | PluginKey<M>, value: M) => void;
     getMeta: <M>(key: Plugin<any, M> | PluginKey<M>) => M;
+    time: number;
   }
 }
 
@@ -42,11 +52,12 @@ declare module "prosemirror-view" {
   declare export class EditorView {
     constructor(target: Element, props?: { state: EditorState<any, any> }): EditorView;
     destroy(): void;
+    isDestroyed: boolean;
     hasFocus(): boolean;
     setProps(props: mixed): void;
     updateState(state: EditorState<any, any>): void;
     dispatch(state: Transaction): void;
-    domAtPos(number, number): { offset: number, node: HTMLElement };
+    domAtPos(number, number): { offset: number, node: Node };
     state: EditorState<any, any>;
   }
 }

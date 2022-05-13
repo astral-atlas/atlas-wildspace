@@ -47,56 +47,52 @@ export const Wiki/*: Component<WikiProps>*/ = ({
   const [refreshTime, setRefreshTime] = useState/*:: <number>*/(() => Date.now());
 
   const [pluginKey] = useState/*:: <PluginKey<any>>*/(() => new PluginKey('focus'))
-  const onLoad = (doc) => {
-    if (!view || !wikiCon)
-      return;
-    const plugin = createFocusDecorationPlugin((from, to) => {
-      //wikiCon.focus(from, to);
-    }, userId, pluginKey);
-    view.updateState(EditorState.create({
-      schema: proseSchema,
-      plugins: [
-        ...prosePlugins,
-        plugin,
-        collab({ version: doc.version })
-      ],
-      doc: Node.fromJSON(proseSchema, doc.rootNode)
-    }))
-  };
-  const onUpdate = (update) => {
-    if (!view)
-      return;
-    const steps = update.steps.map(s => Step.fromJSON(proseSchema, s));
-    const transaction = receiveTransaction(view.state, steps, steps.map(s => update.clientId));
-    console.log('Recieved transaction!, dispatching');
-    view.dispatch(transaction);
-  };
-  const onFocus = (focus) => {
-    if (!view || !wikiCon)
-      return;
-    const tr = view.state.tr;
-    tr.setMeta(pluginKey, focus);
-    view.dispatch(tr);
-  };
-  const dispatchTransaction = (transaction) => {
-    if (!view || !wikiCon)
-      return;
-      
-    const nextState = view.state.apply(transaction);
-    const sendable = sendableSteps(nextState)
-    console.log(`UPDATING STATE, ${transaction.time} ${getVersion(view.state)}`)
-    view.updateState(nextState);
-    if (sendable) {
-      console.log(`SENDING VERSION ${sendable.version}`);
-      wikiCon.update(sendable.steps, sendable.clientID, sendable.version);
-    }
-  }
+
   const ref = useRef();
   const view = useProseMirrorView(ref, defaultEditorState, [activeDoc]);
-  const wikiCon = useWikiDocConnection(wiki, activeDoc, onLoad, onUpdate, onFocus, [view, refreshTime])
-  useProseMirrorProps(view, {
-    dispatchTransaction,
-  }, [view, wikiCon]);
+
+  useWikiDocConnection(view && wiki, activeDoc, (connection) => {
+    if (!view)
+      return;
+    const onSelectionChange = (from, to) => {
+      connection.focus(from, to);
+    }
+    const plugin = createFocusDecorationPlugin(onSelectionChange, userId, pluginKey);
+    const onLoad = (doc) => {
+      view.updateState(EditorState.create({
+        schema: proseSchema,
+        plugins: [
+          ...prosePlugins,
+          plugin,
+          collab({ version: doc.version })
+        ],
+        doc: Node.fromJSON(proseSchema, doc.rootNode)
+      }))
+    };
+    const onUpdate = (update) => {
+      const steps = update.steps.map(s => Step.fromJSON(proseSchema, s));
+      const transaction = receiveTransaction(view.state, steps, steps.map(s => update.clientId));
+      view.dispatch(transaction);
+    };
+    const onFocus = (focus) => {
+      const tr = view.state.tr;
+      tr.setMeta(plugin, focus);
+      view.dispatch(tr);
+    };
+    connection.addFocusListener(onFocus);
+    connection.addLoadListener(onLoad);
+    connection.addUpdateListener(onUpdate);
+
+    const dispatchTransaction = (transaction) => {
+      const nextState = view.state.apply(transaction);
+      const sendable = sendableSteps(nextState)
+      view.updateState(nextState);
+      if (sendable) {
+        connection.update(sendable.steps, sendable.clientID, sendable.version);
+      }
+    }
+    view.setProps({ dispatchTransaction });
+  }, [view, refreshTime])
 
   return h('div', { className: styles.wiki }, [
     h('div', { className: styles.wikiContent }, [

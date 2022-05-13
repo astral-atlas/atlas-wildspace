@@ -42,12 +42,13 @@ export const useProseMirrorView = (
     const { current: container } = ref;
     if (!container)
       return;
+    console.log('CREATE EDITOR')
     const view = new EditorView(container, { state: initialState });
     setView(view);
-    return () => (view.destroy(), setView(null));
+    return () => view.destroy();
   }, deps)
 
-  return view;
+  return view && (view.isDestroyed ? null : view);
 }
 export const useProseMirrorProps = (
   view/*: ?EditorView*/,
