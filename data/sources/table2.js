@@ -39,7 +39,6 @@ export const createDynamoDBTrasactable = /*:: <PK: string, SK: string, V: {}>*/(
         ...writeObjectAttributes(nextValue),
         ...Key,
       };
-      console.log('Attempting Transaction', version.value);
       await db.putItem({
         Item: nextItem,
         TableName: tableName,
@@ -49,7 +48,6 @@ export const createDynamoDBTrasactable = /*:: <PK: string, SK: string, V: {}>*/(
       });
       return { prev: prevValue, next: nextValue };
     } catch (error) {
-      console.error(error);
       if (retries < 1)
         throw error;
       return transaction(partitionKey, sortKey, updater, retries - 1);
@@ -60,6 +58,14 @@ export const createDynamoDBTrasactable = /*:: <PK: string, SK: string, V: {}>*/(
   };
 };
 
+export const createFakeTransactable = /*:: <V>*/()/*: Transactable<string, string , V>*/ => {
+  const transaction = async () => {
+    throw new Error('This function is fake');
+  };
+  return {
+    transaction,
+  }
+}
 
 /*::
 export type Updateable<PK, SK, V> = {

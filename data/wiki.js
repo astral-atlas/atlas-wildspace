@@ -15,10 +15,10 @@ import type { Transactable } from "./sources/table2";
 
 /*::
 export type WikiData = {
-  documents: {
+  documents: {|
     ...CompositeTable<GameID, WikiDocID, WikiDoc>,
-    t?: Transactable<GameID, WikiDocID, WikiDoc>
-  },
+    ...Transactable<GameID, WikiDocID, WikiDoc>,
+  |},
   documentEvents: Channel<WikiDocID, WikiDocEvent>,
 
   documentFocus: CompositeTable<WikiDocID, GameConnectionID, WikiDocFocus>,

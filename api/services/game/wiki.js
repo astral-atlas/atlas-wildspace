@@ -56,19 +56,11 @@ export const createWikiService = (data/*: WildspaceData*/, connection/*: GameCon
       if (!doc)
         return;
       const update = { version, steps, userId: linkGrant.identity, clientId };
-      const t = data.wiki.documents.t;
       try {
-        if (t) {
-          console.log('ATTEMPTING TO APPLY', version);
-          await t.transaction(gameId, docId, wikiDoc => applyWikiDocUpdate(wikiDoc, update), 4);
-          data.wiki.documentEvents.publish(docId, { type: 'update', docId, update });
-        } else {
-          const nextDoc = applyWikiDocUpdate(doc, update);
-          data.wiki.documentEvents.publish(docId, { type: 'update', docId, update });
-          await data.wiki.documents.set(gameId, docId, nextDoc);
-        }
+        await data.wiki.documents.transaction(gameId, docId, wikiDoc => applyWikiDocUpdate(wikiDoc, update), 4);
+        data.wiki.documentEvents.publish(docId, { type: 'update', docId, update });
       } catch (error) {
-        console.log(error);
+        //console.log(error);
         //const { result: focus } = await data.wiki.documentFocus.query(docId);
         //const connections = await connection.getValidConnections(gameId, Date.now());
         //onWikiEvent({ type: 'load', focus: focus.filter(f => connections.find(c => c.id === f.connectionId)), doc })

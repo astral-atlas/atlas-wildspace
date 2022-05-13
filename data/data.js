@@ -6,6 +6,7 @@
 /*:: import type { WildspaceData } from "./entry"; */
 /*::
 import type { Cast } from "@lukekaalim/cast";
+import type { WikiDoc } from "@astral-atlas/wildspace-models";
 */
 
 import * as m from '@astral-atlas/wildspace-models';
@@ -17,6 +18,7 @@ import { createMemoryChannel } from "./sources/channel.js";
 import { createExpiryTable } from "./sources/expiry.js";
 import { createBufferWildspaceGameData } from './game.js';
 import { createBufferWildspaceRoomData } from "./room.js";
+import { createFakeTransactable } from './sources/table2.js';
 
 /*::
 type DataConstructors = {
@@ -40,6 +42,7 @@ export const createBufferWildspaceData = ({ createBufferStore, createBufferDB }/
   const wiki = {
     documents: {
       ...createBufferCompositeTable(createBufferStore('wiki_documents'), m.castWikiDoc),
+      ...createFakeTransactable/*:: <WikiDoc>*/(),
     },
     documentEvents: createMemoryChannel(),
     documentFocus: createBufferCompositeTable(createBufferStore('wiki_focus'), m.castWikiDocFocus),
