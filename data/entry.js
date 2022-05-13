@@ -23,6 +23,9 @@ import type { WildspaceGameData } from "./game";
 import type { WildspaceRoomData } from "./room";
 import type { WikiData } from "./wiki.js";
 
+import type { Transactable } from "./sources/table2";
+import type { DynamoDBValueType } from "@aws-sdk/client-dynamodb";
+import type { Cast } from "@lukekaalim/cast";
 */
 import { join, resolve } from 'path';
 import { S3 } from "@aws-sdk/client-s3";
@@ -40,6 +43,7 @@ import { createMemoryChannel } from "./sources/channel.js";
 import { createDynamoDBCompositeTable } from './sources/table.js';
 import { createDynamoDBSimpleTable } from "./sources/table.js";
 import { DynamoDB } from "@aws-sdk/client-dynamodb";
+import { createDynamoDBTrasactable } from './sources/table2.js';
 
 /*::
 export type WildspaceData = {
@@ -115,8 +119,25 @@ export const createAWSS3Data = (s3/*: S3*/, bucket/*: string*/, keyPrefix/*: str
   return { data };
 };
 
-export const createDynamoDBData = (dynamodb/*: DynamoDB*/, tableName/*: string*/)/*: WildspaceData*/ => {
+export const createDynamoDBData = (
+  dynamodb/*: DynamoDB*/,
+  tableName/*: string*/,
+)/*: WildspaceData*/ => {
+  const createTransactable = /*:: <PK: string, SK: string, V: {}>*/(
+    namespace,
+    cast/*: Cast<V>*/,
+    createVersion/*: V => { key: string, value: mixed }*/
+  )/*: Transactable<PK, SK, V>*/ => {
+    return createDynamoDBTrasactable(
+      dynamodb,
+      tableName,
+      cast,
+      (pk, sk) => ({ ['Partition']: { S: `${namespace}:${pk}` }, ['Sort']: { S: sk } }),
+      createVersion,
+    );
+  };
   const constructors = {
+    createTransactable,
     createChannel: createMemoryChannel,
     createTable: /*:: <K: string, V>*/(key, cast)/*: Table<K, V>*/ => createDynamoDBSimpleTable(tableName, 'Partition', 'Sort', pk => `${key}:${pk}`, cast, dynamodb),
     createCompositeTable: /*:: <PK: string, SK: string, V>*/(key, cast)/*: CompositeTable<PK, SK, V>*/ => createDynamoDBCompositeTable(tableName, 'Partition', 'Sort', pk => `${key}:${pk}`, sk => sk, cast, dynamodb),

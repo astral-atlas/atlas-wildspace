@@ -6,6 +6,8 @@
 /*:: import type { WildspaceData } from "../../entry"; */
 /*::
 import type { Cast } from "@lukekaalim/cast";
+import type { DynamoDBValueType } from "@aws-sdk/client-dynamodb";
+import type { Transactable } from "../../sources/table2";
 */
 
 import * as m from '@astral-atlas/wildspace-models';
@@ -23,9 +25,23 @@ import { createTableWikiData } from './wiki.js';
 
 /*::
 export type TableDataConstructors = {
-  createCompositeTable: <PK: string, SK: string, Item>(uniqueKey: string, cast: Cast<Item>) => CompositeTable<PK, SK, Item>,
-  createTable: <K: string, Item>(uniqueKey: string, cast: Cast<Item>) => Table<K, Item>,
-  createChannel: <K: string, V>(uniqueKey: string, cast: Cast<V>) => Channel<K, V>,
+  createCompositeTable<PK: string, SK: string, Item>(
+    uniqueKey: string,
+    cast: Cast<Item>
+  ): CompositeTable<PK, SK, Item>,
+  createTransactable<PK: string, SK: string, Item: {}>(
+    uniqueKey: string,
+    cast: Cast<Item>,
+    createVersion: Item => { key: string, value: mixed }
+  ): Transactable<PK, SK, Item>,
+  createTable<K: string, Item>(
+    uniqueKey: string,
+    cast: Cast<Item>
+  ): Table<K, Item>,
+  createChannel<K: string, V>(
+    uniqueKey: string,
+    cast: Cast<V>
+  ): Channel<K, V>,
 }
 */
 

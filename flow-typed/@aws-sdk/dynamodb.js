@@ -21,8 +21,8 @@ declare module '@aws-sdk/client-dynamodb' {
   declare export type DynamoDBValueType =
     | {| S: string |}
     | {| N: string |}
-    | {| L: DynamoDBValueType[] |}
-    | {| M: {| [string]: DynamoDBValueType |} |}
+    | {| L: $ReadOnlyArray<DynamoDBValueType> |}
+    | {| M: {| +[string]: DynamoDBValueType |} |}
     | {| BOOL: boolean |}
     | {| NULL: true |}
   
@@ -36,17 +36,20 @@ declare module '@aws-sdk/client-dynamodb' {
 
   declare export type GetItemCommand = {
     Input: {
-      Key: { [string]: string },
+      Key: { +[string]: DynamoDBValueType },
       TableName: string,
     },
     Output: {
-      Item: { [string]: DynamoDBValueType }
+      Item: { +[string]: DynamoDBValueType }
     }
   }
   declare export type PutItemCommand = {
     Input: {
       TableName: string,
-      Item: { [string]: DynamoDBValueType }
+      ConditionalExpression?: string,
+      ExpressionAttributeNames?: { +[string]: string },
+      ExpressionAttributeValues?: { +[string]: DynamoDBValueType },
+      Item: { +[string]: DynamoDBValueType }
     },
     Output: {
     }

@@ -17,12 +17,12 @@ export type Table<Key, Value> = {
   scan: (from?: null | Key, limit?: null | number) => Promise<Page<Key, Value>>
 };
 
-export type CompositeTable<PartitionKey, SortKey, Value> = {
+export type CompositeTable<PartitionKey, SortKey, Value> = {|
   get: (partition: PartitionKey, sort: SortKey) => Promise<{ result: Value | null }>,
   set: (partition: PartitionKey, sort: SortKey, value: null | Value) => Promise<void>,
   scan: (from?: { partition?: ?PartitionKey, sort?: ?SortKey }, limit?: null | number) => Promise<Page<{ partition: PartitionKey, sort: SortKey }, Value>>,
   query: (partition: PartitionKey) => Promise<Page<SortKey, Value>>
-};
+|};
 */
 
 const createFaultTolerantArrayCaster = /*:: <T>*/(castRow/*: Cast<T>*/)/*: Cast<T[]>*/ => {
@@ -131,6 +131,13 @@ export const createBufferCompositeTable = /*:: <T>*/(
   return createMemoryCompositeTableLock({ get, set, scan, query });
 };
 
+export const writeObjectAttributes = (value/*: { +[string]: mixed } */)/*: { +[string]: DynamoDBValueType }*/ => {
+  const entries = Object
+    .entries(value)
+    .map(([name, value]) => [name, writeValueTypes(value)])
+  return Object.fromEntries(entries);
+}
+
 export const writeValueTypes = (value/*: mixed*/)/*: DynamoDBValueType*/ => {
   switch (typeof value) {
     case 'string':
@@ -145,7 +152,7 @@ export const writeValueTypes = (value/*: mixed*/)/*: DynamoDBValueType*/ => {
       else if (Array.isArray(value))
         return { L: value.map(writeValueTypes) }
       else
-        return { M: Object.fromEntries(Object.entries(value).map(([name, value]) => [name, writeValueTypes(value)])) }
+        return { M: writeObjectAttributes(value) };
     case 'undefined':
       return { NULL: true };
     default:
