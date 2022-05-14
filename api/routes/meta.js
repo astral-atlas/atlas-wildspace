@@ -242,7 +242,7 @@ export type GameCRUDResourceImplementation<T: AdvancedGameCRUDAPIDescription> = 
   idName: T["resourceIdName"],
 
   create: (request: GameCRUDResourceRequest<T, "POST">, input: T["resourcePostInput"]) => Awaitable<T["resource"]>,
-  read:   (request: GameCRUDResourceRequest<T, "GET">) => Awaitable<T["resource"][]>,
+  read:   (request: GameCRUDResourceRequest<T, "GET">) => Awaitable<$ReadOnlyArray<T["resource"]>>,
   update: (request: GameCRUDResourceRequest<T, "PUT">, id: T["resourceId"], input: T["resourcePutInput"]) => Awaitable<T["resource"]>,
   destroy: (request: GameCRUDResourceRequest<T, "DELETE">, id: T["resourceId"]) => Awaitable<void>,
 

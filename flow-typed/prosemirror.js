@@ -53,11 +53,13 @@ declare module "prosemirror-view" {
     constructor(target: Element, props?: { state: EditorState<any, any> }): EditorView;
     destroy(): void;
     isDestroyed: boolean;
+    dom: HTMLElement;
     hasFocus(): boolean;
     setProps(props: mixed): void;
     updateState(state: EditorState<any, any>): void;
     dispatch(state: Transaction): void;
     domAtPos(number, number): { offset: number, node: Node };
+    coordsAtPos(number, number): { left: number, right: number, top: number, bottom: number };
     state: EditorState<any, any>;
   }
 }

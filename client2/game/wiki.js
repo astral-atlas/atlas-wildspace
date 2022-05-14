@@ -3,6 +3,8 @@
 import type {
   CRUDGameAPI,
   DeriveGameCRUDDescription,
+  GameConnectionID,
+  WikiDocConnection,
 } from "@astral-atlas/wildspace-models";
 import type { WikiAPI } from "../../models/api/game/wiki";
 import type { GameCRUDClient } from "./meta";
@@ -29,6 +31,8 @@ export type WikiConnection = {
 
   disconnect: () => void,
   //addDisconnectListener: () => () => void, 
+
+  addConnectionsListener: (Map<GameConnectionID, WikiDocConnection> => mixed) => () => void, 
 }
 export type WikiConnectionClient = {
   connect: (docId: WikiDocID) => WikiConnection
@@ -44,7 +48,9 @@ export const createWikiConnectionManager = (
     subscribers: Set<WikiDocUpdate => mixed>,
     loadSubscribers: Set<WikiDoc => mixed>,
     focusSubscribers: Set<$ReadOnlyArray<WikiDocFocus> => mixed>,
+    connectionSubscribers: Set<Map<GameConnectionID, WikiDocConnection> => mixed>,
     focus: $ReadOnlyArray<WikiDocFocus>,
+    connections: Map<GameConnectionID, WikiDocConnection>,
     doc: ?WikiDoc,
   }>*/();
 
@@ -69,36 +75,98 @@ export const createWikiConnectionManager = (
             subscriber(event.update);
           return;
       }
+      case 'connect': {
+        const docConnection = docConnections.get(event.docId);
+        if (!docConnection)
+          return;
+        const nextConnections = new Map([...docConnection.connections, [event.connection.gameConnectionId, event.connection]]);
+        docConnections.set(event.docId, {
+          ...docConnection,
+          connections: nextConnections
+        });
+        for (const subscriber of docConnection.connectionSubscribers)
+          subscriber(nextConnections);
+        return;
+      }
+      case 'disconnect': {
+        const docConnection = docConnections.get(event.docId);
+        if (!docConnection)
+          return;
+        const nextFocus = docConnection.focus.filter(f => f.connectionId != event.connectionId);
+        const nextConnections = new Map([...docConnection.connections].filter(([id, c]) => id !== event.connectionId));
+        docConnections.set(event.docId, {
+          ...docConnection,
+          focus: nextFocus,
+          connections: nextConnections
+        });
+        for (const subscriber of docConnection.focusSubscribers)
+          subscriber(nextFocus);
+        for (const subscriber of docConnection.connectionSubscribers)
+          subscriber(nextConnections);
+        return;
+      }
       case 'load': {
         const docConnection = docConnections.get(event.doc.id);
         if (!docConnection)
           return;
 
-        docConnections.set(event.doc.id, { ...docConnection, doc: event.doc, focus: event.focus });
+        const nextConnections = new Map(event.connections.map(c => [c.gameConnectionId, c]));
+        docConnections.set(event.doc.id, {
+          ...docConnection,
+          doc: event.doc,
+          focus: event.focus,
+          connections: nextConnections,
+        });
         for (const subscriber of docConnection.loadSubscribers)
           subscriber(event.doc);
         for (const subscriber of docConnection.focusSubscribers)
           subscriber(event.focus);
+        for (const subscriber of docConnection.connectionSubscribers)
+          subscriber(nextConnections);
         return;
       }
     }
   };
 
   const connect = (docId) => {
-    const docConnection = docConnections.get(docId) || { doc: null, focus: [], loadSubscribers: new Set(), subscribers: new Set(), focusSubscribers: new Set() };
+    const docConnection = docConnections.get(docId) || {
+      doc: null, focus: [], connections: new Map(),
+      loadSubscribers: new Set(),
+      subscribers: new Set(),
+      focusSubscribers: new Set(),
+      connectionSubscribers: new Set()
+    };
 
     if (!docConnections.has(docId)) {
       docConnections.set(docId, docConnection);
       send({ type: 'open', docId });
     }
-    //docConnection.loadSubscribers.add(onDocLoad);
-    //docConnection.focusSubscribers.add(onFocusUpdate);
+
+    const pendingUpdates = [];
+    const updateInterval = setInterval(() => {
+      const updates = [...pendingUpdates]
+      
+      pendingUpdates.length = 0;
+      for (const update of updates)
+        send(update)
+      
+      if (pendingFocus) {
+        send(pendingFocus);
+        pendingFocus = null;
+      }
+    }, 200);
 
     const update = (steps, clientId, version) => {
-      send({ type: 'update', docId, version, steps, clientId })
+      const prevUpdate = pendingUpdates[pendingUpdates.length - 1];
+      const nextUpdate = { type: 'update', docId, version, steps, clientId };
+      if (prevUpdate && prevUpdate.version === version)
+        pendingUpdates[pendingUpdates.length - 1] = nextUpdate;
+      else
+        pendingUpdates.push(nextUpdate);
     };
+    let pendingFocus = null
     const focus = (from, to) => {
-      send({ type: 'focus', docId, focus: { from, to }})
+      pendingFocus = { type: 'focus', docId, focus: { from, to }}
     };
     const disconnect = () => {
       for (const onUpdate of updateListeners)
@@ -108,6 +176,8 @@ export const createWikiConnectionManager = (
       for (const onLoad of loadListeners)
         docConnection.loadSubscribers.delete(onLoad);
 
+      clearInterval(updateInterval);
+
       if (docConnection.subscribers.size === 0) {
         send({ type: 'close', docId });
         docConnections.delete(docId);
@@ -115,6 +185,7 @@ export const createWikiConnectionManager = (
     }
 
     const focusListeners = new Set();
+    const connectionListeners = new Set();
     const updateListeners = new Set();
     const loadListeners = new Set();
     const unloadListeners = new Set();
@@ -143,11 +214,20 @@ export const createWikiConnectionManager = (
         docConnection.loadSubscribers.delete(onLoad);
       }
     };
+    const addConnectionsListener = (onConnectionChange) => {
+      connectionListeners.add(onConnectionChange);
+      docConnection.connectionSubscribers.add(onConnectionChange);
+      return () => {
+        connectionListeners.delete(onConnectionChange);
+        docConnection.connectionSubscribers.delete(onConnectionChange);
+      }
+    }
 
     const connection = {
       addUpdateListener,
       addFocusListener,
       addLoadListener,
+      addConnectionsListener,
       update,
       focus,
       disconnect,

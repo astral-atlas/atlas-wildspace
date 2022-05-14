@@ -1,11 +1,12 @@
 // @flow strict 
 /*::
 import type { UserID } from "@astral-atlas/sesame-models";
-import type { WikiDocFocus } from "@astral-atlas/wildspace-models";
+import type { WikiDocFocus, GameConnectionID } from "@astral-atlas/wildspace-models";
 import { PluginKey } from "prosemirror-state";
 */
 
 import { Plugin } from 'prosemirror-state';
+import seedrandom from 'seedrandom';
 
 /*::
 export type FocusDecorationState = {
@@ -18,7 +19,7 @@ export type FocusDecorationMeta = $ReadOnlyArray<WikiDocFocus>
 
 export const createFocusDecorationPlugin = (
   onFocusChange/*: (from: number, to: number) => mixed*/, 
-  userId/*: UserID*/,
+  connectionId/*: ?GameConnectionID*/ = null,
   key/*: ?PluginKey<FocusDecorationMeta>*/ = null,
 )/*: Plugin<FocusDecorationState, FocusDecorationMeta>*/ => {
 
@@ -48,7 +49,7 @@ export const createFocusDecorationPlugin = (
         }
         elements.clear();
       }
-      const drawArea = (rect, viewRect, parent) => {
+      const drawArea = (rect, viewRect, parent, hue) => {
         const element = document.createElement('div');
 
         const top = rect.top - viewRect.top;
@@ -60,54 +61,68 @@ export const createFocusDecorationPlugin = (
 
         element.style.width = `${rect.width}px`;
         element.style.height = `${rect.height}px`;
-        element.style.border = `2px solid blue`;
 
-        element.style.backgroundColor = `red`;
+        element.style.backgroundColor = `hsl(${hue}deg, 50%, 50%)`;
+        element.style.opacity = `0.5`;
+        element.style.pointerEvents = 'none';
+        parent.appendChild(element);
+        elements.add(element)
+      }
+      const drawCursor = (coords, hue, parent, viewRect) => {
+        const element = document.createElement('div');
+
+        const top = coords.top - viewRect.top;
+        const left = coords.left - viewRect.left;
+
+        element.style.position = 'absolute';
+        element.style.top = `${top}px`;
+        element.style.height = `${coords.bottom - coords.top}px`;
+
+        element.style.left = `${left-1}px`;
+        element.style.width = `3px`
+
+        element.style.backgroundColor = `hsl(${hue}deg, 75%, 30%)`;
         element.style.opacity = `0.5`;
         element.style.pointerEvents = 'none';
         parent.appendChild(element);
         elements.add(element)
       }
       const drawFocus = (focus) => {
-        const { node: startNode, offset: startOffset } = view.domAtPos(focus.selection.from, -1)
-        const { node: endNode, offset: endOffset } = view.domAtPos(focus.selection.to, -1)
+        const parent = view.dom.parentElement;
+        if (!parent)
+          return;
+        const viewRect = parent.getBoundingClientRect();
 
-        const range = document.createRange();
-        if (startNode === endNode && startOffset === 0 && endOffset === 0) {
-          const findLeaf = (node) => {
-            if (node.childNodes.length < 1)
-              return node;
-            return [...node.childNodes].find(findLeaf);
-          }
-          const leaf = findLeaf(startNode);
-          if (leaf instanceof Text) {
-            range.selectNodeContents(leaf);
-            range.collapse(true);
-          }
+        const hue = seedrandom(focus.connectionId)() * 360;
+
+        if (focus.selection.from === focus.selection.to) {
+          const coords = view.coordsAtPos(focus.selection.from, 1);
+          drawCursor(coords, hue, parent, viewRect);
         } else {
+          const { node: startNode, offset: startOffset } = view.domAtPos(focus.selection.from, -1)
+          const { node: endNode, offset: endOffset } = view.domAtPos(focus.selection.to, -1)
+  
+          const range = document.createRange();
           range.setStart(startNode, startOffset);
           range.setEnd(endNode, endOffset);
+          const rangeRects = range.getClientRects();
+  
+          for (const rect of rangeRects)
+            drawArea(rect, viewRect, parent, hue)
         }
-
-        const rangeRects = range.getClientRects();
-        const { body } = document;
-
-        if (!body)
-          return;
-        const viewRect = body.getBoundingClientRect();
-
-        for (const rect of rangeRects)
-          drawArea(rect, viewRect, body)
       }
-      console.log('first draw?');
+      const draw = () => {
+        const { focus: focusList } = plugin.getState(view.state);
+        for (const focus of focusList.filter(f => f.connectionId !== connectionId))
+          drawFocus(focus);
+      }
+
+      draw();
 
       return {
         update(view) {
           clearFocuses();
-          
-          const { focus: focusList } = plugin.getState(view.state);
-          for (const focus of focusList)
-            drawFocus(focus);
+          draw();
         },
         destroy() {
           clearFocuses();

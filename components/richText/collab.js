@@ -3,21 +3,21 @@
 import type { WikiConnection, WikiConnectionClient, WildspaceClient } from '@astral-atlas/wildspace-client2';
 import type {
   WikiDoc, WikiDocID,
-  WikiDocUpdate, WikiDocFocus
+  WikiDocUpdate, WikiDocFocus, GameConnectionID, WikiDocConnection
 } from "@astral-atlas/wildspace-models";
 import type { UserID } from "@astral-atlas/sesame-models";
 
 import type { GameData } from "../game/data";
+import type { EditorView } from "prosemirror-view";
 */
-import { EditorState, Transaction } from 'prosemirror-state';
+import { EditorState } from 'prosemirror-state';
 import { Node } from 'prosemirror-model';
 import { Step } from 'prosemirror-transform';
 import { collab, receiveTransaction, sendableSteps } from 'prosemirror-collab';
-import { useEffect, useMemo, useState } from "@lukekaalim/act";
+import { useEffect, useState } from "@lukekaalim/act";
 import { proseSchema } from '@astral-atlas/wildspace-models';
 
 import { prosePlugins } from "./ProseMirror";
-import { useGameConnection } from '../game';
 import { createFocusDecorationPlugin } from './focusDecorationPlugin';
 
 export const useWikiDocConnection = (
@@ -38,68 +38,79 @@ export const useWikiDocConnection = (
   }, [docId, wiki, ...deps]);
 };
 
-export const useCollaboratedEditorState = (
-  wiki/*: ?WikiConnectionClient*/,
-  doc/*: ?WikiDocID*/,
-  userId/*: UserID*/,
+const setupWikiDocCollab = (view, connection, connectionId) => {
+  const onSelectionChange = (from, to) => {
+    connection.focus(from, to);
+  }
+  const plugin = createFocusDecorationPlugin(onSelectionChange, connectionId);
+  const onLoad = (doc) => {
+    view.updateState(EditorState.create({
+      schema: proseSchema,
+      plugins: [
+        ...prosePlugins,
+        plugin,
+        collab({ version: doc.version })
+      ],
+      doc: Node.fromJSON(proseSchema, doc.rootNode)
+    }))
+  };
+  const onUpdate = (update) => {
+    const steps = update.steps.map(s => Step.fromJSON(proseSchema, s));
+    const transaction = receiveTransaction(view.state, steps, steps.map(s => update.clientId));
+    view.dispatch(transaction);
+  };
+  const onFocus = (focus) => {
+    const tr = view.state.tr;
+    tr.setMeta(plugin, focus);
+    view.dispatch(tr);
+  };
+  const onConnect = (connection) => {
+    // TODO
+  };
+  const rmFocus = connection.addFocusListener(onFocus);
+  const rmLoad = connection.addLoadListener(onLoad);
+  const rmUpdate = connection.addUpdateListener(onUpdate);
+  const rmConnect = connection.addConnectionsListener(onConnect);
+
+  const dispatchTransaction = (transaction) => {
+    const nextState = view.state.apply(transaction);
+    const sendable = sendableSteps(nextState)
+    view.updateState(nextState);
+    if (sendable) {
+      connection.update(sendable.steps, sendable.clientID, sendable.version);
+    }
+  }
+  view.setProps({ dispatchTransaction });
+
+  return () => {
+    rmFocus();
+    rmLoad();
+    rmConnect();
+    rmUpdate();
+    connection.disconnect();
+  }
+}
+
+export const useWikiDocCollab = (
+  view/*: ?EditorView*/ = null,
+  wiki/*: ?WikiConnectionClient*/ = null,
+  connectionId/*: ?GameConnectionID*/ = null,
+  docId/*: ?WikiDocID*/ = null,
   deps/*: mixed[]*/ = []
-)/*: [EditorState<any, any>, Transaction => mixed]*/ => {
-  const [connection, setConnection] = useState/*:: <?WikiConnection>*/()
-  const [state, setState] = useState/*:: <EditorState<any, any>>*/(
-    () => EditorState.create({ schema: proseSchema, plugins: prosePlugins })
-  );
-  const dispatch = useMemo(() => (transaction) => {
-    setState(state => {
-      const nextState = state.apply(transaction);
+)/*: Map<GameConnectionID, WikiDocConnection>*/ => {
+  const [connections, setConnections] = useState(new Map());
 
-      if (connection) {
-        const sendable = sendableSteps(nextState);
-        if (sendable)
-          connection.update(sendable.steps, sendable.clientID, sendable.version);
-      }
-      
-      return nextState;
-    });
-  }, [connection]);
-
-  useEffect(() => {
-    if (!wiki || !doc)
+  useWikiDocConnection(view && wiki, docId, (connection) => {
+    if (!view)
       return;
-      
-    const onLoad = (doc) => {
-      setState(EditorState.create({
-        schema: proseSchema,
-        doc: Node.fromJSON(proseSchema, doc.rootNode),
-        plugins: [
-          ...prosePlugins,
-          focusDecoration,
-          collab({ version: doc.version })
-        ],
-      }))
-    };
-    const onUpdate = (update) => {
-      setState(state => {
-        const transaction = receiveTransaction(state, update.steps.map(s => Step.fromJSON(proseSchema, s)), update.steps.map(s => update.clientId))
-        return state.apply(transaction);
-      })
-    };
-    const onFocus = (focus) => {
-      setState(state => {
-        const transaction = state.tr;
-        transaction.setMeta(focusDecoration, focus);
-        return state.apply(transaction)
-      })
-    }
-    const onFocusChange = (from, to) => {
-      connection.focus(from, to);
-    }
-    const connection = wiki.connect(doc, onLoad, onUpdate, onFocus);
-    const focusDecoration = createFocusDecorationPlugin(onFocusChange, userId);
-    setConnection(connection);
+    const teardown = setupWikiDocCollab(view, connection, connectionId);
+    const rmConnections = connection.addConnectionsListener(setConnections)
     return () => {
-      connection.disconnect();
+      rmConnections();
+      setConnections(new Map());
+      teardown();
     }
-  }, [wiki, doc, ...deps])
+  }, [view, ...deps])
 
-  return [state, dispatch];
+  return connections;
 }

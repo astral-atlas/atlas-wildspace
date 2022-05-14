@@ -9,7 +9,7 @@ import { c, castArray } from '@lukekaalim/cast';
 import { createLockFunction } from './lock.js';
 
 /*::
-export type Page<Key, Value> = { result: Value[], keys: Key[], next: Key | null };
+export type Page<Key, Value> = { result: $ReadOnlyArray<Value>, keys: Key[], next: Key | null };
 
 export type Table<Key, Value> = {
   get: (key: Key) => Promise<{ result: Value | null }>,
@@ -25,15 +25,17 @@ export type CompositeTable<PartitionKey, SortKey, Value> = {|
 |};
 */
 
-const createFaultTolerantArrayCaster = /*:: <T>*/(castRow/*: Cast<T>*/)/*: Cast<T[]>*/ => {
-  const castFaultTolerantArray = (value) => {
-    const array = castArray(value);
+const createFaultTolerantArrayCaster = /*:: <T, I = mixed>*/(
+  castRow/*: Cast<T>*/
+)/*: ($ReadOnlyArray<I> => [$ReadOnlyArray<T>, $ReadOnlyArray<I>])*/ => {
+  const castFaultTolerantArray = (array) => {
     const values = [];
+    const rejects = [];
     for (const element of array)
       try {
         values.push(castRow(element));
-      } catch (error) { console.warn(error.message) }
-    return values;
+      } catch (error) { console.warn(error.message); rejects.push(element); }
+    return [values, rejects];
   };
   return castFaultTolerantArray
 };
@@ -58,7 +60,7 @@ export const createBufferTable = /*:: <T>*/(store/*: BufferStore*/, castValue/*:
   const loadTable = async () => {
     try {
       const buffer = await store.get()
-      const table = castTable(JSON.parse(buffer.toString('utf8')))
+      const [table] = castTable(JSON.parse(buffer.toString('utf8')))
       return table;
     } catch (error) {
       return [];
@@ -99,12 +101,12 @@ export const createBufferCompositeTable = /*:: <T>*/(
     }
   };
   const get = async (partition, sort) => {
-    const table = await loadTable();
+    const [table] = await loadTable();
     const entry = table.find(e => matchEntry(partition, sort, e)) || null;
     return { result: entry && entry.value };
   }
   const set = async (partition, sort, newValue) => {
-    const table = await loadTable();
+    const [table] = await loadTable();
     const updatedTable = newValue ?
       [...table.filter(e => !matchEntry(partition, sort, e)), { partition, sort, value: newValue }] :
       table.filter(e => !matchEntry(partition, sort, e));
@@ -112,7 +114,7 @@ export const createBufferCompositeTable = /*:: <T>*/(
   }
   const scan = async ({ partition = null, sort } = {}, limit) => {
     // we assume buffer tables have no limit
-    const table = await loadTable();
+    const [table] = await loadTable();
     // TODO: this is broken!
     const validKeys = table
       .filter(e => !partition || e.partition === partition);
@@ -121,7 +123,7 @@ export const createBufferCompositeTable = /*:: <T>*/(
     return { result, keys, next: null };
   };
   const query = async (partition) => {
-    const table = await loadTable();
+    const [table] = await loadTable();
     const entries = table
       .filter(e => e.partition === partition)
     const result = entries.map(e => e.value);
@@ -229,6 +231,7 @@ export const createDynamoDBCompositeTable = /*:: <PartitionKey, SortKey, Item>*/
     const result = Items.map(item => readValueTypes({ M: item })).map(castItem);
     return { result, keys: [], next: null };
   };
+  const castQuery = createFaultTolerantArrayCaster(castItem);
   const query = async (pk) => {
     const { Items } = await client.query({
       TableName: tableName,
@@ -242,7 +245,26 @@ export const createDynamoDBCompositeTable = /*:: <PartitionKey, SortKey, Item>*/
     })
     const itemValue = Items.map(item => readValueTypes({ M: item }))
     const keys/*: any*/ = itemValue.map(item => (typeof item === 'object' && item) ? item[sortKeyName] : '<NONE>')
-    const result = itemValue.map(castItem);
+    const [result, rejects] = castQuery(itemValue);
+    /*
+    if (rejects.length > 0) {
+      await client.batchWriteItem({ RequestItems: {
+        [tableName]: rejects.map(r => {
+          const index = itemValue.indexOf(r);
+          const item = Items[index];
+          const action = {
+            DeleteRequest: {
+              Key: {
+                [partitionKeyName]: item[partitionKeyName],
+                [sortKeyName]: item[sortKeyName]
+              }
+            }
+          }
+          return action;
+        }),
+      }});
+    }
+    */
     return { result, keys, next: null };
   };
   return {

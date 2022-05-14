@@ -3,7 +3,7 @@
 import type { TableDataConstructors } from './index.js';
 import type { WikiData } from '../../wiki.js';
 */
-import { castWikiDoc, castWikiDocEvent, castWikiDocFocus, castWikiDocUpdate } from "@astral-atlas/wildspace-models";
+import { castWikiDoc, castWikiDocConnection, castWikiDocEvent, castWikiDocFocus } from "@astral-atlas/wildspace-models";
 
 export const createTableWikiData = (constructors/*: TableDataConstructors*/)/*: WikiData*/ => {
   const documents = {
@@ -14,11 +14,12 @@ export const createTableWikiData = (constructors/*: TableDataConstructors*/)/*: 
   const documentEvents = constructors.createChannel('wiki_document_events', castWikiDocEvent);
   
   const documentFocus = constructors.createCompositeTable('wiki_focus', castWikiDocFocus)
+  const documentConnections = constructors.createCompositeTable('wiki_connections', castWikiDocConnection)
 
   return {
     documents,
     documentEvents,
-
+    documentConnections,
     documentFocus,
   };
 }

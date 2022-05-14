@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from "@lukekaalim/act"
 /*::
 import type { GameUpdateTimes } from "../utils/updates";
 import type {
-  GameID, Game,
+  GameID, Game, GameConnectionID,
   Player,
   AudioPlaylist, AudioTrack,
   ExpositionScene,
@@ -118,7 +118,7 @@ export const useGameData = (
 export const useGameConnection = (
   api/*: WildspaceClient*/,
   gameId/*: GameID*/,
-)/*: [GameUpdateTimes, ?WikiConnectionClient]*/ => {
+)/*: [GameUpdateTimes, ?WikiConnectionClient, ?GameConnectionID]*/ => {
   const [updateTimes, setUpdateTimes] = useState/*:: <GameUpdateTimes>*/({
     rooms: 0,
     players: 0,
@@ -129,6 +129,7 @@ export const useGameConnection = (
     magicItems: 0,
     wikiDoc: 0,
   });
+  const [connectionId, setConncetionId] = useState(null);
   const [wiki, setWiki] = useState();
 
   useConnection(async () => {
@@ -149,10 +150,10 @@ export const useGameConnection = (
         case 'magicItem':
           return setUpdateTimes(t => ({ ...t, magicItems: Date.now() }))
       }
-    })
+    }, connectionId => setConncetionId(connectionId))
     setWiki(wiki);
     return close;
   }, [gameId])
   
-  return [updateTimes, wiki];
+  return [updateTimes, wiki, connectionId];
 };

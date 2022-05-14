@@ -2,7 +2,7 @@
 /*::
 import type { Component } from "@lukekaalim/act";
 import type { WildspaceClient } from "@astral-atlas/wildspace-client2";
-import type { WikiDoc, WikiDocID, GameID } from "@astral-atlas/wildspace-models";
+import type { WikiDoc, WikiDocID, GameID, Player } from "@astral-atlas/wildspace-models";
 import type { UserID } from "@astral-atlas/sesame-models";
 */
 
@@ -10,15 +10,16 @@ import { emptyRootNode, proseSchema } from "@astral-atlas/wildspace-models";
 import { h, useMemo, useRef, useState } from "@lukekaalim/act";
 import { EditorState, PluginKey } from "prosemirror-state";
 import { collab, receiveTransaction, sendableSteps, getVersion } from "prosemirror-collab";
-import { ProseMirror, prosePlugins, useProseMirrorProps, useProseMirrorView } from "../richText";
+import { ProseMirror, prosePlugins, useProseMirrorProps, useProseMirrorView, useWikiDocCollab } from "../richText";
 import {
-  useCollaboratedEditorState,
   useWikiDocConnection,
 } from "../richText/collab";
 import { useGameConnection } from "./data";
 import styles from './Wiki.module.css';
 import { Node } from "prosemirror-model";
+import { parse } from 'uuid';
 import { Step } from "prosemirror-transform";
+import seedrandom from 'seedrandom';
 import { createFocusDecorationPlugin } from "../richText";
 
 /*::
@@ -27,6 +28,7 @@ export type WikiProps = {
   userId: UserID,
   gameId: GameID,
   docs: $ReadOnlyArray<WikiDoc>,
+  players: $ReadOnlyArray<Player>,
 };
 */
 
@@ -40,59 +42,16 @@ export const Wiki/*: Component<WikiProps>*/ = ({
   userId,
   gameId,
   docs,
+  players,
 }) => {
-  const [, wiki] = useGameConnection(api, gameId);
+  const [, wiki, connectionId] = useGameConnection(api, gameId);
 
   const [activeDoc, setActiveDoc] = useState(null)
   const [refreshTime, setRefreshTime] = useState/*:: <number>*/(() => Date.now());
 
-  const [pluginKey] = useState/*:: <PluginKey<any>>*/(() => new PluginKey('focus'))
-
   const ref = useRef();
   const view = useProseMirrorView(ref, defaultEditorState, [activeDoc]);
-
-  useWikiDocConnection(view && wiki, activeDoc, (connection) => {
-    if (!view)
-      return;
-    const onSelectionChange = (from, to) => {
-      connection.focus(from, to);
-    }
-    const plugin = createFocusDecorationPlugin(onSelectionChange, userId, pluginKey);
-    const onLoad = (doc) => {
-      view.updateState(EditorState.create({
-        schema: proseSchema,
-        plugins: [
-          ...prosePlugins,
-          plugin,
-          collab({ version: doc.version })
-        ],
-        doc: Node.fromJSON(proseSchema, doc.rootNode)
-      }))
-    };
-    const onUpdate = (update) => {
-      const steps = update.steps.map(s => Step.fromJSON(proseSchema, s));
-      const transaction = receiveTransaction(view.state, steps, steps.map(s => update.clientId));
-      view.dispatch(transaction);
-    };
-    const onFocus = (focus) => {
-      const tr = view.state.tr;
-      tr.setMeta(plugin, focus);
-      view.dispatch(tr);
-    };
-    connection.addFocusListener(onFocus);
-    connection.addLoadListener(onLoad);
-    connection.addUpdateListener(onUpdate);
-
-    const dispatchTransaction = (transaction) => {
-      const nextState = view.state.apply(transaction);
-      const sendable = sendableSteps(nextState)
-      view.updateState(nextState);
-      if (sendable) {
-        connection.update(sendable.steps, sendable.clientID, sendable.version);
-      }
-    }
-    view.setProps({ dispatchTransaction });
-  }, [view, refreshTime])
+  const connections = useWikiDocCollab(view, wiki, connectionId, activeDoc, [refreshTime]);
 
   return h('div', { className: styles.wiki }, [
     h('div', { className: styles.wikiContent }, [
@@ -102,7 +61,21 @@ export const Wiki/*: Component<WikiProps>*/ = ({
             h('option', { value: doc.id, selected: doc.id === activeDoc }, doc.title)),
           h('option', { value: '', selected: activeDoc === null }, 'None')
         ]),
-        h('button', { onClick: () => setRefreshTime(Date.now()) }, 'Reload')
+        h('button', { onClick: () => setRefreshTime(Date.now()) }, 'Reload'),
+        h('div', { style: { flex: 1 }}),
+        [...connections].map(([id, c]) => {
+          const player = players.find(p => p.userId === c.userId);
+          if (!player)
+            return null;
+          
+          const connectionHue = seedrandom(id)() * 360;
+          const userHue = seedrandom(player.userId)() * 360;
+
+          return h('div', { key: id,  class: styles.wikiConnectionName, style: { 
+            backgroundColor: `hsl(${connectionHue}deg, 40%, 90%)`,
+            borderColor: `hsl(${userHue}deg, 60%, 75%)`,
+          } }, player.name)
+        }),
       ]),
       activeDoc && h('div', { ref, className: styles.wikiProseMirrorRoot }),
     ])

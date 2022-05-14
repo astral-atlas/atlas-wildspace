@@ -11,6 +11,7 @@
 import type { MagicItemAPI } from "./game/magicItem";
 import type { WikiDocEvent, WikiDocAction} from "../wiki.js";
 import type { AuthorizedConnection } from "./meta";
+import type { GameConnectionID } from "../game/connection";
 */
 
 import {
@@ -20,7 +21,7 @@ import {
   c,
 } from '@lukekaalim/cast';
 import { castUserId } from '@astral-atlas/sesame-models';
-import { castGameId, castGame, castGameUpdate, } from '../game.js';
+import { castGameId, castGame, castGameUpdate, castGameConnectionId, } from '../game.js';
 import { castCharacter } from '../character.js';
 import { castGameMaster, castPlayer } from "../game.js";
 import { charactersAPI } from './game/characters.js';
@@ -58,7 +59,7 @@ export type GameAPI = {
       | {| type: 'wiki', action: WikiDocAction |},
     server:
       | {| type: 'updated', update: GameUpdate |}
-      | {| type: 'heartbeat' |}
+      | {| type: 'connected', connectionId: GameConnectionID |}
       | {| type: 'wiki', event: WikiDocEvent |},
   |}>,
   ...CharactersAPI,
@@ -103,8 +104,8 @@ export const gameStateConnectionDescription/*: ConnectionDescription<GameAPI['/g
     'wiki': c.obj({ type: c.lit('wiki'), action: castWikiDocAction })
   }),
   castServerMessage:  c.or('type', {
-    'heartbeat': c.obj({ type: c.lit('heartbeat') }),
     'updated': c.obj({ type: c.lit('updated'), update: castGameUpdate }),
+    'connected': c.obj({ type: c.lit('connected'), connectionId: castGameConnectionId }),
     'wiki': c.obj({ type: c.lit('wiki'), event: castWikiDocEvent }),
   })
 });

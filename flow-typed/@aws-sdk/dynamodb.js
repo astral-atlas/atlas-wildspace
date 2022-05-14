@@ -84,6 +84,18 @@ declare module '@aws-sdk/client-dynamodb' {
     },
     Output: { }
   }
+  declare export type BatchWriteItem = {
+    Input: {|
+      RequestItems: {|
+        [tableName: string]: (
+          | {| DeleteRequest: {| Key: { [string]: DynamoDBValueType } |} |}
+        )[]
+      |}
+    |},
+    Output: {
+
+    }
+  }
 
   declare export class DynamoDB {
     constructor(config: DynamoDBClientConfig): DynamoDB,
@@ -93,6 +105,7 @@ declare module '@aws-sdk/client-dynamodb' {
     deleteItem(input: DeleteItemCommand["Input"]): Promise<DeleteItemCommand["Output"]>,
     query(input: QueryItemCommand["Input"]): Promise<QueryItemCommand["Output"]>,
     scan(input: ScanCommand["Input"]): Promise<ScanCommand["Output"]>,
+    batchWriteItem(input: BatchWriteItem["Input"]): Promise<BatchWriteItem["Output"]>,
   }
 }
 

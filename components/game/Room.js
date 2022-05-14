@@ -82,7 +82,13 @@ const RoomManagerScreen = ({ client, gameData, roomState, roomId, gameId }) => {
   ])
 }
 const RoomWikiScreen = ({ client, gameData }) => {
-  return h(Wiki, { api: client, docs: gameData.wikiDocs, gameId: gameData.game.id, userId: gameData.userId })
+  return h(Wiki, {
+    api: client,
+    docs: gameData.wikiDocs,
+    gameId: gameData.game.id,
+    userId: gameData.userId,
+    players: gameData.players,
+  })
 }
 
 /*::

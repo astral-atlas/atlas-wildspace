@@ -19,7 +19,7 @@ import { createMagicItemClient } from "./game/magicItem.js";
 import { createWikiConnectionManager, createWikidocClient } from "./game/wiki.js";
 
 /*::
-import type { WikiDocID, WikiDocEvent, WikiDocAction } from '@astral-atlas/wildspace-models';
+import type { WikiDocID, WikiDocEvent, WikiDocAction, GameConnectionID } from '@astral-atlas/wildspace-models';
 import type { SceneClient } from "./game/scene";
 import type { LocationClient } from "./game/locations";
 import type { MagicItemClient } from "./game/magicItem";
@@ -33,7 +33,8 @@ export type GameClient = {
   update: (gameId: GameID, updatedGame: { name?: string }) => Promise<void>,
   connectUpdates: (
     gameId: GameID,
-    onUpdate: (state: GameUpdate) => mixed
+    onUpdate: (state: GameUpdate) => mixed,
+    onConnected?: (connectionId: GameConnectionID) => mixed,
   ) => Promise<{ wiki: WikiConnectionClient, socket: WebSocket, close: () => void }>,
 
   character: CharacterClient,
@@ -68,14 +69,12 @@ export const createGameClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceCli
   const update = async (gameId, { name = null, }) => {
     await gameResource.PUT({ query: { gameId },  body: { name }});
   }
-  const connectUpdates = async (gameId, onUpdate) => {
+  const connectUpdates = async (gameId, onUpdate, onConnected) => {
 
     const recieve = (event) => {
-      if (event.type === 'heartbeat')
-        return;
       switch (event.type) {
-        case 'heartbeat':
-          return;
+        case 'connected':
+          return onConnected && onConnected(event.connectionId);
         case 'wiki':
           return wikiManager.recieve(event.event);
         case 'updated':

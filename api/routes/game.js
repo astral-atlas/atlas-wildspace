@@ -69,6 +69,7 @@ export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute
     scope: { type: 'player-in-game' },
     async handler({ connection: { query: { gameId }, send, addRecieveListener }, socket, identity }) {
       const connectionId = uuid();
+      send({ type: 'connected', connectionId });
 
       const { unsubscribe } = data.gameUpdates.subscribe(gameId, update => {
         send({ type: 'updated', update });

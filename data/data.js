@@ -46,6 +46,7 @@ export const createBufferWildspaceData = ({ createBufferStore, createBufferDB }/
     },
     documentEvents: createMemoryChannel(),
     documentFocus: createBufferCompositeTable(createBufferStore('wiki_focus'), m.castWikiDocFocus),
+    documentConnections: createBufferCompositeTable(createBufferStore('wiki_connection'), m.castWikiDocConnection),
   };
 
   const characters = createBufferCompositeTable(createBufferStore('characters'), m.castCharacter);
