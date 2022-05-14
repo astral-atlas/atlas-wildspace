@@ -26,6 +26,7 @@ import styles from './Room.module.css';
 import { RoomAudioPlayer } from "../audio";
 import { AudioStateEditor } from "./audio.js";
 import { Wiki } from "./Wiki.js";
+import { useURLParam } from "../../www/hooks/navigation";
 
 
 /*::
@@ -103,6 +104,8 @@ export type RoomProps = {
 */
 
 export const Room/*: Component<RoomProps>*/ = ({ client, gameData, roomState, userId, roomId, gameId }) => {
+  const [directionParam, setDirectionParam] = useURLParam('direction');
+
   const sceneRef = roomState.scene.activeScene;
   const scene = sceneRef && sceneRef.type === 'exposition' && gameData.scenes.exposition.find(e => e.id === sceneRef.ref);
 
@@ -125,7 +128,9 @@ export const Room/*: Component<RoomProps>*/ = ({ client, gameData, roomState, us
   const track = useKeyboardTrack(useElementKeyboard(ref))
   const emitter = useKeyboardTrackEmitter(track);
 
-  const [direction, setDirection] = useCompassKeysDirection(emitter, screens)
+  const [direction, setDirection] = useCompassKeysDirection(emitter, screens, direction => {
+    setDirectionParam(JSON.stringify([direction.x, direction.y], null, 0))
+  }, new Vector2(...JSON.parse(directionParam || '[0, 0]')))
 
   return [
     h('div', { ref, style: { width: '100%', height: '100%', position: 'absolute' } }, [

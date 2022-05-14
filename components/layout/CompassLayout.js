@@ -36,30 +36,37 @@ const calculateKeyboardDirection = (keys) => {
 
   return new Vector2(x, y);
 }
+const getNextDirection = (screens, prev, next, prevDirection) => {
+  if (!focusKeys.find(k => next.value.has(k)))
+    return prevDirection;
+
+  const nextDirection = calculateKeyboardDirection(next.value)
+
+  if (nextDirection.x === 0 && nextDirection.y == 0 && focusKeys.find(k => prev.value.has(k)))
+    return prevDirection;
+
+  if (!screens.find(s => s.position.equals(nextDirection)))
+    return prevDirection;
+    
+  if (prevDirection.x === nextDirection.x &&
+      prevDirection.y === nextDirection.y)
+    return prevDirection;
+  return nextDirection;
+}
 
 export const useCompassKeysDirection = (
   emitter/*: KeyboardTrackEmitter*/,
-  screens/*: CompassLayoutScreen[]*/
+  screens/*: CompassLayoutScreen[]*/,
+  onDirectionChange/*:  Vector2 => mixed*/ = () => {},
+  initialDirection/*: Vector2*/ = new Vector2(0, 0),
 )/*: [Vector2, Vector2 => void, KeyboardTrackEmitter]*/ => {
-  const [direction, setDirection] = useState/*:: <Vector2>*/(new Vector2(0, 0))
+  const [direction, setDirection] = useState/*:: <Vector2>*/(initialDirection)
 
   useKeyboardTrackEmitterChanges(emitter, (prev, next) => {
 
     setDirection(prevDirection => {
-      if (!focusKeys.find(k => next.value.has(k)))
-        return prevDirection;
-
-      const nextDirection = calculateKeyboardDirection(next.value)
-
-      if (nextDirection.x === 0 && nextDirection.y == 0 && focusKeys.find(k => prev.value.has(k)))
-        return prevDirection;
-
-      if (!screens.find(s => s.position.equals(nextDirection)))
-        return prevDirection;
-        
-      if (prevDirection.x === nextDirection.x &&
-          prevDirection.y === nextDirection.y)
-        return prevDirection;
+      const nextDirection = getNextDirection(screens, prev, next, prevDirection);
+      onDirectionChange(nextDirection)
       return nextDirection;
     })
   })
@@ -106,8 +113,8 @@ export type CompassLayoutProps = {
 
 export const CompassLayout/*: Component<CompassLayoutProps>*/ = ({ direction, screens }) => {
   const translatorRef = useRef();
-  const animation = useAnimatedVector2([direction.x, direction.y], [0, 0], 3, 1000);
-  const smoothAnim = useAnimatedVector2([direction.x, direction.y], [0, 0], 0, 1000);
+  const animation = useAnimatedVector2([direction.x, direction.y], [direction.x, direction.y], 3, 1000);
+  const smoothAnim = useAnimatedVector2([direction.x, direction.y], [direction.x, direction.y], 0, 1000);
 
   useEffect(() => {
     for (const [screenIndex, screenRef] of refMap) {
