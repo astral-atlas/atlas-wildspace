@@ -44,6 +44,10 @@ export type Character = {
 
   alive: ?('yes' | 'no' | 'maybe'),
 
+  art: ?$ReadOnlyArray<{
+    assetId: AssetID,
+  }>
+
 };
 */
 
@@ -83,7 +87,11 @@ export const castCharacter/*: Cast<Character>*/ = createObjectCaster({
   
   initiativeIconAssetId: c.maybe(castAssetID),
 
-  alive: c.maybe(c.enums(['yes', 'no', 'maybe']))
+  alive: c.maybe(c.enums(['yes', 'no', 'maybe'])),
+
+  art: c.maybe(c.arr(c.obj({
+    assetId: castAssetID,
+  })))
 });
 
 /*::

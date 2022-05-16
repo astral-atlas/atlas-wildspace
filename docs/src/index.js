@@ -18,6 +18,7 @@ import { assetPage, assetPages } from './asset';
 import { editorsPages, editorsPage } from './editors';
 import { gmPage, gmPages } from "./gm";
 import { paperPage, paperPages } from "./paper";
+import { libraryPage, libraryPages } from "./library";
 
 /*::
 export type Page = {
@@ -43,6 +44,7 @@ const rootPage = {
       editorsPage.link,
       gmPage.link,
       paperPage.link,
+      libraryPage.link,
     ],
     href: '/',
   }
@@ -57,7 +59,8 @@ const pages = [
   ...assetPages,
   ...editorsPages,
   ...gmPages,
-  ...paperPages
+  ...paperPages,
+  ...libraryPages,
 ];
 
 const normalizeURLPathname = pathname =>

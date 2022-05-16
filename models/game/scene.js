@@ -57,9 +57,9 @@ export const castExpositionScene/*: Cast<ExpositionScene>*/ = c.obj({
     'location': c.obj({ type: (c.lit('location')/*: Cast<'location'>*/), location: castLocationId }),
   }),
   description: c.or('type', {
-    'none':     c.obj({ type: c.lit('none') }),
+    'none':     c.obj({ type: (c.lit('none')/*: Cast<'none'>*/) }),
     'plaintext': c.obj({ type: c.lit('plaintext'), plaintext: c.str }),
-    'inherit': c.obj({ type: c.lit('inherit') })
+    'inherit': c.obj({ type: (c.lit('inherit')/*: Cast<'inherit'>*/) })
   }),
 
   tags: c.arr(c.str),

@@ -5,13 +5,14 @@
 /*:: import type { PerspectiveCamera, Scene, Vector2 } from "three"; */
 /*:: import type { LoopContextValue } from "./controls/loop"; */
 
-import { h, useRef, useEffect } from "@lukekaalim/act";
+import { h, useRef, useEffect, useState } from "@lukekaalim/act";
 import { perspectiveCamera, scene, useLookAt, useResizingRenderer, useWebGLRenderer } from "@lukekaalim/act-three";
 import { GridHelperGroup } from "./controls/helpers";
 import { useRenderLoopManager } from "./controls/loop";
 import styles from './demo.module.css';
 import { Vector3 } from "three";
 import { raycastManagerContext, useRaycastManager } from "./controls/raycast";
+import { EditorForm, EditorRangeInput } from "@astral-atlas/wildspace-components";
 
 const useAnimationContext = (canvasRef, sceneRef, cameraRef, webgl) => {
   const [onLoop, loopContext] = useRenderLoopManager()
@@ -153,4 +154,24 @@ export const LayoutDemo/*: Component<>*/ = ({ children }) => {
       children
     ]),
   ])
+}
+
+export const ScaledLayoutDemo/*: Component<>*/ = ({ children }) => {
+  const [scale, setScale] = useState(1);
+  return [
+    h(LayoutDemo, {}, [
+      h('div', { style: {
+        transformOrigin: '0 0',
+        transform: `scale(${scale})`,
+        width: `${100/scale}%`,
+        height: `${100/scale}%`,
+      } }, children)
+    ]),
+    h(EditorForm, {}, [
+      h(EditorRangeInput, {
+        label: 'Scale', min: 0.1,
+        max: 1, number: scale,
+        onNumberInput: scale => setScale(scale) })
+    ])
+  ]
 }

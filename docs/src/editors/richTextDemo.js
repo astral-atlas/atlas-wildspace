@@ -6,14 +6,11 @@ import type { Component } from "@lukekaalim/act";
 import { ProseMirror, useProseMirrorEditorState, prosePlugins } from "@astral-atlas/wildspace-components";
 import { proseSchema } from "@astral-atlas/wildspace-models";
 import { h, useMemo, useState } from "@lukekaalim/act";
-import { Decoration, DecorationSet } from 'prosemirror-view';
 import { EditorState, Plugin } from "prosemirror-state";
 import debounce from 'lodash.debounce';
 
-
 const plugins = [
   ...prosePlugins,
-  testDecorationPlugin()
 ]
 
 

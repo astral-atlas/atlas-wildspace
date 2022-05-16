@@ -15,7 +15,13 @@ import {
 import { calculateSpanProgress } from "@lukekaalim/act-curve/schedule";
 
 import layoutsText from './layouts.md?raw';
-import { CompassLayout, CompassLayoutMinimap, CornersLayout, useCompassKeysDirection, useElementKeyboard, useKeyboardTrack, useKeyboardTrackEmitter } from '@astral-atlas/wildspace-components';
+import {
+  CompassLayout, CompassLayoutMinimap, CornersLayout,
+  EditorButton,
+  EditorCheckboxInput,
+  EditorForm, EditorTextAreaInput, PopupOverlay, useCompassKeysDirection,
+  useElementKeyboard, useKeyboardTrack, useKeyboardTrackEmitter
+} from '@astral-atlas/wildspace-components';
 import { Vector2 } from "three";
 
 /*::
@@ -318,6 +324,29 @@ const Compass2Demo = () => {
   ]);
 }
 
+const PopupDemo = () => {
+  const [visible, setVisible] = useState(true);
+
+  return [
+    h(LayoutDemo, {}, [
+      h(EditorForm, {}, [
+        h(EditorButton, { label: 'Summon Popup', onButtonClick: () => setVisible(true) })
+      ]),
+      h(PopupOverlay, {
+        visible,
+        onBackgroundClick: () => setVisible(false),
+      }, h(EditorForm, {}, [
+        h(EditorButton, { label: 'Close Popup', onButtonClick: () => setVisible(false) }),
+        h(EditorTextAreaInput, { disabled: true })
+      ]))
+    ]
+      ),
+    h(EditorForm, {}, [
+      h(EditorCheckboxInput, { checked: visible, onCheckedChange: visible => setVisible(visible), label: 'Visible' })
+    ])
+  ]
+}
+
 const Demo = ({ node }) => {
   switch (node.attributes.name) {
     case 'compass':
@@ -326,6 +355,8 @@ const Demo = ({ node }) => {
       return h(CornersDemo);
     case 'compass2':
       return h(Compass2Demo)
+    case 'popup':
+      return h(PopupDemo);
     default:
       throw new Error();
   }

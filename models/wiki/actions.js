@@ -21,6 +21,6 @@ export type WikiDocAction =
 export const castWikiDocAction/*: Cast<WikiDocAction>*/ = c.or('type', {
   'focus': c.obj({ type: c.lit('focus'), docId: castWikiDocId, focus: castWikiDocFocusAction }),
   'update': c.obj({ type: c.lit('update'), docId: castWikiDocId, steps: c.arr(s => s), version: c.num, clientId: c.num }),
-  'open': c.obj({ type: c.lit('open'), docId: castWikiDocId }),
-  'close': c.obj({ type: c.lit('close'), docId: castWikiDocId }),
+  'open': c.obj({ type: (c.lit('open')/*: Cast<'open'>*/), docId: castWikiDocId }),
+  'close': c.obj({ type: (c.lit('close')/*: Cast<'close'>*/), docId: castWikiDocId }),
 })

@@ -11,3 +11,7 @@
 ## CornerLayout
 
 ::demo{name=corners}
+
+## PopupOverlay
+
+::demo{name=popup}
