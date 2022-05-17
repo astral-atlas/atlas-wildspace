@@ -1,8 +1,6 @@
 // @flow strict
 /*:: import type { Component } from "@lukekaalim/act"; */
 /*:: import type { Character, Player, Game } from "@astral-atlas/wildspace-models"; */
-/*:: import type { GameData } from "../hooks/api.js"; */
-import debounce from 'lodash.debounce';
 
 import {
   BrandedTextInput, FeatureDivider, PlainLabel,
@@ -10,32 +8,59 @@ import {
   SegmentedBottom, SegmentedMiddle,
 } from "@astral-atlas/wildspace-components";
 import { h, useState } from '@lukekaalim/act';
-import { useAPI } from "../hooks/api.js";
 import { ArmorCalculator } from "../../components/composite/armor";
-import { useAsync } from '../hooks/async.js';
+import { HealthDivider } from "../dividers/box";
+import { FeatureSheet } from "./dividers/FeatureSheet";
 
 /*::
-export type CharacterSheet2Props = {
-  disabled: boolean,
+export type CharacterSheetProps = {
+  disabled?: boolean,
   character: Character,
-  game: Game,
 };
 */
 
-export const CharacterSheet2/*: Component<CharacterSheet2Props>*/ = ({
+export const CharacterSheet/*: Component<CharacterSheetProps>*/ = ({
   disabled = false,
   character,
-  game,
 }) => {
-  //const api = useAPI();
-  const onChange = debounce(async updatedProps => {
-    //await api.game.character.update(game.id, character.id, { ...character, ...updatedProps });
-  }, 500, { trailing: true })
+
+  return h(FeatureSheet, { style: { display: 'flex', flexDirection: 'column' } }, [
+    h(BrandedTextInput, {
+      style: { overflow: 'hidden', maxWidth: '100%' },
+      disabled,
+      value: character.name,
+    }),
+    h('div', { style: { display: 'flex', flexDirection: 'row' }}, [
+      h(HealthDivider, { style: { flex: 1, padding: '1rem', margin: '0.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center' } }, [
+        h(ProficiencyInput, { disabled, value: character.initiativeBonus }, 'Initiative Bonus'),
+        h(SegmentedTop, { style: { marginBottom: '0.25rem' } }, [
+          h(PlainNumberInput, { disabled, value: character.maxHitpoints }),
+        ]),
+        h(SegmentedBottom),
+      ]),
+      h(HealthDivider, { style: { flex: 1, padding: '1rem', margin: '0.5rem', display: 'flex' } }, [
+        h(SquareDivider, { style: { flex: 1 }}, [
+          h('p', {}, 'EVIL CONTENT!')
+        ])
+      ])
+    ])
+  ])
 
   return [
-    h('div', { style: { backgroundColor: 'white', borderRadius: '24px', padding: '24px', color: 'black', maxHeight: '100%', display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}, [
+    h('div', { style: {
+      backgroundColor: 'white',
+      borderRadius: '24px',
+      padding: '24px',
+      color: 'black',
+      maxHeight: '100%',
+      display: 'flex', 
+      flexDirection: 'column',
+      boxSizing: 'border-box'
+    }}, [
       h(FeatureDivider, { style: { padding: '2rem', overflow: 'auto' }}, [
-        h('span', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' } }, h(BrandedTextInput, { disabled, value: character.name, onChange: name => onChange({ name }) })),
+        h('span', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' } },
+          h(BrandedTextInput, { disabled, value: character.name, onChange: name => onChange({ name }) })),
+
         h(SegmentedTop, { style: { marginTop: '24px' }}, [
           h('div', { style: { display: 'flex', flexDirection: 'row', justifyContent: 'center' } }, [
             h(ProficiencyInput, { disabled, value: character.initiativeBonus, onChange: initiativeBonus => onChange({ initiativeBonus })  }, 'Initiative Bonus'),
@@ -49,7 +74,7 @@ export const CharacterSheet2/*: Component<CharacterSheet2Props>*/ = ({
         ]),
         h(SegmentedBottom, { style: { marginTop: '1rem' }}, [
           h('div', { style: { display: 'flex', flexDirection: 'row', justifyContent: 'center' } }, [
-            h(CharacterImageControl, { character, game, disabled }, 'Upload')
+            //h(CharacterImageControl, { character, game, disabled }, 'Upload')
           ]),
         ]),
         //!disabled && h('button', { onClick: () => api.game.character.remove(game.id, character.id) }, 'Delete'),

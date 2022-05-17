@@ -7,6 +7,7 @@ import { h, useRef } from "@lukekaalim/act";
 import { useAnimatedNumber, useBezierAnimation } from "@lukekaalim/act-curve";
 
 import classes from './PopupOverlay.module.css';
+import { useAnimatedKeyedList } from "../animation/list";
 
 /*::
 export type PopupOverlayProps = {

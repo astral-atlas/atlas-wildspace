@@ -9,7 +9,7 @@ import classes from './Library.module.css';
 /*::
 export type LibraryAisleProps = {
   floor?: ElementNode,
-  desk?: ElementNode,
+  desk?: ?ElementNode,
 };
 */
 
@@ -19,6 +19,6 @@ export const LibraryAisle/*: Component<LibraryAisleProps>*/ = ({
 }) => {
   return [
     h('div', { class: classes.floor }, floor),
-    h('div', { class: classes.desk }, desk),
+    !!desk && h('div', { class: classes.desk }, desk),
   ]
 };

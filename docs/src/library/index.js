@@ -161,7 +161,7 @@ const PlayerPrepDemo = () => {
       backgroundDescription: '',
       baseACReason: '',
       acBonuses: [],
-      alive: true,
+      alive: 'yes',
     },
   ];
   const assets = new Map([
@@ -170,10 +170,15 @@ const PlayerPrepDemo = () => {
       description: { MIMEType: '', bytes: 0, creator: '', id: 'ASSET_A', name: '', uploaded: Date.now() }
     }]
   ]);
+  const game = {
+    id: 'GAME_0',
+    gameMasterId: 'GM',
+    name: 'GAME ZERO'
+  };
 
   return [
     h(ScaledLayoutDemo, {}, [
-      h(PlayerPrepLibrary, { characters, assets, catalogueHeader: h('h2', {}, 'Header Test') })
+      h(PlayerPrepLibrary, { characters, assets, catalogueHeader: h('h2', {}, 'Header Test'), game })
     ])
   ];
 }

@@ -1,7 +1,7 @@
 // @flow strict
 /*::
 import type { Component, ElementNode } from "@lukekaalim/act";
-import type { Character, AssetID } from "@astral-atlas/wildspace-models";
+import type { Character, AssetID, Game } from "@astral-atlas/wildspace-models";
 
 import type { AssetDownloadURLMap } from "../../asset/map";
 import type { GameData, } from "../../game/data";
@@ -31,6 +31,7 @@ export type PlayerPrepLibraryProps = {
   catalogueHeader: ?ElementNode,
   characters: $ReadOnlyArray<Character>,
   assets: AssetDownloadURLMap,
+  game: Game,
 };
 */
 
@@ -38,6 +39,7 @@ export const PlayerPrepLibrary/*: Component<PlayerPrepLibraryProps>*/ = ({
   catalogueHeader,
   characters,
   assets,
+  game,
 }) => {
   const [activeAisleId, setActiveAisleId] = useState('CHAR');
   const selection = useLibrarySelection();
@@ -68,6 +70,6 @@ export const PlayerPrepLibrary/*: Component<PlayerPrepLibraryProps>*/ = ({
         h(EditorTextInput, { label: 'Name', text: selectedCharacter.name }),
       ])
     }),
-    aisle: h(CharacterAisle, { assets, characters }),
+    aisle: h(CharacterAisle, { game, assets, characters }),
   });
 }

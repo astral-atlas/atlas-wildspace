@@ -1,0 +1,21 @@
+.featureSheet {
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 1rem;
+  background-color: white;
+  border-radius: 1rem;
+
+  max-width: 100%;
+  max-height: 100%;
+
+  box-sizing: border-box;
+}
+
+.border {
+  overflow: auto;
+
+  padding: 1rem;
+}

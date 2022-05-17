@@ -126,6 +126,7 @@ label.armor > span {
 
 input.branded {
   background-image: url('../assets/branded_input.svg');
+  background-position: center;
   height: calc(var(--scale, 1.5) * 132px);
   width: calc(var(--scale, 1.5) * 519px);
   border: none;

@@ -73,7 +73,6 @@ div.health {
   border-image-repeat: stretch stretch; 
   
   min-height: calc(var(--scale, 1.5) * 60px);
-  min-width: calc(var(--scale, 1.5) * 210px);
 }
 
 div.feature {

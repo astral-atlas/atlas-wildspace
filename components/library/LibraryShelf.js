@@ -39,6 +39,9 @@ export const LibraryShelf/*: Component<LibraryShelfProps>*/ = ({
       return;
     selection.replace([]);
   }
+  if (books.length < 1)
+    return null;
+
   return h('section', {
     className: classes.shelf,
     onDblClick,

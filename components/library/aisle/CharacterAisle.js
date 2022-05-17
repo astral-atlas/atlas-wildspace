@@ -15,6 +15,8 @@ import { LibraryShelf } from "../LibraryShelf";
 import { EditorForm, EditorButton, EditorTextInput } from "../../editor";
 import { PopupOverlay } from "../../layout";
 import { CharacterSheet2 } from "../../../www/characters/CharacterSheet2";
+import { LibraryFloor, LibraryFloorHeader } from "../LibraryFloor";
+import { CharacterSheet } from "../../paper/CharacterSheet";
 
 /*::
 export type CharacterAisleProps = {
@@ -30,33 +32,36 @@ export const CharacterAisle/*: Component<CharacterAisleProps>*/ = ({
   assets,
 }) => {
   const selection = useLibrarySelection();
+  const [filter, setFilter] = useState('');
 
-  const selectedCharacter = characters.find(c => selection.selected.has(c.id));
-  const [editCharacterSheet, setEditCharacterSheet] = useState(false)
+  const filteredCharacters = characters.filter(c => !filter || c.name.includes(filter))
+  const selectedCharacter = filteredCharacters.find(c => selection.selected.has(c.id));
 
   return [
     h(LibraryAisle, {
-      floor: h(LibraryShelf, { selection, books: characters.map(c => {
-        const asset = c.art && c.art[0] && assets.get(c.art[0].assetId)
-        return {
-          id: c.id,
-          title: c.name,
-          coverURL: asset && asset.downloadURL,
-        }
-      }) }),
-      desk: selectedCharacter && h(EditorForm, {}, [
-        h(EditorTextInput, { disabled: true, label: 'ID', text: selectedCharacter.id }),
-        h(EditorTextInput, { disabled: true, label: 'Name', text: selectedCharacter.name }),
-        h(EditorButton, { label: 'Open Character Sheet', onButtonClick: () => setEditCharacterSheet(true) }),
-      ])
+      floor: h(LibraryFloor, {}, [
+        h(LibraryFloorHeader, {
+          title: 'Characters',
+          filter: { text: filter, onFilterInput: f => setFilter(f) }
+        }),
+        h(EditorForm, {}, [
+          h(EditorButton, { label: 'Create new Character' })
+        ]),
+        h(LibraryShelf, { selection, books: filteredCharacters.map(c => {
+          const asset = c.art && c.art[0] && assets.get(c.art[0].assetId)
+          return {
+            id: c.id,
+            title: c.name,
+            coverURL: asset && asset.downloadURL,
+          }
+        }) })
+      ]),
     }),
     h(PopupOverlay, {
-      visible: editCharacterSheet,
-      onBackgroundClick: () => setEditCharacterSheet(false)
-    }, selectedCharacter && h(CharacterSheet2, {
-      game,
+      visible: !!selectedCharacter,
+      onBackgroundClick: () => selection.replace([])
+    }, selectedCharacter && h(CharacterSheet, {
       character: selectedCharacter,
-      disabled: false
     }))
   ];
 };
