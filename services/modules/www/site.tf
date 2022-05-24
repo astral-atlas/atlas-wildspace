@@ -9,17 +9,8 @@ resource "aws_amplify_app" "site" {
   build_spec = file("${path.module}/buildspec.yaml")
 
   custom_rule {
-    source = "/<*>"
-    status = "404"
-    target = "/index.html"
-  }
-  custom_rule {
-    source = "/room"
-    status = "200"
-    target = "/index.html"
-  }
-  custom_rule {
-    source = "/magic-item"
+    source = "</^[^.]+$/>"
+
     status = "200"
     target = "/index.html"
   }
