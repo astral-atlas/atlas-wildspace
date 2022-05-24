@@ -1,0 +1,21 @@
+
+.miniEditor {
+  padding: 1rem;
+}
+
+.miniEditor img {
+  text-align: center;
+  box-sizing: border-box;
+  padding: 1rem;
+  width: 100%;
+  object-fit: cover;
+}
+
+.miniRenderer {
+  width: 100%;
+}
+
+.miniRenderer:focus {
+  outline: 1px dotted black;
+  outline-offset: 2px;
+}

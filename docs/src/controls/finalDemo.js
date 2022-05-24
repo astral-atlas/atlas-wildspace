@@ -43,10 +43,11 @@ export const useBoardCameraControl = (
   cameraRef/*: Ref<?PerspectiveCamera>*/,
   readInputs/*: () => Frame<Set<string>>[]*/,
   height/*: number*/ = 40,
+  initialPosition/*: [number, number]*/ = [0, 0]
 ) => {
   const cameraStateRef = useRef({
     rotationAnimation: createInitialCubicBezierAnimation(1/8),
-    positionParticle: { position: [0, 0], velocityPerMs: [0, 0] }
+    positionParticle: { position: initialPosition, velocityPerMs: [0, 0] }
   });
   const [heightAnim] = useAnimatedNumber(height, height);
   useAnimation((now) => {

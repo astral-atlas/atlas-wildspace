@@ -1,0 +1,24 @@
+{
+  "name": "@astral-atlas/wildspace-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/astral-atlas/wildspace.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/astral-atlas/wildspace/issues"
+  },
+  "homepage": "https://github.com/astral-atlas/wildspace#readme",
+  "dependencies": {
+    "@astral-atlas/wildspace-models": "*",
+    "@lukekaalim/test": "^8.3.0",
+    "uuid": "^8.3.2"
+  }
+}

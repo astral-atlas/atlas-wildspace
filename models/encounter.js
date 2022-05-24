@@ -102,3 +102,4 @@ export * from './encounter/actions.js';
 export * from './encounter/map.js';
 export * from './encounter/reducer.js';
 export * from './encounter/mini.js';
+export * from './encounter/board.js';

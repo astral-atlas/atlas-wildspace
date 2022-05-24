@@ -98,9 +98,10 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
   const onUpdate = (camera) => {
     if (!mouseEnteredRef.current) {
       const prevFocused = lastIntersectionRef.current && lastIntersectionRef.current.object;
+      if (!prevFocused)
+        return;
       emitExit(prevFocused, null)
       lastIntersectionRef.current = null;
-      console.log('exit');
       return;
     }
       

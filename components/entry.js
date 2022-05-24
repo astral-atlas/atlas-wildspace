@@ -42,3 +42,8 @@ export * from './animation/index.js';
 export * from './paper/index.js';
 export * from './richText/index.js';
 export * from './library/index.js';
+export * from './raycast/index.js';
+export * from './encounter/index.js';
+export * from './camera/index.js';
+export * from './particle/index.js';
+export * from './sky/index.js';

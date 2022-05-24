@@ -2,6 +2,8 @@
 /*::
 import type { Component, ElementNode } from "@lukekaalim/act";
 import type { Character, AssetID, Game } from "@astral-atlas/wildspace-models";
+import type { WildspaceClient } from "@astral-atlas/wildspace-client2";
+import type { UserID } from "@astral-atlas/sesame-models";
 
 import type { AssetDownloadURLMap } from "../../asset/map";
 import type { GameData, } from "../../game/data";
@@ -18,16 +20,26 @@ import { CharacterAisle } from "../aisle/CharacterAisle";
 
 /*::
 export type PrepLibraryProps = {
+  client: WildspaceClient,
   gameData: GameData
 };
 */
 
-export const PrepLibrary/*: Component<PrepLibraryProps>*/ = ({ gameData }) => {
-  return null;
+export const PrepLibrary/*: Component<PrepLibraryProps>*/ = ({ gameData, client }) => {
+  return h(PlayerPrepLibrary, {
+    client,
+    userId: gameData.userId,
+    assets: gameData.assets,
+    catalogueHeader: 'Working on it!',
+    game: gameData.game,
+    characters: gameData.characters,
+  });
 }
 
 /*::
 export type PlayerPrepLibraryProps = {
+  client: WildspaceClient,
+  userId: UserID,
   catalogueHeader: ?ElementNode,
   characters: $ReadOnlyArray<Character>,
   assets: AssetDownloadURLMap,
@@ -36,6 +48,8 @@ export type PlayerPrepLibraryProps = {
 */
 
 export const PlayerPrepLibrary/*: Component<PlayerPrepLibraryProps>*/ = ({
+  client,
+  userId,
   catalogueHeader,
   characters,
   assets,
@@ -70,6 +84,6 @@ export const PlayerPrepLibrary/*: Component<PlayerPrepLibraryProps>*/ = ({
         h(EditorTextInput, { label: 'Name', text: selectedCharacter.name }),
       ])
     }),
-    aisle: h(CharacterAisle, { game, assets, characters }),
+    aisle: h(CharacterAisle, { game, assets, characters, client, userId }),
   });
 }

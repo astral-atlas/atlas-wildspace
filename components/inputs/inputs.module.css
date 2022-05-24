@@ -52,7 +52,6 @@ label.armor > input
   border: 0;
   background: none;
   text-align: center;
-  font: inherit;
 }
 
 label.proficency > input {
@@ -137,7 +136,6 @@ input.branded {
     calc(var(--scale, 1.5) * 140px)
     calc(var(--scale, 1.5) * 35px)
     calc(var(--scale, 1.5) * 125px);
-  font: inherit;
 }
 
 input.plain {
@@ -146,7 +144,6 @@ input.plain {
   margin: 0;
   border: none;
   background: none;
-  font: inherit;
   border-bottom: 1px solid black;
   color: black;
   box-sizing: border-box;

@@ -13,6 +13,7 @@ import type {
   Room,
   AssetID, AssetInfo,
   WikiDoc,
+  Character
 } from "@astral-atlas/wildspace-models";
 import type { WildspaceClient, WikiConnectionClient } from "@astral-atlas/wildspace-client2";
 import type { AssetDownloadURLMap } from "../asset/map";
@@ -31,6 +32,7 @@ export type GameAssetData = {|
   playlists: $ReadOnlyArray<AudioPlaylist>,
   tracks: $ReadOnlyArray<AudioTrack>,
   locations: $ReadOnlyArray<Location>,
+  characters: $ReadOnlyArray<Character>,
   magicItems: $ReadOnlyArray<MagicItem>,
   wikiDocs: $ReadOnlyArray<WikiDoc>,
   scenes: {
@@ -48,6 +50,7 @@ const emptyGameData = {
   tracks: [],
   locations: [],
   magicItems: [],
+  characters: [],
   wikiDocs: [],
   scenes: {
     exposition: []
@@ -104,6 +107,10 @@ export const useGameData = (
     client.game.wiki.read(game.id)
       .then(wikiDocs => updateData({ wikiDocs }))
   }, [times.wikiDoc])
+  useEffect(() => {
+    client.game.character.listAdvanced(game.id)
+      .then(([characters, relatedAssets]) => updateData({ characters }, relatedAssets))
+  }, [times.characters])
 
   const memoData = useMemo(() => ({
     ...data,
@@ -125,6 +132,7 @@ export const useGameConnection = (
     tracks: 0,
     playlists: 0,
     scenes: 0,
+    characters: 0,
     locations: 0,
     magicItems: 0,
     wikiDoc: 0,
@@ -149,6 +157,10 @@ export const useGameConnection = (
           return setUpdateTimes(t => ({ ...t, locations: Date.now() }))
         case 'magicItem':
           return setUpdateTimes(t => ({ ...t, magicItems: Date.now() }))
+        case 'wikiDoc':
+          return setUpdateTimes(t => ({ ...t, wikiDoc: Date.now() }))
+        case 'characters':
+          return setUpdateTimes(t => ({ ...t, characters: Date.now() }))
       }
     }, connectionId => setConncetionId(connectionId))
     setWiki(wiki);

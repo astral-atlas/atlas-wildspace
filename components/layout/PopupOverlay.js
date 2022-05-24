@@ -35,12 +35,12 @@ export const PopupOverlay/*: Component<PopupOverlayProps>*/ = ({
     const { current: popup } = popupRef;
     if (!background || !popup)
       return;
-      popup.style.transform = `translate(0%, ${(1 - point.position) * 8}rem)`;
-    background.style.opacity = `${point.position * 2}`;
+    //popup.style.transform = `translate(0%, ${(1 - point.position) * 8}rem)`;
+    //background.style.opacity = `${point.position * 2}`;
   });
   
   return [
-    h('div', { onClick, class: classes.background, ref: backgroundRef, style: { pointerEvents: visible ? 'auto' : 'none' } },
+    h('div', { onClick, class: classes.background, ref: backgroundRef, style: { pointerEvents: visible ? 'auto' : 'none', opacity: visible ? 1 : 0 } },
       h('div', { class: classes.popup, ref: popupRef },
         children)),
   ];

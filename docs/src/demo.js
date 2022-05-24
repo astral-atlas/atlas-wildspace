@@ -1,7 +1,9 @@
 // @flow strict
 /*:: import type { Component, Ref } from '@lukekaalim/act'; */
 /*:: import type { SceneProps } from '@lukekaalim/act-three'; */
-
+/*::
+import type { RaycastManager } from "./controls/raycast";
+*/
 /*:: import type { PerspectiveCamera, Scene, Vector2 } from "three"; */
 /*:: import type { LoopContextValue } from "./controls/loop"; */
 
@@ -84,6 +86,7 @@ export const useDemoSetup = ()/*: { canvasRef: Ref<?HTMLCanvasElement>, cameraRe
 export type GeometryDemoProps = {
   sceneProps?: SceneProps,
   canvasProps?: { [string]: mixed },
+  raycastManager?: RaycastManager,
   showGrid?: boolean,
 }
 */
@@ -91,11 +94,13 @@ export type GeometryDemoProps = {
 export const GeometryDemo/*: Component<GeometryDemoProps>*/ = ({
   children,
   showGrid = true,
+  raycastManager,
   sceneProps,
   canvasProps
 }) => {
   const { canvasRef, cameraRef, sceneRef, loop } = useDemoSetup();
-  const raycast = useRaycastManager();
+  const localRaycast = useRaycastManager();
+  const raycast = raycastManager || localRaycast;
 
   useLookAt(cameraRef, new Vector3(0, 0, 0), []);
   useEffect(() => {
@@ -123,7 +128,7 @@ export const GeometryDemo/*: Component<GeometryDemoProps>*/ = ({
       h(raycastManagerContext.Provider, { value: raycast }, [
         children,
       ]),
-      h(perspectiveCamera, { ref: cameraRef, position: new Vector3(16, 16, 16), fov: 16 }),
+      h(perspectiveCamera, { ref: cameraRef, position: new Vector3(-16, 16, -16), fov: 16 }),
       showGrid && h(GridHelperGroup, { interval: 10, size: 10 }),
     ])
   ];
@@ -142,9 +147,10 @@ export const DOMDemo/*: Component<DOMDemoProps>*/ = () => {
 }
 
 
-export const LayoutDemo/*: Component<>*/ = ({ children }) => {
+export const LayoutDemo/*: Component<{ style?: {} }>*/ = ({ children, style }) => {
   return h('div', { style: { position: 'relative', width: '100%', height: '512px', overflow: 'auto' } }, [
     h('div', {  style: {
+      ...style,
       position: 'relative',
       width: '100%', height: '100%',
       maxWidth: '100%', maxHeight: '100%',
@@ -156,10 +162,10 @@ export const LayoutDemo/*: Component<>*/ = ({ children }) => {
   ])
 }
 
-export const ScaledLayoutDemo/*: Component<>*/ = ({ children }) => {
+export const ScaledLayoutDemo/*: Component<{ style?: {} }>*/ = ({ children, style }) => {
   const [scale, setScale] = useState(1);
   return [
-    h(LayoutDemo, {}, [
+    h(LayoutDemo, { style }, [
       h('div', { style: {
         transformOrigin: '0 0',
         transform: `scale(${scale})`,

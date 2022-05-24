@@ -11,7 +11,8 @@
     "book",
     "costume",
     "docs",
-    "task"
+    "task",
+    "test"
   ],
   "devDependencies": {
     "concurrently": "^7.0.0",

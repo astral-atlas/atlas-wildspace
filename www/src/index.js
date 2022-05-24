@@ -17,6 +17,7 @@ import { identityStore } from '../lib/storage';
 import { apiContext } from '../hooks/api';
 import { configContext } from '../hooks/config';
 import { MagicItemPage } from './magicItem';
+import { PrepPage } from "./prep";
 
 const Page = ({ nav }) => {
   switch (nav.location.pathname) {
@@ -27,6 +28,8 @@ const Page = ({ nav }) => {
       return h(MagicItemPage, { nav })
     case '/room':
       return h(RoomPage)
+    case '/prep':
+      return h(PrepPage)
   }
 }
 

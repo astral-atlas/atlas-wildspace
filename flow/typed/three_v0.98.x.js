@@ -28,6 +28,9 @@ declare module three {
     distanceToManhattan(v: Vector2): number;
     distanceToSquared(v: Vector2): number;
     divide(v: Vector2): Vector2;
+    rotateAround(center: Vector2, angleInRadians: number): this;
+
+    length(): number;
 // Divides this vector by v.
 // # .divideScalar ( s )
 
@@ -464,9 +467,7 @@ declare module three {
     updateMorphTargets(): void;
   }
 
-  declare export class UVMapping {
-
-  }
+  declare export var UVMapping: string;
 
   declare export class ImageUtils {
     static loadTexture: (path: string, mapping: typeof UVMapping) => Texture;
@@ -691,7 +692,7 @@ declare module three {
   }
 
   declare export class Material {
-    constructor(): this;
+    constructor(inputs: MaterialInputs): this;
 
     alphaTest: number,
     // looks like an enum
@@ -736,6 +737,15 @@ declare module three {
     setValues(vs: mixed): void;
     toJSON(meta: mixed): string;
     update(): void;
+  }
+
+  declare type MaterialInputs = {
+    opacity?: number,
+    map?: ?Texture,
+  }
+
+  declare export class SpriteMaterial extends Material {
+    constructor(inputs: MaterialInputs): SpriteMaterial
   }
 
   declare type ShaderMaterialInput = {
@@ -1011,20 +1021,24 @@ declare module three {
   declare export class Texture {
     dispose(): void;
     needsUpdate: boolean;
+
+    minFilter: typeof NearestFilter | typeof LinearFilter;
   }
 
   declare export var RedFormat: string;
+  declare export var RGBAFormat: string;
   declare export var UnsignedByteType: string;
 
   declare export var RepeatWrapping: string;
   declare export var NearestFilter: string;
+  declare export var LinearFilter: string;
 
   declare export class DataTexture extends Texture {
     constructor(
       data: $TypedArray,
       width: number, height: number,
       format?: string, type?: string,
-      mapping?: string,
+      mapping?: string | typeof UVMapping  ,
       uWrapping?: string, vWrapping?: string,
       filter?: string,
     ): this;

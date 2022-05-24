@@ -1,0 +1,45 @@
+.characterSheet {
+  max-width: 48rem;
+  max-height: 100%;
+  display: flex;
+
+  font-family: 'Crimson Text';
+}
+
+
+.characterSheet input, .characterSheet textarea {
+  font-family: 'Roboto', sans-serif;
+}
+
+.statEditor {
+  display: flex;
+  flex-direction: column;
+
+  align-items: stretch;
+  width: 100%;
+}
+
+.health {
+  padding: 1rem;
+}
+
+.miniEditor {
+  padding: 1rem;
+}
+
+.miniEditor img {
+  text-align: center;
+  box-sizing: border-box;
+  padding: 1rem;
+  width: 100%;
+  object-fit: cover;
+}
+
+.miniRenderer {
+  width: 100%;
+}
+
+.miniRenderer:focus {
+  outline: 1px dotted black;
+  outline-offset: 2px;
+}

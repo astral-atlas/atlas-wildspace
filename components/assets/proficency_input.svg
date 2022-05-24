@@ -7,7 +7,7 @@
    viewBox="0 0 40.092855 12.200292"
    version="1.1"
    id="svg4010"
-   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
    sodipodi:docname="proficency_input.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -29,16 +29,29 @@
      fit-margin-right="0"
      fit-margin-bottom="0"
      inkscape:zoom="6.0007856"
-     inkscape:cx="75.99005"
-     inkscape:cy="35.245385"
+     inkscape:cx="73.157088"
+     inkscape:cy="20.247349"
      inkscape:window-width="1920"
      inkscape:window-height="1019"
      inkscape:window-x="1920"
      inkscape:window-y="30"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer1" />
+     inkscape:current-layer="layer2" />
   <defs
      id="defs4007" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Layer 2">
+    <path
+       style="fill:#ffffff;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
+       d="M 3.2275637,0.98502035 2.2369638,1.5925037 0.9346612,3.6066584 0.3142054,6.4580214 1.1927996,8.9400755 2.8398403,10.487607 2.7225312,10.968081 3.2275637,11.215575 5.4863999,11.768378 6.1030553,11.762028 9.4576399,9.9469899 11.03825,6.9055749 10.895488,4.8356969 9.7633064,2.5399748 7.993319,1.1455804 6.1030553,0.43821482 5.4863999,0.43186482 4.2743731,0.75259897 Z"
+       id="path923" />
+    <path
+       style="fill:#ffffff;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
+       d="m 38.390493,2.0575615 0.595779,0.820082 0.887568,0.7520466 0.02387,4.9075681 -0.816131,0.6465639 -0.68643,1.0014479 H 9.2484505 L 10.762794,7.7917735 10.995402,5.719668 10.642565,3.9421641 9.2191307,2.1018058 10.578218,1.9667863 Z"
+       id="path1236" />
+  </g>
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"

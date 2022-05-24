@@ -12,6 +12,7 @@ export default {
     port: 8080
   },
   assetsInclude: [
+    '**/*.glb',
     '**/*.gltf',
     '**/*.md'
   ],

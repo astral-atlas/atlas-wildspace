@@ -7,7 +7,7 @@
    viewBox="0 0 58.187519 17.596909"
    version="1.1"
    id="svg3329"
-   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
    sodipodi:docname="segmented_bottom_border.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -27,17 +27,26 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:zoom="0.7500982"
-     inkscape:cx="-71.990574"
-     inkscape:cy="84.655582"
+     inkscape:zoom="4.2431962"
+     inkscape:cx="121.60644"
+     inkscape:cy="26.513033"
      inkscape:window-width="1920"
      inkscape:window-height="1019"
      inkscape:window-x="1920"
      inkscape:window-y="30"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer1" />
+     inkscape:current-layer="layer2" />
   <defs
      id="defs3326" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Layer 2">
+    <path
+       style="fill:#ffffff;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
+       d="m 0.17319478,0.19665023 -0.00528,15.84656877 0.96250012,0.467517 0.611499,0.527754 0.00376,0.394863 54.6750701,0.0086 0.302623,-0.64378 0.765175,-0.515865 0.552704,-0.271998 0.01016,-15.85989548 -0.926521,0.0104567 L 56.709751,0.55267159 55.985121,0.8331605 54.812723,0.63499833 53.964273,0.18190784 4.2538319,0.17111822 3.1170559,0.70335195 1.735451,0.75926531 1.0550828,0.14372457 Z"
+       id="path857" />
+  </g>
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"

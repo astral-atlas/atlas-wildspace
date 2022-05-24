@@ -24,7 +24,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { lineSegments, mesh, sprite } from "@lukekaalim/act-three";
 import { maxSpan, useAnimatedNumber, useAnimation, useBezierAnimation, useTimeSpan } from "@lukekaalim/act-curve";
-import { useDisposable } from "@lukekaalim/act-three/hooks";
+import { useDisposable } from "@lukekaalim/act-three";
 
 import targetIconURL from './target_icon.png';
 import board_grid_tilemap from '../../geometry/board_grid_tilemap.png';
@@ -33,7 +33,7 @@ import {
   useAnimatedVector2,
 } from "../../pages/layouts";
 import { calculateCubicBezierAnimationPoint } from "@lukekaalim/act-curve/bezier";
-import { Tilemap, TilemapTileIDTexture } from "../../geometry/tilemap";
+import { Tilemap, TilemapTile2DTexture } from "@astral-atlas/wildspace-components";
 
 
 /*::
@@ -100,6 +100,7 @@ const CharacterMiniRenderer = ({ position, mini, focused, selected }) => {
   const [focusAnimation] = useAnimatedNumber(focused ? 1 : 0, 0, { duration: 200, impulse: 3 });
   const [selectedAnimation] = useAnimatedNumber(selected ? 1 : 0, 0, { duration: 200, impulse: 3 });
   const animatedPosition = useAnimatedVector2([position.x, position.z], [position.x, position.z], 30, 600)
+  const animatedPositionSlow = useAnimatedVector2([position.x, position.z], [position.x, position.z], 0, 600)
 
   const max = maxSpan([focusAnimation.span, animatedPosition.max, selectedAnimation.span]);
 
@@ -109,13 +110,17 @@ const CharacterMiniRenderer = ({ position, mini, focused, selected }) => {
       return;
 
     const positionPoint = calculateBezier2DPoint(animatedPosition, now);
+    const positionSlowPoint = calculateBezier2DPoint(animatedPositionSlow, now);
     const focusPoint = calculateCubicBezierAnimationPoint(focusAnimation, now);
     const selectedPoint = calculateCubicBezierAnimationPoint(selectedAnimation, now);
 
     material.opacity = 0.5 + (selectedPoint.position/2);
+
+    const velocity =  Math.sqrt(Math.pow(positionSlowPoint.velocity[0], 2) + Math.pow(positionSlowPoint.velocity[1], 2));
+
     characterSprite.position.set(
       positionPoint.position[0],
-      position.y + (focusPoint.position * 1.5) + (selectedPoint.position) + (Math.sin(Math.min(...positionPoint.progress) * Math.PI) * 5),
+      position.y + (focusPoint.position * 1.5) + (selectedPoint.position) + (Math.min(velocity * 0.1, 2)),
       positionPoint.position[1],
     );
   }, [max, animatedPosition, focusAnimation])
@@ -143,7 +148,7 @@ const pieceVisuals = new Map([
 const PieceRenderer = ({ piece: { pieceId, area: { origin } }, focused, selected }) => {
 
   const position = new Vector3((origin[0] * 10) + 5, (origin[2] * 10) + 5, (origin[1] * 10) + 5);
-  const visual = pieceVisuals.get(pieceId);
+  const visual = pieceVisuals.get('cool');
   if (!visual)
     return h(mesh, { geometry: cubeGeo, position });
 
@@ -310,16 +315,17 @@ const useGridGeometry = (width, height) => {
 const tilesTexture = new TextureLoader().load(board_grid_tilemap);
 tilesTexture.minFilter = THREE.LinearFilter;
 const tileSize = new Vector2(8, 8);
+const redColor = new Color('red')
 
 const BoardLineGrid = ({ board }) => {
   const mapTexture = useDisposable(() => {
     const data = new Uint8Array(Array.from({ length: board.width * board.height }).map(_ => 0));
-    return new TilemapTileIDTexture(data, new Vector2(board.width, board.height));
+    return new TilemapTile2DTexture(data, new Vector2(board.width, board.height));
   }, [board.width, board.height]);
 
   return h(Tilemap, {
     mapTexture, tileSize, tilesTexture,
-    color: new Color('red'), opacity: 0.9,
+    color: redColor, opacity: 0.9,
     position: new Vector3(0, 0, 0),
     scale: new Vector3(10, 10, 10)
   });
@@ -350,7 +356,6 @@ const BoardRenderer = ({ board }) => {
       setCursorPosition(new Vector3((position[0] * 10) + 5, (position[2]  *10) + 0.5, (position[1] * 10) + 5));
     },
     exit(e) {
-      console.log('exit')
       setFocused(false);
     },
     click: (intersection) => {
@@ -360,8 +365,6 @@ const BoardRenderer = ({ board }) => {
       onBoardClick(board, position);
     }
   }, [board, onBoardClick])
-
-  console.log(focused);
 
   return [
     h(mesh, { visible: false, geometry, ref }),
@@ -395,8 +398,8 @@ type EncounterProps = {
 */
 export const Encounter/*: Component<EncounterProps>*/ = ({
   board,
-  subscribeAuxClick,
-  movePiece,
+  subscribeAuxClick = _ => {},
+  movePiece = _ => {},
 }) => {
   const [focus, setFocus] = useState(null);
   const [selection, setSelection] = useState([]);

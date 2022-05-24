@@ -98,7 +98,7 @@ div.segmentedTop {
   border-image-outset: 0px 0px 0px 0px;
   border-image-repeat: stretch stretch; 
   
-  min-height: calc(var(--scale, 1.5) * 45px);
+  min-height: calc(var(--scale, 1.5) * 85px);
   min-width: calc(var(--scale, 1.5) * 45px);
 }
 div.segmentedMiddle {
@@ -109,7 +109,7 @@ div.segmentedMiddle {
   border-image-outset: 0px 0px 0px 0px;
   border-image-repeat: stretch stretch; 
   
-  min-height: calc(var(--scale, 1.5) * 45px);
+  min-height: calc(var(--scale, 1.5) * 85px);
   min-width: calc(var(--scale, 1.5) * 45px);
 }
 div.segmentedBottom {
@@ -120,7 +120,7 @@ div.segmentedBottom {
   border-image-outset: 0px 0px 0px 0px;
   border-image-repeat: stretch stretch; 
   
-  min-height: calc(var(--scale, 1.5) * 45px);
+  min-height: calc(var(--scale, 1.5) * 85px);
   min-width: calc(var(--scale, 1.5) * 45px);
 }
 

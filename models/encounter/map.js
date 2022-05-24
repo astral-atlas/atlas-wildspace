@@ -13,6 +13,12 @@ export type Euler3D = { x: number, y: number, z: number, order: ?string };
 export const castVector3D/*: Cast<Vector3D>*/ = c.obj({ x: c.num, y: c.num, z: c.num });
 export const castEuler3D/*: Cast<Euler3D>*/ = c.obj({ x: c.num, y: c.num, z: c.num, order: c.maybe(c.str) });
 
+export const isVector3DEqual = (a/*: Vector3D*/, b/*: Vector3D*/)/*: boolean*/ => (
+  a.x === b.x && 
+  a.y === b.y && 
+  a.z === b.z
+)
+
 /*::
 export type PropID = string;
 export type Prop = {

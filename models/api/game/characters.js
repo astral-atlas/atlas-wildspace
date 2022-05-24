@@ -3,6 +3,9 @@
 /*:: import type { ResourceDescription, ConnectionDescription } from "@lukekaalim/net-description"; */
 /*:: import type { GameID, Game, GameMaster, Player } from '../../game.js'; */
 /*:: import type { CharacterID, MonsterID, Character, Monster } from '../../character.js'; */
+/*::
+import type { AssetInfoDatabase } from "../../asset";
+*/
 
 import {
   createObjectCaster as obj, castString as str,
@@ -14,6 +17,7 @@ import { castGameId, castGame } from '../../game.js';
 import { castCharacter, castCharacterId } from '../../character.js';
 import { castUserId } from '@astral-atlas/sesame-models';
 import { castGameMaster, castPlayer } from "../../game.js";
+import { castAssetID, castAssetDescription } from '../../asset.js';
 
 /*::
 export type CharactersAPI = {|
@@ -21,7 +25,7 @@ export type CharactersAPI = {|
     GET: {
       query: { gameId: GameID },
       request: empty,
-      response: { type: 'found', characters: $ReadOnlyArray<Character> },
+      response: { type: 'found', characters: $ReadOnlyArray<Character>, relatedAssets: AssetInfoDatabase },
     },
     POST: {
       query: empty,
@@ -47,7 +51,14 @@ export const gameCharactersResourceDescription/*: ResourceDescription<Characters
 
   GET: {
     toQuery: c.obj({ gameId: castGameId }),
-    toResponseBody: obj({ type: lit('found'), characters: c.arr(castCharacter) }),
+    toResponseBody: obj({
+      type: lit('found'),
+      characters: c.arr(castCharacter),
+      relatedAssets: c.arr(c.tup([
+        castAssetID,
+        c.maybe(c.obj({ description: castAssetDescription, downloadURL: c.str }))
+      ]))
+    }),
   },
   POST: {
     toRequestBody: c.obj({ gameId: castGameId, name: c.str, playerId: castUserId }),

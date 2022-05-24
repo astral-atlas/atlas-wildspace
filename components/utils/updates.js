@@ -14,6 +14,7 @@ export type GameUpdateTimes = {
   playlists: number,
   locations: number,
   scenes: number,
+  characters: number,
   magicItems: number,
   wikiDoc: number,
 }
@@ -29,6 +30,7 @@ export const useGameUpdateTimes = (
     tracks: 0,
     playlists: 0,
     scenes: 0,
+    characters: 0,
     locations: 0,
     magicItems: 0,
     wikiDoc: 0,
@@ -52,6 +54,8 @@ export const useGameUpdateTimes = (
           return setUpdateTimes(t => ({ ...t, magicItems: Date.now() }))
         case 'wikiDoc':
           return setUpdateTimes(t => ({ ...t, wikiDoc: Date.now() }))
+        case 'characters':
+          return setUpdateTimes(t => ({ ...t, characters: Date.now() }))
       }
     })
     return close;

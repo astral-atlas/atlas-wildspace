@@ -18,7 +18,12 @@ export const createCharacterRoutes/*: RoutesConstructor*/ = (services) => {
       getGameId: r => r.query.gameId,
       async handler({ game }) {
         const { result: characters } = await services.data.characters.query(game.id);
-        return { status: HTTP_STATUS.ok, body: { type: 'found', characters } };
+        const relatedAssets = await Promise.all(characters
+          .map(c => c.initiativeIconAssetId)
+          .filter(Boolean)
+          .map(async assetId => [assetId, await services.asset.peek(assetId)])
+        )
+        return { status: HTTP_STATUS.ok, body: { type: 'found', characters, relatedAssets } };
       }
     },
     POST: {
@@ -50,6 +55,7 @@ export const createCharacterRoutes/*: RoutesConstructor*/ = (services) => {
 
           initiativeIconAssetId: null,
           alive: null,
+          art: [],
         };
 
         await services.data.characters.set(game.id, newCharacter.id, newCharacter);
