@@ -1,51 +1,46 @@
 // @flow strict
-
-
 /*::
-import type { Component } from "@lukekaalim/act";
-import type { Character, BoxBoardArea, Vector3D } from "@astral-atlas/wildspace-models";
-import type { AssetDownloadURLMap } from "../asset/map";
-import type { EncounterContext } from "./encounterContext";
+import type { Component } from '@lukekaalim/act';
+import type { Vector3D, BoxBoardArea } from "@astral-atlas/wildspace-models";
+
 import type { EncounterLocalState } from "./Encounter";
 */
 
-import { h, useContext, useRef } from "@lukekaalim/act";
+import { SpriteMaterial, TextureLoader, Vector2, Vector3 } from "three";
+import { h, useRef } from "@lukekaalim/act";
+
+import { maxSpan, useTimeSpan, useAnimatedNumber } from "@lukekaalim/act-curve";
 import { sprite, useDisposable } from "@lukekaalim/act-three";
-import { TextureLoader, Vector2, Vector3, SpriteMaterial } from "three";
-import {
-  calculateCubicBezierAnimationPoint,
-  useAnimatedNumber,
-} from "@lukekaalim/act-curve/bezier";
-import { maxSpan, useTimeSpan } from "@lukekaalim/act-curve";
-import { encounterContext } from "./encounterContext";
+
 import { isVector3DEqual } from "@astral-atlas/wildspace-models";
+
 import { calculateBezier2DPoint, useAnimatedVector2 } from "../animation/2d";
+import { calculateCubicBezierAnimationPoint } from "@lukekaalim/act-curve/bezier";
 
 /*::
 export type EncounterBoardPieceProps = {
-  encounter: EncounterLocalState,
+  textureURL: ?string,
   boardBox: BoxBoardArea,
-  piece: { pieceId: string, area: BoxBoardArea },
-  character: Character,
-  assets: AssetDownloadURLMap,
-}
+  piece: { area: { position: Vector3D }, pieceId: string },
+  encounter: EncounterLocalState
+};
 */
 
-
-export const EncounterBoardCharacterPiece/*: Component<EncounterBoardPieceProps>*/ = ({
+export const EncounterBoardPiece/*: Component<EncounterBoardPieceProps>*/ = ({
   encounter,
   piece,
-  character,
-  assets,
   boardBox,
+  textureURL,
 }) => {
   const ref = useRef();
-  const asset = character.initiativeIconAssetId && assets.get(character.initiativeIconAssetId);
+  
+
   const material = useDisposable(() => {
-    const map = asset ? new TextureLoader().load(asset.downloadURL) : null;
+    const map = textureURL ? new TextureLoader()
+      .load(textureURL) : null;
 
     return new SpriteMaterial({ map, opacity: 0.5 })
-  }, [asset && asset.downloadURL])
+  }, [textureURL])
 
 
   const selected = encounter.selection && encounter.selection.pieceId == piece.pieceId;

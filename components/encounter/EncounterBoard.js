@@ -3,7 +3,7 @@
 import type { Component, Ref } from "@lukekaalim/act";
 import type { Board, BoxBoardArea, Vector3D } from "@astral-atlas/wildspace-models";
 
-import type { EncounterState } from "./Encounter";
+import type { EncounterLocalState } from "./Encounter";
 */
 import { h, useContext, useState, useRef, useMemo, useEffect } from "@lukekaalim/act";
 import { mesh, useDisposable } from "@lukekaalim/act-three";
@@ -38,7 +38,7 @@ const boardPositionToLocalVector = (position/*: Vector3D*/, boardBox)/*: Vector3
 
 /*::
 export type EncounterBoardProps = {
-  encounter: EncounterState,
+  encounter: EncounterLocalState,
   board: Board,
 }
 */
@@ -87,20 +87,6 @@ export const EncounterBoard/*: Component<EncounterBoardProps>*/ = ({
     update: (a, v) => [v, a[1]], 
     exit: ([v, b], now) => [v, interpolateCubicBezierAnimation(b, 0, 200, 3, now)],
   }, [cursorPosition])
-
-  const resource = useContext(resourcesContext)
-
-  useEffect(() => {
-    const { current: root } = ref;
-    if (!root)
-      return;
-    root.add(resource.floatingScene);
-    resource.floatingScene.position.copy(boardPositionToLocalVector({ x: 0, y: 0, z: 0 }, boardBox))
-    resource.floatingScene.translateY(-2)
-    return () => {
-      root.remove(resource.floatingScene)
-    }
-  }, [resource])
   
   return [
     h(BoardLineGrid, { ref, board, boardBox }),

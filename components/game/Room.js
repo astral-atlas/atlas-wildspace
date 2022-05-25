@@ -74,7 +74,14 @@ const RoomManagerScreen = ({ client, gameData, roomState, roomId, gameId }) => {
   return h(RoomScreen, {}, [
     h(EditorForm, {}, [
       h(SelectEditor, {
+        label: 'Exposition',
         values: [...gameData.scenes.exposition.map(e => ({ title: e.title, value: e.id })), { title: 'None', value: '' }],
+        selected: roomState.scene.activeScene && roomState.scene.activeScene.type === 'exposition' ? roomState.scene.activeScene.ref : '',
+        onSelectedChange: onSelectedSceneChange
+      }),
+      h(SelectEditor, {
+        label: 'Encounter',
+        values: [],
         selected: roomState.scene.activeScene && roomState.scene.activeScene.type === 'exposition' ? roomState.scene.activeScene.ref : '',
         onSelectedChange: onSelectedSceneChange
       }),
@@ -107,17 +114,16 @@ export const Room/*: Component<RoomProps>*/ = ({ client, gameData, roomState, us
   const [directionParam, setDirectionParam] = useURLParam('direction');
 
   const sceneRef = roomState.scene.activeScene;
-  const scene = sceneRef && sceneRef.type === 'exposition' && gameData.scenes.exposition.find(e => e.id === sceneRef.ref);
 
   const gameMasterScreens = [
-    { content: h(RoomSceneScreen, { scene, gameData }), icon: null, position: new Vector2(0, 0) },
+    { content: h(RoomSceneScreen, { scene: sceneRef, gameData }), icon: null, position: new Vector2(0, 0) },
     { content: h(RoomAssetLibraryScreen, { client, gameData, gameId }), icon: null, position: new Vector2(-1, 1) },
     { content: h(RoomLobbyScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(0, 1) },
     { content: h(RoomManagerScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(-1, -1) },
     { content: h(RoomWikiScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(1, 0) },
   ];
   const playerScreens = [
-    { content: h(RoomSceneScreen, { scene, gameData }), icon: null, position: new Vector2(0, 0) },
+    { content: h(RoomSceneScreen, { scene: sceneRef, gameData }), icon: null, position: new Vector2(0, 0) },
     { content: h(RoomLobbyScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(0, 1) },
     { content: h(RoomWikiScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(1, 0) },
   ]
@@ -134,8 +140,8 @@ export const Room/*: Component<RoomProps>*/ = ({ client, gameData, roomState, us
 
   return [
     h('div', { ref, style: { width: '100%', height: '100%', position: 'absolute' } }, [
-      !!scene && h('div', { className: styles.background },
-        h(SceneBackgroundRenderer, { gameData, scene })),
+      !!sceneRef && h('div', { className: styles.background },
+        h(SceneBackgroundRenderer, { gameData, scene: sceneRef, client, roomState })),
       h(CompassLayout, { screens, direction }),
     ])
   ]

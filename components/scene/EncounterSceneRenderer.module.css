@@ -1,0 +1,8 @@
+.encounterSceneCanvas {
+  width: 100%;
+
+}
+
+.encounterSceneCanvas:focus {
+  outline: 1px dotted black;
+}

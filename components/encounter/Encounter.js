@@ -115,7 +115,7 @@ export type Encounter3Props = {
   board: Board,
 };
 
-export type EncounterState = {
+export type EncounterLocalState = {
   subscribePieceMove: (handler: (event: { pieceId: string, position: Vector3D }) => mixed) => () => void,
 
   cursor: ?{ boardId: string, position: Vector3D },
@@ -132,7 +132,7 @@ export const useEncounter = ({
   keyboard,
   board,
   pieces,
-}/*: Encounter3Props*/)/*: EncounterState*/ => {
+}/*: Encounter3Props*/)/*: EncounterLocalState*/ => {
   const [cursor, setCursor] = useState/*:: <?{ boardId: string, position: Vector3D }>*/(null);
   const [selection, setSelection] = useState/*:: <?{ pieceId: string }>*/(null);
 

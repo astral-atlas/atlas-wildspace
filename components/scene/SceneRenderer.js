@@ -1,7 +1,8 @@
 // @flow strict
 /*::
 import type { Component } from '@lukekaalim/act';
-import type { ExpositionScene, EncounterScene } from '@astral-atlas/wildspace-models';
+import type { ExpositionScene, EncounterScene, SceneRef, RoomState } from '@astral-atlas/wildspace-models';
+import type { WildspaceClient } from "@astral-atlas/wildspace-client2";
 import type { GameData } from "../game/data";
 */
 
@@ -12,10 +13,11 @@ import { calculateCubicBezierAnimationPoint, createInitialCubicBezierAnimation, 
 import { useAnimatedKeyedList } from "../animation/list";
 import { useRefMap } from "../editor";
 import { hash } from 'spark-md5';
+import { EncounterSceneRenderer } from "./EncounterSceneRenderer";
 
 /*::
 export type SceneRendererProps = {
-  scene: ExpositionScene,
+  scene: SceneRef,
   gameData: GameData
 };
 */
@@ -50,6 +52,24 @@ const textReducer = {
 }
 
 export const SceneRenderer/*: Component<SceneRendererProps>*/ = ({ scene, gameData }) => {
+  switch (scene.type) {
+    case 'exposition':
+      const expositionScene = gameData.scenes.exposition.find(s => s.id === scene.ref);
+      if (!expositionScene)
+        return null;
+      return h(ExpositionSceneRenderer, { scene: expositionScene, gameData });
+    case 'encounter':
+      return null;
+  }
+}
+
+/*::
+export type ExpositionSceneRendererProps = {
+  scene: ExpositionScene,
+  gameData: GameData,
+};
+*/
+export const ExpositionSceneRenderer/*: Component<ExpositionSceneRendererProps>*/ = ({ scene, gameData }) => {
   const description = getContentForScene(scene, [], gameData.locations);
 
   if (!description)
@@ -80,12 +100,6 @@ export const SceneRenderer/*: Component<SceneRendererProps>*/ = ({ scene, gameDa
   )
 };
 
-/*::
-export type SceneBackgroundRendererProps = {
-  scene: ExpositionScene,
-  gameData: GameData
-};
-*/
 
 const getBackgroundForSubject = (subject, locations) => {
   switch (subject.type) {
@@ -169,7 +183,42 @@ const reducers = {
   }
 };
 
-export const SceneBackgroundRenderer/*: Component<SceneBackgroundRendererProps>*/ = ({ scene, gameData }) => {
+/*::
+export type SceneBackgroundRendererProps = {
+  scene: SceneRef,
+  gameData: GameData,
+  roomState: RoomState,
+  client: WildspaceClient,
+};
+*/
+
+export const SceneBackgroundRenderer/*: Component<SceneBackgroundRendererProps>*/ = ({ scene, gameData, roomState, client }) => {
+  switch (scene.type) {
+    case 'exposition':
+      const expositionScene = gameData.scenes.exposition.find(s => s.id === scene.ref);
+      if (!expositionScene)
+        return null;
+      return h(ExpositionSceneBackgroundRenderer, { scene: expositionScene, gameData });
+    case 'encounter':
+      return h(EncounterSceneRenderer, {
+        gameId: gameData.game.id,
+        roomId: roomState.roomId,
+        assets: gameData.assets,
+        characters: gameData.characters,
+        client,
+        encounterState: roomState.encounter,
+      });
+  }
+}
+
+/*::
+export type ExpositionSceneBackgroundRendererProps = {
+  scene: ExpositionScene,
+  gameData: GameData,
+}
+*/
+
+export const ExpositionSceneBackgroundRenderer/*: Component<ExpositionSceneBackgroundRendererProps>*/ = ({ scene, gameData }) => {
   const background = getBackgroundForSubject(scene.subject, gameData.locations);
 
   if (!background)

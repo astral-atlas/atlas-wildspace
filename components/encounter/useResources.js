@@ -6,6 +6,7 @@ import { createContext, useContext, useEffect, useState } from "@lukekaalim/act"
 
 import {
   BufferGeometry,
+  Color,
   Material,
   Mesh,
   MeshBasicMaterial,
@@ -24,6 +25,7 @@ export type EncounterResources = {
   texture: Texture,
   cursorGeometry: BufferGeometry,
   floatingScene: Object3D,
+  pirateScene: Object3D,
 }
 */
 
@@ -31,6 +33,7 @@ const defaultResource = {
   texture: new Texture(),
   cursorGeometry: new BufferGeometry(),
   floatingScene: new Object3D(),
+  pirateScene: new Object3D(),
 }
 
 export const resourcesContext/*: Context<EncounterResources>*/ = createContext(defaultResource);
@@ -49,12 +52,44 @@ export const useResourcesLoader = ()/*: EncounterResources*/ => {
         }))
       });
 
+    const parsePirateScene = (root) => {
+      if (!root)
+        return new Object3D();
+
+      const testMaterial = new MeshStandardMaterial({ color: new Color('white') });
+      const sandMaterial = new MeshStandardMaterial({ color: new Color('#E7A15D') });
+      const resourceMaterial = new MeshStandardMaterial({ map: texture })
+      
+      const parseObject = (object) => {
+        if (object instanceof Mesh) {
+          object.castShadow = true;
+          object.receiveShadow = true;
+          const { material } = object;
+          if (material instanceof Material) {
+            console.log(material.name);
+            if (material.name === 'floor')
+              object.material = sandMaterial;
+            else if (material.name === 'test')
+              object.material = testMaterial;
+            else
+              object.material = resourceMaterial
+          }
+        }
+        return object.children.map(parseObject);
+      };
+
+      parseObject(root);
+
+      return root;
+    }
+
 
     loader.load(resourcesModelURL, async function ( gltf ) {
       const { children } = gltf.scene;
       const cursor = children.find(c => c.name === 'cursor');
       const floating = children.find(c => c.name === 'floating_scene');
       const bigRock = children.find(c => c.name === 'big_rock');
+      const pirateScene = parsePirateScene(children.find(c => c.name === 'pirate_stage_1'));
       const cursorGeometry = cursor && cursor instanceof Mesh && cursor.geometry || resources.cursorGeometry;
       const floatingScene = floating || resources.floatingScene;
 
@@ -70,7 +105,8 @@ export const useResourcesLoader = ()/*: EncounterResources*/ => {
       setResources(r => ({
         ...r,
         cursorGeometry,
-        floatingScene
+        floatingScene,
+        pirateScene
       }))
     } );
   }, []);

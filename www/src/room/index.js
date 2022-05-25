@@ -31,6 +31,8 @@ export const RoomPage/*: Component<>*/ = () => {
   const gameData = useGameData(game, identity.proof.userId, times, client);
   const roomState = useRoomState(gameId, roomId, client);
 
+  console.log(roomState);
+
   if (!gameData)
     return 'Loading (Resources)'
 

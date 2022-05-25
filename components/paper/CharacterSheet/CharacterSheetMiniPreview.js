@@ -125,6 +125,33 @@ export const CharacterSheetMiniPreview/*: Component<CharacterSheetMiniPreviewPro
     })
   }, []);
 
+  useEffect(() => {
+    const { current: root } = sceneRef;
+    if (!root)
+      return;
+
+    const boardPositionToLocalVector = (position/*: Vector3D*/, boardBox)/*: Vector3*/ => {
+      return new Vector3(
+        (position.x + 0.5 + Math.floor(boardBox.size.x/2)) * 10,
+        (position.z * 10),
+        (position.y + 0.5 + Math.floor(boardBox.size.y/2)) * 10,
+      )
+    }
+    root.add(resources.floatingScene);
+    resources.floatingScene.position.copy(boardPositionToLocalVector({ x: 0, y: 0, z: 0 }, boardBox))
+    resources.floatingScene.translateY(-2)
+    return () => {
+      root.remove(resources.floatingScene)
+    }
+  }, [resources])
+  useEffect(() => {
+    const { current: camera } = cameraRef;
+    if (!camera)
+      return;
+    camera.fov = 30;
+    camera.updateProjectionMatrix();
+  }, [])
+
   return [
     h(ThreeCanvasScene, {
       cameraRef,
@@ -148,7 +175,7 @@ export const CharacterSheetMiniPreview/*: Component<CharacterSheetMiniPreviewPro
       h(EncounterBoard, { board, encounter }, [
         h(EncounterBoardCharacterPiece, { assets, character, piece, boardBox, encounter })
       ]),
-      h(perspectiveCamera, { ref: cameraRef }),
+      h(perspectiveCamera, { ref: cameraRef, fov: 30 }),
     ]))),
   ];
 }

@@ -101,14 +101,20 @@ export const ExpositionSceneDemo/*: Component<>*/ = () => {
       return { enter: v.enter, exit: t, key: v.key, value: v.value};
     }
   }
+  const client = {
+
+  };
+  const roomState = {
+
+  };
 
   return [
     h('div', { style: { display: 'flex' } }, gameData.scenes.exposition.map(scene =>
       h('button', { onClick: onSceneClick(scene.id) }, scene.title))),
     h(LayoutDemo, {}, [
       !!scene && [
-        h(SceneBackgroundRenderer, { scene, gameData }),
-        h(SceneRenderer, { scene, gameData }),
+        h(SceneBackgroundRenderer, { scene: { type: 'exposition', ref: scene.id }, gameData, client, roomState }),
+        h(SceneRenderer, { scene: { type: 'exposition', ref: scene.id }, gameData }),
       ]
     ]),
   ]

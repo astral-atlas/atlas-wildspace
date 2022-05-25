@@ -108,7 +108,8 @@ export const Tilemap/*: Component<TilemapProps>*/ = ({
     const x = mapSize.x * scale;
     const y = mapSize.y * scale;
     const buffer = new BufferGeometry();
-    const positions = new Uint8Array([
+    console.log(x, y);
+    const positions = new Uint16Array([
       [0, 0, 0],
       [0, 0, y],
       [x, 0, y],

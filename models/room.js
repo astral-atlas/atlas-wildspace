@@ -35,6 +35,7 @@ export type RoomState = {|
   audio: RoomAudioState,
   scene: RoomSceneState,
   lobby: RoomLobbyState,
+  encounter?: ?EncounterState,
 |};
 
 export type RoomUpdate =
@@ -56,7 +57,8 @@ export const castRoomState/*: Cast<RoomState>*/ = createObjectCaster({
   roomId: castRoomId,
   audio: castRoomAudioState,
   lobby: castRoomLobbyState,
-  scene: castRoomSceneState
+  scene: castRoomSceneState,
+  encounter: c.maybe(castEncounterState)
 })
 
 export const castRoomUpdate/*: Cast<RoomUpdate> */ = c.or('type', {

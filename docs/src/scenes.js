@@ -13,6 +13,7 @@ import { SceneRenderer } from "./scenes/exposition.js";
 import styles from './scenes.module.css';
 import { useState } from "@lukekaalim/act/hooks";
 import { ExpositionSceneDemo } from "./scenes/sceneDemo";
+import { EncounterSceneDemo } from "./scenes/encounterDemo";
 
 const demoLocationText = `
 # The Mysterious City
@@ -66,6 +67,8 @@ const DemoDirective = ({ node }) => {
   switch (node.attributes.name) {
     case 'location_exposition':
       return h(ExpositionSceneDemo);
+    case 'encounter':
+      return h(EncounterSceneDemo);
     default:
       throw new Error(`Unknown Demo Name`);
   }

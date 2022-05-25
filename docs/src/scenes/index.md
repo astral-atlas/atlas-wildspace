@@ -31,3 +31,7 @@ This is so that the background can be indiviually shown behind
 elements that aren't specifically the scene content.
 
 ::demo{name=location_exposition}
+
+## EncounterScene
+
+::demo{name=encounter}
