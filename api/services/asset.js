@@ -20,7 +20,7 @@ export const createS3AssetService = (data/*: WildspaceData*/, config/*: AWSS3Ass
   const calculateDownloadURL = async (key) => {
     const { result } = await data.assetLinkCache.get(key, Date.now());
     if (result) {
-      return result.downloadURL;
+      //return result.downloadURL;
     }
 
     const getObject = new GetObjectCommand({
