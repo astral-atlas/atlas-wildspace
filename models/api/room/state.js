@@ -8,7 +8,7 @@ import { castRoomStateEvent } from "../../room/state.js";
 import type { ResourceDescription, ConnectionDescription } from "@lukekaalim/net-description";
 import type { AuthorizedConnection } from "../meta.js"; 
 
-import type { RoomID, LobbyMessageContent, RoomState, RoomUpdate } from "../../room";
+import type { RoomID, LobbyMessageContent, RoomState } from "../../room";
 import type { GameID } from "../../game";
 import type { RoomStateEvent } from "../../room/state";
 

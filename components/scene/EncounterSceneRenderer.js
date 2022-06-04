@@ -8,29 +8,39 @@ import type { AssetDownloadURLMap } from "../asset/map";
 */
 import { ThreeCanvasScene } from "../scenes/ThreeCanvasSceneProps";
 import { useKeyboardTrack } from "../keyboard/track";
-import { EncounterBoardPiece } from "../encounter";
+import { EncounterBoardCharacterPiece, EncounterBoardPiece } from "../encounter";
 import { useSky } from "../sky/useSky";
 import { useRaycastManager } from "../raycast/manager";
-import { OrthographicCamera, Vector2, Vector3 } from "three";
+import {
+  Box2,
+  OrthographicCamera,
+  Vector2,
+  Vector3,
+  PCFSoftShadowMap,
+  CameraHelper,
+  Color,
+} from "three";
 
 
-import { h, useEffect, useRef } from "@lukekaalim/act";
+import { h, useEffect, useRef, useState } from "@lukekaalim/act";
 import { useEncounter } from "../encounter/Encounter";
 import { EncounterBoard } from "../encounter/EncounterBoard";
 import { useElementKeyboard } from "../keyboard";
 import { resourcesContext, useResourcesLoader } from "../encounter/useResources";
 import { raycastManagerContext } from "../raycast";
-import { ambientLight, directionalLight, perspectiveCamera } from "@lukekaalim/act-three";
+import { ambientLight, directionalLight, group, orthographicCamera, perspectiveCamera, scene } from "@lukekaalim/act-three";
 
 import classes from './EncounterSceneRenderer.module.css';
 import { calculateBoardBox } from "@astral-atlas/wildspace-models";
+import { useRenderSetup } from "../three/useRenderSetup";
+import { EditorRangeInput } from "../editor/range";
 
 const HARDCODED_BOARD = {
   id: 'BOARD_0',
   floors: [
     { type: 'box', box: {
       position: { x: 1, y: 0, z: 0 },
-      size: { x: 30, y: 25, z: 1 }
+      size: { x: 30, y: 24, z: 1 }
     } }
   ]
 };
@@ -64,38 +74,37 @@ export const EncounterSceneRenderer/*: Component<EncounterSceneRendererProps>*/ 
   encounterState,
   client
 }) => {
-  const sceneRef = useRef();
-  const cameraRef = useRef();
-  const canvasRef = useRef();
-
-  const kse = useElementKeyboard(canvasRef);
-  const keyboard = useKeyboardTrack(kse);
-
-  const raycast = useRaycastManager();
-
-  const raycastEvents = {
-    onPointerEnter: raycast.onMouseEnter,
-    onPointerMove: raycast.onMouseMove,
-    onPointerLeave: raycast.onMouseLeave,
-    onClick: raycast.onClick,
-  }
-  const onLoop = () => {
-    const { current: camera } = cameraRef;
-    if (!camera)
-      return;
-    raycast.onUpdate(camera);
-  }
+  const renderSetup = useRenderSetup({}, ({ renderer }) => {
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = PCFSoftShadowMap;
+  });
   
   const board = HARDCODED_BOARD;
-  const pieces = encounterState.minis.map(mini => ({
-    boardId: board.id,
-    pieceId: mini.id,
-    area: { position: mini.position, size: { x: 1, y: 1, z: 1 }}
-  }))
+  const miniPieces = new Map(encounterState.minis.map(mini => [
+    mini.id,
+    {
+      boardId: board.id,
+      id: mini.id,
+      area: { type: 'box', box: { 
+        position: mini.position,
+        size: { x: 1, y: 1, z: 1 }
+      } }
+    }
+  ]));
+  const pieces = [
+    ...miniPieces.values(),
+  ];
+  const boards = [
+    board,
+  ]
+  const cameraBounds = new Box2(
+    new Vector2(0, -300),
+    new Vector2(300, 0)
+  )
 
-  const encounterLocalState = useEncounter({ canvasRef, cameraRef, board, keyboard, pieces });
+  const encounterController = useEncounter({ ...renderSetup, boards, pieces, cameraBounds });
   useEffect(() => {
-    return encounterLocalState.subscribePieceMove(async (event) => {
+    return encounterController.subscribePieceMove(async (event) => {
       await client.room.performEncounterActions(gameId, roomId, [
         { type: 'move', miniId: event.pieceId, newPosition: event.position }
       ]);
@@ -103,68 +112,88 @@ export const EncounterSceneRenderer/*: Component<EncounterSceneRendererProps>*/ 
   }, [])
 
   const canvasProps = {
-    ...raycastEvents,
+    ref: renderSetup.canvasRef,
     tabIndex: 0,
     class: classes.encounterSceneCanvas
   };
+  const [elevation, setElevation] = useState(0);
+  const [azimuth, setAzimuth] = useState(220);
 
-  const resource = useResourcesLoader()
-
-  const sky = useSky(10, 180);
-  useEffect(() => {
-    const { current: currentScene } = sceneRef;
-    if (!currentScene)
-      return;
-    currentScene.add(sky);
-    sky.scale.setScalar( 450000 );
-    return () => currentScene.remove(sky);
-  }, [])
+  const resources = useResourcesLoader()
+  const sky = useSky(elevation, azimuth);
+  const lightRef = useRef();
+  const lightTargetRef = useRef();
 
   useEffect(() => {
-    const { current: root } = sceneRef;
-    if (!root)
+    const { current: root } = renderSetup.sceneRef;
+    const { current: light } = lightRef;
+    const { current: lightTarget } = lightTargetRef;
+    
+    if (!root || !light || !lightTarget)
       return;
 
-    root.add(resource.pirateScene);
-    resource.pirateScene.position.copy(boardPositionToLocalVector({ x: 0, y: 0, z: 0 }).add(new Vector3(0, 0, 5)))
-    resource.pirateScene.translateY(-2)
+    const cameraHelper = new CameraHelper(light.shadow.camera)
+    light.target = lightTarget;
+
+    root.add(sky);
+    root.add(cameraHelper);
+    root.add(resources.pirateScene);
+
+    sky.scale.setScalar( 4500 );
+    resources.pirateScene.position.copy(boardPositionToLocalVector({ x: 1, y: -1, z: 0 }).add(new Vector3(0, 0, 5)))
+    resources.pirateScene.translateY(-2)
+
     return () => {
-      root.remove(resource.pirateScene)
+      root.remove(resources.pirateScene);
+      root.remove(cameraHelper);
+      root.remove(sky);
     }
-  }, [resource])
+  }, [resources])
 
+  const [bias, setBias] = useState(-0.005);
 
-  return h(ThreeCanvasScene, { onLoop, cameraRef, canvasRef, sceneRef, canvasProps }, [
-    h(ambientLight, { intensity: 0.8 }),
-    h(directionalLight, {
-      position: new Vector3(20, 100, 80),
-      intensity: 0.4,
-      castShadow: true,
-      shadow: {
-        camera: new OrthographicCamera(-512, 512, -512, 512, 0, 200),
-        radis: 3,
-        bias: -0.04,
-        mapSize: new Vector2(512, 512)
-      }
-    }),
-    h(perspectiveCamera, { ref: cameraRef }),
-    h(resourcesContext.Provider, { value: resource }, [
-      h(raycastManagerContext.Provider, { value: raycast }, [
-        h(EncounterBoard, { board, encounter: encounterLocalState }, [
-          encounterState.minis.map(mini => {
-            const piece = pieces.find(p => p.pieceId === mini.id);
-            if (!piece)
-              return null
-            const assetId = getImageAssetId(mini, characters)
-            const asset = assetId && assets.get(assetId);
-            const textureURL = asset && asset.downloadURL;
-      
-            return h(EncounterBoardPiece, { piece, boardId: board.id, encounter: encounterLocalState, textureURL, boardBox })
-          })
-        ]),
-      ]),
+  return [
+    h('canvas', canvasProps),
+    h(scene, { ref: renderSetup.sceneRef }, [
+      h(ambientLight, { intensity: 0.2, color: new Color('orange') }),
+      h(directionalLight, {
+        ref: lightRef,
+        position: boardPositionToLocalVector({ x: 0, y: 0, z: 0 })
+          .add(new Vector3(-60, 100, -60)),
+        intensity: 0.8,
+        castShadow: true,
+        shadow: {
+          camera: new OrthographicCamera(-256, 256, -256, 256, 0, 500),
+          radis: 3,
+          bias,
+          mapSize: new Vector2(2048, 2048)
+        }
+      }),
+      h(group, {
+        ref: lightTargetRef,
+        position: boardPositionToLocalVector({ x: 0, y: 0, z: 0 })
+      }),
+      h(perspectiveCamera, { ref: renderSetup.cameraRef }),
+      h(EncounterBoard, { board, encounter: encounterController, resources }, [
+        encounterState.minis.map(mini => {
+          const piece = miniPieces.get(mini.id);
+          if (!piece)
+            return null;
+  
+          switch (mini.type) {
+            case 'character':
+              const character = characters.find(c => c.id === mini.characterId);
+              if (!character)
+                return null;
+  
+              return h(EncounterBoardCharacterPiece, { piece, assets, character, encounter: encounterController });
+            default:
+              return null;
+          }
+        })
+      ])
     ])
-  ])
+  ];
 }
 
 const getImageAssetId = (mini, characters) => {

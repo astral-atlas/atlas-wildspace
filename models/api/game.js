@@ -12,6 +12,11 @@ import type { MagicItemAPI } from "./game/magicItem";
 import type { WikiDocEvent, WikiDocAction} from "../wiki.js";
 import type { AuthorizedConnection } from "./meta";
 import type { GameConnectionID } from "../game/connection";
+import type { InitiativeAPI } from "./game/initiative";
+import type { MiniTheaterAPI } from "./game/miniTheater";
+import type { AdvancedUpdatesAPI } from "./game/advancedUpdates";
+import type { ExpositionAPI } from "./game/exposition";
+import type { ScenesAPI } from "./game/scene";
 */
 
 import {
@@ -20,19 +25,22 @@ import {
   createNullableCaster as maybe,
   c,
 } from '@lukekaalim/cast';
-import { castUserId } from '@astral-atlas/sesame-models';
+
 import { castGameId, castGame, castGameUpdate, castGameConnectionId, } from '../game.js';
-import { castCharacter } from '../character.js';
-import { castGameMaster, castPlayer } from "../game.js";
 import { charactersAPI } from './game/characters.js';
 import { playersAPI } from './game/players.js';
 import { monstersAPI } from './game/monsters.js';
 import { encountersAPI } from './game/encounters.js';
 import { magicItemAPI } from './game/magicItem.js';
+import { miniTheaterAPI } from './game/miniTheater.js';
+import { initiativeAPI } from './game/initiative.js';
+import { advancedUpdatesAPI } from "./game/advancedUpdates.js";
 
 import { castWikiDocAction, castWikiDocEvent } from "../wiki.js";
 import { wikiAPI } from './game/wiki.js';
 import { createAuthorizedConnectionDescription } from './meta.js';
+import { scenesAPI } from "./game/scene.js";
+import { expositionAPI } from './game/exposition.js';
 
 /*::
 export type GameAPI = {
@@ -73,7 +81,12 @@ export type GameAPI = {
       response: { type: 'found', games: $ReadOnlyArray<Game> },
     },
   |},
+  ...ScenesAPI,
   ...MagicItemAPI,
+  ...InitiativeAPI,
+  ...MiniTheaterAPI,
+  ...AdvancedUpdatesAPI,
+  ...ExpositionAPI
 };
 */
 
@@ -125,6 +138,11 @@ export const gameAPI = {
   ...encountersAPI,
   ...magicItemAPI,
   ...wikiAPI,
+  ...miniTheaterAPI,
+  ...scenesAPI,
+  ...initiativeAPI,
+  ...advancedUpdatesAPI,
+  ...expositionAPI,
   '/games': gameResourceDescription,
   '/games/all': allGamesResourceDescription,
   '/games/updates': gameStateConnectionDescription,
@@ -138,3 +156,6 @@ export * from './game/location.js';
 export * from './game/magicItem.js';
 export * from './game/wiki.js';
 export * from './game/meta.js';
+export * from './game/initiative.js';
+export * from './game/miniTheater.js';
+export * from './game/advancedUpdates.js';

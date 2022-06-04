@@ -22,20 +22,7 @@ import {
   FilesButtonEditor,
   SelectEditor,
 } from "../editor/form";
-import { ThreeCanvasScene } from "../scenes/ThreeCanvasSceneProps";
-import { perspectiveCamera } from "@lukekaalim/act-three";
-import { useLookAt } from "@lukekaalim/act-three";
-import { Vector3 } from "three";
 import { useFullscreen } from "../utils";
-import { useBoardCameraControl } from "../../docs/src/controls/finalDemo";
-import { useKeyboardTrack } from "../keyboard/track";
-import { useElementKeyboard } from "../keyboard/changes";
-import { useSubscriptionList } from "../subscription";
-import { Encounter2 } from "../encounter/Encounter";
-import { EncounterBoard } from "../encounter/EncounterBoard";
-import { EncounterBoardCharacterPiece } from "../encounter/EncounterBoardCharacterPiece";
-import { raycastManagerContext, useRaycastManager } from "../raycast/manager";
-import { EditorRangeInput } from "../editor";
 import { CharacterSheetMiniPreview } from "./CharacterSheet/CharacterSheetMiniPreview";
 import debounce from "lodash.debounce";
 

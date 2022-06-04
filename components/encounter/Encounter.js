@@ -1,19 +1,27 @@
 // @flow strict
 /*::
-import type { BoxBoardArea, Board, Vector3D } from "@astral-atlas/wildspace-models";
+import type { BoxBoardArea, Board, Vector3D, Piece } from "@astral-atlas/wildspace-models";
 import type { Component, Ref } from "@lukekaalim/act";
-import type { PerspectiveCamera } from "three";
+import type { Box3 } from "three";
 
 import type { KeyboardTrack, KeyboardStateEmitter } from "../keyboard";
-import type { RaycastManager } from "../raycast/manager";
+import type { RaycastManager } from "../raycast";
+import type { LoopController } from "../three";
 */
 import { useState,  h, useEffect } from "@lukekaalim/act";
 
 import { encounterContext } from "./encounterContext";
 import { isPointInsideBoardBox, isPointOnBoardFloor, isVector3DEqual, calculateBoardBox } from "@astral-atlas/wildspace-models";
 import { useBoardCameraControl } from "../camera/useBoardCameraControl";
-import { Vector2, Vector3 } from "three";
+import { Box2, PerspectiveCamera, Vector2, Vector3 } from "three";
 import { useSubscriptionList } from "../subscription";
+import { useParticle2dSimulation } from "../particle";
+import { getVector2ForKeyboardState, getVectorForKeys } from "../keyboard/axis";
+import { setFocusTransform2 } from "../utils/vector";
+import { calculateKeyVelocity } from "../keyboard";
+import { calculateCubicBezierAnimationPoint, useAnimatedNumber } from "@lukekaalim/act-curve";
+import { useRaycastManager } from "../raycast/manager";
+import { useRaycastElement } from "../raycast";
 
 /*::
 export type Encounter2Props = {
@@ -35,121 +43,148 @@ const boardPositionToLocalVector = (position/*: Vector3D*/, boardBox)/*: Vector3
   )
 }
 
-export const Encounter2 /*: Component<Encounter2Props>*/= ({
-  children,
-  cameraRef,
-  raycast,
-  keyboard,
-  gameArea,
-  board,
-}) => {
-  const [hover, setHover] = useState/*:: <null | { boardId: string, boardPosition: Vector3D }>*/(null);
-  const [selection, setSelection] = useState/*:: <null | { pieceId: string }>*/(null);
-
-  const start = boardPositionToLocalVector({ x: 0, y: 0, z: 0}, gameArea);
-
-  useBoardCameraControl(cameraRef, keyboard.readAll,
-    40,
-    new Vector2(start.x, start.z),
-    { ...gameArea,
-      size: { ...gameArea.size, x: gameArea.size.x + 1, y: gameArea.size.y + 1 }
-    })
-
-  const onBoardPointerEnter = () => {
-    
-  }
-  const onBoardPointerMove = (boardId, boardPosition) => {
-    setHover(prevHover => {
-      if (!prevHover) {
-        const isFloor = isPointOnBoardFloor(boardPosition, board);
-        return isFloor ? { boardId, boardPosition } : null;
-      }
-      if (prevHover.boardId !== boardId) {
-        const isFloor = isPointOnBoardFloor(boardPosition, board);
-        return isFloor ? { boardId, boardPosition } : null;
-      }
-      if (isVector3DEqual(prevHover.boardPosition, boardPosition))
-        return prevHover;
-
-      const isFloor = isPointOnBoardFloor(boardPosition, board);
-      return isFloor ? { boardId, boardPosition } : null;
-    })
-  }
-  const onBoardPointerLeave = () => {
-    setHover(null);
-  }
-  const onBoardSelect = (selected) => {
-    setSelection(selected);
-  }
-
-  const encounterState = {
-    hover,
-    selection,
-    boardEvents: {
-      onBoardPointerEnter,
-      onBoardPointerMove,
-      onBoardPointerLeave,
-
-      onBoardSelect
-    }
-  }
-
-  return h(encounterContext.Provider, { value: encounterState }, children)
-}
-
-
 /*::
 export type Encounter3Props = {
   canvasRef: Ref<?HTMLCanvasElement>,
   cameraRef: Ref<?PerspectiveCamera>,
 
-  pieces: $ReadOnlyArray<{
-    boardId: string,
-    pieceId: string,
-    area: BoxBoardArea
-  }>,
+  loop: LoopController,
 
+  pieces: $ReadOnlyArray<Piece>,
+  boards: $ReadOnlyArray<Board>,
+
+  cameraBounds: Box2,
 
   keyboard: KeyboardTrack,
-
-  board: Board,
 };
 
-export type EncounterLocalState = {
+export type EncounterController = {
   subscribePieceMove: (handler: (event: { pieceId: string, position: Vector3D }) => mixed) => () => void,
 
   cursor: ?{ boardId: string, position: Vector3D },
+  focus: ?{ boardId: string, position: Vector3D },
   selection: ?{ pieceId: string },
 
+  raycaster: RaycastManager,
+
+
+  focusBoard: (boardId: string, position: Vector3D) => void,
   moveCursor: (boardId: string, position: Vector3D) => void,
   clearCursor: () => void,
 }
+export type EncounterLocalState = EncounterController;
 */
 
-export const useEncounter = ({
+const useEncounterCamera = (
+  keyboard/*: KeyboardTrack*/,
+  canvasRef/*: Ref<?HTMLCanvasElement>*/,
+  cameraRef/*: Ref<?PerspectiveCamera>*/,
+  loop/*: LoopController*/,
+  cameraBounds/*: ?Box2*/,
+) => {
+  const [cameraParticle, simulate] = useParticle2dSimulation(
+    cameraBounds,
+    0.005,
+    0.05,
+    cameraBounds && cameraBounds.getCenter(new Vector2(0, 0))
+  );
+  const [rotation, setRotation] = useState/*:: <number>*/(0.125);
+  const [rotationAnim] = useAnimatedNumber(rotation, rotation, { duration: 400, impulse: (0.125 * 3) });
+
+  const [zoom, setZoom] = useState/*:: <number>*/(32);
+  const [zoomAnim] = useAnimatedNumber(zoom, zoom, { duration: 400, impulse: 3 });
+
+  useEffect(() => {
+    const { current: camera } = cameraRef;
+    const { current: canvas } = canvasRef;
+    if (!camera || !canvas)
+      return;
+
+    const onWheel = (event/*: WheelEvent*/) => {
+      if (document.activeElement !== canvas)
+        return;
+      event.preventDefault();
+      setZoom(z => Math.min(1000, Math.max(10, z + (event.deltaY / 10))));
+    }
+    const onSimulate = (c, v) => {
+      const keys = keyboard.readDiff();
+      const keysVelocity = calculateKeyVelocity(keys.prev.value, keys.next.value);
+      if (keysVelocity.get('KeyQ') === -1)
+        setRotation(r => r - 0.125)
+      if (keysVelocity.get('KeyE') === -1)
+        setRotation(r => r + 0.125)
+  
+      const rotationPoint = calculateCubicBezierAnimationPoint(rotationAnim, v.now);
+      const zoomPoint = calculateCubicBezierAnimationPoint(zoomAnim, v.now);
+
+      const rotationRadians = rotationPoint.position * 2 * Math.PI;
+      const acceleration = getVector2ForKeyboardState(keys.next.value)
+        .multiplyScalar(0.0015)
+        .rotateAround(new Vector2(0, 0), rotationRadians);
+  
+      simulate(acceleration, v.delta);
+  
+      setFocusTransform2(
+        new Vector3(cameraParticle.position.x, 0, -cameraParticle.position.y),
+        0.25 + rotationPoint.position,
+        new Vector2(-zoomPoint.position, zoomPoint.position),
+        camera,
+      );
+    }
+
+    canvas.addEventListener('wheel', onWheel);
+    const unsubscribeSim = loop.subscribeSimulate(onSimulate);
+
+    return () => {
+      unsubscribeSim();
+      canvas.removeEventListener('wheel', onWheel);
+    }
+  }, [rotationAnim, zoomAnim])
+};
+
+
+export const useEncounterController = ({
   canvasRef,
   cameraRef,
   keyboard,
-  board,
+  cameraBounds,
+  loop,
+
   pieces,
+  boards,
 }/*: Encounter3Props*/)/*: EncounterLocalState*/ => {
   const [cursor, setCursor] = useState/*:: <?{ boardId: string, position: Vector3D }>*/(null);
   const [selection, setSelection] = useState/*:: <?{ pieceId: string }>*/(null);
+  const [focus, setFocus] = useState(null);
 
   const [subscribePieceMove, pieceMoveRef] = useSubscriptionList();
 
-  useBoardCameraControl(
-    cameraRef, keyboard.readAll,
-    40,
-    new Vector2(20, 20),
-    calculateBoardBox(board)
-  )
+  const raycaster = useRaycastManager()
+  useRaycastElement(raycaster, canvasRef);
+  useEffect(() => {
+    return loop.subscribeSimulate((c, v) => raycaster.onUpdate(c.camera))
+  }, [loop, raycaster])
+
+  useEncounterCamera(keyboard, canvasRef, cameraRef, loop, cameraBounds);
 
   const moveCursor = (boardId, position) => {
-    setCursor({ boardId, position });
+    setCursor(prev => {
+      if (prev && isVector3DEqual(prev.position, position))
+        return prev;
+      const board = boards.find(b => b.id === boardId);
+      if (!board)
+        return null;
+      const isFloor = board.floors.some(f => isPointInsideBoardBox(position, f.box))
+      if (!isFloor)
+        return;
+      return { boardId, position }
+    });
   }
   const clearCursor = () => {
     setCursor(null);
+  }
+  const focusBoard = () => {
+
   }
 
   useEffect(() => {
@@ -174,14 +209,16 @@ export const useEncounter = ({
     };
     const onClick = () => {
       setCursor(cursor => {
-        if (!cursor)
+        if (!cursor) {
+          setSelection(null);
           return cursor;
+        }
           
         const piece = pieces.find(piece =>
           piece.boardId === cursor.boardId &&
-          isPointInsideBoardBox(cursor.position, piece.area)
+          isPointInsideBoardBox(cursor.position, piece.area.box)
         )
-        setSelection(piece ? { pieceId: piece.pieceId } : null);
+        setSelection(piece ? { pieceId: piece.id } : null);
           
         return cursor;
       })
@@ -200,8 +237,14 @@ export const useEncounter = ({
 
     cursor,
     selection,
+    focus,
+
+    raycaster,
 
     moveCursor,
     clearCursor,
+    focusBoard,
   }
 }
+
+export const useEncounter = useEncounterController;

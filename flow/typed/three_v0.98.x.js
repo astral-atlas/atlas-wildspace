@@ -12,15 +12,15 @@ declare module three {
     x: number;
     y: number;
 
-    add(v: Vector2): void;
+    add(v: Vector2): this;
     addScalar(s: number): void;
     addScaledVector(v: Vector2, s: number): void;
     addVectors(a: Vector2, b: Vector2): void;
     angle(): number;
     ceil(): void;
-    clamp(min: number, max: number): void;
-    clampLength(min: number, max: number): void;
-    clampScalar(min: number, max: number): void;
+    clamp(min: number, max: number): this;
+    clampLength(min: number, max: number): this;
+    clampScalar(min: number, max: number): this;
     clone(): Vector2;
     copy (v: Vector2): void;
     equals (v: Vector2): boolean;
@@ -98,9 +98,11 @@ declare module three {
 
 // If this vector's x or y value is greater than v's x or y value, replace that value with the corresponding min value.
 // # .multiply ( v )
+    multiply(v: Vector2): this;
 
 // Multiplies this vector by v.
 // # .multiplyScalar ( s )
+    multiplyScalar(s: number): this;
 
 // Multiplies this vector by scalar s.
 // # .rotateAround ( center, angle )
@@ -116,6 +118,7 @@ declare module three {
 
 // The components of the vector are rounded towards zero (up if negative, down if positive) to an integer value.
 // # .set ( x, y )
+    set(x: number, y: number): this;
 
 // Sets the x and y components of this vector.
 // # .setComponent ( index, value )
@@ -165,21 +168,21 @@ declare module three {
     setX(x: number): void;
     setY(y: number): void;
     setZ(z: number): void;
-    copy(vector: this): void;
+    copy(vector: this): this;
     fromArray(array: [number, number, number], offset: number): void;
-    add(vector: this): void;
+    add(vector: this): this;
     addVectors(a: this, b: this): void;
     addScaledVector(vector: this, scale: number): void;
-    sub(vector: this): void;
+    sub(vector: this): this;
     subVectors(a: this, b: this): void;
-    multiplyScalar(scalar: number): void;
+    multiplyScalar(scalar: number): this;
     divideScalar(scalar: number): void;
     negate(): void;
     dot(vector: this): void;
     lengthSq(): number;
     length(): number;
     lengthManhattan(): number;
-    normalize(): void;
+    normalize(): this;
     distanceTo(vector: Vector3): number;
     distanceToSquared(vector: Vector3): number;
     setLength(length: number): void;
@@ -208,7 +211,7 @@ declare module three {
     // transformDirection(matrix: Matrix): void;
     multiplyVectors(a: Vector3, b: Vector3): void;
     getCompoment(index: 0 | 1 | 2): number;
-    applyAxisAngle(axis: number, angle: number): void;
+    applyAxisAngle(axis: Vector3, angle: number): this;
     lerp(vector: Vector3, alpha: number): void;
     lerpVectors(a: Vector3, b: Vector3, alpha: number): void;
     angleTo(vector: Vector3): number;
@@ -229,7 +232,20 @@ declare module three {
 
   declare class Vector4 {}
 
-  declare class Euler {
+  declare export class Curve<Vector> {
+    getPoint(t: number, target?: Vector): Vector;
+  }
+
+  declare export class CubicBezierCurve3 extends Curve<Vector3> {
+    constructor(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3): CubicBezierCurve3;
+
+    v0: Vector3;
+    v1: Vector3;
+    v2: Vector3;
+    v3: Vector3;
+  }
+
+  declare export class Euler {
     constructor(x: number, y: number, z: number): this;
 
     x: number;
@@ -295,10 +311,6 @@ declare module three {
   declare class Matrix4 {
     setPosition(v: Vector3): void;
     makeRotationFromQuaternion(q: Quaternion): void;
-  }
-
-  declare class Box3 {
-
   }
 
   declare class Sphere {
@@ -691,6 +703,8 @@ declare module three {
     toJSON(): string;
   }
 
+  declare export var AdditiveBlending: string;
+
   declare export class Material {
     constructor(inputs: MaterialInputs): this;
 
@@ -926,6 +940,9 @@ declare module three {
     wireframeLineCap: WireframeLineCap;
     wireframeLineJoin: WireframeLineJoin;
   }
+  declare export class MeshStandardMaterial extends Material {
+    
+  }
 
   declare type RepeatWrappingEnum = number
   // In case we really need this, see:
@@ -1023,6 +1040,9 @@ declare module three {
     needsUpdate: boolean;
 
     minFilter: typeof NearestFilter | typeof LinearFilter;
+    flipY: boolean;
+    flipX: boolean;
+    encoding: number;
   }
 
   declare export var RedFormat: string;
@@ -1079,16 +1099,53 @@ declare module three {
       camera: Camera,
       renderTarget?: WebGLRenderTarget, forceClear?: boolean
     ): void;
-    dispose(): null;
+    dispose(): void;
+    outputEncoding: number;
+    setAnimationLoop((now: number) => mixed): void;
     setSize(width: number, height: number, updateStyle: boolean): void;
     domElement: Element;
+    shadowMap: { enabled: boolean, type: ShadowType }
   }
+
+  declare export opaque type ShadowType;
+
+  declare export var BasicShadowMap: ShadowType;
+  declare export var PCFShadowMap: ShadowType;
+  declare export var PCFSoftShadowMap: ShadowType;
+  declare export var VSMShadowMap: ShadowType;
+
+  declare export var sRGBEncoding: number;
 
   // declare var Geometry: Geometry
   // declare var MeshPhoneMaterial: MeshPhongMaterial
   // declare var MultiMaterial: MultiMaterial
   // declare var MeshBasicMaterial: MeshBasicMaterial
 
+
+  declare export class Box3 {
+    constructor(min?: Vector3, max?: Vector3): Box3;
+
+    min: Vector3;
+    max: Vector3;
+
+    clampPoint(point: Vector3): Vector3;
+
+    containsBox(box: Box3): boolean;
+    containsPoint(point: Vector3): boolean;
+  }
+  declare export class Box2 {
+    constructor(min?: Vector2, max?: Vector2): Box2;
+
+    min: Vector2;
+    max: Vector2;
+
+    clampPoint(point: Vector2, target?: Vector2): Vector2;
+
+    containsBox(box: Box2): boolean;
+    containsPoint(point: Vector2): boolean;
+
+    getCenter(target: Vector2): Vector2;
+  }
 }
 
 */

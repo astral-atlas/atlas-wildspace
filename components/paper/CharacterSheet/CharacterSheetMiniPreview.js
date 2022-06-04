@@ -4,10 +4,9 @@ import type { Board, Character, Vector3D, BoxBoardArea } from "@astral-atlas/wil
 import type { Component, Ref } from "@lukekaalim/act";
 import type { AssetDownloadURLMap } from "../../asset/map";
 */
-
 import { ThreeCanvasScene } from "../../scenes/ThreeCanvasSceneProps";
 import { h, useEffect, useRef, useState } from "@lukekaalim/act";
-import { ambientLight, directionalLight, mesh, perspectiveCamera } from "@lukekaalim/act-three";
+import { ambientLight, directionalLight, mesh, perspectiveCamera, scene } from "@lukekaalim/act-three";
 import { useLookAt } from "@lukekaalim/act-three/hooks";
 import { useElementKeyboard } from "../../keyboard";
 import { useKeyboardTrack } from "../../keyboard/track";
@@ -20,18 +19,23 @@ import {
 
 import classes from './index.module.css';
 import {
+  Box2,
   BoxGeometry,
   Color,
   OrthographicCamera,
   Vector2,
   Vector3,
 } from "three";
-import { Encounter2, useEncounter } from "../../encounter/Encounter";
+import {
+  useEncounter,
+  useEncounterController,
+} from "../../encounter/Encounter";
 import { EncounterBoard } from "../../encounter/EncounterBoard";
 import { EncounterBoardCharacterPiece } from "../../encounter/EncounterBoardCharacterPiece";
 import { calculateBoardBox } from "@astral-atlas/wildspace-models";
 import { resourcesContext, useResourcesLoader } from "../../encounter/useResources";
 import { useSky } from "../../sky/useSky";
+import { useRenderSetup } from "../../three";
 
 /*::
 export type CharacterSheetMiniPreviewProps = {
@@ -42,67 +46,58 @@ export type CharacterSheetMiniPreviewProps = {
 }
 */
 
+const previewBoard = {
+  id: 'PREVIEW_BOARD',
+  floors: [
+    { type: 'box', box: { position: { x: 0, y: 0, z: 0 }, size: { x: 3, y: 3, z: 1} } },
+  ]
+}
+
 export const CharacterSheetMiniPreview/*: Component<CharacterSheetMiniPreviewProps>*/ = ({
   canvasRef,
   isFullscreen,
   character,
   assets,
 }) => {
-  const cameraRef = useRef();
-  const sceneRef = useRef();
-  const localCanvasRef = useRef();
+  const renderSetup = useRenderSetup({ canvasRef });
+  const cameraBounds = new Box2(
+    new Vector2(0, -30),
+    new Vector2(30, 0),
+  );
+  const boards = [
+    previewBoard
+  ];
+  const [characterPosition, setCharacterPosition] = useState({ x: 0, y: 0, z: 0 });
+  const characterPiece = {
+    id: character.id,
+    boardId: previewBoard.id,
+    area: { type: 'box', box: { position: characterPosition, size: { x: 1, y: 1, z: 1 } } },
+  }
+  const pieces = [
+    characterPiece
+  ]
+  const keyboardEmitter = useElementKeyboard(renderSetup.canvasRef);
+  const keyboard = useKeyboardTrack(keyboardEmitter);
 
-  useLookAt(cameraRef, new Vector3(5, 0, 5), []);
-
+  const controller = useEncounterController({
+    ...renderSetup,
+    boards,
+    pieces,
+    keyboard,
+    cameraBounds
+  })
+  const boardBox = calculateBoardBox(previewBoard);
   useEffect(() => {
-    const { current: camera } = cameraRef;
-    if (!camera)
-      return;
-    camera.fov = isFullscreen ? 60 : 20;
-    console.log(camera);
-    camera.updateProjectionMatrix();
-  }, [isFullscreen])
+    return controller.subscribePieceMove(event => {
+      setCharacterPosition(event.position)
+    })
+  }, [controller])
 
-  const stateEmitter = useElementKeyboard(canvasRef || localCanvasRef, [], [])
-  const track = useKeyboardTrack(stateEmitter);
-  const raycast = useRaycastManager();
-
-  const raycastEvents = {
-    onPointerEnter: raycast.onMouseEnter,
-    onPointerMove: raycast.onMouseMove,
-    onPointerLeave: raycast.onMouseLeave,
-    onClick: raycast.onClick,
-  }
-
-  const onLoop = () => {
-    const { current: camera } = cameraRef;
-    if (!camera)
-      return;
-    raycast.onUpdate(camera);
-  }
-
-  const [piece, setPiece] = useState/*:: <{ pieceId: string, boardId: string, area: BoxBoardArea }>*/({
-    pieceId: 'PIECE_A',
-    boardId: 'BOARD_A',
-    area: { type: 'box', position: { x: 0, y: 0, z: 0 }, size: { x: 1, y: 1, z: 1 } },
-  });
-
-  const [board, setBoard] = useState/*:: <Board>*/({
-    id: 'BOARD_A',
-    floors: [
-      { type: 'box', box: {
-        position: { x: 0, y: 0, z: 0 },
-        size: { x: 3, y: 3, z: 1 },
-      } },
-    ],
-  });
-
-  const boardBox = calculateBoardBox(board);
   const resources = useResourcesLoader();
 
   const sky = useSky(8);
   useEffect(() => {
-    const { current: rootScene } = sceneRef;
+    const { current: rootScene } = renderSetup.sceneRef;
     if (!rootScene)
       return;
     
@@ -111,22 +106,9 @@ export const CharacterSheetMiniPreview/*: Component<CharacterSheetMiniPreviewPro
     return () => rootScene.remove(sky);
   }, [])
 
-  const encounter = useEncounter({
-    board,
-    canvasRef: canvasRef || localCanvasRef,
-    cameraRef,
-    keyboard: track,
-
-    pieces: [piece],
-  })
-  useEffect(() => {
-    return encounter.subscribePieceMove(({ pieceId, position }) => {
-      setPiece(p => ({ ...p, area: { ...p.area, position }}))
-    })
-  }, []);
 
   useEffect(() => {
-    const { current: root } = sceneRef;
+    const { current: root } = renderSetup.sceneRef;
     if (!root)
       return;
 
@@ -144,8 +126,9 @@ export const CharacterSheetMiniPreview/*: Component<CharacterSheetMiniPreviewPro
       root.remove(resources.floatingScene)
     }
   }, [resources])
+
   useEffect(() => {
-    const { current: camera } = cameraRef;
+    const { current: camera } = renderSetup.cameraRef;
     if (!camera)
       return;
     camera.fov = 30;
@@ -153,13 +136,8 @@ export const CharacterSheetMiniPreview/*: Component<CharacterSheetMiniPreviewPro
   }, [])
 
   return [
-    h(ThreeCanvasScene, {
-      cameraRef,
-      canvasRef,
-      sceneRef,
-      onLoop,
-      canvasProps: { ...raycastEvents, class: classes.miniRenderer, tabIndex: 0 }
-    }, h(raycastManagerContext.Provider, { value: raycast }, h(resourcesContext.Provider, { value: resources }, [
+    h('canvas', { ref: renderSetup.canvasRef, className: classes.miniRenderer, tabIndex: 0 }),
+    h(scene, { ref: renderSetup.sceneRef }, [
       h(ambientLight, { intensity: 0.8 }),
       h(directionalLight, {
         position: new Vector3(20, 100, 80),
@@ -172,10 +150,10 @@ export const CharacterSheetMiniPreview/*: Component<CharacterSheetMiniPreviewPro
           mapSize: new Vector2(256, 256)
         }
       }),
-      h(EncounterBoard, { board, encounter }, [
-        h(EncounterBoardCharacterPiece, { assets, character, piece, boardBox, encounter })
-      ]),
-      h(perspectiveCamera, { ref: cameraRef, fov: 30 }),
-    ]))),
+      h(EncounterBoard, { board: previewBoard, encounter: controller, resources }, pieces.map(piece =>
+        h(EncounterBoardCharacterPiece, { assets, character, piece, boardBox, encounter: controller })
+      )),
+      h(perspectiveCamera, { ref: renderSetup.cameraRef, fov: 30 }),
+    ]),
   ];
 }

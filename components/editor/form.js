@@ -190,6 +190,17 @@ export const EditorHorizontalSection/*: Component<EditorHorizontalSectionProps>*
 }) => {
   return h('section', { classList: [styles.editorHorizontalSection]}, children)
 }
+/*::
+export type EditorVerticalSectionProps = {
+
+};
+*/
+
+export const EditorVerticalSection/*: Component<EditorVerticalSectionProps>*/ = ({
+  children,
+}) => {
+  return h('section', { classList: [styles.editorVerticalSection]}, children)
+}
 
 /*::
 export type EditorCheckboxInputProps = {

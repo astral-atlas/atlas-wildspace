@@ -14,6 +14,8 @@ import {
 import { LayoutDemo, ScaledLayoutDemo } from "../demo";
 import { v4 as uuid } from 'uuid';
 import { LibraryAisle } from "@astral-atlas/wildspace-components/library/LibraryAisle";
+import { createMockCharacter, createMockImageAsset, createMockWildspaceClient } from "@astral-atlas/wildspace-test"
+import { GameMasterPrepLibraryDemo } from "./prep";
 
 const BookDemo = () => {
   const selection = useLibrarySelection()
@@ -140,45 +142,30 @@ const LibraryDemo = () => {
 }
 
 const PlayerPrepDemo = () => {
-  const characters = [
-    {
-      gameId: 'GAME_A',
-      playerId: 'PLAYER_A',
-      hitDice: [],
-      initiativeBonus: 1,
-      maxHitpoints: 50,
-      sizeCategory: 'medium',
-      pronouns: { enabled: false },
-      speed: 30,
-      levels: [],
-      id: 'CHAR_A',
-      name: 'Character A',
-      art: [
-        { assetId: 'ASSET_A' }
-      ],
-      initiativeIconAssetId: null,
-      baseAC: 20,
-      backgroundDescription: '',
-      baseACReason: '',
-      acBonuses: [],
-      alive: 'yes',
-    },
+  const data = [
+    { c: createMockCharacter(), i: createMockImageAsset(), },
+    { c: createMockCharacter(), i: createMockImageAsset(), },
+    { c: createMockCharacter(), i: createMockImageAsset(), },
   ];
-  const assets = new Map([
-    ['ASSET_A', {
-      downloadURL: 'http://placekitten.com/200/200',
-      description: { MIMEType: '', bytes: 0, creator: '', id: 'ASSET_A', name: '', uploaded: Date.now() }
-    }]
-  ]);
+  const characters = data.map(({ c, i }) => ({
+    ...c,
+    initiativeIconAssetId:i.description.id
+  }))
+  const assets = new Map(data.map(({ i }) => (
+    [i.description.id, i]
+  )));
+
   const game = {
     id: 'GAME_0',
     gameMasterId: 'GM',
     name: 'GAME ZERO'
   };
+  const userId = '';
+  const client = createMockWildspaceClient();
 
   return [
     h(ScaledLayoutDemo, {}, [
-      h(PlayerPrepLibrary, { characters, assets, catalogueHeader: h('h2', {}, 'Header Test'), game })
+      h(PlayerPrepLibrary, { characters, assets, client, catalogueHeader: h('h2', {}, 'Header Test'), game, userId })
     ])
   ];
 }
@@ -196,6 +183,7 @@ const Demo = ({ node }) => {
     case 'player_prep':
       return h(PlayerPrepDemo);
     case 'gm_prep':
+      return h(GameMasterPrepLibraryDemo)
     default:
       return null;
   }

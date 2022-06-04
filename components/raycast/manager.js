@@ -32,7 +32,7 @@ type RaycastEvents = {
 
 export type RaycastManager = {
   lastIntersectionRef: Ref<?IntersectionObject>,
-  subscribe: (object: Object3D, events: RaycastEvents) => () => void,
+  subscribe: (object: Object3D, events: RaycastEvents, isHit?: IntersectionObject => boolean) => () => void,
   onUpdate: (camera: Camera) => void,
   onMouseEnter: (event: MouseEvent) => void,
   onMouseLeave: (event: MouseEvent) => void,
@@ -88,6 +88,7 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
 
   const { current: raycaster } = useRef(new Raycaster());
   const { current: focusTargets } = useRef(new Set());
+  const { current: isHitFuncs } = useRef(new Map()); 
 
   const [subscribeEnter, emitEnter] = useTargetedEmitter();
   const [subscribeExit, emitExit] = useTargetedEmitter();
@@ -108,7 +109,12 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
     raycaster.setFromCamera(mousePosition, camera);
     const intersections = raycaster.intersectObjects([...focusTargets], false);
     
-    const focusIntersection = intersections[0];
+    const focusIntersection = intersections.find(intersection => {
+      const isHit = isHitFuncs.get(intersection.object);
+      if (!isHit)
+        return true;
+      return isHit(intersection);
+    });
     const nextFocused = focusIntersection && focusIntersection.object;
     const prevFocused = lastIntersectionRef.current && lastIntersectionRef.current.object;
 
@@ -118,10 +124,10 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
       if (prevFocused)
         emitExit(prevFocused, null)
       
-      if (nextFocused)
+      if (nextFocused && focusIntersection)
         emitEnter(nextFocused, focusIntersection);
     }
-    if (nextFocused)
+    if (nextFocused && focusIntersection)
       emitOver(nextFocused, focusIntersection);
   }
 
@@ -136,14 +142,16 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
       emitClick(focused, intersection);
   }
 
-  const subscribe = (object, events) => {
+  const subscribe = (object, events, isHit) => {
     focusTargets.add(object);
     const unsubEnter = subscribeEnter(object, events.enter);
     const unsubExit = subscribeExit(object, events.exit);
     const unsubOver = subscribeOver(object, events.over);
     const unsubClick = subscribeClick(object, events.click);
+    isHitFuncs.set(object, isHit);
     return () => {
       focusTargets.delete(object);
+      isHitFuncs.delete(object);
       unsubEnter();
       unsubExit();
       unsubOver();

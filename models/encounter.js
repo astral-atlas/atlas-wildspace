@@ -33,7 +33,7 @@ export const getRoundedMonsterHealthPercentage = (monster/*: MonsterMini*/)/*: n
   return -1;
 }
 export const getMonsterHealthDescription = (monster/*: MonsterMini*/)/*: string*/ => {
-  const healthPercentage = (monster.hitpoints + monster.tempHitpoints) / monster.maxHitpoints * 100;
+  const healthPercentage = ((monster.hitpoints + monster.tempHitpoints) / monster.maxHitpoints) * 100;
 
   switch (true) {
     case healthPercentage <= 0:
@@ -41,7 +41,7 @@ export const getMonsterHealthDescription = (monster/*: MonsterMini*/)/*: string*
     case monster.hitpoints < 10:
       return `🌶️ uh oh`;
     case healthPercentage > 99:
-      return `💚 Untouched`;
+      return `💚 Maximum`;
     case healthPercentage > 50:
       return `💙 Healthy`;
     case healthPercentage > 10:
@@ -102,4 +102,5 @@ export * from './encounter/actions.js';
 export * from './encounter/map.js';
 export * from './encounter/reducer.js';
 export * from './encounter/mini.js';
+export * from './encounter/piece.js';
 export * from './encounter/board.js';

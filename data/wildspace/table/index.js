@@ -20,7 +20,7 @@ import { createExpiryTable } from "../../sources/expiry.js";
 import { createBufferWildspaceGameData } from '../../game.js';
 import { createBufferWildspaceRoomData, createTableWildspaceRoomData } from "../../room.js";
 import { createMemoryBufferStore } from '../../sources/buffer.js';
-import { createTableWildspaceGameData } from "../../game.js";
+import { createTableWildspaceGameData } from "./game.js";
 import { createTableWikiData } from './wiki.js';
 
 /*::

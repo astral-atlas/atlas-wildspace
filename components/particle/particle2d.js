@@ -1,6 +1,5 @@
 // @flow strict
-
-import { Vector2 } from "three";
+import { Box2, Vector2 } from "three";
 
 /*::
 export type Particle2D = {
@@ -10,37 +9,35 @@ export type Particle2D = {
 export type ParticleSettings = {
   dragCoefficent?: number,
   velocityMagnitudeMax?: number,
+  bounds?: ?Box2,
 };
 */
 
-const magnitude = (vector) => Math.sqrt(Math.pow(vector[0], 2) + Math.pow(vector[1], 2));
-const mult = (vector, scalar) => [vector[0] * scalar, vector[1] * scalar];
-
 export const simulateParticle2D = (
   particle/*: Particle2D*/,
-  { velocityMagnitudeMax = 1, dragCoefficent = 0.1 }/*: ParticleSettings*/,
+  { velocityMagnitudeMax = 1, dragCoefficent = 0.1, bounds }/*: ParticleSettings*/,
   accelerationPerMs/*: Vector2*/,
   durationMs/*: number*/,
 )/*: void*/ => {
-  const decayedVelocity = [
-    particle.velocityPerMs.x * Math.pow(dragCoefficent, durationMs / 1000),
-    particle.velocityPerMs.y * Math.pow(dragCoefficent, durationMs / 1000)
-  ];
+  const decay = Math.pow(dragCoefficent, durationMs / 1000);
+  const acceleration = accelerationPerMs
+    .clone()
+    .multiplyScalar(durationMs);
 
-  const newVelocity = [
-    decayedVelocity[0] + (accelerationPerMs.x * durationMs),
-    decayedVelocity[1] + (accelerationPerMs.y * durationMs)
-  ]
-  const velocityMagnitude = magnitude(newVelocity)
-  const clampedVelocityMagnitude = Math.min(velocityMagnitudeMax, velocityMagnitude);
+  particle.velocityPerMs
+    .multiplyScalar(decay)
+    .add(acceleration)
+    .clampLength(0, velocityMagnitudeMax);
 
-  const clampedVelocity = mult(newVelocity, ((1/velocityMagnitude) * clampedVelocityMagnitude) || 0);
+  const velocity = particle.velocityPerMs
+    .clone()
+    .multiplyScalar(durationMs);
+    
+  particle.position
+    .add(velocity)
 
-  // Write to Particle
-  particle.position.x = particle.position.x + (clampedVelocity[0] * durationMs);
-  particle.position.y = particle.position.y + (clampedVelocity[1] * durationMs);
-  particle.velocityPerMs.x = clampedVelocity[0];
-  particle.velocityPerMs.y = clampedVelocity[1];
+  if (bounds)
+    bounds.clampPoint(particle.position, particle.position);
 }
 
 export const clampParticlePosition = (

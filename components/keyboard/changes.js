@@ -31,7 +31,9 @@ const whitelist = new Set([
   'ArrowLeft',
   'ArrowRight',
   'KeyQ',
-  'KeyE'
+  'KeyE',
+  'KeyR',
+  'KeyF'
 ]);
 const elementBlocklist = new Set([
   'INPUT',
@@ -63,12 +65,12 @@ export const useElementKeyboard = /*:: <T: Element>*/(
 
       if (!whitelist.has(event.code))
         return;
+      event.preventDefault();
       if (event.repeat)
         return;
       
       currentKeys.add(event.code);
       const keys = new Set(currentKeys);
-      event.preventDefault();
       
       for (const subscriber of subscribers)
         subscriber(keys, event);

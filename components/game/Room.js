@@ -27,6 +27,7 @@ import { RoomAudioPlayer } from "../audio";
 import { AudioStateEditor } from "./audio.js";
 import { Wiki } from "./Wiki.js";
 import { useURLParam } from "../../www/hooks/navigation";
+import { EncounterInitiativeTracker } from "../initiative/tracker";
 
 
 /*::
@@ -46,8 +47,22 @@ const RoomScreen = ({ children }) => {
 
 
 const RoomSceneScreen = ({ scene, gameData }) => {
-  
   return h(RoomScreen, {}, !!scene && h(SceneRenderer, { scene, gameData }))
+}
+const RoomInitiativeScreen = ({ gameData, roomState }) => {
+  return h(EncounterInitiativeTracker, {
+    characters: gameData,
+    assets: gameData.assets,
+    encounter: {
+      characters: [],
+      minis: [],
+    },
+    encounterState: roomState.encounter,
+    selectedMinis: [],
+    miniImageURLMap: new Map(),
+    gameMaster: true,
+    onSelectedMinisChange: () => {},
+  })
 }
 const RoomLobbyScreen = ({ client, roomState, gameData, userId, gameId, roomId }) => {
   const onMessageSubmit = async (content) => {
@@ -115,18 +130,17 @@ export const Room/*: Component<RoomProps>*/ = ({ client, gameData, roomState, us
 
   const sceneRef = roomState.scene.activeScene;
 
-  const gameMasterScreens = [
-    { content: h(RoomSceneScreen, { scene: sceneRef, gameData }), icon: null, position: new Vector2(0, 0) },
-    { content: h(RoomAssetLibraryScreen, { client, gameData, gameId }), icon: null, position: new Vector2(-1, 1) },
-    { content: h(RoomLobbyScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(0, 1) },
-    { content: h(RoomManagerScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(-1, -1) },
-    { content: h(RoomWikiScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(1, 0) },
-  ];
   const playerScreens = [
     { content: h(RoomSceneScreen, { scene: sceneRef, gameData }), icon: null, position: new Vector2(0, 0) },
     { content: h(RoomLobbyScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(0, 1) },
     { content: h(RoomWikiScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(1, 0) },
+    { content: h(RoomInitiativeScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(-1, 0) },
   ]
+  const gameMasterScreens = [
+    ...playerScreens,
+    { content: h(RoomAssetLibraryScreen, { client, gameData, gameId }), icon: null, position: new Vector2(-1, 1) },
+    { content: h(RoomManagerScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(-1, -1) },
+  ];
 
   const screens = gameData.isGameMaster ? gameMasterScreens : playerScreens
 

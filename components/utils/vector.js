@@ -2,6 +2,7 @@
 /*::
 import type { Object3D } from "three";
 */
+import { Vector2, Vector3 } from "three";
 
 export const rotateVector = (
   rotation/*: number*/,
@@ -42,3 +43,19 @@ export const setFocusTransform = (
   camera.position.set(cameraPosition[0], cameraPosition[1], cameraPosition[2]);
   camera.lookAt(focusPosition[0], focusPosition[1], focusPosition[2])
 }
+
+const up = new Vector3(0, 1, 0);
+
+export const setFocusTransform2 = (
+  focusTarget/*: Vector3*/,
+  rotation/*: number*/,
+  offset/*: Vector2*/,
+
+  subject/*: Object3D*/,
+) => {
+  subject.position
+    .set(offset.x, offset.y, 0)
+    .applyAxisAngle(up,  rotation * Math.PI * 2)
+    .add(focusTarget)
+  subject.lookAt(focusTarget);
+};

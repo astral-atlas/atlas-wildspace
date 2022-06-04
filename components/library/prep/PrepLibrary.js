@@ -87,3 +87,5 @@ export const PlayerPrepLibrary/*: Component<PlayerPrepLibraryProps>*/ = ({
     aisle: h(CharacterAisle, { game, assets, characters, client, userId }),
   });
 }
+
+export * from './GameMasterPrepLibrary.js';

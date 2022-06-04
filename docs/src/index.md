@@ -17,15 +17,12 @@
 - [ ] Audio Playlist Uploading/Synchronization
   - [x] Custom Track Uploads
   - [X] Basic Playlist
-  - [ ] Audio Engine
-    - [ ] Stingers
-    - [ ] Loops
-    - [ ] Effects
-    - [ ] Conditional breaks
-- [ ] 3D Board and Terrain System
-  - [X] bits
-- [ ] Initiative Tracker
-  - [X] bits
+- [ ] Rooms
+  - [ ] Scene Renderer
+    - [ ] Exposition Scene
+    - [ ] Encounter Scene
+  - [ ] WikiDoc
+  - [ ] Initiative Tracker
 - [ ] User Interface
-  - [ ] Nine-Screen Switcher
-    - [ ] Nine-Screen Minimap
+  - [X] Nine-Screen Switcher
+  - [ ] Nine-Screen Minimap

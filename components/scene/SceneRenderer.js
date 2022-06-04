@@ -4,6 +4,9 @@ import type { Component } from '@lukekaalim/act';
 import type { ExpositionScene, EncounterScene, SceneRef, RoomState } from '@astral-atlas/wildspace-models';
 import type { WildspaceClient } from "@astral-atlas/wildspace-client2";
 import type { GameData } from "../game/data";
+import type { MiniTheater } from "../../models/game/miniTheater";
+import type { MiniTheaterController } from "../miniTheater/useMiniTheaterController";
+import type { EncounterResources } from "../encounter/useResources";
 */
 
 import { h, useRef } from "@lukekaalim/act";
@@ -14,6 +17,7 @@ import { useAnimatedKeyedList } from "../animation/list";
 import { useRefMap } from "../editor";
 import { hash } from 'spark-md5';
 import { EncounterSceneRenderer } from "./EncounterSceneRenderer";
+import { MiniTheaterRenderer } from "../miniTheater/MiniTheaterRenderer";
 
 /*::
 export type SceneRendererProps = {
@@ -58,7 +62,7 @@ export const SceneRenderer/*: Component<SceneRendererProps>*/ = ({ scene, gameDa
       if (!expositionScene)
         return null;
       return h(ExpositionSceneRenderer, { scene: expositionScene, gameData });
-    case 'encounter':
+    case 'mini-theater':
       return null;
   }
 }
@@ -189,24 +193,42 @@ export type SceneBackgroundRendererProps = {
   gameData: GameData,
   roomState: RoomState,
   client: WildspaceClient,
+
+  miniTheaterController: MiniTheaterController,
+  miniTheaterView: MiniTheater,
+  resources: EncounterResources
 };
 */
-
-export const SceneBackgroundRenderer/*: Component<SceneBackgroundRendererProps>*/ = ({ scene, gameData, roomState, client }) => {
+const HARDCODED_BOARD = {
+  id: 'BOARD_0',
+  floors: [
+    { type: 'box', box: {
+      position: { x: 1, y: 0, z: 0 },
+      size: { x: 30, y: 24, z: 1 }
+    } }
+  ]
+};
+export const SceneBackgroundRenderer/*: Component<SceneBackgroundRendererProps>*/ = ({
+  scene, gameData, roomState, client,
+  miniTheaterController, 
+  miniTheaterView,
+  resources,
+}) => {
   switch (scene.type) {
     case 'exposition':
       const expositionScene = gameData.scenes.exposition.find(s => s.id === scene.ref);
       if (!expositionScene)
         return null;
       return h(ExpositionSceneBackgroundRenderer, { scene: expositionScene, gameData });
-    case 'encounter':
-      return h(EncounterSceneRenderer, {
-        gameId: gameData.game.id,
-        roomId: roomState.roomId,
+    case 'mini-theater':
+      return h(MiniTheaterRenderer, {
         assets: gameData.assets,
+        board: HARDCODED_BOARD,
         characters: gameData.characters,
-        client,
-        encounterState: roomState.encounter,
+        monsterMasks: [],
+        miniTheaterView,
+        controller: miniTheaterController,
+        resources,
       });
   }
 }

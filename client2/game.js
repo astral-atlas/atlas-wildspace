@@ -17,6 +17,8 @@ import { createSceneClient } from './game/scene.js';
 import { createLocationClient } from "./game/locations.js";
 import { createMagicItemClient } from "./game/magicItem.js";
 import { createWikiConnectionManager, createWikidocClient } from "./game/wiki.js";
+import { createGameUpdatesClient } from "./game/updates.js";
+import { createMiniTheaterClient } from "./game/miniTheater.js";
 
 /*::
 import type { WikiDocID, WikiDocEvent, WikiDocAction, GameConnectionID } from '@astral-atlas/wildspace-models';
@@ -24,6 +26,8 @@ import type { SceneClient } from "./game/scene";
 import type { LocationClient } from "./game/locations";
 import type { MagicItemClient } from "./game/magicItem";
 import type { WikiConnectionClient, WikidocClient } from "./game/wiki";
+import type { GameUpdatesConnectionClient, GameUpdatesConnection } from "./game/updates";
+import type { MiniTheaterClient } from "./game/miniTheater";
 
 export type GameClient = {
   read: (gameId: GameID) => Promise<Game>,
@@ -44,6 +48,8 @@ export type GameClient = {
   location: LocationClient,
   magicItem: MagicItemClient,
   wiki: WikidocClient,
+  miniTheater: MiniTheaterClient,
+  updates: GameUpdatesConnectionClient,
 };
 
 export * from './game/wiki';
@@ -106,5 +112,9 @@ export const createGameClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceCli
     location: createLocationClient(http),
     magicItem: createMagicItemClient(http),
     wiki: createWikidocClient(http),
+    updates: createGameUpdatesClient(http, ws),
+    miniTheater: createMiniTheaterClient(http),
   };
 }
+
+export * from './game/meta.js';

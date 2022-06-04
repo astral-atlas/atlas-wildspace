@@ -15,6 +15,9 @@ export const useFullscreen = ()/*: [?Element, (?Element) => void]*/ => {
       document.exitFullscreen();
     } else {
       element.requestFullscreen();
+      if (element instanceof HTMLElement && !element.contains(document.activeElement)) {
+        element.focus();
+      }
     }
   };
 

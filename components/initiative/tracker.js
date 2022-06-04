@@ -10,7 +10,7 @@ import { InitiativeTurnRow } from "./turn";
 import { InitiativeRoundTable } from "./round";
 
 /*::
-export type EncounterInitiativeTrackerProps = {|
+export type EncounterInitiativeTrackerProps = {
   className?: string,
   gameMaster: boolean,
 
@@ -21,7 +21,7 @@ export type EncounterInitiativeTrackerProps = {|
 
   selectedMinis: MiniID[],
   onSelectedMinisChange: MiniID[] => mixed,
-|};
+};
 */
 
 const MonsterRow = ({ miniImageURLMap, encounter, encounterState, turn, mini, selectedMinis, onClick, gameMaster }) => {
