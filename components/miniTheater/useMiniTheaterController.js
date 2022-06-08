@@ -1,6 +1,10 @@
 // @flow strict
 /*::
-import type { MiniPieceRef, BoardPosition, MonsterActorID } from '@astral-atlas/wildspace-models';
+import type {
+  PieceID,
+  MiniTheaterAction,
+  BoardPosition, MonsterActorID, CharacterID
+} from '@astral-atlas/wildspace-models';
 import type { Ref } from "@lukekaalim/act";
 */
 
@@ -10,19 +14,21 @@ import { isBoardPositionEqual } from "@astral-atlas/wildspace-models";
 
 /*::
 export type MiniTheaterPlacement =
-  | { type: 'character', characterId: BoardPosition }
+  | { type: 'character', characterId: CharacterID }
   | { type: 'monster', monsterActorId: MonsterActorID }
 
 export type MiniTheaterController = {
-  subscribePieceMove: (handler: (event: { pieceRef: MiniPieceRef, position: BoardPosition }) => mixed) => () => void,
-  subscribePieceAdd: (handler: (event: { placement: MiniTheaterPlacement, position: BoardPosition }) => mixed) => () => void,
-  subscribePieceRemove: (handler: (event: { pieceRef: MiniPieceRef }) => mixed) => () => void,
+  subscribePieceMove: (handler: (event: { pieceRef: PieceID, position: BoardPosition }) => mixed) => () => void,
+  subscribePieceAdd: (handler: (event: { placement: MiniTheaterPlacement, position: BoardPosition, }) => mixed) => () => void,
+  subscribePieceRemove: (handler: (event: { pieceRef: PieceID }) => mixed) => () => void,
+
+  subscribeAction: (handler: (action: MiniTheaterAction) => mixed) => () => void,
 
   cursorRef: Ref<?{ position: BoardPosition }>,
   subscribeCursor: (handler: (event: ?{ position: BoardPosition }) => mixed) => () => void,
 
-  selectionRef: Ref<?{ pieceRef: MiniPieceRef }>,
-  subscribeSelection: (handler: (event: ?{ pieceRef: MiniPieceRef }) => mixed) => () => void,
+  selectionRef: Ref<?{ pieceRef: PieceID }>,
+  subscribeSelection: (handler: (event: ?{ pieceRef: PieceID }) => mixed) => () => void,
 
   placementRef: Ref<?{ placement: MiniTheaterPlacement }>,
   subscribePlacement: (handler: (event: ?{ placement: MiniTheaterPlacement }) => mixed) => () => void,
@@ -30,15 +36,15 @@ export type MiniTheaterController = {
   moveCursor: (position: BoardPosition) => void,
   clearCursor: () => void,
 
-  selectPiece: (pieceRef: MiniPieceRef) => void,
+  selectPiece: (pieceRef: PieceID) => void,
   deselectPiece: () => void,
-  movePiece: (piece: MiniPieceRef, position: BoardPosition) => void,
+  movePiece: (piece: PieceID, position: BoardPosition) => void,
 
   pickPlacement: (placement: MiniTheaterPlacement) => void, 
   clearPlacement: () => void, 
 
   addPiece: (placement: MiniTheaterPlacement, position: BoardPosition) => void,
-  removePiece: (piece: MiniPieceRef) => void,
+  removePiece: (piece: PieceID) => void,
 };
 */
 
@@ -54,6 +60,7 @@ export const useMiniTheaterController = ()/*: MiniTheaterController*/ => {
   const [subscribePieceMove,, invokePieceMove] = useSubscriptionList()
   const [subscribePieceAdd,, invokePieceAdd] = useSubscriptionList()
   const [subscribePieceRemove,, invokePieceRemove] = useSubscriptionList()
+  const [subscribeAction,, invokeAction] = useSubscriptionList()
 
   return useMemo(() => {
     const moveCursor = (position) => {
@@ -78,14 +85,22 @@ export const useMiniTheaterController = ()/*: MiniTheaterController*/ => {
     };
     const movePiece = (pieceRef, position) => {
       invokePieceMove({ pieceRef, position });
+      return void invokeAction({ type: 'move', movedPiece: pieceRef, position })
     };
     const addPiece = (placement, position) => {
       clearPlacement();
       invokePieceAdd({ placement, position })
+      switch (placement.type) {
+        case 'monster':
+          return void invokeAction({ type: 'place', placement: { ...placement, position, visible: true }})
+        case 'character':
+          return void invokeAction({ type: 'place', placement: { ...placement, position, visible: true }})
+      }
     };
     const removePiece = (pieceRef) => {
       deselectPiece();
       invokePieceRemove({ pieceRef })
+      return void invokeAction({ type: 'remove', removedPiece: pieceRef })
     }
     const pickPlacement = (placement) => {
       deselectPiece();
@@ -108,6 +123,7 @@ export const useMiniTheaterController = ()/*: MiniTheaterController*/ => {
       subscribePieceMove,
       subscribePieceAdd,
       subscribePieceRemove,
+      subscribeAction,
 
       moveCursor,
       clearCursor,

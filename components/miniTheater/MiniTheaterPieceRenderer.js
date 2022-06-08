@@ -2,13 +2,15 @@
 /*::
 import type { Component } from '@lukekaalim/act';
 import type {
-  Vector3D, BoxBoardArea, Piece, 
-  MiniPieceRef,
-  MiniTheaterView,
+  Vector3D, BoxBoardArea, Piece,
   BoardPosition,
+  Character,
+  MonsterActorMask,
+  AssetID,
 } from "@astral-atlas/wildspace-models";
 
 import type { MiniTheaterController } from "./useMiniTheaterController";
+import type { AssetDownloadURLMap } from "../asset/map";
 */
 
 import { SpriteMaterial, TextureLoader, Vector2, Vector3 } from "three";
@@ -17,37 +19,75 @@ import { h, useEffect, useRef, useState } from "@lukekaalim/act";
 import { maxSpan, useTimeSpan, useAnimatedNumber, calculateSpanProgress } from "@lukekaalim/act-curve";
 import { sprite, useDisposable } from "@lukekaalim/act-three";
 
-import { isMiniPieceRefEqual, isBoardPositionEqual } from "@astral-atlas/wildspace-models";
+import { isBoardPositionEqual } from "@astral-atlas/wildspace-models";
 
 import { calculateBezier2DPoint, useAnimatedVector2 } from "../animation/2d";
 import { calculateCubicBezierAnimationPoint } from "@lukekaalim/act-curve/bezier";
 import { useAnimatedVector3 } from "../animation";
+import { MiniTheaterSprite } from "./MiniTheaterSprite";
 
 /*::
 export type MiniTheaterPieceRendererProps = {
   controller: MiniTheaterController,
 
-  textureURL: ?string,
-  position: BoardPosition,
-  pieceRef: MiniPieceRef,
+  characters: $ReadOnlyArray<Character>,
+  monsters: $ReadOnlyArray<MonsterActorMask>,
+  assets: AssetDownloadURLMap,
+
+  piece: Piece,
 };
 */
 
+export const getPieceAssetId = (
+  represents/*: Piece["represents"]*/,
+  characters/*: $ReadOnlyArray<Character>*/,
+  monsters/*: $ReadOnlyArray<MonsterActorMask>*/
+)/*: ?AssetID*/ => {
+  switch (represents.type) {
+    case 'character':
+      const character = characters.find(c => c.id == represents.characterId)
+      if (!character)
+        return null;
+      return character.initiativeIconAssetId;
+    case 'monster':
+      const monster = monsters.find(m => m.id === represents.monsterActorId);
+      if (!monster)
+        return null;
+      return monster.initiativeIconAssetId;
+    default:
+      return null;
+  }
+}
+
+const usePieceTexture = (piece, characters, monsters, assets) => {
+  const material = useDisposable(() => {
+    return new SpriteMaterial()
+  }, [])
+  const assetId = getPieceAssetId(piece.represents, characters, monsters)
+  useEffect(() => {
+    const info = !!assetId && assets.get(assetId);
+    if (!info)
+      return;
+    
+    const texture = new TextureLoader().load(info.downloadURL);
+    material.map = texture;
+
+    return () => {
+      texture.dispose();
+    }
+  }, [assetId]);
+  return material;
+}
+
 export const MiniTheaterPieceRenderer/*: Component<MiniTheaterPieceRendererProps>*/ = ({
   controller,
+  assets,
+  characters,
+  monsters,
 
-  pieceRef,
-  position,
-  textureURL,
+  piece,
 }) => {
-  const ref = useRef();
-  
-  const material = useDisposable(() => {
-    const map = textureURL ? new TextureLoader()
-      .load(textureURL) : null;
-
-    return new SpriteMaterial({ map, opacity: 0.5 })
-  }, [textureURL])
+  const material = usePieceTexture(piece, characters, monsters, assets)
 
 
   const [selected, setSelected] = useState(false);
@@ -55,60 +95,16 @@ export const MiniTheaterPieceRenderer/*: Component<MiniTheaterPieceRendererProps
 
   useEffect(() => {
     const unsubscribeSelection = controller.subscribeSelection((selection) => {
-      setSelected(selection && isMiniPieceRefEqual(selection.pieceRef, pieceRef))
+      setSelected(!!selection && selection.pieceRef === piece.id)
     })
     const unsubscribeCursor = controller.subscribeCursor((cursor) => {
-      setHover(cursor && isBoardPositionEqual(cursor.position, position))
+      setHover(!!cursor && isBoardPositionEqual(cursor.position, piece.position))
     })
     return () => {
       unsubscribeSelection();
       unsubscribeCursor();
     }
-  }, [pieceRef, controller])
+  }, [piece, controller])
 
-  const [selectionAnim] = useAnimatedNumber(selected ? 3 : 0, 0, { duration: 300, impulse: 12 });
-  const [hoverAnim] = useAnimatedNumber((hover || selected) ? 1 : 0.5, 0, { duration: 100, impulse: 0.3 });
-
-  const [positionAnim] = useAnimatedVector3(
-    new Vector3(position.x, position.z, position.y),
-    new Vector3(0, 0, 0),
-    500, 3
-  );
-
-  const slowPositionAnim = useAnimatedVector2(
-    [position.x, position.y],
-    [position.x, position.y],
-    0, 500);
-
-  useTimeSpan(maxSpan([selectionAnim.span, hoverAnim.span, positionAnim.span]), (now) => {
-    const { current: mini } = ref;
-    if (!mini)  
-      return;
-
-    const hoverPoint = calculateCubicBezierAnimationPoint(hoverAnim, now);
-    const selectionPoint = calculateCubicBezierAnimationPoint(selectionAnim, now);
-
-    const positionPoint = positionAnim.shape.getPoint(calculateSpanProgress(positionAnim.span, now));
-    const slowPositionPoint = calculateBezier2DPoint(slowPositionAnim, now);
-
-    const x = (positionPoint.x) * 10;
-    const z = (positionPoint.z) * 10;
-    const velocity = Math.sqrt(
-      Math.pow(slowPositionPoint.velocity[0], 2) +
-      Math.pow(slowPositionPoint.velocity[1], 2)
-    );
-    const y = (positionPoint.y * 10) + selectionPoint.position + ((hoverPoint.position - 0.5) * 2 * 0.5) + velocity;
-
-    material.opacity = hoverPoint.position;
-    mini.position.set(x, y, z);
-  }, [hover, selected, positionAnim]);
-
-
-  return h(sprite, {
-    ref,
-    material,
-    size: new Vector2(10, 10),
-    center: new Vector2(0.5, 0),
-    scale: new Vector3(10, 10, 10)
-  })
+  return h(MiniTheaterSprite, { position: piece.position, hover, selected, material })
 };

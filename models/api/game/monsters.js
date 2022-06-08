@@ -19,28 +19,15 @@ import { castMonsterActor } from "../../monster/monsterActor.js";
 
 /*::
 export type MonstersAPI = {|
-  '/games/monsters': {|
-    GET: {
-      query: { gameId: GameID },
-      request: empty,
-      response: { type: 'found', monsters: $ReadOnlyArray<Monster> },
-    },
-    POST: {
-      query: empty,
-      request: { gameId: GameID },
-      response: { type: 'created', monster: Monster },
-    },
-    PUT: {
-      query: { gameId: GameID, monsterId: MonsterID },
-      request: { monster: Monster },
-      response: { type: 'updated' },
-    },
-    DELETE: {
-      query: { gameId: GameID, monsterId: MonsterID },
-      request: empty,
-      response: { type: 'deleted' },
-    }
-  |},
+  '/games/monsters': AdvancedGameCRUDAPI<{
+    resource: Monster,
+    resourceName: 'monster',
+    resourceId: MonsterID,
+    resourceIdName: 'monsterId',
+  
+    resourcePostInput: { name: string },
+    resourcePutInput: Monster,
+  }>,
   '/games/monsters/actors': AdvancedGameCRUDAPI<{
     resource: MonsterActor,
     resourceName: 'monsterActor',
@@ -58,27 +45,16 @@ export type MonstersAPI = {|
 |};
 */
 
-export const gameMonsters/*: ResourceDescription<MonstersAPI['/games/monsters']>*/ = {
+export const gameMonsters/*: ResourceDescription<MonstersAPI['/games/monsters']>*/ = createAdvancedCRUDGameAPI({
   path: '/games/monsters',
-
-  GET: {
-    toQuery: c.obj({ gameId: castGameId }),
-    toResponseBody: c.obj({ type: c.lit('found'), monsters: c.arr(castMonster) }),
-  },
-  POST: {
-    toRequestBody: c.obj({ gameId: castGameId, name: c.str }),
-    toResponseBody: c.obj({ type: c.lit('created'), monster: castMonster }),
-  },
-  PUT: {
-    toQuery: c.obj({ gameId: castGameId, monsterId: castMonsterId }),
-    toRequestBody: c.obj({ monster: castMonster }),
-    toResponseBody: c.obj({ type: c.lit('updated') }),
-  },
-  DELETE: {
-    toQuery: c.obj({ gameId: castGameId, monsterId: castMonsterId }),
-    toResponseBody: c.obj({ type: c.lit('deleted') }),
-  },
-};
+  castResource: castMonster,
+  resourceName: 'monster',
+  resourceIdName: 'monsterId',
+  castPostResource: c.obj({
+    name: c.str,
+  }),
+  castPutResource: castMonster,
+})
 
 export const monsterActors/*: ResourceDescription<MonstersAPI['/games/monsters/actors']>*/ = createAdvancedCRUDGameAPI({
   path: '/games/monsters/actors',

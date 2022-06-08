@@ -13,7 +13,7 @@ export type WikiDocChannel = {
     | {| type: 'wikidoc-subscribe', wikiDocIds: $ReadOnlyArray<WikiDocID> |}
     | {| type: 'wikidoc-action', wikiDocAction: WikiDocAction |}
   ,
-  Server: { type: 'wikidoc-event', wikiDocId: WikiDocID, wikiDocEvent: WikiDocEvent }
+  Server: {| type: 'wikidoc-event', wikiDocId: WikiDocID, wikiDocEvent: WikiDocEvent |}
 }
 */
 

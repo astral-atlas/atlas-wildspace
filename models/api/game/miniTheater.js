@@ -6,13 +6,10 @@ import type { InitativeID, Initiative } from "../../game/initiative";
 import type { GameID } from "../../game/game";
 import type { CharacterID, MonsterID } from "../../character";
 import type {
-  CharacterPiece,
-  CharacterPieceID,
+  Piece,
   MiniTheater,
   MiniTheaterAction,
   MiniTheaterID,
-  MonsterPiece,
-  MonsterPieceID,
 } from "../../game/miniTheater";
 import type { BoardPosition } from "../../encounter/map";
 */
@@ -22,36 +19,41 @@ import { createAdvancedCRUDGameAPI } from "./meta.js";
 import { castBoardPosition } from "../../encounter/map.js";
 import {
   castMiniTheaterId,
-  castMonsterPiece,
-  castMonsterPieceId,
   castMiniTheater,
-  castCharacterPiece,
-  castCharacterPieceId,
   castMiniTheaterAction,
 } from "../../game/miniTheater.js";
 import { castCharacterId, castMonsterId } from "../../character.js";
 import { castGameId } from "../../game/game.js";
+import { castPiece } from "../../game/miniTheater.js";
 
 /*::
-type MiniTheaterResource = AdvancedGameCRUDAPI<{
+type MiniTheaterResource = AdvancedGameCRUDAPI<{|
   resource: MiniTheater,
   resourceName: 'miniTheater',
   resourceId: MiniTheaterID,
   resourceIdName: 'miniTheaterId',
 
   resourcePostInput: { name: string },
-  resourcePutInput: { name: string },
-}>
-type MiniTheaterActionResource = {
+  resourcePutInput: { name: ?string, pieces: ?$ReadOnlyArray<Piece> },
+|}>
+type MiniTheaterActionResource = {|
   POST: {
     query: { gameId: GameID, miniTheaterId: MiniTheaterID },
     request: { action: MiniTheaterAction },
-    response: { type: 'ok' }
+    response: { type: 'updated' }
   }
-}
+|}
+type MiniTheaterByIDResource = {|
+  GET: {
+    query: { gameId: GameID, miniTheaterId: MiniTheaterID },
+    request: empty,
+    response: { type: 'found', miniTheater: MiniTheater }
+  }
+|}
 
 export type MiniTheaterAPI = {|
   '/mini-theater': MiniTheaterResource,
+  '/mini-theater/id': MiniTheaterByIDResource,
   '/mini-theater/action': MiniTheaterActionResource,
 |}
 */
@@ -63,7 +65,10 @@ const miniTheater/*: ResourceDescription<MiniTheaterResource>*/ = createAdvanced
   resourceName: 'miniTheater',
   resourceIdName: 'miniTheaterId',
   castPostResource: c.obj({ name: c.str }),
-  castPutResource: c.obj({ name: c.str }),
+  castPutResource: c.obj({
+    name: c.maybe(c.str),
+    pieces: c.maybe(c.arr(castPiece)),
+  }),
 });
 
 const miniTheaterAction/*: ResourceDescription<MiniTheaterActionResource>*/ = {
@@ -71,11 +76,19 @@ const miniTheaterAction/*: ResourceDescription<MiniTheaterActionResource>*/ = {
   POST: {
     toQuery: c.obj({ gameId: castGameId, miniTheaterId: castMiniTheaterId }),
     toRequestBody: c.obj({ action: castMiniTheaterAction }),
-    toResponseBody: c.obj({ type: c.lit('ok') })
+    toResponseBody: c.obj({ type: c.lit('updated') })
+  }
+}
+const miniTheaterById/*: ResourceDescription<MiniTheaterByIDResource>*/ = {
+  path: '/mini-theater/id',
+  GET: {
+    toQuery: c.obj({ gameId: castGameId, miniTheaterId: castMiniTheaterId }),
+    toResponseBody: c.obj({ type: c.lit('found'), miniTheater: castMiniTheater })
   }
 }
 
 export const miniTheaterAPI = {
   '/mini-theater': miniTheater,
+  '/mini-theater/id': miniTheaterById,
   '/mini-theater/action': miniTheaterAction,
 };

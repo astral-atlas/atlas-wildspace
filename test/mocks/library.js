@@ -1,8 +1,9 @@
 // @flow strict
 /*::
-import type { LibraryData } from "@astral-atlas/wildspace-models";
+import type { LibraryData, AssetInfo } from "@astral-atlas/wildspace-models";
 */
 
+import { createMockImageAsset } from "./asset";
 import { createMockMonster, createMockMonsterActor } from "./game";
 import { createMockCharacter } from "./game.js";
 import { createMockMiniTheater, createMockMonsterPiece } from "./miniTheater";
@@ -19,17 +20,23 @@ export const createMockLibraryData = ()/*: LibraryData*/ => {
     randomIntRange(10, 2)
   )
 
-  const characterPieces = characters.map(c => createMockCharacterPiece(c.id));
-  const monsterPieces = monsterActors.map(ma => createMockMonsterPiece(ma.id));
-
   const miniTheaters = [
     ...repeat(createMockMiniTheater, randomIntRange(5, 2))
       .map(m => ({
         ...m,
-        characterPieceIds: randomSlice(characterPieces).map(p => p.id),
-        monsterPieceIds: randomSlice(monsterPieces).map(m => m.id),
+        pieces: [
+          ...repeat(() => createMockMonsterPiece(randomElement(monsterActors).id), randomIntRange(5, 2)),
+          ...repeat(() => createMockCharacterPiece(randomElement(characters).id), randomIntRange(5, 2)),
+        ],
       }))
   ]
+  const scenes = [
+
+  ];
+  const expositions = [
+
+  ]
+
 
   return {
     characters,
@@ -37,8 +44,16 @@ export const createMockLibraryData = ()/*: LibraryData*/ => {
 
     monsterActors,
 
-    characterPieces,
     miniTheaters,
-    monsterPieces,
+    scenes,
+    expositions,
   }
 };
+
+export const createMockAssetsForLibrary = ({ characters, monsters }/*: LibraryData*/)/*: AssetInfo[]*/ => {
+  return [
+    ...characters.map(c => c.initiativeIconAssetId ? createMockImageAsset(c.initiativeIconAssetId) : null),
+    ...monsters.map(m => createMockImageAsset(m.initiativeIconAssetId)),
+    
+  ].filter(Boolean)
+}

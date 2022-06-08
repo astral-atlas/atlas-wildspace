@@ -19,6 +19,9 @@ import { createMagicItemClient } from "./game/magicItem.js";
 import { createWikiConnectionManager, createWikidocClient } from "./game/wiki.js";
 import { createGameUpdatesClient } from "./game/updates.js";
 import { createMiniTheaterClient } from "./game/miniTheater.js";
+import { createLibraryClient } from "./game/library";
+import { createExpositionClient } from "./game/exposition.js";
+import { createMonsterClient } from "./game/monsters.js";
 
 /*::
 import type { WikiDocID, WikiDocEvent, WikiDocAction, GameConnectionID } from '@astral-atlas/wildspace-models';
@@ -28,6 +31,9 @@ import type { MagicItemClient } from "./game/magicItem";
 import type { WikiConnectionClient, WikidocClient } from "./game/wiki";
 import type { GameUpdatesConnectionClient, GameUpdatesConnection } from "./game/updates";
 import type { MiniTheaterClient } from "./game/miniTheater";
+import type { LibraryClient } from "./game/library";
+import type { ExpositionClient } from "./game/exposition";
+import type { MonsterClient } from "./game/monsters";
 
 export type GameClient = {
   read: (gameId: GameID) => Promise<Game>,
@@ -44,12 +50,15 @@ export type GameClient = {
   character: CharacterClient,
   players: PlayersClient,
   encounter: EncounterClient,
+  exposition: ExpositionClient,
   scene: SceneClient,
   location: LocationClient,
   magicItem: MagicItemClient,
   wiki: WikidocClient,
   miniTheater: MiniTheaterClient,
   updates: GameUpdatesConnectionClient,
+  library: LibraryClient,
+  monster: MonsterClient
 };
 
 export * from './game/wiki';
@@ -98,6 +107,9 @@ export const createGameClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceCli
     return { close, socket: connection.socket, wiki: wikiManager.client };
   }
 
+  const library = createLibraryClient(http);
+  const miniTheater = createMiniTheaterClient(http);
+
   return {
     read,
     list,
@@ -109,11 +121,14 @@ export const createGameClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceCli
     players: createPlayersClient(http),
     encounter: createEncounterClient(http),
     scene: createSceneClient(http),
+    exposition: createExpositionClient(http),
     location: createLocationClient(http),
     magicItem: createMagicItemClient(http),
     wiki: createWikidocClient(http),
-    updates: createGameUpdatesClient(http, ws),
-    miniTheater: createMiniTheaterClient(http),
+    monster: createMonsterClient(http),
+    updates: createGameUpdatesClient(http, ws, library, miniTheater),
+    miniTheater,
+    library,
   };
 }
 

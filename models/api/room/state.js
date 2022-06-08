@@ -55,7 +55,7 @@ const resource/*: ResourceDescription<RoomStateResourceV2>*/ = {
   GET: {
     toQuery: c.obj({ roomId: castRoomId, gameId: castGameId }),
     toResponseBody: c.obj({ type: c.lit('found'), state: castRoomState })
-  }
+  },
 }
 
 export const stateApiV2 = {

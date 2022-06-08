@@ -1,0 +1,22 @@
+.overlay {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: center;
+
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
+
+}
+
+.placeable {
+  flex: 1;
+  flex-basis: 0px;
+  display: flex;
+}
+
+.placeable button {
+  flex: 1;
+}

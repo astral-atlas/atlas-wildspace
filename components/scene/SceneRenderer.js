@@ -1,7 +1,12 @@
 // @flow strict
 /*::
 import type { Component } from '@lukekaalim/act';
-import type { ExpositionScene, EncounterScene, SceneRef, RoomState } from '@astral-atlas/wildspace-models';
+import type {
+  Scene, SceneID,
+  Exposition,
+  RoomState
+} from '@astral-atlas/wildspace-models';
+
 import type { WildspaceClient } from "@astral-atlas/wildspace-client2";
 import type { GameData } from "../game/data";
 import type { MiniTheater } from "../../models/game/miniTheater";
@@ -9,7 +14,7 @@ import type { MiniTheaterController } from "../miniTheater/useMiniTheaterControl
 import type { EncounterResources } from "../encounter/useResources";
 */
 
-import { h, useRef } from "@lukekaalim/act";
+import { h, useEffect, useRef } from "@lukekaalim/act";
 import styles from './SceneRenderer.module.css';
 import { MarkdownRenderer } from "@lukekaalim/act-markdown/entry";
 import { calculateCubicBezierAnimationPoint, createInitialCubicBezierAnimation, getCubicPoint, interpolateCubicBezierAnimation, maxSpan, useAnimatedList, useBezierAnimation, useTimeSpan } from "@lukekaalim/act-curve";
@@ -17,12 +22,15 @@ import { useAnimatedKeyedList } from "../animation/list";
 import { useRefMap } from "../editor";
 import { hash } from 'spark-md5';
 import { EncounterSceneRenderer } from "./EncounterSceneRenderer";
-import { MiniTheaterRenderer } from "../miniTheater/MiniTheaterRenderer";
+import { MiniTheaterCanvas } from "../miniTheater/MiniTheaterCanvas";
+import { useMiniTheaterController } from "../miniTheater/useMiniTheaterController";
+import { useResourcesLoader } from "../encounter";
 
 /*::
 export type SceneRendererProps = {
-  scene: SceneRef,
-  gameData: GameData
+  sceneId: SceneID,
+  gameData: GameData,
+  client: WildspaceClient,
 };
 */
 
@@ -37,12 +45,13 @@ const getContentForSubject = (subject, npcs, locations) => {
       return null;
   }
 }
-const getContentForScene = (scene, npcs, locations) => {
-  switch (scene.description.type) {
-    case 'inherit':
-      return getContentForSubject(scene.subject, npcs, locations)
-    case 'plaintext':
-      return scene.description;
+const getDescriptionForExpositionSubject = (subject, npcs, locations) => {
+  switch (subject.type) {
+    case 'location':
+      const location = locations.find(l => l.id === subject.locationId);
+      if (!location)
+        return null;
+      return location.description.plaintext;
     case 'none':
       return null;
   }
@@ -55,31 +64,65 @@ const textReducer = {
   exit: (s, t) => ({ ...s, anim: interpolateCubicBezierAnimation(s.anim, 1, 3000, 0, t) }),
 }
 
-export const SceneRenderer/*: Component<SceneRendererProps>*/ = ({ scene, gameData }) => {
-  switch (scene.type) {
+export const SceneRenderer/*: Component<SceneRendererProps>*/ = ({ sceneId, gameData, client }) => {
+  const scene = gameData.scenes.find(s => sceneId === s.id);
+  if (!scene)
+    return null;
+  const { content } = scene;
+  const controller = useMiniTheaterController();
+  const resources = useResourcesLoader();
+
+  useEffect(() => {
+    if (content.type !== 'mini-theater')
+      return;
+    return controller.subscribeAction(act => client.game.miniTheater.act(gameData.game.id, content.miniTheaterId, act))
+  }, [])
+
+  switch (content.type) {
     case 'exposition':
-      const expositionScene = gameData.scenes.exposition.find(s => s.id === scene.ref);
-      if (!expositionScene)
+      const exposition = gameData.expositions.find(e => e.id === content.expositionId);
+      if (!exposition)
         return null;
-      return h(ExpositionSceneRenderer, { scene: expositionScene, gameData });
+      return h(ExpositionSceneRenderer, { scene, exposition, gameData });
     case 'mini-theater':
+      const miniTheater = gameData.miniTheaters.find(m => m.id == content.miniTheaterId);
+      if (!miniTheater)
+        return null;
+      return [
+        h(MiniTheaterCanvas, {
+          assets: gameData.assets,
+          characters: gameData.characters,
+          monsters: [],//gameData.monsterMasks,
+          miniTheater,
+          controller,
+          resources,
+        })
+      ];
+    default:
       return null;
   }
 }
 
 /*::
 export type ExpositionSceneRendererProps = {
-  scene: ExpositionScene,
+  scene: Scene,
+  exposition: Exposition,
   gameData: GameData,
 };
 */
-export const ExpositionSceneRenderer/*: Component<ExpositionSceneRendererProps>*/ = ({ scene, gameData }) => {
-  const description = getContentForScene(scene, [], gameData.locations);
+export const ExpositionSceneRenderer/*: Component<ExpositionSceneRendererProps>*/ = ({ scene, exposition, gameData }) => {
+  const description = exposition.overrideText || getDescriptionForExpositionSubject(exposition.subject, [], gameData.locations);
 
   if (!description)
     return null;
 
-  const textAnims = useAnimatedKeyedList([description.plaintext], p => p, s => s.anim.span.start + s.anim.span.durationMs, textReducer, [description.plaintext])
+  const textAnims = useAnimatedKeyedList(
+    [description],
+    p => p,
+    s => s.anim.span.start + s.anim.span.durationMs,
+    textReducer,
+    [description]
+  )
 
 
   const [refKey, refMap] = useRefMap()
@@ -189,7 +232,7 @@ const reducers = {
 
 /*::
 export type SceneBackgroundRendererProps = {
-  scene: SceneRef,
+  scene: Scene,
   gameData: GameData,
   roomState: RoomState,
   client: WildspaceClient,
@@ -210,38 +253,36 @@ const HARDCODED_BOARD = {
 };
 export const SceneBackgroundRenderer/*: Component<SceneBackgroundRendererProps>*/ = ({
   scene, gameData, roomState, client,
-  miniTheaterController, 
-  miniTheaterView,
-  resources,
 }) => {
-  switch (scene.type) {
+  const controller = useMiniTheaterController();
+  const resources = useResourcesLoader();
+  const { content } = scene;
+
+  switch (content.type) {
     case 'exposition':
-      const expositionScene = gameData.scenes.exposition.find(s => s.id === scene.ref);
-      if (!expositionScene)
+      const exposition = gameData.expositions.find(e => e.id === content.expositionId);
+      if (!exposition)
         return null;
-      return h(ExpositionSceneBackgroundRenderer, { scene: expositionScene, gameData });
+      return h(ExpositionSceneBackgroundRenderer, { exposition, gameData });
     case 'mini-theater':
-      return h(MiniTheaterRenderer, {
-        assets: gameData.assets,
-        board: HARDCODED_BOARD,
-        characters: gameData.characters,
-        monsterMasks: [],
-        miniTheaterView,
-        controller: miniTheaterController,
-        resources,
-      });
+      const miniTheater = gameData.miniTheaters.find(m => m.id == content.miniTheaterId);
+      if (!miniTheater)
+        return null;
+      return null;
+    default:
+      return null;
   }
 }
 
 /*::
 export type ExpositionSceneBackgroundRendererProps = {
-  scene: ExpositionScene,
+  exposition: Exposition,
   gameData: GameData,
 }
 */
 
-export const ExpositionSceneBackgroundRenderer/*: Component<ExpositionSceneBackgroundRendererProps>*/ = ({ scene, gameData }) => {
-  const background = getBackgroundForSubject(scene.subject, gameData.locations);
+export const ExpositionSceneBackgroundRenderer/*: Component<ExpositionSceneBackgroundRendererProps>*/ = ({ exposition, gameData }) => {
+  const background = getBackgroundForSubject(exposition.subject, gameData.locations);
 
   if (!background)
     return null;

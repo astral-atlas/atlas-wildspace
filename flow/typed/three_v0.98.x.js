@@ -742,6 +742,8 @@ declare module three {
     // vertexColors
     visible: boolean;
 
+    map: ?Texture;
+
 
     // TODO: Add EventDispatcher methods
 
@@ -759,7 +761,7 @@ declare module three {
   }
 
   declare export class SpriteMaterial extends Material {
-    constructor(inputs: MaterialInputs): SpriteMaterial
+    constructor(inputs?: MaterialInputs): SpriteMaterial;
   }
 
   declare type ShaderMaterialInput = {

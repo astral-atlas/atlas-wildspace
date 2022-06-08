@@ -38,7 +38,7 @@ export const createMockCharacter = ()/*: Character*/ => ({
   gameId: uuid(),
   hitDice: [],
   initiativeBonus: randomIntRange(5, -3),
-  initiativeIconAssetId: null,
+  initiativeIconAssetId: uuid(),
   levels: [],
   maxHitpoints: randomIntRange(100),
   name: randomName(),
@@ -54,6 +54,7 @@ export const createMockMonster = ()/*: Monster*/ => ({
 
   name: randomMonsterName(),
   iconURL: '',
+  initiativeIconAssetId: uuid(),
 
   shortDescription: `Friend of ${randomMonsterName()}`,
 

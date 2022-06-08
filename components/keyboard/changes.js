@@ -4,7 +4,7 @@ import type { Ref } from "@lukekaalim/act";
 import type { KeyboardState } from "./state";
 
 export type KeyboardStateEmitter = {
-  subscribe: ((keys: KeyboardState, event: KeyboardEvent) => mixed) => (() => void)
+  subscribe: ((keys: KeyboardState, event: KeyboardEvent | FocusEvent) => mixed) => (() => void)
 }
 */
 
@@ -89,12 +89,20 @@ export const useElementKeyboard = /*:: <T: Element>*/(
       for (const subscriber of subscribers)
         subscriber(keys, event);
     };
+    const onBlur = (blurEvent/*: FocusEvent*/) => {
+      currentKeys.clear();
+      const keys = new Set(currentKeys);
+      for (const subscriber of subscribers)
+        subscriber(keys, blurEvent);
+    }
   
     element.addEventListener('keydown', onKeyDown);
     element.addEventListener('keyup', onKeyUp);
+    element.addEventListener('blur', onBlur);
     return () => {
       element.removeEventListener('keydown', onKeyDown);
       element.removeEventListener('keyup', onKeyUp);
+      element.removeEventListener('blur', onBlur);
     };
   }, deps);
 

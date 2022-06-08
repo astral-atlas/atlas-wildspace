@@ -41,7 +41,7 @@ export const useMiniTheaterCamera = (
       return;
 
     const onWheel = (event/*: WheelEvent*/) => {
-      if (document.activeElement !== canvas)
+      if ((document.activeElement !== canvas))
         return;
       event.preventDefault();
       setZoom(z => Math.min(1000, Math.max(10, z + (event.deltaY / 10))));

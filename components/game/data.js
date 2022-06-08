@@ -8,7 +8,8 @@ import type {
   GameID, Game, GameConnectionID,
   Player,
   AudioPlaylist, AudioTrack,
-  ExpositionScene,
+  Scene,
+  Exposition,
   Location,
   Room,
   AssetID, AssetInfo,
@@ -19,6 +20,7 @@ import type { WildspaceClient, WikiConnectionClient } from "@astral-atlas/wildsp
 import type { AssetDownloadURLMap } from "../asset/map";
 import type { UserID } from "@astral-atlas/sesame-models/src/user";
 import type { MagicItem } from "../../models/game/magicItem";
+import type { MiniTheater } from "../../models/game/miniTheater";
 
 export type GameData = {|
   game: Game,
@@ -35,9 +37,9 @@ export type GameAssetData = {|
   characters: $ReadOnlyArray<Character>,
   magicItems: $ReadOnlyArray<MagicItem>,
   wikiDocs: $ReadOnlyArray<WikiDoc>,
-  scenes: {
-    exposition: $ReadOnlyArray<ExpositionScene>,
-  },
+  scenes: $ReadOnlyArray<Scene>,
+  expositions: $ReadOnlyArray<Exposition>,
+  miniTheaters: $ReadOnlyArray<MiniTheater>,
   assets: AssetDownloadURLMap
 |}
 */
@@ -52,9 +54,9 @@ const emptyGameData = {
   magicItems: [],
   characters: [],
   wikiDocs: [],
-  scenes: {
-    exposition: []
-  },
+  scenes: [],
+  miniTheaters: [],
+  expositions: [],
   assets: new Map(),
 }
 
@@ -70,7 +72,6 @@ export const useGameData = (
     setData(d => ({
       ...d,
       ...nextData,
-      scenes: nextData.scenes ? { ...d.scenes, ...nextData.scenes } : d.scenes,
       assets: new Map([ ...d.assets, ...nextAssets])
     }))
   }
@@ -88,9 +89,13 @@ export const useGameData = (
       .then(([locations, relatedAssets]) => updateData({ locations }, relatedAssets))
   }, [times.locations])
   useEffect(() => {
-    client.game.scene.list(game.id)
-      .then(exposition => updateData({ scenes: { exposition } }))
+    client.game.scene.read(game.id)
+      .then(scenes => updateData({ scenes }))
   }, [times.scenes])
+  useEffect(() => {
+    client.game.exposition.read(game.id)
+      .then(expositions => updateData({ expositions }))
+  }, [times.exposition])
   useEffect(() => {
     client.game.players.list(game.id)
       .then(players => updateData({ players }))
@@ -111,6 +116,10 @@ export const useGameData = (
     client.game.character.listAdvanced(game.id)
       .then(([characters, relatedAssets]) => updateData({ characters }, relatedAssets))
   }, [times.characters])
+  useEffect(() => {
+    client.game.miniTheater.read(game.id)
+      .then((miniTheaters) => updateData({ miniTheaters }))
+  }, [times.miniTheater])
 
   const memoData = useMemo(() => ({
     ...data,
@@ -136,6 +145,8 @@ export const useGameConnection = (
     locations: 0,
     magicItems: 0,
     wikiDoc: 0,
+    exposition: 0,
+    miniTheater: 0,
   });
   const [connectionId, setConncetionId] = useState(null);
   const [wiki, setWiki] = useState();
@@ -161,6 +172,10 @@ export const useGameConnection = (
           return setUpdateTimes(t => ({ ...t, wikiDoc: Date.now() }))
         case 'characters':
           return setUpdateTimes(t => ({ ...t, characters: Date.now() }))
+        case 'exposition':
+          return setUpdateTimes(t => ({ ...t, exposition: Date.now() }))
+        case 'mini-theater':
+          return setUpdateTimes(t => ({ ...t, miniTheater: Date.now() }))
       }
     }, connectionId => setConncetionId(connectionId))
     setWiki(wiki);

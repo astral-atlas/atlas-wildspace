@@ -31,6 +31,9 @@ export const createMockWildspaceClient = ()/*: WildspaceClient*/ => {
   const game/*: any*/ = {
     miniTheater: {
       ...createMockGameCRUDClient(),
+      async act() {
+        throw new Error();
+      }
     }
   };
   const asset/*: any*/ = {

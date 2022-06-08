@@ -182,6 +182,7 @@ export const ScaledLayoutDemo/*: Component<{ style?: {} }>*/ = ({ children, styl
     h(EditorForm, {}, [
       h(EditorRangeInput, {
         label: 'Scale', min: 0.1,
+        step: 0.001,
         max: 1, number: scale,
         onNumberInput: scale => setScale(scale) })
     ])

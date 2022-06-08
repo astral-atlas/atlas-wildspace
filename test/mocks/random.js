@@ -1,7 +1,9 @@
 // @flow strict
+import { v4 as uuid } from 'uuid';
+import seedrandom from 'seedrandom';
 
-export const repeat = /*:: <T>*/(func/*: () => T*/, count/*: number*/)/*: T[]*/ =>
-  Array.from({ length: count }).map(func);
+export const repeat = /*:: <T>*/(func/*: (index: number) => T*/, count/*: number*/)/*: T[]*/ =>
+  Array.from({ length: count }).map((_, i) => func(i));
 
 export const randomSlice = /*:: <T>*/(a/*: T[]*/)/*: T[]*/ => {
   const b = randomIntRange(a.length - 1);
@@ -13,8 +15,8 @@ export const randomSlice = /*:: <T>*/(a/*: T[]*/)/*: T[]*/ => {
   return a.slice(start, end);
 }
 
-export const randomIntRange = (max/*: number*/, min/*: number*/ = 0)/*: number*/ => {
-  return Math.round(min + (Math.random() * (max - min)));
+export const randomIntRange = (max/*: number*/, min/*: number*/ = 0, seed/*: string*/ = uuid())/*: number*/ => {
+  return Math.round(min + (seedrandom(seed)() * (max - min)));
 }
 
 export const randomElement = /*:: <T>*/(array/*: $ReadOnlyArray<T>*/)/*: T*/ => {

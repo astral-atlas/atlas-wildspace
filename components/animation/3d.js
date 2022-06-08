@@ -25,9 +25,15 @@ export type Vector3BezierAnimationPoint = {
 };
 */
 
-export const calculateVector3BezierAnimationPoint = (anim/*: Vector3BezierAnimation*/, now/*: DOMHighResTimeStamp*/) => {
+export const calculateVector3BezierAnimationPoint = (anim/*: Vector3BezierAnimation*/, now/*: DOMHighResTimeStamp*/)/*: Vector3BezierAnimationPoint*/ => {
   const progress = calculateSpanProgress(anim.span, now);
-
+  const position = anim.shape.getPoint(progress, new Vector3(0, 0, 0))
+  const velocity = getCubicBezierCurve3Velocity(anim.shape, progress);
+  return {
+    progress,
+    position,
+    velocity
+  }
 }
 
 const getCubicBezierCurve3Velocity = (shape, progress) => {

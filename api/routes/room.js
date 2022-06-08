@@ -19,6 +19,7 @@ import * as m from '@astral-atlas/wildspace-models';
 import { createMetaRoutes, defaultOptions } from './meta.js';
 import { createStateRoutes } from './room/state.js';
 import { createLobbyRoutes } from "./room/lobby.js";
+import { createRoomSceneRoutes } from './room/scene.js';
 
 export const createRoomRoutes/*: RoutesConstructor*/ = (services) => {
   const { data, ...s } = services
@@ -230,6 +231,7 @@ export const createRoomRoutes/*: RoutesConstructor*/ = (services) => {
 
   const roomStateResources = createStateRoutes(services);
   const roomLobbyRoutes = createLobbyRoutes(services);
+  const roomSceneRoutes = createRoomSceneRoutes(services);
 
   const http = [
     ...roomResourceRoutes,
@@ -240,6 +242,7 @@ export const createRoomRoutes/*: RoutesConstructor*/ = (services) => {
     ...roomLobbyRoutes.http,
     ...allRoomsResourceRoute,
     ...roomEncounterActionsRoutes,
+    ...roomSceneRoutes.http,
   ];
   const ws = [
     roomUpdateConnectionRoute,

@@ -17,6 +17,7 @@ import { EditorForm, EditorTextInput } from "../../editor/form";
 import { useLibrarySelection } from "../librarySelection";
 import { LibraryAisle } from "../LibraryAisle";
 import { CharacterAisle } from "../aisle/CharacterAisle";
+import { GameMasterPrepLibrary } from "./GameMasterPrepLibrary";
 
 /*::
 export type PrepLibraryProps = {
@@ -26,11 +27,18 @@ export type PrepLibraryProps = {
 */
 
 export const PrepLibrary/*: Component<PrepLibraryProps>*/ = ({ gameData, client }) => {
+  if (gameData.isGameMaster)
+    return h(GameMasterPrepLibrary, {
+      client,
+      userId: gameData.userId,
+      assets: gameData.assets,
+      game: gameData.game,
+      characters: gameData.characters,
+    })
   return h(PlayerPrepLibrary, {
     client,
     userId: gameData.userId,
     assets: gameData.assets,
-    catalogueHeader: 'Working on it!',
     game: gameData.game,
     characters: gameData.characters,
   });
@@ -40,7 +48,7 @@ export const PrepLibrary/*: Component<PrepLibraryProps>*/ = ({ gameData, client 
 export type PlayerPrepLibraryProps = {
   client: WildspaceClient,
   userId: UserID,
-  catalogueHeader: ?ElementNode,
+  catalogueHeader?: ?ElementNode,
   characters: $ReadOnlyArray<Character>,
   assets: AssetDownloadURLMap,
   game: Game,

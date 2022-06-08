@@ -71,12 +71,9 @@ export const useMiniTheaterSceneController = (
       if (!cursor)
         return miniTheaterController.deselectPiece();
       
-      const selectedCharacter = miniTheater.characterPieces.find(c => isBoardPositionEqual(c.position, cursor.position));
-      if (selectedCharacter)
-        return miniTheaterController.selectPiece({ type: 'character', characterPieceId: selectedCharacter.id })
-      const selectedMonster = miniTheater.monsterPieces.find(m => isBoardPositionEqual(m.position, cursor.position));
-      if (selectedMonster)
-        return miniTheaterController.selectPiece({ type: 'monster', monsterPieceId: selectedMonster.id })
+      const selectedPiece = miniTheater.pieces.find(p => isBoardPositionEqual(p.position, cursor.position));
+      if (selectedPiece)
+        return miniTheaterController.selectPiece(selectedPiece.id)
       
       return miniTheaterController.deselectPiece();
     }
@@ -87,7 +84,7 @@ export const useMiniTheaterSceneController = (
       canvas.removeEventListener('contextmenu', onContextMenu);
       canvas.removeEventListener('click', onClick);
     };
-  }, [miniTheaterController, ...deps]);
+  }, [miniTheaterController, miniTheater.pieces, ...deps]);
 
   return {
     raycaster,

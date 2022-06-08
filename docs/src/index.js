@@ -22,6 +22,7 @@ import { libraryPage, libraryPages } from "./library";
 import { encounterPage, encounterPages } from "./encounter";
 import { particlePage, particlePages } from "./particle";
 import { initiativePage, initiativePages } from "./initiative";
+import { toolbarPage, toolbarPages } from "./toolbar";
 
 /*::
 export type Page = {
@@ -51,6 +52,7 @@ const rootPage = {
       encounterPage.link,
       particlePage.link,
       initiativePage.link,
+      toolbarPage.link
     ],
     href: '/',
   }
@@ -69,7 +71,8 @@ const pages = [
   ...libraryPages,
   ...encounterPages,
   ...particlePages,
-  ...initiativePages
+  ...initiativePages,
+  ...toolbarPages
 ];
 
 const normalizeURLPathname = pathname =>

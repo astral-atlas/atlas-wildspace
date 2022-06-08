@@ -1,6 +1,7 @@
 // @flow strict
 /*::
-import type { WSServiceClient } from "../../wildspace";
+import type { HTTPServiceClient, WSServiceClient } from "../../wildspace";
+import type { LibraryClient } from "../library";
 import type { GameUpdatesConnection } from "../updates";
 import type {
   GameID,
@@ -9,10 +10,10 @@ import type {
 */
 /*::
 
-export type LibaryConnectionClient = {
-  upgrade: (updateConnection: GameUpdatesConnection) => LibaryConnection,
+export type LibraryConnectionClient = {
+  upgrade: (updateConnection: GameUpdatesConnection) => Promise<LibraryConnection>,
 };
-export type LibaryConnection = {
+export type LibraryConnection = {
   subscribeLibrary: (subscriber: (data: LibraryData) => mixed) => () => void,
 
   close: () => void,
@@ -25,18 +26,10 @@ const publish = /*:: <T>*/(event/*: T*/, subscribers/*: Iterable<T => mixed>*/) 
 }
 
 export const createLibraryConnectionClient = (
-  
-)/*: LibaryConnectionClient*/ => {
-  const upgrade = (updateConnection) => {
-    let isLoaded = false;
-    let libraryData/*: LibraryData*/ = {
-      characters: [],
-      monsters: [],
-      monsterActors: [],
-      miniTheaters: [],
-      characterPieces: [],
-      monsterPieces: [],
-    };
+  library/*: LibraryClient*/
+)/*: LibraryConnectionClient*/ => {
+  const upgrade = async (updateConnection) => {
+    let libraryData/*: LibraryData*/ = await library.get(updateConnection.gameId);
 
     const librarySubscribers = new Set();
     const updateLibraryData = (nextData) => {
@@ -45,6 +38,11 @@ export const createLibraryConnectionClient = (
     }
     const subscribeLibrary = (subscriber) => {
       librarySubscribers.add(subscriber);
+      if (librarySubscribers.size === 1)
+        updateConnection.send({ type: 'library-subscribe' })
+
+      subscriber(libraryData);
+      
       return () => {
         librarySubscribers.delete(subscriber)
       }
@@ -52,14 +50,9 @@ export const createLibraryConnectionClient = (
 
     const unsubscribe = updateConnection.subscribeLibrary(event => {
       switch (event.type) {
-        case 'load':
-          isLoaded = true;
-          return updateLibraryData(event.library);
         case "mini-theaters":
           return updateLibraryData({
-            characterPieces: event.characterPieces,
             miniTheaters: event.miniTheaters,
-            monsterPieces: event.monsterPieces
           });
         case 'characters':
           return updateLibraryData({
@@ -72,6 +65,18 @@ export const createLibraryConnectionClient = (
         case 'monster-actors':
           return updateLibraryData({
             monsterActors: event.monsterActors
+          });
+        case 'scenes':
+          return updateLibraryData({
+            scenes: event.scenes
+          });
+        case 'expositions':
+          return updateLibraryData({
+            expositions: event.expositions
+          });
+        case 'locations':
+          return updateLibraryData({
+            locations: event.locations
           });
         default:
           return;

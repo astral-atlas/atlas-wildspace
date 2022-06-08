@@ -54,6 +54,8 @@ export const useRenderSetup = (
     if (!canvas || !camera || !scene)
       return;
 
+    console.log('INIT')
+
     const options = {
       canvas,
     }
@@ -78,13 +80,13 @@ export const useRenderSetup = (
       frameId = requestAnimationFrame(onFrame);
     };
     const onCanvasResize = (entries) => {
-      const entry = entries[entries.length - 1];
+      const [entry] = entries;
       if (!entry)
         return;
+      const [contentSize] = entry.contentBoxSize;
+      renderer.setSize(contentSize.inlineSize, contentSize.blockSize, false);
 
-      const { contentRect } = entry;
-      renderer.setSize(contentRect.width, contentRect.height, false);
-      camera.aspect = contentRect.width / contentRect.height;
+      camera.aspect = contentSize.inlineSize / contentSize.blockSize;
       camera.updateProjectionMatrix();
       renderer.render(scene, camera);
     }

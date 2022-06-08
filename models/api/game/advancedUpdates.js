@@ -4,11 +4,9 @@ import type { Cast } from "@lukekaalim/cast";
 import type { ConnectionDescription } from "@lukekaalim/net-description/connection";
 import type { GameID } from "../../game/game";
 import type {
-  CharacterPiece,
   MiniTheater,
   MiniTheaterEvent,
   MiniTheaterID,
-  MonsterPiece,
 } from "../../game/miniTheater";
 import type { Character } from "../../character";
 import type { AuthorizedConnection } from "../meta";
@@ -17,12 +15,14 @@ import type { LibraryEvent } from "../../game";
 import type { MiniTheaterChannel } from "./advancedUpdates/miniTheater";
 import type { LibraryChannel } from "./advancedUpdates/library";
 import type { WikiDocChannel } from "./advancedUpdates/wikiDoc";
+import type { GameConnectionID } from "../../game/connection";
 */
 
 import { c } from "@lukekaalim/cast";
 import { createAuthorizedConnectionDescription } from "../meta.js";
 
 import {
+  castGameConnectionId,
   castGameId,
   castLibraryEvent,
   castMiniTheaterEvent,
@@ -39,20 +39,21 @@ type Channels = [
   WikiDocChannel
 ];
 
-type ServerUpdate =
+export type LibraryServerUpdate =
   | MiniTheaterChannel["Server"]
   | LibraryChannel["Server"]
   | WikiDocChannel["Server"]
+  | {| type: 'connected', connectionId: GameConnectionID |}
 
-type ClientUpdate = 
+export type LibraryClientUpdate = 
   | MiniTheaterChannel["Client"]
   | LibraryChannel["Client"]
   | WikiDocChannel["Client"]
 
 
 type AdvancedUpdates = AuthorizedConnection<{|
-  server: ServerUpdate,
-  client: ClientUpdate,
+  server: LibraryServerUpdate,
+  client: LibraryClientUpdate,
   query: { gameId: GameID }
 |}>;
 
@@ -75,6 +76,7 @@ const getChannelForValue = (value) => {
     throw new Error(`Unknown type of update`);
   return channel;
 }
+const castConnectedEvent = c.obj({ type: c.lit('connected'), connectionId: castGameConnectionId })
 
 
 const advancedUpdates/*: ConnectionDescription<AdvancedUpdates>*/ = createAuthorizedConnectionDescription({
@@ -82,6 +84,8 @@ const advancedUpdates/*: ConnectionDescription<AdvancedUpdates>*/ = createAuthor
   
   castQuery: c.obj({ gameId: castGameId }),
   castServerMessage: value => {
+    if (typeof value === 'object' && value !== null && value.type === 'connected')
+      return castConnectedEvent(value);
     const channel = getChannelForValue(value);
     return channel.castServerEvent(value);
   },

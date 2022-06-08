@@ -1,7 +1,7 @@
 // @flow strict
 /*::
 import type { Cast } from "@lukekaalim/cast";
-import type { MonsterID } from "../character";
+import type { Monster, MonsterID } from "../character";
 import type { AssetID } from "../asset";
 */
 import { c } from "@lukekaalim/cast";
@@ -30,6 +30,15 @@ export type MonsterActorMask = {
   conditions: $ReadOnlyArray<string>
 }
 */
+
+export const createMaskForMonsterActor = (monster/*: Monster*/, actor/*: MonsterActor*/)/*: MonsterActorMask*/ => ({
+  id: actor.id,
+
+  name: actor.name || monster.name,
+  healthDescriptionText: 'Healthy',
+  initiativeIconAssetId: monster.initiativeIconAssetId,
+  conditions: actor.conditions,
+})
 
 export const castMonsterActorId/*: Cast<MonsterActorID>*/ = c.str;
 export const castMonsterActor/*: Cast<MonsterActor>*/ = c.obj({

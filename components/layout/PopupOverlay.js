@@ -41,7 +41,6 @@ export const PopupOverlay/*: Component<PopupOverlayProps>*/ = ({
   
   return [
     h('div', { onClick, class: classes.background, ref: backgroundRef, style: { pointerEvents: visible ? 'auto' : 'none', opacity: visible ? 1 : 0 } },
-      h('div', { class: classes.popup, ref: popupRef },
-        children)),
+      children),
   ];
 }

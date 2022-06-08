@@ -9,7 +9,10 @@ import {
   castMiniTheater,
   castNonPlayerCharacter,
   castExposition,
-  castScene
+  castScene,
+  castMonster,
+  castMonsterActor,
+  castMiniTheaterEvent
 } from "@astral-atlas/wildspace-models";
 
 /*::
@@ -35,9 +38,10 @@ export const createTableWildspaceGameData = ({
   createTransactable
 }/*: TableDataConstructors*/)/*: WildspaceGameData*/ => {
 
-  const locations = createCompositeTable('locations', c.obj({ location: castLocation }));
+  const locations = createCompositeTable('locations', castLocation);
   const npcs = createCompositeTable('npcs', c.obj({ npc: castNonPlayerCharacter }));
   const magicItems = createCompositeTable('magicItems', castMagicItem);
+  const monsterActors = createCompositeTable('monsterActors', castMonsterActor);
 
   const connections = createCompositeTable('game_connections', castGameConnectionState);
 
@@ -46,19 +50,21 @@ export const createTableWildspaceGameData = ({
   const miniTheaters = {
     ...createCompositeTable('mini_theater', castMiniTheater),
     ...createTransactable('mini_theater', castMiniTheater, item => ({
-      key: item.id,
+      key: 'version',
       value: item.version,
     }))
   };
-
+  const miniTheaterEvents = createChannel('mini_theater', castMiniTheaterEvent);
 
   return {
     locations,
     magicItems,
+    monsterActors,
     connections,
     npcs,
     scenes,
     expositions,
     miniTheaters,
+    miniTheaterEvents,
   }
 }

@@ -4,7 +4,7 @@ import type { Component } from "@lukekaalim/act";
 import type {
   Encounter, EncounterState, Character,
 
-  ExpositionScene, RoomState,
+  Exposition, Scene, RoomState,
   RoomID, GameID,
 } from "@astral-atlas/wildspace-models";
 */
@@ -46,8 +46,8 @@ const RoomScreen = ({ children }) => {
 }
 
 
-const RoomSceneScreen = ({ scene, gameData }) => {
-  return h(RoomScreen, {}, !!scene && h(SceneRenderer, { scene, gameData }))
+const RoomSceneScreen = ({ scene, gameData, client }) => {
+  return h(RoomScreen, {}, !!scene && h(SceneRenderer, { sceneId: scene.id, gameData, client }))
 }
 const RoomInitiativeScreen = ({ gameData, roomState }) => {
   return h(EncounterInitiativeTracker, {
@@ -82,22 +82,16 @@ const RoomAssetLibraryScreen = ({ client, gameData, gameId }) => {
 }
 const RoomManagerScreen = ({ client, gameData, roomState, roomId, gameId }) => {
 
-  const onSelectedSceneChange = async (expositionSceneId) => {
-    await client.room.scene.setActiveScene(gameId, roomId, { type: 'exposition', ref: expositionSceneId });
+  const onSelectedSceneChange = async (sceneId) => {
+    await client.room.scene.set(gameId, roomId, { activeScene: sceneId || null });
   }
 
   return h(RoomScreen, {}, [
     h(EditorForm, {}, [
       h(SelectEditor, {
-        label: 'Exposition',
-        values: [...gameData.scenes.exposition.map(e => ({ title: e.title, value: e.id })), { title: 'None', value: '' }],
-        selected: roomState.scene.activeScene && roomState.scene.activeScene.type === 'exposition' ? roomState.scene.activeScene.ref : '',
-        onSelectedChange: onSelectedSceneChange
-      }),
-      h(SelectEditor, {
-        label: 'Encounter',
-        values: [],
-        selected: roomState.scene.activeScene && roomState.scene.activeScene.type === 'exposition' ? roomState.scene.activeScene.ref : '',
+        label: 'Scenes',
+        values: [...gameData.scenes.map(e => ({ title: e.title, value: e.id })), { title: 'None', value: '' }],
+        selected: roomState.scene.activeScene || '',
         onSelectedChange: onSelectedSceneChange
       }),
       h(AudioStateEditor, { client: client.room, gameData, roomData: roomState }),
@@ -128,13 +122,14 @@ export type RoomProps = {
 export const Room/*: Component<RoomProps>*/ = ({ client, gameData, roomState, userId, roomId, gameId }) => {
   const [directionParam, setDirectionParam] = useURLParam('direction');
 
-  const sceneRef = roomState.scene.activeScene;
+  const sceneId = roomState.scene.activeScene;
+  const scene = gameData.scenes.find(s => s.id === sceneId);
 
   const playerScreens = [
-    { content: h(RoomSceneScreen, { scene: sceneRef, gameData }), icon: null, position: new Vector2(0, 0) },
+    { content: h(RoomSceneScreen, { scene, gameData, client }), icon: null, position: new Vector2(0, 0) },
     { content: h(RoomLobbyScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(0, 1) },
     { content: h(RoomWikiScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(1, 0) },
-    { content: h(RoomInitiativeScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(-1, 0) },
+    //{ content: h(RoomInitiativeScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(-1, 0) },
   ]
   const gameMasterScreens = [
     ...playerScreens,
@@ -142,7 +137,7 @@ export const Room/*: Component<RoomProps>*/ = ({ client, gameData, roomState, us
     { content: h(RoomManagerScreen, { client, gameData, roomState, gameId, roomId, userId }), icon: null, position: new Vector2(-1, -1) },
   ];
 
-  const screens = gameData.isGameMaster ? gameMasterScreens : playerScreens
+  const screens = gameData.isGameMaster ? gameMasterScreens : playerScreens;
 
   const ref = useRef();
   const track = useKeyboardTrack(useElementKeyboard(ref))
@@ -154,8 +149,8 @@ export const Room/*: Component<RoomProps>*/ = ({ client, gameData, roomState, us
 
   return [
     h('div', { ref, style: { width: '100%', height: '100%', position: 'absolute' } }, [
-      !!sceneRef && h('div', { className: styles.background },
-        h(SceneBackgroundRenderer, { gameData, scene: sceneRef, client, roomState })),
+      !!scene && h('div', { className: styles.background },
+        h(SceneBackgroundRenderer, { gameData, scene, client, roomState })),
       h(CompassLayout, { screens, direction }),
     ])
   ]
