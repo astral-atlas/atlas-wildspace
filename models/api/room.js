@@ -115,7 +115,7 @@ export type RoomAPI = {|
   '/room/all': AllRoomsResource,
   ...LobbyAPI,
   ...StateAPIV2,
-  ...SceneAPI
+  ...SceneAPI,
 |};
 */
 
@@ -228,5 +228,5 @@ export const roomAPI = {
   '/room/all': allRoomsResourceDescription,
   ...stateApiV2,
   ...lobbyApi,
-  ...sceneAPI
+  ...sceneAPI,
 };

@@ -1,24 +1,23 @@
 // @flow strict
 
 import { c } from "@lukekaalim/cast";
-import { castSceneRef } from "../game.js";
+import { castSceneId } from "../game.js";
 
 /*::
-import type { SceneRef } from "../game/scene";
+import type { SceneID } from "../game/scene";
 import type { Cast } from "@lukekaalim/cast/main";
 
 export type RoomSceneState = {
-  activeScene: ?SceneRef
+  activeScene: ?SceneID
 };
 */
 
 export const castRoomSceneState/*: Cast<RoomSceneState>*/ = c.obj({
-  activeScene: c.maybe(castSceneRef),
+  activeScene: c.maybe(castSceneId),
 })
 
 
 /*::
 export type RoomSceneAction =
-  | { type: 'set-scene', activeSceneRef: ?SceneRef }
-
+  | { type: 'set-scene', activeSceneRef: ?SceneID }
 */

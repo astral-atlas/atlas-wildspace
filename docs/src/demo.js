@@ -5,7 +5,7 @@
 import type { RaycastManager } from "./controls/raycast";
 */
 /*:: import type { PerspectiveCamera, Scene, Vector2 } from "three"; */
-/*:: import type { LoopContextValue } from "./controls/loop"; */
+/*:: import type { LoopContextValue, OnLoop } from "./controls/loop"; */
 
 import { h, useRef, useEffect, useState } from "@lukekaalim/act";
 import { perspectiveCamera, scene, useLookAt, useResizingRenderer, useWebGLRenderer } from "@lukekaalim/act-three";
@@ -88,6 +88,7 @@ export type GeometryDemoProps = {
   canvasProps?: { [string]: mixed },
   raycastManager?: RaycastManager,
   showGrid?: boolean,
+  simulate?: OnLoop,
 }
 */
 
@@ -96,7 +97,8 @@ export const GeometryDemo/*: Component<GeometryDemoProps>*/ = ({
   showGrid = true,
   raycastManager,
   sceneProps,
-  canvasProps
+  canvasProps,
+  simulate,
 }) => {
   const { canvasRef, cameraRef, sceneRef, loop } = useDemoSetup();
   const localRaycast = useRaycastManager();
@@ -106,6 +108,10 @@ export const GeometryDemo/*: Component<GeometryDemoProps>*/ = ({
   useEffect(() => {
     return loop.subscribeInput((loopConsts) => raycast.onUpdate(loopConsts.camera));
   }, [loop, raycast.onUpdate])
+  useEffect(() => {
+    if (simulate)
+      return loop.subscribeSimulate(simulate);
+  }, [loop, simulate])
 
   useEffect(() => {
     const { current: canvas } = canvasRef;
@@ -176,6 +182,7 @@ export const ScaledLayoutDemo/*: Component<{ style?: {} }>*/ = ({ children, styl
     h(EditorForm, {}, [
       h(EditorRangeInput, {
         label: 'Scale', min: 0.1,
+        step: 0.001,
         max: 1, number: scale,
         onNumberInput: scale => setScale(scale) })
     ])

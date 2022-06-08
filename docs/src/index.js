@@ -19,6 +19,10 @@ import { editorsPages, editorsPage } from './editors';
 import { gmPage, gmPages } from "./gm";
 import { paperPage, paperPages } from "./paper";
 import { libraryPage, libraryPages } from "./library";
+import { encounterPage, encounterPages } from "./encounter";
+import { particlePage, particlePages } from "./particle";
+import { initiativePage, initiativePages } from "./initiative";
+import { toolbarPage, toolbarPages } from "./toolbar";
 
 /*::
 export type Page = {
@@ -45,6 +49,10 @@ const rootPage = {
       gmPage.link,
       paperPage.link,
       libraryPage.link,
+      encounterPage.link,
+      particlePage.link,
+      initiativePage.link,
+      toolbarPage.link
     ],
     href: '/',
   }
@@ -61,6 +69,10 @@ const pages = [
   ...gmPages,
   ...paperPages,
   ...libraryPages,
+  ...encounterPages,
+  ...particlePages,
+  ...initiativePages,
+  ...toolbarPages
 ];
 
 const normalizeURLPathname = pathname =>

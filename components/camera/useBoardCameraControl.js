@@ -31,8 +31,7 @@ export const useBoardCameraControl = (
   cameraRef/*: Ref<?PerspectiveCamera>*/,
   readInputs/*: () => Frame<Set<string>>[]*/,
   height/*: number*/ = 40,
-  initialPosition/*: Vector2*/ = new Vector2(0, 0),
-  maxPosition/*: BoxBoardArea*/,
+  initialPosition/*: Vector2*/ = new Vector2(0, 0)
 ) => {
   const cameraStateRef = useRef({
     rotationAnimation: createInitialCubicBezierAnimation(1/8),
@@ -58,17 +57,6 @@ export const useBoardCameraControl = (
         new Vector2(-acceleration[0], acceleration[1])
           .rotateAround(new Vector2(0, 0), (currentRotation - 0.25) * Math.PI * 2),
         delta,
-      )
-      clampParticlePosition(
-        state.positionParticle,
-        new Vector2(
-          maxPosition.position.x * 10,
-          maxPosition.position.y * 10
-        ),
-        new Vector2(
-          (maxPosition.position.x + maxPosition.size.x) * 10,
-          (maxPosition.position.y + maxPosition.size.y) * 10
-        )
       )
 
       const velocity = calculateKeyVelocity(prevInput.value, nextInput.value);

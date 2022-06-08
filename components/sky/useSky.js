@@ -3,12 +3,13 @@
 
 */
 
-import { useEffect } from '@lukekaalim/act';
+import { useEffect, useState } from '@lukekaalim/act';
+import { useDisposable } from '@lukekaalim/act-three';
 import { Vector3, MathUtils } from "three";
 import { Sky } from 'three/examples/jsm/objects/Sky.js';
 
 export const useSky = (elevation/*: number*/ = 2, azimuth/*: number*/ = 180)/*: Sky*/ => {
-  const sky = new Sky();
+  const [sky] = useState(new Sky())
 
   useEffect(() => {
     sky.material.uniforms[ 'turbidity' ].value = 10;

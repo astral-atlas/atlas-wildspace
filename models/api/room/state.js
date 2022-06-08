@@ -8,7 +8,7 @@ import { castRoomStateEvent } from "../../room/state.js";
 import type { ResourceDescription, ConnectionDescription } from "@lukekaalim/net-description";
 import type { AuthorizedConnection } from "../meta.js"; 
 
-import type { RoomID, LobbyMessageContent, RoomState, RoomUpdate } from "../../room";
+import type { RoomID, LobbyMessageContent, RoomState } from "../../room";
 import type { GameID } from "../../game";
 import type { RoomStateEvent } from "../../room/state";
 
@@ -55,7 +55,7 @@ const resource/*: ResourceDescription<RoomStateResourceV2>*/ = {
   GET: {
     toQuery: c.obj({ roomId: castRoomId, gameId: castGameId }),
     toResponseBody: c.obj({ type: c.lit('found'), state: castRoomState })
-  }
+  },
 }
 
 export const stateApiV2 = {

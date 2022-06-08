@@ -18,6 +18,11 @@ import { createSceneRoutes } from './game/scene.js';
 import { createLocationsRoutes } from "./game/locations.js";
 import { createMagicItemRoutes } from './game/magicItem.js';
 import { createWikiRoutes } from "./game/wiki.js";
+import { createUpdatesRoutes } from "./game/updates.js";
+import { createLibraryRoutes } from './game/library.js';
+import { createMonsterRoutes } from "./game/monsters.js";
+import { createMiniTheaterRoutes } from "./game/miniTheater.js";
+import { createExpositionRoutes } from './game/exposition.js';
 
 export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute[], http: HTTPRoute[] }*/ => {
   const { data, auth, ...s } = services;
@@ -111,6 +116,11 @@ export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute
   const locationRoutes = createLocationsRoutes({ ...s, auth, data });
   const magicItemRoutes = createMagicItemRoutes(services);
   const wikiRoutes = createWikiRoutes(services);
+  const updatesRoute = createUpdatesRoutes(services);
+  const libraryRoutes = createLibraryRoutes(services);
+  const monsterRoutes = createMonsterRoutes(services);
+  const miniTheaterRoutes = createMiniTheaterRoutes(services)
+  const expositionRoutes = createExpositionRoutes(services);
   const http = [
     ...playersRoutes.http,
     ...encounterRoutes.http,
@@ -122,10 +132,18 @@ export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute
     ...locationRoutes.http,
     ...magicItemRoutes.http,
     ...wikiRoutes.http,
+    ...updatesRoute.http,
+    ...libraryRoutes.http,
+    ...monsterRoutes.http,
+    ...miniTheaterRoutes.http,
+    ...expositionRoutes.http,
   ];
   const ws = [
     ...characterRoutes.ws,
     ...encounterRoutes.ws,
+    ...updatesRoute.ws,
+    ...libraryRoutes.ws,
+    ...monsterRoutes.ws,
     gameUpdates,
   ];
   return { http, ws };

@@ -3,23 +3,27 @@
 import type { Component, Ref } from "@lukekaalim/act";
 import type { Board, BoxBoardArea, Vector3D } from "@astral-atlas/wildspace-models";
 
-import type { EncounterLocalState } from "./Encounter";
+import type { Mesh } from "three";
+
+import type { EncounterController, EncounterLocalState } from "./Encounter";
+import type { EncounterResources } from "./useResources";
 */
 import { h, useContext, useState, useRef, useMemo, useEffect } from "@lukekaalim/act";
-import { mesh, useDisposable } from "@lukekaalim/act-three";
+import { group, mesh, useDisposable } from "@lukekaalim/act-three";
 
 import { useBoardBoxGeometry } from "./useBoardGeometry";
 import { encounterContext } from "./encounterContext";
 import { raycastManagerContext, useRaycast, useRaycastManager } from "../raycast";
 import { BoardLineGrid } from "./BoardLineGrid";
 import { BoardCursor } from "./BoardCursor";
-import { MeshBasicMaterial, Vector2, Vector3 } from "three";
+import { MeshBasicMaterial, Vector2, Vector3, Euler } from "three";
 import { calculateBoardBox, isPointInsideBoardBox, isPointOnBoardFloor, mergeBoardBoxArea } from "@astral-atlas/wildspace-models";
 import { localToTilemapPosition } from "./Tilemap";
 import { useAnimatedList } from "@lukekaalim/act-curve/array";
 import { useAnimatedKeyedList } from "../animation/list";
 import { createInitialCubicBezierAnimation, interpolateCubicBezierAnimation } from "@lukekaalim/act-curve";
 import { resourcesContext } from "./useResources";
+import { useRefMap } from "../editor";
 
 
 const tilemapToBoardPosition = (tilemapPosition/*: Vector2*/, boardBox/*: BoxBoardArea*/)/*: Vector3D*/ => ({
@@ -38,7 +42,10 @@ const boardPositionToLocalVector = (position/*: Vector3D*/, boardBox)/*: Vector3
 
 /*::
 export type EncounterBoardProps = {
-  encounter: EncounterLocalState,
+  position?: Vector3,
+  rotation?: Euler,
+  encounter: EncounterController,
+  resources: EncounterResources,
   board: Board,
 }
 */
@@ -46,6 +53,9 @@ export type EncounterBoardProps = {
 export const EncounterBoard/*: Component<EncounterBoardProps>*/ = ({
   encounter,
   board,
+  resources,
+  position = new Vector3(0, 0, 0),
+  rotation = new Euler(0, 0, 0),
   children,
 }) => {
   const boardBox = useMemo(() => {
@@ -53,27 +63,41 @@ export const EncounterBoard/*: Component<EncounterBoardProps>*/ = ({
   }, [board]);
 
   const ref = useRef();
-  const ray = useContext(raycastManagerContext);
+  const [createRef, refMap] = useRefMap/*:: <number, ?Mesh>*/();
 
   useEffect(() => {
-    const { current: boardMesh } = ref;
-    if (!ray || !boardMesh)
+    const { current: boardGroup } = ref;
+    if (!boardGroup)
       return;
 
-    const unsubscribe = ray.subscribe(boardMesh, {
-      over(i) {
-        const localVector = i.object.worldToLocal(i.point);
-        const p = tilemapToBoardPosition(localToTilemapPosition(localVector, 10), boardBox);
-        encounter.moveCursor(board.id, p);
-      },
-      exit() {
-        encounter.clearCursor()
-      }
-    });
+    const unsubscribeAll = [...refMap]
+      .map(([layer, boardMesh]) => {
+        if (!boardMesh)
+          return null;
+        const isHit = (i) => {
+          const localVector = boardGroup.worldToLocal(i.point);
+          const p = tilemapToBoardPosition(localToTilemapPosition(localVector, 10), boardBox);
+          return isPointOnBoardFloor(({ ...p, z: layer }), board);
+        }
+        const unsubscribe = encounter.raycaster.subscribe(boardMesh, {
+          over(i) {
+            const localVector = boardGroup.worldToLocal(i.point);
+            const p = tilemapToBoardPosition(localToTilemapPosition(localVector, 10), boardBox);
+            encounter.moveCursor(board.id, ({ ...p, z: layer }));
+          },
+          exit() {
+            encounter.clearCursor()
+          }
+        }, isHit);
+        return unsubscribe;
+      })
+      .filter(Boolean);
+    
     return () => {
-      unsubscribe();
+      for (const unsubscribe of unsubscribeAll)
+        unsubscribe();
     }
-  }, [board, ray]);
+  }, [board, encounter.raycaster]);
 
   const cursorPosition = (
     encounter.cursor &&
@@ -87,11 +111,24 @@ export const EncounterBoard/*: Component<EncounterBoardProps>*/ = ({
     update: (a, v) => [v, a[1]], 
     exit: ([v, b], now) => [v, interpolateCubicBezierAnimation(b, 0, 200, 3, now)],
   }, [cursorPosition])
+
+  const boardCenter = useMemo(() =>
+    boardPositionToLocalVector({ x: 0, y: 0, z: 0 }, boardBox),
+    [boardBox]
+  );
   
   return [
-    h(BoardLineGrid, { ref, board, boardBox }),
-    children,
+    h(group, { ref }, useMemo(() => {
+      return Array.from({ length: boardBox.size.z }).map((_, i) => {
+        const layer = i - Math.floor(boardBox.size.z / 2) + boardBox.position.z;
+        return h(BoardLineGrid, { ref: createRef(layer), board, boardBox, rotation, layer })
+      });
+    }, [boardBox])),
+    h(group, { position: boardCenter.add(position), rotation }, [
+      children,
+    ]),
     cursorAnims.map(([boardPosition, entryAnim]) => h(BoardCursor, {
+      resources,
       entryAnim,
       position: boardPositionToLocalVector(boardPosition, boardBox)
     })),

@@ -102,20 +102,22 @@ export type Monster = {
 
   name: string,
   shortDescription: string,
-  iconURL: string,
+  iconURL: ?string,
+  initiativeIconAssetId: ?AssetID,
 
   maxHitpoints: number,
 };
 */
 
-export const castMonsterId/*: Cast<MonsterID>*/ = castString;
+export const castMonsterId/*: Cast<MonsterID>*/ = c.str;
 export const castMonster/*: Cast<Monster>*/ = createObjectCaster({
   id: castCharacterId,
   gameId: castGameId,
 
-  name: castString,
-  shortDescription: castString,
-  iconURL: castString,
+  name: c.str,
+  shortDescription: c.str,
+  iconURL: c.maybe(c.str),
+  initiativeIconAssetId: c.maybe(castAssetID),
 
   maxHitpoints: c.num,
 });

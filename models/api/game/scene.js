@@ -6,31 +6,36 @@ import type { Cast } from '@lukekaalim/cast';
 
 import type { CRUDGameAPI } from './meta.js';
 
-import type {
-  EncounterScene, EncounterSceneID,
-  ExpositionSceneID, ExpositionScene
-} from "../../game/index.js";
+import type { AdvancedGameCRUDAPI } from "./meta";
+import type { Scene, SceneID } from "../../game/scene";
 */
 
-import { createCRUDGameAPI } from './meta.js';
-import {
-  castExpositionScene, castExpositionSceneID
-} from "../../game/scene.js";
+import { castScene } from "../../game/scene.js";
+import { createAdvancedCRUDGameAPI } from "./meta.js";
+import { c } from '@lukekaalim/cast';
 
 /*::
 export type ScenesAPI = {|
-  '/games/scenes/exposition': CRUDGameAPI<ExpositionScene, 'exposition', ExpositionSceneID>,
-  '/games/scenes/encounter': CRUDGameAPI<EncounterScene, 'exposition', EncounterSceneID>,
+  '/games/scene': AdvancedGameCRUDAPI<{
+    resourceIdName: 'sceneId',
+    resourceName: 'scene',
+    resource: Scene,
+    resourceId: SceneID,
+    resourcePostInput: { title: string },
+    resourcePutInput: Scene,
+  }>,
 |};
 */
 
-export const gameExpositionScene/*: ResourceDescription<ScenesAPI['/games/scenes/exposition']>*/ = createCRUDGameAPI(
-  '/games/scenes/exposition',
-  'exposition',
-  castExpositionScene,
-  castExpositionSceneID,
-)
+const scene/*: ResourceDescription<ScenesAPI["/games/scene"]>*/ = createAdvancedCRUDGameAPI({
+  path: '/games/scenes',
+  resourceIdName: 'sceneId',
+  resourceName: 'scene',
+  castResource: castScene,
+  castPostResource: c.obj({ title: c.str }),
+  castPutResource: castScene,
+})
 
 export const scenesAPI = {
-  '/games/scenes/exposition': gameExpositionScene,
+  '/games/scenes': scene,
 };

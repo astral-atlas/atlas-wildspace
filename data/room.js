@@ -20,7 +20,6 @@ import type {
   GameID, RoomID,
   LocationID, Location,
   NonPlayerCharacterID, NonPlayerCharacter,
-  ExpositionSceneID, ExpositionScene,
   RoomLobbyState,
   RoomSceneState,
   RoomStateEvent

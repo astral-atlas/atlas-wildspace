@@ -310,6 +310,22 @@ export const createCRUDConstructors = (services/*: Services*/)/*: CRUDConstructo
           return { status: HTTP_STATUS.ok, body: { type: 'updated', [implementation.name]: resource } }
         }
       },
+      DELETE: {
+        scope: { type: 'game-master-in-game' },
+        getGameId: r => r.query.gameId,
+        async handler(request) {
+          if (request.identity.type === 'guest')
+            return { status: HTTP_STATUS.unauthorized };
+          const { grant } = request.identity;
+          const resourceId = request.query[implementation.idName];
+           await implementation.destroy({ ...request, grant }, resourceId);
+          
+          if (implementation.gameUpdateType)
+            services.data.gameUpdates.publish(request.game.id, { type: implementation.gameUpdateType });
+
+          return { status: HTTP_STATUS.ok, body: { type: 'deleted' } }
+        }
+      }
     })
   }
 

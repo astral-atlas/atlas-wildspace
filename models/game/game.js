@@ -56,6 +56,8 @@ export type GameUpdate = {|
   type:
     | 'players'
     | 'characters'
+    | 'monsters'
+    | 'monsterActors'
     | 'rooms'
     | 'tracks'
     | 'playlists'
@@ -64,6 +66,8 @@ export type GameUpdate = {|
     | 'non-player-characters'
     | 'scenes'
     | 'magicItem'
+    | 'exposition'
+    | 'mini-theater'
     | 'wikiDoc'
 |}
 */
@@ -74,12 +78,16 @@ export const castGameUpdate/*: Cast<GameUpdate>*/ = c.obj({
     'characters',
     'rooms',
     'tracks',
+    'monsters',
+    'monsterActors',
     'playlists',
     'encounters',
     'locations',
     'non-player-characters',
     'scenes',
+    'exposition',
     'magicItem',
-    'wikiDoc'
+    'wikiDoc',
+    'mini-theater',
   ])
 })

@@ -6,10 +6,14 @@ import type { WildspaceData } from '@astral-atlas/wildspace-data';
 import type { AuthService, Identity } from "./auth.js";
 import type { WikiService } from "./game/wiki";
 import type { GameConnectionService } from "./game/connection";
+import type { LibraryConnectionService } from "./game/library";
+import type { MiniTheaterConnectionService } from "./game/miniTheater";
 */
 import { v4 as uuid } from 'uuid';
 import { createWikiService } from './game/wiki.js';
 import { createGameConnectionService } from "./game/connection.js";
+import { createLibraryConnectionService } from './game/library.js';
+import { createMiniTheaterConnectionService } from './game/miniTheater.js';
 
 /*::
 export type GameService = {
@@ -26,6 +30,8 @@ export type GameService = {
 
   wiki: WikiService,
   connection: GameConnectionService,
+  library: LibraryConnectionService,
+  miniTheater: MiniTheaterConnectionService,
 };
 
 export type GameIdentityScope =
@@ -148,10 +154,14 @@ export const createGameService = (data/*: WildspaceData*/, auth/*: AuthService*/
 
   const connection = createGameConnectionService(data);
   const wiki = createWikiService(data, connection);
+  const library = createLibraryConnectionService(data);
+  const miniTheater = createMiniTheaterConnectionService(data);
 
   return {
     create, update, get, all, createScopeAssertion, removePlayer, addPlayer, listPlayers,
     wiki,
     connection,
+    library,
+    miniTheater,
   };
 };

@@ -4,7 +4,7 @@ import type { Ref } from "@lukekaalim/act";
 import type { KeyboardState } from "./state";
 
 export type KeyboardStateEmitter = {
-  subscribe: ((keys: KeyboardState, event: KeyboardEvent) => mixed) => (() => void)
+  subscribe: ((keys: KeyboardState, event: KeyboardEvent | FocusEvent) => mixed) => (() => void)
 }
 */
 
@@ -31,7 +31,9 @@ const whitelist = new Set([
   'ArrowLeft',
   'ArrowRight',
   'KeyQ',
-  'KeyE'
+  'KeyE',
+  'KeyR',
+  'KeyF'
 ]);
 const elementBlocklist = new Set([
   'INPUT',
@@ -63,12 +65,12 @@ export const useElementKeyboard = /*:: <T: Element>*/(
 
       if (!whitelist.has(event.code))
         return;
+      event.preventDefault();
       if (event.repeat)
         return;
       
       currentKeys.add(event.code);
       const keys = new Set(currentKeys);
-      event.preventDefault();
       
       for (const subscriber of subscribers)
         subscriber(keys, event);
@@ -87,12 +89,20 @@ export const useElementKeyboard = /*:: <T: Element>*/(
       for (const subscriber of subscribers)
         subscriber(keys, event);
     };
+    const onBlur = (blurEvent/*: FocusEvent*/) => {
+      currentKeys.clear();
+      const keys = new Set(currentKeys);
+      for (const subscriber of subscribers)
+        subscriber(keys, blurEvent);
+    }
   
     element.addEventListener('keydown', onKeyDown);
     element.addEventListener('keyup', onKeyUp);
+    element.addEventListener('blur', onBlur);
     return () => {
       element.removeEventListener('keydown', onKeyDown);
       element.removeEventListener('keyup', onKeyUp);
+      element.removeEventListener('blur', onBlur);
     };
   }, deps);
 

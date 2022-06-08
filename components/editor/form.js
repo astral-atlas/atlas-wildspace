@@ -55,6 +55,36 @@ export const EditorTextInput/*: Component<TextEditorProps>*/ = ({
   ]);
 };
 
+/*::
+export type NumberEditorProps = {
+  label?: string,
+  number?: number,
+  disabled?: boolean,
+  onNumberChange?: number => mixed,
+  onNumberInput?: number => mixed,
+  min?: number,
+  max?: number,
+  [string]: mixed,
+};
+*/
+export const EditorNumberInput/*: Component<NumberEditorProps>*/ = ({
+  number = 0, label, disabled,
+  onNumberChange, onNumberInput,
+  min, max,
+}) => {
+  const onChange = onNumberChange && ((event) => {
+    onNumberChange(event.target.valueAsNumber);
+  });
+  const onInput = onNumberInput && ((event) => {
+    onNumberInput(event.target.valueAsNumber);
+  });
+  return h('label', { classList: [styles.editorRoot] }, [
+    h('span', {}, label),
+    h('input', { type: 'number', value: number, min, max, onInput, onChange, disabled })
+  ]);
+};
+
+
 export const EditorTextAreaInput/*: Component<TextEditorProps>*/ = ({
   text = '', label, disabled,
   onTextChange, onTextInput
@@ -189,6 +219,17 @@ export const EditorHorizontalSection/*: Component<EditorHorizontalSectionProps>*
   children,
 }) => {
   return h('section', { classList: [styles.editorHorizontalSection]}, children)
+}
+/*::
+export type EditorVerticalSectionProps = {
+
+};
+*/
+
+export const EditorVerticalSection/*: Component<EditorVerticalSectionProps>*/ = ({
+  children,
+}) => {
+  return h('section', { classList: [styles.editorVerticalSection]}, children)
 }
 
 /*::

@@ -6,12 +6,12 @@ import type { ResourceDescription } from "@lukekaalim/net-description";
 */
 /*::
 
-export type GameCRUDClient<T: AdvancedGameCRUDAPIDescription> = {
+export type GameCRUDClient<T: AdvancedGameCRUDAPIDescription> = {|
   create: (gameId: GameID, T["resourcePostInput"]) => Promise<T["resource"]>,
   read: (gameId: GameID) => Promise<$ReadOnlyArray<T["resource"]>>,
   update: (gameId: GameID, T["resourceId"], T["resourcePutInput"]) => Promise<T["resource"]>,
   destroy: (gameId: GameID, T["resourceId"]) => Promise<void>,
-}
+|}
 */
 
 export const createGameCRUDClient = /*:: <T: AdvancedGameCRUDAPIDescription>*/(

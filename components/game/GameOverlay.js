@@ -9,6 +9,7 @@ import type {
 import type { User } from "@astral-atlas/sesame-models";
 import type { Component } from "@lukekaalim/act";
 
+import type { MiniTheaterController } from "../miniTheater/useMiniTheaterController";
 */
 import { h } from "@lukekaalim/act";
 import { CornersLayout } from "../layout/CornersLayout";
@@ -43,6 +44,12 @@ export const GameOverlay/*: Component<GameOverlayProps>*/ = ({
   return h(CornersLayout, {
     topLeft: h(FullscreenToggle, { onFullscreenClick }),
     topRight: name && h(UserTablet, { sesameURL, name: name, onLogoutClick }),
-    bottomLeft: h('input', { className: styles.volume, type: 'range', value: volume, min: 0, max: 1, step: 0.01, onInput: e => onVolumeInput(e.target.valueAsNumber) })
+    bottomLeft: h('input', {
+      className: styles.volume,
+      type: 'range',
+      value: volume,
+      min: 0, max: 1, step: 0.01,
+      onInput: e => onVolumeInput(e.target.valueAsNumber)
+    }),
   });
 }

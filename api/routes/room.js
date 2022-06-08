@@ -240,15 +240,14 @@ export const createRoomRoutes/*: RoutesConstructor*/ = (services) => {
     ...roomUpdateResourceRoute,
     ...roomStateResources.http,
     ...roomLobbyRoutes.http,
-    ...roomSceneRoutes.http,
     ...allRoomsResourceRoute,
     ...roomEncounterActionsRoutes,
+    ...roomSceneRoutes.http,
   ];
   const ws = [
     roomUpdateConnectionRoute,
     ...roomStateResources.ws,
     ...roomLobbyRoutes.ws,
-    ...roomSceneRoutes.ws,
   ];
   return { http, ws };
 };

@@ -6,38 +6,55 @@
 import { c } from "@lukekaalim/cast"
 import { createBufferCompositeTable } from "./sources/table.js"
 import {
-  castExpositionScene,
   castGameConnectionState,
   castLocation,
   castMagicItem,
-  castNonPlayerCharacter
-} from "@astral-atlas/wildspace-models"
+  castMiniTheater,
+  castNonPlayerCharacter,
+  castExposition,
+  castScene,
+  castMonsterActor
+} from "@astral-atlas/wildspace-models";
+import { createFakeTransactable } from "./sources/table2.js";
 
 /*::
 import type { Table, CompositeTable } from './sources/table.js';
 
 import type { 
-  GameID, GameConnectionState,
+  GameID, GameConnectionState, GameConnectionID,
   LocationID, Location,
   NonPlayerCharacterID, NonPlayerCharacter,
-  ExpositionSceneID, ExpositionScene,
+  Scene, SceneID,
+  Exposition, ExpositionID,
+  MiniTheater, MiniTheaterID, MiniTheaterEvent,
+  MagicItem, MagicItemID,
+
+  MonsterActor,
+  MonsterActorID,
 } from "@astral-atlas/wildspace-models";
+
 import type { TableDataConstructors } from "./wildspace/table";
-import type { MagicItem, MagicItemID } from "../models/game/magicItem";
-import type { GameConnectionID } from "../models/game/connection";
+import type { Transactable } from "./sources/table2";
+import { createMemoryChannel } from "./sources/channel";
 */
 
 /*::
 export type WildspaceGameData = {
-  locations:  CompositeTable<GameID, LocationID,            { location: Location }>,
-  npcs:       CompositeTable<GameID, NonPlayerCharacterID,  { npc: NonPlayerCharacter }>,
-  magicItems: CompositeTable<GameID, MagicItemID, MagicItem>,
+  locations:    CompositeTable<GameID, LocationID,            Location>,
+  npcs:         CompositeTable<GameID, NonPlayerCharacterID,  { npc: NonPlayerCharacter }>,
+  magicItems:   CompositeTable<GameID, MagicItemID, MagicItem>,
 
-  connections: CompositeTable<GameID, GameConnectionID, GameConnectionState>,
+  monsterActors: CompositeTable<GameID, MonsterActorID, MonsterActor>,
 
-  scenes: {
-    expositions: CompositeTable<GameID, ExpositionSceneID, { exposition: ExpositionScene }>,
-  },
+  connections:  CompositeTable<GameID, GameConnectionID, GameConnectionState>,
+
+  scenes:       CompositeTable<GameID, SceneID, Scene>,
+  expositions:  CompositeTable<GameID, ExpositionID, Exposition>,
+  miniTheaters: {|
+    ...CompositeTable<GameID, MiniTheaterID, MiniTheater>,
+    ...Transactable<GameID, MiniTheaterID, MiniTheater>,
+  |},
+  miniTheaterEvents: Channel<MiniTheaterID, MiniTheaterEvent>
 };
 
 type DataConstructors = {
@@ -45,44 +62,32 @@ type DataConstructors = {
 }
 */
 
-export const createBufferWildspaceGameData = ({ createBufferStore }/*: DataConstructors*/)/*: WildspaceGameData*/ => {
+export const createBufferWildspaceGameData = ({ createBufferStore,  }/*: DataConstructors*/)/*: WildspaceGameData*/ => {
 
-  const locations = createBufferCompositeTable(createBufferStore('locations'), c.obj({ location: castLocation }));
+  const locations = createBufferCompositeTable(createBufferStore('locations'), castLocation);
   const npcs = createBufferCompositeTable(createBufferStore('npcs'), c.obj({ npc: castNonPlayerCharacter }));
   const magicItems = createBufferCompositeTable(createBufferStore('magicItems'), castMagicItem);
+  const monsterActors = createBufferCompositeTable(createBufferStore('monsterActors'), castMonsterActor);
 
   const connections = createBufferCompositeTable(createBufferStore('game_connections'), castGameConnectionState);
 
-  const scenes = {
-    expositions: createBufferCompositeTable(createBufferStore('expositionScenes'), c.obj({ exposition: castExpositionScene })),
-  }
+  const scenes = createBufferCompositeTable(createBufferStore('scenes'), castScene);
+  const expositions = createBufferCompositeTable(createBufferStore('expositions'), castExposition);
+  const miniTheaters = {
+    ...createBufferCompositeTable(createBufferStore('mini_theaters'), castMiniTheater),
+    ...createFakeTransactable/*:: <MiniTheater>*/(),
+  };
+  const miniTheaterEvents = createMemoryChannel();
 
   return {
     locations,
     npcs,
     scenes,
     magicItems,
+    monsterActors,
     connections,
-  }
-}
-
-export const createTableWildspaceGameData = ({ createChannel, createCompositeTable }/*: TableDataConstructors*/)/*: WildspaceGameData*/ => {
-
-  const locations = createCompositeTable('locations', c.obj({ location: castLocation }));
-  const npcs = createCompositeTable('npcs', c.obj({ npc: castNonPlayerCharacter }));
-  const magicItems = createCompositeTable('magicItems', castMagicItem);
-
-  const connections = createCompositeTable('game_connections', castGameConnectionState);
-
-  const scenes = {
-    expositions: createCompositeTable('expositionScenes', c.obj({ exposition: castExpositionScene })),
-  }
-
-  return {
-    locations,
-    magicItems,
-    connections,
-    npcs,
-    scenes,
+    expositions,
+    miniTheaters,
+    miniTheaterEvents,
   }
 }

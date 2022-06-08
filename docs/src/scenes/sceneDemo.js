@@ -3,7 +3,7 @@
 import type { Component } from '@lukekaalim/act';
 import type {  } from '@astral-atlas/wildspace-models';
 */
-import { SceneBackgroundRenderer, SceneRenderer, useAnimatedKeyedList } from '@astral-atlas/wildspace-components';
+import { SceneBackgroundRenderer, SceneRenderer, useAnimatedKeyedList, useMiniTheaterController, useResourcesLoader } from '@astral-atlas/wildspace-components';
 import { h, useEffect, useRef, useState } from '@lukekaalim/act';
 
 import cityImgURL from './city.jpg';
@@ -11,9 +11,9 @@ import riceFieldURL from './rice_field.jpg';
 import { useAnimationFrame } from "@lukekaalim/act-three/hooks";
 import { useAnimation } from '@lukekaalim/act-curve';
 import { LayoutDemo } from '../demo';
+import { createMockWildspaceClient } from "@astral-atlas/wildspace-test";
 
 export const ExpositionSceneDemo/*: Component<>*/ = () => {
-  const [activeScene, setActiveScene] = useState('a');
   const sceneA = {
     id: 'a',
     tags: [],
@@ -42,6 +42,12 @@ export const ExpositionSceneDemo/*: Component<>*/ = () => {
     subject: { type: 'location', location: '3' },
     title: 'green'
   };
+  const sceneE = {
+    id: 'e',
+    encounterId: 'ENCOUNTER_A'
+  }
+  const [activeScene, setActiveScene] = useState({ type: 'exposition', ref: sceneA.id });
+
   const gameData = {
     locations: [
       {
@@ -75,7 +81,12 @@ export const ExpositionSceneDemo/*: Component<>*/ = () => {
     ],
     scenes: {
       exposition: [sceneA, sceneB, sceneC, sceneD],
+      encounter: [sceneE]
     },
+    game: {
+      id: 'GAME_0',
+    },
+    characters: [],
     players: [],
     playlists: [],
     tracks: [],
@@ -84,8 +95,11 @@ export const ExpositionSceneDemo/*: Component<>*/ = () => {
       ['rice_field', { downloadURL: riceFieldURL }],
     ]),
   }
-  const onSceneClick = (id) => () => {
-    setActiveScene(id)
+  const onExpositionSceneClick = (id) => () => {
+    setActiveScene({ type: 'exposition', ref: id })
+  }
+  const onEncounterSceneClick = (id) => () => {
+    setActiveScene({ type: 'mini-theater', miniTheaterSceneId: id })
   }
   const scene = gameData.scenes.exposition.find(s => s.id === activeScene);
 
@@ -101,21 +115,37 @@ export const ExpositionSceneDemo/*: Component<>*/ = () => {
       return { enter: v.enter, exit: t, key: v.key, value: v.value};
     }
   }
-  const client = {
-
+  const client = createMockWildspaceClient()
+  const encounterState = {
+    minis: [],
   };
-  const roomState = {
-
+  const roomState/*: any*/ = {
+    encounter: encounterState,
   };
+
+  const resources = useResourcesLoader();
+  const miniTheaterController = useMiniTheaterController();
+  const miniTheaterView = {
+    characterPieces: [],
+    monsterPieces: [],
+    miniTheater: {
+      id: 'THEATER_ID',
+      characterPieceIds: [],
+      monsterPieceIds: [],
+      name: ''
+    }
+  }
 
   return [
-    h('div', { style: { display: 'flex' } }, gameData.scenes.exposition.map(scene =>
-      h('button', { onClick: onSceneClick(scene.id) }, scene.title))),
+    h('div', { style: { display: 'flex' } }, [
+      gameData.scenes.exposition.map(scene =>
+        h('button', { onClick: onExpositionSceneClick(scene.id) }, scene.title)),
+      gameData.scenes.encounter.map(scene =>
+        h('button', { onClick: onEncounterSceneClick(scene.id) }, scene.id)),
+    ]),
     h(LayoutDemo, {}, [
-      !!scene && [
-        h(SceneBackgroundRenderer, { scene: { type: 'exposition', ref: scene.id }, gameData, client, roomState }),
-        h(SceneRenderer, { scene: { type: 'exposition', ref: scene.id }, gameData }),
-      ]
+      h(SceneBackgroundRenderer, { scene: activeScene, gameData, client, roomState, resources, miniTheaterController, miniTheaterView }),
+      h(SceneRenderer, { scene: activeScene, gameData }),
     ]),
   ]
 }

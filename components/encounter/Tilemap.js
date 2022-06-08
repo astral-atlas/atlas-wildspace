@@ -15,6 +15,7 @@ import {
   ShaderMaterial,
   DataTexture,
   UnsignedByteType,
+  AdditiveBlending,
   NearestFilter,
   UVMapping,
   RGBAFormat,
@@ -45,11 +46,11 @@ export class TilemapMaterial extends ShaderMaterial {
   constructor(mapTexture/*: TilemapTile2DTexture*/, tilesTexture/*: Texture*/, tileSize/*: Vector2*/) {
     super({
       defines: { USE_COLOR_ALPHA: true, USE_COLOR: true },
-      //blending: NormalBlending,
-      //depthFunc: LessDepth,
+      blending: AdditiveBlending,
       fragmentShader,
       vertexShader,
       transparent: true,
+      depthWrite: false,
       uniforms: {
         tint: { value: [1, 1, 1, 1] },
         tiles: { value: tilesTexture },
@@ -108,7 +109,6 @@ export const Tilemap/*: Component<TilemapProps>*/ = ({
     const x = mapSize.x * scale;
     const y = mapSize.y * scale;
     const buffer = new BufferGeometry();
-    console.log(x, y);
     const positions = new Uint16Array([
       [0, 0, 0],
       [0, 0, y],

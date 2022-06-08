@@ -1,7 +1,7 @@
 // @flow strict
 /*:: import type { Component } from '@lukekaalim/act'; */
 
-import { PlaylistPlayer, Room, useAsync, useConnection, useFullscreen, useGameData, useGameUpdateTimes, useRoomState } from "@astral-atlas/wildspace-components";
+import { PlaylistPlayer, Room, useAsync, useFullscreen, useGameConnection, useGameData, useGameUpdateTimes, useMiniTheaterController, useResourcesLoader, useRoomState } from "@astral-atlas/wildspace-components";
 import { useURLParam } from "../../hooks/navigation";
 import { useAPI, useGame, useRoom } from "../../hooks/api";
 import { h, useContext, useEffect, useRef, useState } from "@lukekaalim/act";
@@ -21,8 +21,8 @@ export const RoomPage/*: Component<>*/ = () => {
 
   const client = useAPI();
 
-  const [game] = useAsync(async () => client.game.read(gameId), [client, gameId])
-  const [user] = useAsync(async () => client.self(), [client])
+  const [game] = useAsync(async () => client.game.read(gameId), [gameId])
+  const [user] = useAsync(async () => client.self(), [])
 
   if (!game)
     return 'Loading (Game)'
@@ -30,8 +30,6 @@ export const RoomPage/*: Component<>*/ = () => {
   const times = useGameUpdateTimes(client.game, gameId);
   const gameData = useGameData(game, identity.proof.userId, times, client);
   const roomState = useRoomState(gameId, roomId, client);
-
-  console.log(roomState);
 
   if (!gameData)
     return 'Loading (Resources)'

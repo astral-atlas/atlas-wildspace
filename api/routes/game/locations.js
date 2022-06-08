@@ -22,7 +22,7 @@ export const createLocationsRoutes/*: RoutesConstructor*/ = (services) => {
           description: { type: 'plaintext', plaintext: '' },
           tags: []
         };
-        await services.data.gameData.locations.set(game.id, location.id, { location })
+        await services.data.gameData.locations.set(game.id, location.id, location)
         await services.data.gameUpdates.publish(game.id, { type: 'locations' });
 
         return {
@@ -35,18 +35,18 @@ export const createLocationsRoutes/*: RoutesConstructor*/ = (services) => {
       scope: { type: 'player-in-game' },
       getGameId: r => r.query.gameId,
       async handler({ game, identity }) {
-        const { result } = await services.data.gameData.locations.query(game.id);
-        const relatedAssetIds = result.map(r => {
-          switch (r.location.background.type) {
+        const { result: locations } = await services.data.gameData.locations.query(game.id);
+        const relatedAssetIds = locations.map(r => {
+          switch (r.background.type) {
             case 'image':
-              return r.location.background.imageAssetId;
+              return r.background.imageAssetId;
             default:
               return null
           }
         }).filter(Boolean);
         const relatedAssets = await Promise.all(relatedAssetIds.map(async id => [id, await services.asset.peek(id)]))
 
-        return { status: HTTP_STATUS.ok, body: { type: 'found', location: result.map(r => r.location), relatedAssets } };
+        return { status: HTTP_STATUS.ok, body: { type: 'found', location: locations, relatedAssets } };
       }
     },
     PUT: {
@@ -57,7 +57,7 @@ export const createLocationsRoutes/*: RoutesConstructor*/ = (services) => {
           ...location,
           id: query.location,
         }
-        await services.data.gameData.locations.set(game.id, nextLocation.id, { location: nextLocation })
+        await services.data.gameData.locations.set(game.id, nextLocation.id, nextLocation)
         await services.data.gameUpdates.publish(game.id, { type: 'locations' });
 
         return {

@@ -9,7 +9,8 @@ export type SubscriptionFunction<T> = (subscriber: Subscriber<T>) => () => void;
 
 export type SubscriptionValue<T> = [
   SubscriptionFunction<T>,
-  Ref<Set<Subscriber<T>>>
+  Ref<Set<Subscriber<T>>>,
+  T => mixed,
 ]
 */
 
@@ -21,5 +22,9 @@ export const useSubscriptionList = /*:: <T>*/()/*: SubscriptionValue<T>*/ => {
       subscribersRef.current.delete(listener);
     }
   }, []);
-  return [subscribe, subscribersRef];
+  const invoke = (event) => {
+    for (const subscriber of subscribersRef.current)
+      subscriber(event)
+  }
+  return [subscribe, subscribersRef, invoke];
 };

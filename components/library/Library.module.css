@@ -38,7 +38,8 @@
   background-color: rgb(255, 255, 255);
   transition: background-color 0.2s;
   padding: 1rem 0 1rem 0;
-
+}
+.shelf:last-child {
   flex: 1;
 }
 .shelf > .title {

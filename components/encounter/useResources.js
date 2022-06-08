@@ -14,6 +14,7 @@ import {
   Object3D,
   Texture,
   TextureLoader,
+  sRGBEncoding,
 } from "three";
 
 import resourcesModelURL from './models/resources.glb';
@@ -24,6 +25,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 export type EncounterResources = {
   texture: Texture,
   cursorGeometry: BufferGeometry,
+  cursor: Object3D,
   floatingScene: Object3D,
   pirateScene: Object3D,
 }
@@ -33,6 +35,7 @@ const defaultResource = {
   texture: new Texture(),
   cursorGeometry: new BufferGeometry(),
   floatingScene: new Object3D(),
+  cursor: new Object3D(),
   pirateScene: new Object3D(),
 }
 
@@ -46,6 +49,7 @@ export const useResourcesLoader = ()/*: EncounterResources*/ => {
     const texture = new TextureLoader()
       .load(resourcesTextureURL, (texture) => {
         texture.flipY = false;
+        texture.encoding = sRGBEncoding;
         setResources(r => ({
           ...r,
           texture,
@@ -66,7 +70,6 @@ export const useResourcesLoader = ()/*: EncounterResources*/ => {
           object.receiveShadow = true;
           const { material } = object;
           if (material instanceof Material) {
-            console.log(material.name);
             if (material.name === 'floor')
               object.material = sandMaterial;
             else if (material.name === 'test')
@@ -106,7 +109,8 @@ export const useResourcesLoader = ()/*: EncounterResources*/ => {
         ...r,
         cursorGeometry,
         floatingScene,
-        pirateScene
+        pirateScene,
+        cursor,
       }))
     } );
   }, []);
