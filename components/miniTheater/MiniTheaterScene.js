@@ -49,7 +49,11 @@ const HARDCODED_BOARD = {
     { type: 'box', box: {
       position: { x: 1, y: 0, z: 0 },
       size: { x: 30, y: 24, z: 1 }
-    } }
+    } },
+    { type: 'box', box: {
+      position: { x: 5, y: 5, z: 10 },
+      size: { x: 5, y: 5, z: 1 }
+    } },
   ]
 };
 
