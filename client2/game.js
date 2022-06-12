@@ -34,6 +34,7 @@ import type { MiniTheaterClient } from "./game/miniTheater";
 import type { LibraryClient } from "./game/library";
 import type { ExpositionClient } from "./game/exposition";
 import type { MonsterClient } from "./game/monsters";
+import type { RoomClient } from "./room";
 
 export type GameClient = {
   read: (gameId: GameID) => Promise<Game>,
@@ -59,7 +60,11 @@ export type GameClient = {
 export * from './game/wiki';
 */
 
-export const createGameClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceClient*/)/*: GameClient*/ => {
+export const createGameClient = (
+  http/*: HTTPServiceClient*/,
+  ws/*: WSServiceClient*/,
+  roomClient/*: RoomClient*/,
+)/*: GameClient*/ => {
   const gameResource = http.createResource(gameAPI['/games']);
   const allGamesResource = http.createResource(gameAPI['/games/all']);
   const updates = ws.createAuthorizedConnection(gameAPI['/games/updates']);
@@ -99,7 +104,7 @@ export const createGameClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceCli
     magicItem: createMagicItemClient(http),
     wiki,
     monster: createMonsterClient(http),
-    updates: createGameUpdatesClient(http, ws, wiki, library, miniTheater),
+    updates: createGameUpdatesClient(http, ws, wiki, library, miniTheater, roomClient),
     miniTheater,
     library,
   };

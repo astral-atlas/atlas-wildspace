@@ -67,7 +67,7 @@ export const createStateRoutes/*: RoutesConstructor*/ = (services) => {
         connection.send(update);
       });
       const legacyRoomSubscription = services.data.roomUpdates.subscribe(roomId, update => {
-        connection.send(update);
+        //connection.send(update);
       })
       const gameSubscrpition = services.data.gameUpdates.subscribe(gameId, update => {
         connection.send({ type: 'game', game: update });

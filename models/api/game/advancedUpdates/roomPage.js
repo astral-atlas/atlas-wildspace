@@ -13,14 +13,14 @@ import { castRoomId, castRoomPageEvent, reduceRoomPageEvent } from "../../../roo
 export type RoomPageChannel = {
   Resource: RoomPage,
   Client: { type: 'room-page-subscribe', roomIds: $ReadOnlyArray<RoomID> },
-  Server: { type: 'room-page-event', event: RoomPageEvent }
+  Server: { type: 'room-page-event', roomId: RoomID, event: RoomPageEvent }
 }
 */
 
 export const roomPageChannel/*: AdvancedUpdateChannelDescription<RoomPageChannel>*/ = {
   eventPrefix: 'room-page',
   castClientEvent: c.obj({ type: c.lit('room-page-subscribe'), roomIds: c.arr(castRoomId) }),
-  castServerEvent: c.obj({ type: c.lit('room-page-event'), event: castRoomPageEvent }),
+  castServerEvent: c.obj({ type: c.lit('room-page-event'), roomId: castRoomId, event: castRoomPageEvent }),
   reduceResource(data, { event }) {
     return reduceRoomPageEvent(data, event)
   }

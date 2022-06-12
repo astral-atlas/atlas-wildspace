@@ -30,7 +30,7 @@ export type RoomPage = {
 
   monsterMasks: $ReadOnlyArray<MonsterActorMask>,
 
-  scenes:       Scene,
+  scene:       Scene,
   locations:    $ReadOnlyArray<Location>,
   expositions:  $ReadOnlyArray<Exposition>,
 
@@ -48,7 +48,7 @@ export const castRoomPage/*: Cast<RoomPage>*/ = c.obj({
 
   locations: c.arr(castLocation),
   expositions: c.arr(castExposition),
-  scenes: castScene,
+  scene: castScene,
 
   tracks: c.arr(castAudioTrack),
   playlist: castAudioPlaylist,

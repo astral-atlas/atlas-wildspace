@@ -21,12 +21,17 @@ import type { LibraryConnection } from "./updates/library";
 
 import type { WikiDocClient } from "./wiki";
 import type { WikiDocConnection } from "./updates/wikiDoc";
+
+
+import type { RoomClient } from "../room";
+import type { RoomPageConnection } from "./updates/roomPage";
 */
 
 import { gameAPI } from "@astral-atlas/wildspace-models";
 import { createLibraryConnection } from "./updates/library";
 import { createMiniTheaterConnection } from "./updates/miniTheater";
 import { createWikiDocConnection } from "./updates/wikiDoc";
+import { createRoomPageConnection } from "./updates/roomPage";
 
 /*::
 export type GameUpdatesConnection = {
@@ -41,7 +46,8 @@ export type UpdatesConnection = {
   updates: GameUpdatesConnection,
   miniTheater: MiniTheaterConnection,
   wikiDoc: WikiDocConnection,
-  library: LibraryConnection
+  library: LibraryConnection,
+  roomPage: RoomPageConnection
 };
 export type GameUpdatesConnectionClient = {
   create: (gameId: GameID) => Promise<UpdatesConnection>,
@@ -54,6 +60,7 @@ export const createGameUpdatesClient = (
   wikiDocClient/*: WikiDocClient*/,
   libraryClient/*: LibraryClient*/,
   miniTheaterClient/*: MiniTheaterClient*/,
+  roomClient/*: RoomClient*/,
 )/*: GameUpdatesConnectionClient*/ => {
   const connection = ws.createAuthorizedConnection(gameAPI["/games/updates-advanced"]);
 
@@ -90,7 +97,8 @@ export const createGameUpdatesClient = (
       updates,
       miniTheater: createMiniTheaterConnection(miniTheaterClient, updates),
       wikiDoc: createWikiDocConnection(wikiDocClient, updates),
-      library: createLibraryConnection(libraryClient, updates)
+      library: createLibraryConnection(libraryClient, updates),
+      roomPage: createRoomPageConnection(roomClient, updates),
     }
   };
 

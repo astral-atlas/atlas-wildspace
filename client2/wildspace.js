@@ -90,7 +90,7 @@ export const createWildspaceClient = (proof/*: ?LinkProof*/, httpOrigin/*: strin
   const asset = createAssetClient(httpService, httpClient);
   const audio = createAudioClient(authorizedClient, asset, httpOrigin, wsOrigin);
   const room = createRoomClient(httpService, wsService);
-  const game = createGameClient(httpService, wsService);
+  const game = createGameClient(httpService, wsService, room);
 
   const selfResource = httpService.createResource(selfAPI['/self']);
   const self = async () => {

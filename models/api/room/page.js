@@ -13,13 +13,17 @@ import type { RoomPage } from "../../room/page";
 */
 
 /*::
-type RoomPageResource = {
+type RoomPageResource = {|
   GET: {
     query: { gameId: GameID, roomId: RoomID },
     request: empty,
     response: { type: 'found', roomPage: RoomPage }
   }
-}
+|};
+
+export type RoomPageAPI = {|
+  "/games/rooms/page": RoomPageResource
+|}
 */
 
 const roomPage/*: ResourceDescription<RoomPageResource>*/ = {

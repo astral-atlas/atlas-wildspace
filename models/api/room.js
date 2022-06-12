@@ -14,11 +14,13 @@ import { createAuthorizedConnectionDescription } from './meta.js';
 import { lobbyApi } from "./room/lobby.js";
 import { stateApiV2 } from "./room/state.js";
 import { sceneAPI } from "./room/scene.js";
+import { roomPageAPI } from "./room/page.js";
 
 /*::
 import type { LobbyAPI } from "./room/lobby.js";
 import type { StateAPIV2 } from "./room/state.js";
 import type { SceneAPI } from "./room/scene";
+import type { RoomPageAPI } from "./room/page";
 
 export type RoomResource = {|
   GET: {
@@ -116,6 +118,7 @@ export type RoomAPI = {|
   ...LobbyAPI,
   ...StateAPIV2,
   ...SceneAPI,
+  ...RoomPageAPI,
 |};
 */
 
@@ -229,4 +232,5 @@ export const roomAPI = {
   ...stateApiV2,
   ...lobbyApi,
   ...sceneAPI,
+  ...roomPageAPI,
 };

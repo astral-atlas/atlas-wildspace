@@ -1,6 +1,6 @@
 [ignore]
 <PROJECT_ROOT>/api/data/.*
-
+<PROJECT_ROOT>/node_modules/resolve
 [include]
 
 [libs]
