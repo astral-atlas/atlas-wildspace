@@ -1,8 +1,8 @@
 // @flow strict
 /*::
 import type { Component, ElementNode } from "@lukekaalim/act";
-import type { Character, AssetID, Game } from "@astral-atlas/wildspace-models";
-import type { WildspaceClient } from "@astral-atlas/wildspace-client2";
+import type { Character, AssetID, Game, LibraryData } from "@astral-atlas/wildspace-models";
+import type { WildspaceClient, UpdatesConnection } from "@astral-atlas/wildspace-client2";
 import type { UserID } from "@astral-atlas/sesame-models";
 
 import type { AssetDownloadURLMap } from "../../asset/map";
@@ -22,19 +22,25 @@ import { GameMasterPrepLibrary } from "./GameMasterPrepLibrary";
 /*::
 export type PrepLibraryProps = {
   client: WildspaceClient,
-  gameData: GameData
+  game: Game,
+  userId: ?UserID,
+  //data: LibraryData,
+  updates: UpdatesConnection,
+  assets: AssetDownloadURLMap,
 };
 */
 
-export const PrepLibrary/*: Component<PrepLibraryProps>*/ = ({ gameData, client }) => {
-  if (gameData.isGameMaster)
+export const PrepLibrary/*: Component<PrepLibraryProps>*/ = ({ userId, game, updates, client, assets, }) => {
+  if (userId && game.gameMasterId === userId)
     return h(GameMasterPrepLibrary, {
       client,
-      userId: gameData.userId,
-      assets: gameData.assets,
-      game: gameData.game,
-      characters: gameData.characters,
+      userId,
+      assets,
+      game,
+      updates,
     })
+  return null;
+
   return h(PlayerPrepLibrary, {
     client,
     userId: gameData.userId,

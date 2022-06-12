@@ -108,3 +108,45 @@ export const castLibraryEvent/*: Cast<LibraryEvent>*/ = c.or('type', {
     locations: c.arr(castLocation),
   }),
 });
+
+export const reduceLibraryEvent = (data/*: LibraryData*/, event/*: LibraryEvent*/)/*: LibraryData*/ => {
+  switch (event.type) {
+    case "mini-theaters":
+      return {
+        ...data,
+        miniTheaters: event.miniTheaters,
+      };
+    case 'characters':
+      return {
+        ...data,
+        characters: event.characters
+      };
+    case 'monsters':
+      return {
+        ...data,
+        monsters: event.monsters
+      };
+    case 'monster-actors':
+      return {
+        ...data,
+        monsterActors: event.monsterActors
+      };
+    case 'scenes':
+      return {
+        ...data,
+        scenes: event.scenes
+      };
+    case 'expositions':
+      return {
+        ...data,
+        expositions: event.expositions
+      };
+    case 'locations':
+      return {
+        ...data,
+        locations: event.locations
+      };
+    default:
+      return data;
+  }
+}

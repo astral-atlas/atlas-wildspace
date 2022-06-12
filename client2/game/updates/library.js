@@ -9,87 +9,62 @@ import type {
 } from "@astral-atlas/wildspace-models";
 */
 /*::
-
-export type LibraryConnectionClient = {
-  upgrade: (updateConnection: GameUpdatesConnection) => Promise<LibraryConnection>,
-};
 export type LibraryConnection = {
-  subscribeLibrary: (subscriber: (data: LibraryData) => mixed) => () => void,
+  subscribe: (subscriber: (data: LibraryData) => mixed) => () => void,
 
   close: () => void,
 };
 */
 
-const publish = /*:: <T>*/(event/*: T*/, subscribers/*: Iterable<T => mixed>*/) => {
-  for (const subscriber of subscribers)
-    subscriber(event);
-}
+import { reduceLibraryEvent } from "@astral-atlas/wildspace-models";
 
-export const createLibraryConnectionClient = (
-  library/*: LibraryClient*/
-)/*: LibraryConnectionClient*/ => {
-  const upgrade = async (updateConnection) => {
-    let libraryData/*: LibraryData*/ = await library.get(updateConnection.gameId);
 
-    const librarySubscribers = new Set();
-    const updateLibraryData = (nextData) => {
-      libraryData = { ...libraryData, ...nextData }
-      publish(libraryData, librarySubscribers);
-    }
-    const subscribeLibrary = (subscriber) => {
-      librarySubscribers.add(subscriber);
-      if (librarySubscribers.size === 1)
-        updateConnection.send({ type: 'library-subscribe' })
+export const createLibraryConnection = (
+  library/*: LibraryClient*/,
+  updates/*: GameUpdatesConnection*/,
+)/*: LibraryConnection*/ => {
+  let libraryDataPromise/*: ?Promise<LibraryData>*/ = null;
 
-      subscriber(libraryData);
-      
-      return () => {
-        librarySubscribers.delete(subscriber)
-      }
-    }
+  const librarySubscribers = new Set();
+  const onUpdate = async (event) => {
+    if (event.type !== 'library-event')
+      return
+    if (!libraryDataPromise)
+      return;
+    const prev = await libraryDataPromise;
+    const next = reduceLibraryEvent(prev, event.event)
+    libraryDataPromise = Promise.resolve(next);
+    for (const subscriber of librarySubscribers)
+      subscriber(next)
+  }
+  const unsubscribe = updates.subscribe(onUpdate)
 
-    const unsubscribe = updateConnection.subscribeLibrary(event => {
-      switch (event.type) {
-        case "mini-theaters":
-          return updateLibraryData({
-            miniTheaters: event.miniTheaters,
-          });
-        case 'characters':
-          return updateLibraryData({
-            characters: event.characters
-          });
-        case 'monsters':
-          return updateLibraryData({
-            monsters: event.monsters
-          });
-        case 'monster-actors':
-          return updateLibraryData({
-            monsterActors: event.monsterActors
-          });
-        case 'scenes':
-          return updateLibraryData({
-            scenes: event.scenes
-          });
-        case 'expositions':
-          return updateLibraryData({
-            expositions: event.expositions
-          });
-        case 'locations':
-          return updateLibraryData({
-            locations: event.locations
-          });
-        default:
-          return;
-      }
-    });
-
-    const close = () => {
-      unsubscribe();
-      librarySubscribers.clear();
-    }
-
-    return { subscribeLibrary, close }
+  const onFirstSubscribe = async () => {
+    const promise = library.get(updates.gameId);
+    updates.send({ type: 'library-subscribe' })
+    libraryDataPromise = promise;
+    return promise;
+  }
+  const onLastUnsubscriber = () => {
+    updates.send({ type: 'library-unsubscribe' })
   }
 
-  return { upgrade };
+  const subscribe = (subscriber) => {
+    librarySubscribers.add(subscriber);
+    (libraryDataPromise || onFirstSubscribe())
+      .then(subscriber)
+    
+    return () => {
+      librarySubscribers.delete(subscriber)
+      if (librarySubscribers.size === 0)
+        onLastUnsubscriber()
+    }
+  }
+
+  const close = () => {
+    unsubscribe();
+    librarySubscribers.clear();
+  }
+
+  return { subscribe, close }
 }

@@ -15,6 +15,7 @@ import type { LibraryEvent } from "../../game";
 import type { MiniTheaterChannel } from "./advancedUpdates/miniTheater";
 import type { LibraryChannel } from "./advancedUpdates/library";
 import type { WikiDocChannel } from "./advancedUpdates/wikiDoc";
+import type { RoomPageChannel } from "./advancedUpdates/roomPage";
 import type { GameConnectionID } from "../../game/connection";
 */
 
@@ -31,6 +32,7 @@ import {
 import { miniTheaterChannel } from "./advancedUpdates/miniTheater.js";
 import { libraryChannel } from "./advancedUpdates/library.js";
 import { wikiDocChannel } from "./advancedUpdates/wikiDoc.js";
+import { roomPageChannel } from "./advancedUpdates/roomPage.js";
 
 /*::
 type Channels = [
@@ -39,21 +41,23 @@ type Channels = [
   WikiDocChannel
 ];
 
-export type LibraryServerUpdate =
+export type UpdateChannelServerMessage =
   | MiniTheaterChannel["Server"]
   | LibraryChannel["Server"]
   | WikiDocChannel["Server"]
+  | RoomPageChannel["Server"]
   | {| type: 'connected', connectionId: GameConnectionID |}
 
-export type LibraryClientUpdate = 
+export type UpdateChannelClientMessage = 
   | MiniTheaterChannel["Client"]
   | LibraryChannel["Client"]
   | WikiDocChannel["Client"]
+  | RoomPageChannel["Client"]
 
 
 type AdvancedUpdates = AuthorizedConnection<{|
-  server: LibraryServerUpdate,
-  client: LibraryClientUpdate,
+  server: UpdateChannelServerMessage,
+  client: UpdateChannelClientMessage,
   query: { gameId: GameID }
 |}>;
 
@@ -65,7 +69,8 @@ export type AdvancedUpdatesAPI = {|
 const channels = [
   miniTheaterChannel,
   libraryChannel,
-  wikiDocChannel
+  wikiDocChannel,
+  roomPageChannel
 ]
 
 const castTypedObject = c.obj({ type: c.str });
@@ -98,3 +103,8 @@ const advancedUpdates/*: ConnectionDescription<AdvancedUpdates>*/ = createAuthor
 export const advancedUpdatesAPI = {
   '/games/updates-advanced': advancedUpdates
 };
+export * from './advancedUpdates/meta.js';
+export * from './advancedUpdates/library.js';
+export * from './advancedUpdates/wikiDoc.js';
+export * from './advancedUpdates/miniTheater.js';
+export * from './advancedUpdates/roomPage.js';

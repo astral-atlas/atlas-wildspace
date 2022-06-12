@@ -9,7 +9,7 @@
 /*:: import type { EncounterAPI } from "./game/encounters.js"; */
 /*::
 import type { MagicItemAPI } from "./game/magicItem";
-import type { WikiDocEvent, WikiDocAction} from "../wiki.js";
+import type { WikiDocEvent, WikiDocAction} from "../game.js";
 import type { AuthorizedConnection } from "./meta";
 import type { GameConnectionID } from "../game/connection";
 import type { InitiativeAPI } from "./game/initiative";
@@ -37,7 +37,7 @@ import { miniTheaterAPI } from './game/miniTheater.js';
 import { initiativeAPI } from './game/initiative.js';
 import { advancedUpdatesAPI } from "./game/advancedUpdates.js";
 
-import { castWikiDocAction, castWikiDocEvent } from "../wiki.js";
+import { castWikiDocAction, castWikiDocEvent } from "../game.js";
 import { wikiAPI } from './game/wiki.js';
 import { createAuthorizedConnectionDescription } from './meta.js';
 import { scenesAPI } from "./game/scene.js";

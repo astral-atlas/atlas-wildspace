@@ -1,15 +1,24 @@
 // @flow strict
-import { h } from "@lukekaalim/act";
+import { h, Boundary, useEffect } from "@lukekaalim/act";
 import { render } from '@lukekaalim/act-three';
-import { renderAppPage } from "./app.js";
 
-import { Wildspace } from './src/index.js';
+import { App } from './src/App.js';
+import { PrepPage } from "./src/prep/index.js";
+
+const ErrorPage = ({ value }) => {
+  useEffect(() => {
+    console.error(value);
+  }, [value]);
+  return h('pre', {}, [
+    JSON.stringify(value) || null,
+  ])
+}
 
 const main = () => {
-  render(
-    h(Wildspace),
-    (document.body/*: any*/)
-  )
+  const { body } = document;
+  if (!body)
+    return;
+  render(h(Boundary, { fallback: ErrorPage }, h(PrepPage)), body);
 };
 
 main();

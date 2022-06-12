@@ -1,14 +1,16 @@
 // @flow strict
 /*:: import type { Context, Updater } from '@lukekaalim/act'; */
+/*:: import type { Navigation } from '@lukekaalim/act-navigation'; */
 import { createContext, useContext, useMemo } from '@lukekaalim/act';
 import { navigationContext } from "@lukekaalim/act-navigation";
 
 
-export const useURLParam = (paramName/*: string*/)/*: [string | null, (v: string | null) => mixed]*/ => {
-  const nav = useContext(navigationContext);
-  if (!nav)
+export const useURLParam = (paramName/*: string*/, nav/*: ?Navigation*/ = null)/*: [string | null, (v: string | null) => mixed]*/ => {
+  const contextNav = useContext(navigationContext);
+  const localNav = nav || contextNav;
+  if (!localNav)
     throw new Error();
-  const { location, navigate } = nav;
+  const { location, navigate } = localNav;
   const paramValue = location.searchParams.get(paramName);
 
   const setParamValue = (id) => {

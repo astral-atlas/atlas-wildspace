@@ -10,7 +10,7 @@ import { castGameId } from "../game.js";
 
 import { Step } from 'prosemirror-transform';
 import { Node } from 'prosemirror-model';
-import { proseSchema } from "../prose.js";
+import { proseSchema } from "../../prose.js";
 
 /*::
 

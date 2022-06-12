@@ -36,7 +36,8 @@ export const useRenderSetup = (
   const localCanvasRef = useRef();
   const canvasRef = overrides.canvasRef || localCanvasRef;
 
-  const cameraRef = useRef();
+  const localCameraRef = useRef();
+  const cameraRef = overrides.cameraRef || localCameraRef;
   const sceneRef = useRef();
 
 
@@ -53,8 +54,6 @@ export const useRenderSetup = (
     const { current: scene } = sceneRef;
     if (!canvas || !camera || !scene)
       return;
-
-    console.log('INIT')
 
     const options = {
       canvas,

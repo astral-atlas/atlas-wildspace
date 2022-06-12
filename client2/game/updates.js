@@ -8,84 +8,65 @@ import type {
   GameID,
   MiniTheater, MiniTheaterID,
   LibraryEvent,
-  LibraryClientUpdate,
+  UpdateChannelServerMessage,
+  UpdateChannelClientMessage,
 } from "@astral-atlas/wildspace-models";
+
+
 import type { MiniTheaterClient } from "./miniTheater";
-import type { MiniTheaterConnectionClient } from "./updates/miniTheater";
+import type { MiniTheaterConnection } from "./updates/miniTheater";
+
 import type { LibraryClient } from "./library";
-import type {
-  LibraryConnection,
-  LibraryConnectionClient,
-} from "./updates/library";
+import type { LibraryConnection } from "./updates/library";
+
+import type { WikiDocClient } from "./wiki";
+import type { WikiDocConnection } from "./updates/wikiDoc";
 */
 
 import { gameAPI } from "@astral-atlas/wildspace-models";
-import { createLibraryConnectionClient } from "./updates/library";
-import { createMiniTheaterConnectionClient } from "./updates/miniTheater";
+import { createLibraryConnection } from "./updates/library";
+import { createMiniTheaterConnection } from "./updates/miniTheater";
+import { createWikiDocConnection } from "./updates/wikiDoc";
 
 /*::
 export type GameUpdatesConnection = {
   gameId: GameID,
 
-  subscribeMiniTheater: (MiniTheaterID, MiniTheaterEvent => mixed) => () => void,
-  subscribeLibrary: (LibraryEvent => mixed) => () => void,
-
-  send: (message: LibraryClientUpdate) => void,
+  subscribe: (message: UpdateChannelServerMessage => mixed) => () => void,
+  send: (message: UpdateChannelClientMessage) => void,
 
   close: () => void,
 };
+export type UpdatesConnection = {
+  updates: GameUpdatesConnection,
+  miniTheater: MiniTheaterConnection,
+  wikiDoc: WikiDocConnection,
+  library: LibraryConnection
+};
 export type GameUpdatesConnectionClient = {
-  create: (gameId: GameID) => Promise<GameUpdatesConnection>,
-
-  libraryConnectionClient: LibraryConnectionClient,
-  miniTheaterConnectionClient: MiniTheaterConnectionClient
+  create: (gameId: GameID) => Promise<UpdatesConnection>,
 };
 */
 
 export const createGameUpdatesClient = (
   http/*: HTTPServiceClient*/,
   ws/*: WSServiceClient*/,
-  library/*: LibraryClient*/,
+  wikiDocClient/*: WikiDocClient*/,
+  libraryClient/*: LibraryClient*/,
   miniTheaterClient/*: MiniTheaterClient*/,
 )/*: GameUpdatesConnectionClient*/ => {
   const connection = ws.createAuthorizedConnection(gameAPI["/games/updates-advanced"]);
-  const libraryConnectionClient = createLibraryConnectionClient(library);
-  const miniTheaterConnectionClient = createMiniTheaterConnectionClient(miniTheaterClient);
 
   const create = async (gameId) => {
-    const publishKey = /*:: <T, K>*/(event/*: T*/, key/*: K*/, subscribers/*: Map<K, T => mixed>*/) => {
-      for (const [id, subscriber] of subscribers) 
-        if (id === key)
-          subscriber(event);
+    const subscribers = new Set();
+    const subscribe = (subscriber) => {
+      subscribers.add(subscriber)
+      return () => void subscribers.delete(subscriber);
     }
-    const publish = /*:: <T>*/(event/*: T*/, subscribers/*: Set<T => mixed>*/) => {
-      for (const subscriber of subscribers) 
-        subscriber(event);
-    }
-
-    const miniTheaterSubscribers = new Map();
-    const subscribeMiniTheater = (id, subscriber) => {
-      miniTheaterSubscribers.set(id, subscriber)
-      return () => {
-        miniTheaterSubscribers.delete(subscriber)
-      }
-    };
-
-    const librarySubscribers = new Set();
-    const subscribeLibrary = (subscriber) => {
-      librarySubscribers.add(subscriber)
-      return () => {
-        librarySubscribers.delete(subscriber)
-      }
-    };
 
     const recieve = (event) => {
-      switch (event.type) {
-        case 'mini-theater-event':
-          return publishKey(event.miniTheaterEvent, event.miniTheaterId, miniTheaterSubscribers);
-        case 'library-event':
-          return publish(event.event, librarySubscribers);
-      }
+      for (const subscriber of subscribers)
+        subscriber(event);
     }
   
     const updateConnection = await connection.connect({ query: { gameId }, recieve })
@@ -96,16 +77,22 @@ export const createGameUpdatesClient = (
     const send = (message) => {
       updateConnection.send(message);
     }
-  
-    return {
+
+    const updates = {
       gameId,
       send,
 
       close,
-      subscribeMiniTheater,
-      subscribeLibrary,
+      subscribe,
+    }
+
+    return {
+      updates,
+      miniTheater: createMiniTheaterConnection(miniTheaterClient, updates),
+      wikiDoc: createWikiDocConnection(wikiDocClient, updates),
+      library: createLibraryConnection(libraryClient, updates)
     }
   };
 
-  return { create, libraryConnectionClient, miniTheaterConnectionClient }
+  return { create }
 }

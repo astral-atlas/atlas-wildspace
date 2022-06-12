@@ -6,25 +6,25 @@ import type { Component } from "@lukekaalim/act";
 import { useAPI } from "../../hooks/api";
 import { useURLParam } from "../../hooks/navigation";
 import { PrepLibrary, useAsync, useGameConnection, useGameData } from "@astral-atlas/wildspace-components"
-import { h } from "@lukekaalim/act"
+import { h, useEffect, useRef, useState } from "@lukekaalim/act"
 import { useStoredValue } from "../../hooks/storage";
 import { identityStore } from "../../lib/storage";
+import { useAppSetup } from "../useAppSetup";
+import { useRootNavigation } from "@lukekaalim/act-navigation";
 
 export const PrepPage/*: Component<>*/ = () => {
-  const [gameId, setGameId] = useURLParam('gameId');
-  const [identity] = useStoredValue(identityStore);
+  const navigation = useRootNavigation();
+  const [gameId, setGameId] = useURLParam('gameId', navigation);
+  const setup = useAppSetup();
 
-  if (!gameId || !identity)
-    return 'ERROR (GAMEID)';
+  const [conTime, setConTime] = useState(Date.now());
+  const [updates] = useAsync(async () => gameId && setup && setup.client.game.updates.create(gameId), [gameId, setup, conTime])
+  const [game] = useAsync(async () => gameId && setup && setup.client.game.read(gameId), [gameId, setup]);
 
-  const api = useAPI();
-  const [ut, wikiCon, conId] = useGameConnection(api, gameId);
-  const [game] = useAsync(async () => api.game.read(gameId), [gameId, api]);
+  const assets = new Map();
 
-  if (!game)
-    return 'ERROR (GAME)'
-
-  const gameData = useGameData(game, identity.proof.userId, ut, api);
-
-  return h(PrepLibrary, { gameData, client: api });
+  return [
+    !!setup && !!updates && !!game &&
+      h(PrepLibrary, { updates, client: setup.client, userId: setup.proof?.userId, assets, game })
+  ];
 }

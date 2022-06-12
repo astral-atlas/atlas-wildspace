@@ -40,6 +40,8 @@ export const RoomPage/*: Component<>*/ = () => {
   const [volume, setVolume] = useState(0);
   const ref = useRef();
   const [fullscreenElement, setFullscreen] = useFullscreen()
+  const [connection] = useAsync(() => client.game.updates.create(game.id), []);
+
 
   return [
     h('div', { style: { height: '100%', width: '100%', position: 'relative' }, ref }, [

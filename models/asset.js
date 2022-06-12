@@ -1,7 +1,7 @@
 // @flow strict
 /*:: import type { Cast } from '@lukekaalim/cast'; */
 /*:: import type { UserID } from '@astral-atlas/sesame-models'; */
-import { createObjectCaster, castString, createArrayCaster, castNumber } from '@lukekaalim/cast';
+import { createObjectCaster, castString, createArrayCaster, castNumber, c } from '@lukekaalim/cast';
 import { castUserId } from '@astral-atlas/sesame-models';
 
 // An "asset" is a binary blob with metadata
@@ -52,3 +52,8 @@ export type AssetInfo = {
 
 export type AssetInfoDatabase = $ReadOnlyArray<[AssetID, ?AssetInfo]>
 */
+
+export const castAssetInfo/*: Cast<AssetInfo>*/ = c.obj({
+  downloadURL: c.str,
+  description: castAssetDescription,
+});

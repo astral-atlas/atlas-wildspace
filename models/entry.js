@@ -10,5 +10,4 @@ export * from './config.js';
 export * from './encounter.js';
 export * from './model.js';
 export * from './prose.js';
-export * from './wiki.js';
 export * from './monster.js';

@@ -1,13 +1,13 @@
 // @flow strict
 /*::
-import type { GameConnectionID } from "../game/connection";
+import type { GameConnectionID } from "../connection";
 import type { UserID } from "@astral-atlas/sesame-models/src/user";
 import type { Cast } from "@lukekaalim/cast/main";
 */
 
 import { castUserId } from "@astral-atlas/sesame-models";
 import { c } from "@lukekaalim/cast";
-import { castGameConnectionId } from "../game.js";
+import { castGameConnectionId } from "../connection.js";
 
 /*::
 export type WikiDocConnection = {

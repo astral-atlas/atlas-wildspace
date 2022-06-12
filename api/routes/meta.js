@@ -195,9 +195,13 @@ export const createMetaRoutes = (services/*: Services*/)/*: MetaRoutes*/ => {
 
     const handler = async (connection, socket, request) => {
       const listeners = new Set();
+      const firstListenerMessageBackbuffer = [];
       const wrappedConnection = {
         ...connection,
         addRecieveListener: (listener) => {
+          if (listeners.size === 0)
+            for (const backbufferedMessage of firstListenerMessageBackbuffer)
+              listener(backbufferedMessage);
           listeners.add(listener);
           return { removeListener: () => void listeners.delete(listener) };
         }
@@ -221,7 +225,9 @@ export const createMetaRoutes = (services/*: Services*/)/*: MetaRoutes*/ => {
         if (message.type === 'proof') {
           onAuthenticate(message);
         } else {
-          for (const listener of listeners)
+          if (listeners.size === 0)
+            firstListenerMessageBackbuffer.push(message);
+          else for (const listener of listeners)
             listener(message)
         }
       })

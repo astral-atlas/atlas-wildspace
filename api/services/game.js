@@ -4,16 +4,12 @@ import type { UserID } from '@astral-atlas/sesame-models';
 import type { Game, GameID, Player } from '@astral-atlas/wildspace-models';
 import type { WildspaceData } from '@astral-atlas/wildspace-data';
 import type { AuthService, Identity } from "./auth.js";
-import type { WikiService } from "./game/wiki";
 import type { GameConnectionService } from "./game/connection";
-import type { LibraryConnectionService } from "./game/library";
-import type { MiniTheaterConnectionService } from "./game/miniTheater";
+import type { GameUpdateService } from "./game/updates";
 */
 import { v4 as uuid } from 'uuid';
-import { createWikiService } from './game/wiki.js';
 import { createGameConnectionService } from "./game/connection.js";
-import { createLibraryConnectionService } from './game/library.js';
-import { createMiniTheaterConnectionService } from './game/miniTheater.js';
+import { createGameUpdateService } from './game/updates.js';
 
 /*::
 export type GameService = {
@@ -28,10 +24,8 @@ export type GameService = {
   addPlayer: (gameId: GameID, playerId: UserID, authorizer: Identity) => Promise<void>,
   removePlayer: (gameId: GameID, playerId: UserID, authorizer: Identity) => Promise<void>,
 
-  wiki: WikiService,
   connection: GameConnectionService,
-  library: LibraryConnectionService,
-  miniTheater: MiniTheaterConnectionService,
+  updates: GameUpdateService,
 };
 
 export type GameIdentityScope =
@@ -153,15 +147,11 @@ export const createGameService = (data/*: WildspaceData*/, auth/*: AuthService*/
   }
 
   const connection = createGameConnectionService(data);
-  const wiki = createWikiService(data, connection);
-  const library = createLibraryConnectionService(data);
-  const miniTheater = createMiniTheaterConnectionService(data);
+  const updates = createGameUpdateService(data);
 
   return {
     create, update, get, all, createScopeAssertion, removePlayer, addPlayer, listPlayers,
-    wiki,
     connection,
-    library,
-    miniTheater,
+    updates,
   };
 };

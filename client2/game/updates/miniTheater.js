@@ -1,51 +1,53 @@
 // @flow strict
 /*::
-import type { MiniTheater, MiniTheaterID } from "@astral-atlas/wildspace-models";
+import type { MiniTheater, MiniTheaterID, MiniTheaterAction } from "@astral-atlas/wildspace-models";
 import type { GameUpdatesConnection } from "../updates";
 import type { MiniTheaterClient } from "../miniTheater";
+import type { GameUpdateChannel } from "./meta";
 */
-
-import { reduceMiniTheaterEvent } from "@astral-atlas/wildspace-models"
+import { miniTheaterChannel, reduceMiniTheaterEvent } from "@astral-atlas/wildspace-models";
+import { createUpdateChannel } from "./meta.js";
 
 /*::
-export type MiniTheaterConnectionClient = {
-  upgrade: (updates: GameUpdatesConnection, miniTheaterId: MiniTheaterID) => Promise<MiniTheaterConnection>,
-};
 export type MiniTheaterConnection = {
-  subscribe: (MiniTheater => mixed) => () => void,
-
-  close: () => void,
+  ...GameUpdateChannel<MiniTheaterID, MiniTheater>,
+  act: (id: MiniTheaterID, action: MiniTheaterAction) => void,
 };
 */
 
-export const createMiniTheaterConnectionClient = (miniTheaterClient/*: MiniTheaterClient*/)/*: MiniTheaterConnectionClient*/ => {
-  const upgrade = async (updates, miniTheaterId) => {
-    let miniTheater/*: MiniTheater*/ = await miniTheaterClient.readById(updates.gameId, miniTheaterId)
+export const createMiniTheaterConnection = (
+  miniTheaterClient/*: MiniTheaterClient*/,
+  updates/*: GameUpdatesConnection*/
+)/*: MiniTheaterConnection*/ => {
+  const channel = createUpdateChannel(miniTheaterChannel, {
+    createSubscribeEvent(id, miniTheaterIds) {
+      return { type: 'mini-theater-subscribe', miniTheaterIds: [...miniTheaterIds] }
+    },
+    createUnsubscribeEvent(id, miniTheaterIds) {
+      return { type: 'mini-theater-subscribe', miniTheaterIds: [...miniTheaterIds] }
+    },
+    getInitialResource(gameId, miniTheaterId) {
+      return miniTheaterClient.readById(gameId, miniTheaterId);
+    },
+    getIds(message) {
+      return [message.miniTheaterId];
+    },
+    reduceResourceEvent(miniTheater, { miniTheaterEvent }) {
+      return reduceMiniTheaterEvent(miniTheater, miniTheaterEvent);
+    },
+    getChannelMessage(updateEvent) {
+      switch (updateEvent.type) {
+        case 'mini-theater-event':
+          return updateEvent;
+      }
+    }
+  }, updates);
+  const act = (miniTheaterId, miniTheaterAction) => {
+    updates.send({ type: 'mini-theater-action', miniTheaterId, miniTheaterAction })
+  }
 
-    const subscribers = new Set();
-
-    const onTheaterUpdate = (event) => {
-      miniTheater = reduceMiniTheaterEvent(miniTheater, event);
-      for (const subscriber of subscribers)
-        subscriber(miniTheater);
-    };
-
-    const subscribe = (subscriber) => {
-      subscribers.add(subscriber)
-      subscriber(miniTheater);
-      return () => {
-        subscribers.delete(subscriber)
-      };
-    };
-
-    const unsubscribe = await updates.subscribeMiniTheater(miniTheaterId, onTheaterUpdate)
-
-    const close = () => {
-      unsubscribe()
-    };
-
-    return { subscribe, close };
-  };
-
-  return { upgrade };
+  return {
+    ...channel,
+    act,
+  }
 }

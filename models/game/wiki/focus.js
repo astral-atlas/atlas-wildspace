@@ -1,8 +1,8 @@
 // @flow strict
 /*::
 import type { GameID } from "../game";
-import type { GameConnectionID } from "../game/connection";
-import type { LobbyConnectionID } from "../room/lobby";
+import type { GameConnectionID } from "../connection";
+import type { LobbyConnectionID } from "../../room/lobby";
 import type { WikiDocID } from "./doc";
 import type { UserID } from "@astral-atlas/sesame-models";
 import type { Cast } from "@lukekaalim/cast/main";
@@ -11,7 +11,7 @@ import type { Cast } from "@lukekaalim/cast/main";
 import { c } from "@lukekaalim/cast";
 import { castUserId } from "@astral-atlas/sesame-models";
 
-import { castGameConnectionId } from "../game.js";
+import { castGameConnectionId } from "../../game.js";
 
 /*::
 export type WikiDocFocus = {

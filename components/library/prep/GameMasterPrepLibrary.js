@@ -4,7 +4,7 @@ import type { Component } from "@lukekaalim/act";
 
 import type { UserID } from "@astral-atlas/sesame-models";
 import type { Game, LibraryData } from "@astral-atlas/wildspace-models";
-import type { WildspaceClient } from "@astral-atlas/wildspace-client2";
+import type { WildspaceClient, UpdatesConnection } from "@astral-atlas/wildspace-client2";
 
 import type { AssetDownloadURLMap } from "../../asset/map";
 */
@@ -25,6 +25,7 @@ export type GameMasterPrepLibraryProps = {
   game: Game,
   userId: UserID,
 
+  updates: UpdatesConnection,
   assets: AssetDownloadURLMap,
 };
 */
@@ -34,24 +35,11 @@ export const GameMasterPrepLibrary/*: Component<GameMasterPrepLibraryProps>*/ = 
   game,
   userId,
 
+  updates,
   assets,
 }) => {
-  const [data, setData] = useState/*:: <?LibraryData>*/()
-
-  useEffect(() => {
-    const run = async () => {
-      const updateClient = await client.game.updates.create(game.id)
-      const libraryClient = await client.game.updates.libraryConnectionClient.upgrade(updateClient);
-
-      libraryClient.subscribeLibrary(setData);
-      return updateClient;
-    }
-    const p = run();
-    return async () => {
-      const uc = await p;
-      uc.close();
-    }
-  }, [])
+  const [data, setData] = useState(null);
+  useEffect(() => updates.library.subscribe(setData), [updates]);
   if (!data)
     return null;
 

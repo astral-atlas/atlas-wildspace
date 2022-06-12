@@ -6,7 +6,6 @@
   Encounter, Character, AudioTrack, AudioPlaylist,
   Room, Player, RoomAudioState,
 
-  ExpositionScene,
 } from '@astral-atlas/wildspace-models'; */
 import { h, useContext, createContext, useState, useEffect } from "@lukekaalim/act";
 

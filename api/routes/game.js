@@ -84,25 +84,11 @@ export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute
         socket.ping(Date.now());
         services.game.connection.heartbeat(gameId, connectionId, identity.grant.identity, Date.now())
       }, 1000)
-  
 
-      const wikiClient = services.game.wiki.connectClient(gameId, connectionId, identity.grant, event => send({ type: 'wiki', event }))
-      const { removeListener } = addRecieveListener(m => void (async (message) => {
-        try {
-          switch (message.type) {
-            case 'wiki':
-              return await wikiClient.handleAction(message.action);
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      })(m))
   
       socket.addEventListener('close', () => {
         clearInterval(interval)
         unsubscribe()
-        removeListener();
-        wikiClient.disconnect();
         services.game.connection.disconnect(gameId, connectionId);
         services.game.connection.getValidConnections(gameId, Date.now());
       });
