@@ -11,7 +11,7 @@ import type {
   WikiDocChannel
 } from "@astral-atlas/wildspace-models";
 import type { ServerUpdateChannel } from "./meta";
-import type { ServerGameUpdateChannel } from "../updates.js";
+import type { ServerGameUpdateChannel } from "../update.js";
 */
 /*::
 export type ServerWikiDocChannel = ServerUpdateChannel<WikiDocChannel>;

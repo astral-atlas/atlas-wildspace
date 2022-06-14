@@ -1,11 +1,9 @@
 // @flow strict
 /*::
-import type { WikiDoc, WikiDocID } from "@astral-atlas/wildspace-models";
+import type { WikiDoc, WikiDocID, WikiDocAction, WikiDocState } from "@astral-atlas/wildspace-models";
 import type { GameUpdatesConnection } from "../updates";
 import type { GameUpdateChannel } from "./meta";
-import type { WikiDocClient } from "../wiki";
-import type { WikiDocAction } from "../../../models/game/wiki/actions";
-import type { WikiDocState } from "../../../models/game/wiki/state";
+import type { WikiDocClient } from "../game/wiki";
 */
 import { reduceWikiDocStateEvent, wikiDocChannel } from "@astral-atlas/wildspace-models";
 import { createUpdateChannel } from "./meta.js";

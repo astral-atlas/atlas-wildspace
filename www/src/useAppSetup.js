@@ -18,6 +18,21 @@ export type AppSetup = {
 };
 */
 
+const getLinkProof = (config) => {
+  if (!config.identity) {
+    const storedIdentity = identityStore.get();
+    return storedIdentity && storedIdentity.proof || null;
+  }
+  const identity = config.identity;
+  switch (identity.type) {
+    case 'store':
+      const storedIdentity = identityStore.get();
+      return storedIdentity && storedIdentity.proof || null;
+    case 'fake':
+      return identity.proof;
+  }
+}
+
 export const useAppSetup = ()/*: ?AppSetup*/ => {
   const [appSetup, setAppSetup] = useState/*:: <?AppSetup>*/(null);
 
@@ -25,8 +40,7 @@ export const useAppSetup = ()/*: ?AppSetup*/ => {
     const load = async () => {
       const config = await loadConfigFromURL();
 
-      const identity = identityStore.get();
-      const proof = identity && identity.proof;
+      const proof = getLinkProof(config);
 
       const { api: { wildspace: { httpOrigin, wsOrigin } }} = config;
       const client = createWildspaceClient(proof, httpOrigin, wsOrigin);

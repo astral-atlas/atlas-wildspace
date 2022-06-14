@@ -1,6 +1,6 @@
 // @flow strict
 /*::
-import type { RoomClient } from "../../room.js";
+import type { RoomClient } from "../room.js";
 import type { GameUpdatesConnection } from "../updates";
 import type { GameUpdateChannel } from "./meta";
 import type {

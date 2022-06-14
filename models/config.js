@@ -1,9 +1,10 @@
 // @flow strict
 /*:: import type { ServiceProof } from "@astral-atlas/sesame-models"; */
-/*:: import type { User } from "@astral-atlas/sesame-models/src/user";
+/*:: import type { LinkProof } from "@astral-atlas/sesame-models/src/proof";
+import type { User } from "@astral-atlas/sesame-models/src/user";
 import type { Cast } from "@lukekaalim/cast"; */
 
-import { castServiceProof, castUser } from "@astral-atlas/sesame-models";
+import { castLinkProof, castServiceProof, castUser, castUserId } from "@astral-atlas/sesame-models";
 import { castNumber, createObjectCaster, castString, c, castObject } from "@lukekaalim/cast";
 
 /*::
@@ -104,6 +105,10 @@ export const castAPIConfigChain/*: Cast<APIConfigChain>*/ = (value) => {
 }
 /*::
 export type WWWConfig = {
+  identity?: ?(
+    | { type: 'store' }
+    | { type: 'fake', proof: LinkProof }
+  ),
   www: {
     sesame: {
       httpOrigin: string,
@@ -122,6 +127,10 @@ export type WWWConfig = {
 */
 
 export const castWWWConfig/*: Cast<WWWConfig>*/ = c.obj({
+  identity: c.maybe(c.or('type', {
+    'store': c.obj({ type: (c.lit('store')/*: Cast<'store'>*/) }),
+    'fake': c.obj({ type: (c.lit('fake')/*: Cast<'fake'>*/), proof: castLinkProof }),
+  })),
   www: c.obj({
     sesame: c.obj({
       httpOrigin: c.str

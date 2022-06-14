@@ -84,3 +84,63 @@ export const createUpdateChannel = /*:: <TDesc: any, TID>*/(
 
   return { subscribe, close };
 };
+
+/*::
+export type SingletonUpdateChannel<T> = {
+  subscribe: (subscriber: (data: T) => mixed) => () => void,
+
+  close: () => void,
+}
+*/
+
+export const createSingletonUpdateChannel = /*:: <TDesc: any>*/(
+  implementation/*: {
+    getResource: () => Promise<TDesc["Resource"]>,
+    createSubscribeMessage: () => UpdateChannelClientMessage,
+    reduceResource: (state: TDesc["Resource"], event: UpdateChannelServerMessage) => TDesc["Resource"],
+  }*/,
+  updates/*: GameUpdatesConnection*/,
+)/*: SingletonUpdateChannel<TDesc["Resource"]>*/ => {
+  let resourcePromise = null;
+  let cancelUpdateSubscription = null;
+  const subscriptions = new Set();
+
+  const onUpdate = async (event) => {
+    const prevResource = await resourcePromise;
+    if (!prevResource)
+      throw new Error();
+    const updatedResource = implementation.reduceResource(prevResource, event);
+    if (prevResource === updatedResource)
+      return;
+    resourcePromise = Promise.resolve(updatedResource);
+    for (const subscriber of subscriptions)
+      subscriber(updatedResource)
+  }
+
+  const onFirstSubscriber = async () => {
+    updates.send(implementation.createSubscribeMessage())
+    const promise = implementation.getResource();
+    resourcePromise = promise;
+    cancelUpdateSubscription = updates.subscribe(onUpdate)
+    return promise;
+  };
+
+  const subscribe = (subscriber) => {
+    (resourcePromise || onFirstSubscriber())
+      .then(subscriber)
+
+    subscriptions.add(subscriber);
+    return () => {
+      subscriptions.delete(subscriber);
+      if (subscriptions.size === 0)
+        close()
+    }
+  }
+  const close = () => {
+    if (cancelUpdateSubscription)
+      cancelUpdateSubscription();
+    resourcePromise = null;
+    subscriptions.clear();
+  }
+  return { subscribe, close }
+}

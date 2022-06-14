@@ -16,6 +16,7 @@ import {
   castMonsterActor
 } from "@astral-atlas/wildspace-models";
 import { createFakeTransactable } from "./sources/table2.js";
+import { createMemoryChannel } from "./sources/channel.js";
 
 /*::
 import type { Table, CompositeTable } from './sources/table.js';
@@ -35,7 +36,6 @@ import type {
 
 import type { TableDataConstructors } from "./wildspace/table";
 import type { Transactable } from "./sources/table2";
-import { createMemoryChannel } from "./sources/channel";
 */
 
 /*::

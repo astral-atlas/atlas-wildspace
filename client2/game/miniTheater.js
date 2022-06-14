@@ -10,7 +10,6 @@ import type {
 import type { HTTPServiceClient } from "../wildspace";
 
 import type { GameCRUDClient } from "./meta";
-import type { GameUpdatesConnection } from "./updates";
 */
 import { gameAPI } from "@astral-atlas/wildspace-models";
 import { createGameCRUDClient } from "./meta.js";

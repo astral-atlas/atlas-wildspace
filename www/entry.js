@@ -4,6 +4,7 @@ import { render } from '@lukekaalim/act-three';
 
 import { App } from './src/App.js';
 import { PrepPage } from "./src/prep/index.js";
+import { Wildspace } from "./src";
 
 const ErrorPage = ({ value }) => {
   useEffect(() => {
@@ -18,7 +19,7 @@ const main = () => {
   const { body } = document;
   if (!body)
     return;
-  render(h(Boundary, { fallback: ErrorPage }, h(PrepPage)), body);
+  render(h(Boundary, { fallback: ErrorPage }, h(App)), body);
 };
 
 main();

@@ -8,6 +8,7 @@ import { h } from "@lukekaalim/act";
 import classes from './Library.module.css'
 import {
   EditorForm,
+  EditorHorizontalSection,
   EditorTextAreaInput,
   EditorTextInput,
 } from "../editor/form";
@@ -52,11 +53,13 @@ export const LibraryFloorHeader/*: Component<LibraryFloorHeaderProps>*/ = ({
   return h('div', { class: classes.floorHeader }, [
     !!title && h('h2', {}, title),
     !!filter && h(EditorForm, {}, [
-      h(EditorTextInput, {
-        label: 'Filter',
-        text: filter.text,
-        onTextInput: text => filter.onFilterInput(text)
-      })
+      h(EditorHorizontalSection, {}, [
+        h(EditorTextInput, {
+          label: 'Filter',
+          text: filter.text,
+          onTextInput: text => filter.onFilterInput(text)
+        })
+      ])
     ]),
     children,
   ])

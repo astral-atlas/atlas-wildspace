@@ -1,7 +1,7 @@
 // @flow strict
 /*::
-import type { HTTPServiceClient, WSServiceClient } from "../../wildspace";
-import type { LibraryClient } from "../library";
+import type { HTTPServiceClient, WSServiceClient } from "../wildspace";
+import type { LibraryClient } from "../game/library";
 import type { GameUpdatesConnection } from "../updates";
 import type {
   GameID,

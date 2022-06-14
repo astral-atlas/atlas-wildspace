@@ -222,13 +222,17 @@ export const createMetaRoutes = (services/*: Services*/)/*: MetaRoutes*/ => {
         })
       };
       connection.addRecieveListener(message => {
-        if (message.type === 'proof') {
-          onAuthenticate(message);
-        } else {
-          if (listeners.size === 0)
-            firstListenerMessageBackbuffer.push(message);
-          else for (const listener of listeners)
-            listener(message)
+        try {
+          if (message.type === 'proof') {
+            onAuthenticate(message).catch(console.error);
+          } else {
+            if (listeners.size === 0)
+              firstListenerMessageBackbuffer.push(message);
+            else for (const listener of listeners)
+              listener(message)
+          }
+        } catch (error) {
+          console.error(error);
         }
       })
     }
@@ -290,7 +294,6 @@ export const createCRUDConstructors = (services/*: Services*/)/*: CRUDConstructo
           if (request.identity.type === 'guest')
             return { status: HTTP_STATUS.unauthorized };
           const { grant } = request.identity;
-          console.log(request.body);
           const resource = await implementation.create({ ...request, grant }, request.body[implementation.name] );
 
           if (implementation.gameUpdateType)

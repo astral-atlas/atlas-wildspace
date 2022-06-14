@@ -1,7 +1,7 @@
 // @flow strict
 /*::
 import type { ServerUpdateChannel } from "./meta";
-import type { ServerGameUpdateChannel } from "../updates";
+import type { ServerGameUpdateChannel } from "../update";
 import type { WildspaceData } from "@astral-atlas/wildspace-data";
 import type { GameID, GameUpdate, MiniTheaterEvent, MiniTheaterID, MiniTheaterChannel } from "@astral-atlas/wildspace-models";
 */

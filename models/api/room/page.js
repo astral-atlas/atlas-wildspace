@@ -1,9 +1,9 @@
 // @flow strict
 
 import { c } from "@lukekaalim/cast"
-import { castRoomId } from "../../room/room";
-import { castGameId } from "../../game/game";
-import { castRoomPage } from "../../room/page";
+import { castRoomId } from "../../room/room.js";
+import { castGameId } from "../../game/game.js";
+import { castRoomPage } from "../../room/page.js";
 
 /*::
 import type { ResourceDescription } from "@lukekaalim/net-description";

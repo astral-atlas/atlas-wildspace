@@ -102,7 +102,6 @@ export const useCompassKeysDirection = (
 export type CompassLayoutScreen = {
   position: Vector2,
   content: ElementNode,
-  icon: ElementNode,
 };
 
 export type CompassLayoutProps = {
@@ -138,7 +137,7 @@ export const CompassLayout/*: Component<CompassLayoutProps>*/ = ({ direction, sc
     const x = point.position[0] * scale;
     const y = point.position[1] * scale;
 
-    translator.style.transform = `translate(${x * -100}%, ${y * 100}%) scale(${scale})`;
+    translator.style.transform = `translate(${x * -100}%, ${y * 100}%)`;
 
     if (point.progress[0] === 1 && point.progress[1] === 1) {
       for (const [screenIndex, screenRef] of refMap) {
@@ -223,7 +222,7 @@ export const CompassLayoutMinimap/*: Component<CompassLayoutMinimapProps>*/ = ({
           padding: 0,
           boxSizing: 'border-box'
         }
-      }, screen.icon)),
+      })),
       h('div', {
         ref: cursorRef,
         style: {

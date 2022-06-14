@@ -32,6 +32,7 @@ export const useRenderSetup = (
     keyboardEmitter?: KeyboardStateEmitter,
   }*/ = {},
   onRendererInit/*: RenderLoopConstants => mixed*/ = _ => {},
+  deps/*: mixed[]*/ = []
 )/*: RenderSetup*/ => {
   const localCanvasRef = useRef();
   const canvasRef = overrides.canvasRef || localCanvasRef;
@@ -105,7 +106,7 @@ export const useRenderSetup = (
       cancelRenderSubscription();
       cancelAnimationFrame(frameId);
     }
-  }, [overrides.canvasRef])
+  }, deps)
 
   return {
     canvasRef,

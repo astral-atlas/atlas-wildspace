@@ -40,8 +40,24 @@ export const RoomPage/*: Component<>*/ = () => {
   const [volume, setVolume] = useState(0);
   const ref = useRef();
   const [fullscreenElement, setFullscreen] = useFullscreen()
-  const [connection] = useAsync(() => client.game.updates.create(game.id), []);
+  const [update, setUpdates] = useState(null)
+  useEffect(() => {
+    const promise = client.game.updates.create(gameId);
+    promise
+      .then(setUpdates)
+    return () => {
+      promise.then(u => u.updates.close())
+    }
+  }, [client]);
 
+  const [roomPage, setRoomPage] = useState(null)
+  useEffect(() => {
+    if (!update)
+      return;
+    return update.roomPage.subscribe(roomId, setRoomPage);
+  }, [update])
+
+  console.log(roomPage);
 
   return [
     h('div', { style: { height: '100%', width: '100%', position: 'relative' }, ref }, [

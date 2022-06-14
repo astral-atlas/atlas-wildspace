@@ -20,7 +20,6 @@ import { LibraryAisle } from "../LibraryAisle";
 import { LibraryShelf } from "../LibraryShelf";
 import { EditorForm, EditorButton, EditorTextInput, EditorHorizontalSection } from "../../editor";
 import { PopupOverlay } from "../../layout";
-import { CharacterSheet2 } from "../../../www/characters/CharacterSheet2";
 import { LibraryFloor, LibraryFloorHeader } from "../LibraryFloor";
 import { CharacterSheet } from "../../paper/CharacterSheet";
 import { EditorVerticalSection, SelectEditor } from "../../editor/form";

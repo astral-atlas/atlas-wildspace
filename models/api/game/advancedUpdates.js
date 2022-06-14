@@ -16,6 +16,7 @@ import type { MiniTheaterChannel } from "./advancedUpdates/miniTheater";
 import type { LibraryChannel } from "./advancedUpdates/library";
 import type { WikiDocChannel } from "./advancedUpdates/wikiDoc";
 import type { RoomPageChannel } from "./advancedUpdates/roomPage";
+import type { GamePageChannel } from "./advancedUpdates/gamePage";
 import type { GameConnectionID } from "../../game/connection";
 */
 
@@ -33,6 +34,7 @@ import { miniTheaterChannel } from "./advancedUpdates/miniTheater.js";
 import { libraryChannel } from "./advancedUpdates/library.js";
 import { wikiDocChannel } from "./advancedUpdates/wikiDoc.js";
 import { roomPageChannel } from "./advancedUpdates/roomPage.js";
+import { gamePageChannel } from "./advancedUpdates/gamePage.js";
 
 /*::
 type Channels = [
@@ -46,6 +48,7 @@ export type UpdateChannelServerMessage =
   | LibraryChannel["Server"]
   | WikiDocChannel["Server"]
   | RoomPageChannel["Server"]
+  | GamePageChannel["Server"]
   | {| type: 'connected', connectionId: GameConnectionID |}
 
 export type UpdateChannelClientMessage = 
@@ -53,6 +56,7 @@ export type UpdateChannelClientMessage =
   | LibraryChannel["Client"]
   | WikiDocChannel["Client"]
   | RoomPageChannel["Client"]
+  | GamePageChannel["Client"]
 
 
 type AdvancedUpdates = AuthorizedConnection<{|
@@ -70,7 +74,8 @@ const channels = [
   miniTheaterChannel,
   libraryChannel,
   wikiDocChannel,
-  roomPageChannel
+  roomPageChannel,
+  gamePageChannel,
 ]
 
 const castTypedObject = c.obj({ type: c.str });
@@ -108,3 +113,4 @@ export * from './advancedUpdates/library.js';
 export * from './advancedUpdates/wikiDoc.js';
 export * from './advancedUpdates/miniTheater.js';
 export * from './advancedUpdates/roomPage.js';
+export * from './advancedUpdates/gamePage.js';

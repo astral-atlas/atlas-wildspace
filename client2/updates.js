@@ -2,29 +2,23 @@
 
 
 /*::
-import type { MiniTheaterEvent } from "../../models/game/miniTheater";
-import type { HTTPServiceClient, WSServiceClient } from "../wildspace";
+import type { HTTPServiceClient, WSServiceClient } from "./wildspace";
 import type {
   GameID,
-  MiniTheater, MiniTheaterID,
+  MiniTheater, MiniTheaterID, MiniTheaterEvent,
   LibraryEvent,
   UpdateChannelServerMessage,
   UpdateChannelClientMessage,
 } from "@astral-atlas/wildspace-models";
 
+import type { RoomClient } from "./room";
+import type { GameClient } from "./game";
 
-import type { MiniTheaterClient } from "./miniTheater";
 import type { MiniTheaterConnection } from "./updates/miniTheater";
-
-import type { LibraryClient } from "./library";
 import type { LibraryConnection } from "./updates/library";
-
-import type { WikiDocClient } from "./wiki";
 import type { WikiDocConnection } from "./updates/wikiDoc";
-
-
-import type { RoomClient } from "../room";
 import type { RoomPageConnection } from "./updates/roomPage";
+import type { GamePageConnection } from "./updates/gamePage";
 */
 
 import { gameAPI } from "@astral-atlas/wildspace-models";
@@ -32,6 +26,7 @@ import { createLibraryConnection } from "./updates/library";
 import { createMiniTheaterConnection } from "./updates/miniTheater";
 import { createWikiDocConnection } from "./updates/wikiDoc";
 import { createRoomPageConnection } from "./updates/roomPage";
+import { createGamePageConnection } from "./updates/gamePage";
 
 /*::
 export type GameUpdatesConnection = {
@@ -47,21 +42,20 @@ export type UpdatesConnection = {
   miniTheater: MiniTheaterConnection,
   wikiDoc: WikiDocConnection,
   library: LibraryConnection,
-  roomPage: RoomPageConnection
+  roomPage: RoomPageConnection,
+  gamePage: GamePageConnection
 };
-export type GameUpdatesConnectionClient = {
+export type UpdatesConnectionClient = {
   create: (gameId: GameID) => Promise<UpdatesConnection>,
 };
 */
 
-export const createGameUpdatesClient = (
+export const createUpdatesClient = (
   http/*: HTTPServiceClient*/,
   ws/*: WSServiceClient*/,
-  wikiDocClient/*: WikiDocClient*/,
-  libraryClient/*: LibraryClient*/,
-  miniTheaterClient/*: MiniTheaterClient*/,
+  gameClient/*: GameClient*/,
   roomClient/*: RoomClient*/,
-)/*: GameUpdatesConnectionClient*/ => {
+)/*: UpdatesConnectionClient*/ => {
   const connection = ws.createAuthorizedConnection(gameAPI["/games/updates-advanced"]);
 
   const create = async (gameId) => {
@@ -95,10 +89,11 @@ export const createGameUpdatesClient = (
 
     return {
       updates,
-      miniTheater: createMiniTheaterConnection(miniTheaterClient, updates),
-      wikiDoc: createWikiDocConnection(wikiDocClient, updates),
-      library: createLibraryConnection(libraryClient, updates),
+      miniTheater: createMiniTheaterConnection(gameClient.miniTheater, updates),
+      wikiDoc: createWikiDocConnection(gameClient.wiki, updates),
+      library: createLibraryConnection(gameClient.library, updates),
       roomPage: createRoomPageConnection(roomClient, updates),
+      gamePage: createGamePageConnection(gameClient, updates),
     }
   };
 

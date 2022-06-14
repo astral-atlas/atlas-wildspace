@@ -2,7 +2,7 @@
 /*::
 import type { MiniTheater, MiniTheaterID, MiniTheaterAction } from "@astral-atlas/wildspace-models";
 import type { GameUpdatesConnection } from "../updates";
-import type { MiniTheaterClient } from "../miniTheater";
+import type { MiniTheaterClient } from "../game/miniTheater";
 import type { GameUpdateChannel } from "./meta";
 */
 import { miniTheaterChannel, reduceMiniTheaterEvent } from "@astral-atlas/wildspace-models";

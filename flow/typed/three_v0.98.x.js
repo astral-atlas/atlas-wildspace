@@ -5,7 +5,7 @@
 /*::
 declare module three {
   declare export class Vector2 {
-    constructor(x: number, y: number): this;
+    constructor(x?: number, y?: number): this;
     isVector2: boolean;
     height: number;
     width: number;

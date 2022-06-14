@@ -22,20 +22,22 @@ import {
   castMonsterActorId,
   castMonsterActorMask,
 } from "../monster/monsterActor.js";
+import { castCharacter } from "../character.js";
 
 
 /*::
 export type RoomPage = {
   state: RoomState,
 
+  characters:   $ReadOnlyArray<Character>,
   monsterMasks: $ReadOnlyArray<MonsterActorMask>,
 
-  scene:       Scene,
+  scene:        ?Scene,
   locations:    $ReadOnlyArray<Location>,
   expositions:  $ReadOnlyArray<Exposition>,
 
   tracks:       $ReadOnlyArray<AudioTrack>,
-  playlist:     AudioPlaylist,
+  playlist:     ?AudioPlaylist,
 
   assets:       $ReadOnlyArray<AssetInfo>,
 };
@@ -44,14 +46,15 @@ export type RoomPage = {
 export const castRoomPage/*: Cast<RoomPage>*/ = c.obj({
   state: castRoomState,
 
+  characters: c.arr(castCharacter),
   monsterMasks: c.arr(castMonsterActorMask),
 
   locations: c.arr(castLocation),
   expositions: c.arr(castExposition),
-  scene: castScene,
+  scene: c.maybe(castScene),
 
   tracks: c.arr(castAudioTrack),
-  playlist: castAudioPlaylist,
+  playlist: c.maybe(castAudioPlaylist),
 
   assets: c.arr(castAssetInfo)
 });
