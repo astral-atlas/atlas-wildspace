@@ -1,5 +1,5 @@
 // @flow strict
-/*:: import type { AssetID, AssetDescription, APIConfig, AWSS3AssetConfig } from '@astral-atlas/wildspace-models'; */
+/*:: import type { AssetID, AssetDescription, APIConfig, AWSS3AssetConfig, AssetInfo } from '@astral-atlas/wildspace-models'; */
 /*:: import type { WildspaceData } from '@astral-atlas/wildspace-data'; */
 import { S3, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
@@ -9,7 +9,8 @@ import { join } from 'path';
 
 /*::
 export type AssetService = {
-  peek: (id: AssetID) => Promise<?{ downloadURL: string, description: AssetDescription }>,
+  peek: (id: AssetID) => Promise<?AssetInfo>,
+  batchPeek: (ids: (?AssetID)[]) => Promise<AssetInfo[]>,
   put: (MIMEType: string, bytes: number, name: string) => Promise<{ downloadURL: string, description: AssetDescription, uploadURL: string }>
 };
 */
@@ -34,7 +35,7 @@ export const createS3AssetService = (data/*: WildspaceData*/, config/*: AWSS3Ass
     return downloadURL;
   };
 
-  const peek = async (id) => {
+  const peek = async (id)/*: Promise<?AssetInfo>*/ => {
     const { result: description } = await data.assets.get(id);
     if (!description)
       return null
@@ -65,11 +66,14 @@ export const createS3AssetService = (data/*: WildspaceData*/, config/*: AWSS3Ass
 
     return { description, uploadURL, downloadURL };
   };
-  return { peek, put };
+  const batchPeek = async (ids)/*: Promise<AssetInfo[]>*/ => {
+    return Promise.all(ids.filter(Boolean).map(peek)).then(assetInfos =>  assetInfos.filter(Boolean))
+  }
+  return { peek, put, batchPeek };
 };
 
 export const createLocalAssetService = (data/*: WildspaceData*/)/*: AssetService*/ => {
-  const peek = async (id) => {
+  const peek = async (id)/*: Promise<?AssetInfo>*/ => {
     const { result: description } = await data.assets.get(id);
     if (!description)
       return null;
@@ -90,7 +94,10 @@ export const createLocalAssetService = (data/*: WildspaceData*/)/*: AssetService
       uploadURL: `http://127.0.0.1:5567/assets/data?assetId=${description.id}`,
     }
   };
-  return { peek, put };
+  const batchPeek = async (ids) => {
+    return Promise.all(ids.filter(Boolean).map(peek)).then(assetInfos =>  assetInfos.filter(Boolean))
+  }
+  return { peek, put, batchPeek };
 };
 
 export const createAssetService = (data/*: WildspaceData*/, config/*: APIConfig*/)/*: AssetService*/ => {

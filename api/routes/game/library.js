@@ -18,6 +18,7 @@ export const createLibraryRoutes/*: RoutesConstructor*/ = (services) => {
       getGameId: r => r.query.gameId,
       async handler({ game }) {
         const [
+          { result: rooms },
           { result: characters },
           { result: monsters },
           { result: monsterActors },
@@ -25,7 +26,10 @@ export const createLibraryRoutes/*: RoutesConstructor*/ = (services) => {
           { result: expositions },
           { result: scenes },
           { result: locations },
+          { result: tracks },
+          { result: playlists },
         ] = await Promise.all([
+          services.data.room.query(game.id),
           services.data.characters.query(game.id),
           services.data.monsters.query(game.id),
           services.data.gameData.monsterActors.query(game.id),
@@ -33,8 +37,16 @@ export const createLibraryRoutes/*: RoutesConstructor*/ = (services) => {
           services.data.gameData.expositions.query(game.id),
           services.data.gameData.scenes.query(game.id),
           services.data.gameData.locations.query(game.id),
+          services.data.tracks.query(game.id),
+          services.data.playlists.query(game.id),
+        ])
+        const assets = await services.asset.batchPeek([
+          ...characters.map(c => c.initiativeIconAssetId),
+          ...monsters.map(m => m.initiativeIconAssetId),
+          ...locations.map(l => l.background.type === 'image' && l.background.imageAssetId || null)
         ])
         const library = {
+          rooms,
           characters,
           expositions,
           monsters,
@@ -42,6 +54,9 @@ export const createLibraryRoutes/*: RoutesConstructor*/ = (services) => {
           miniTheaters,
           scenes,
           locations,
+          tracks,
+          playlists,
+          assets,
         };
         return { status: HTTP_STATUS.ok, body: { type: 'found', library } }
       }

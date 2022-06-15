@@ -1,5 +1,6 @@
 // @flow strict
 /*::
+import type { CompositeTable } from "./table";
 import type { DynamoDB, DynamoDBValueType } from "@aws-sdk/client-dynamodb";
 import type { Cast } from "@lukekaalim/cast";
 */
@@ -58,9 +59,16 @@ export const createDynamoDBTrasactable = /*:: <PK: string, SK: string, V: {}>*/(
   };
 };
 
-export const createFakeTransactable = /*:: <V>*/()/*: Transactable<string, string , V>*/ => {
-  const transaction = async () => {
-    throw new Error('This function is fake');
+export const createFakeTransactable = /*:: <V>*/(
+  buffer/*: CompositeTable<string, string, V>*/,
+)/*: Transactable<string, string , V>*/ => {
+  const transaction = async (pk, sk, updater) => {
+    const { result: prev } = await buffer.get(pk, sk);
+    if (!prev)
+      throw new Error();
+    const next = await updater(prev);
+    await buffer.set(pk, sk, next);
+    return { prev, next };
   };
   return {
     transaction,

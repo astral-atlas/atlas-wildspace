@@ -24,10 +24,7 @@ export const createRoomService = (
       { result: sceneState },
       { result: audioState },
       { result: lobbyState },
-      { result: monsters },
       { result: allScenes },
-      { result: characters },
-      { result: monsterActors },
       { result: allLocations },
       { result: allExposisions },
       { result: allPlaylists },
@@ -38,10 +35,7 @@ export const createRoomService = (
       data.roomAudio.get(gameId, roomId),
       data.roomData.lobby.get(gameId, roomId),
 
-      data.monsters.query(gameId),
       data.gameData.scenes.query(gameId),
-      data.characters.query(gameId),
-      data.gameData.monsterActors.query(gameId),
       data.gameData.locations.query(gameId),
       data.gameData.expositions.query(gameId),
 
@@ -59,18 +53,11 @@ export const createRoomService = (
     }
 
     const sceneMap = new Map(allScenes.map(s => [s.id, s]));
-    const monsterMap = new Map(monsters.map(m => [m.id, m]));
     const expositionMap = new Map(allExposisions.map(e => [e.id, e]))
     const locationMap = new Map(allLocations.map(l => [l.id, l]))
     const playlistMap = new Map(allPlaylists.map(p => [p.id, p]))
     const trackMap = new Map(allTracks.map(t => [t.id, t]))
 
-    const monsterMasks = monsterActors.map(actor => {
-      const monster = monsterMap.get(actor.monsterId);
-      if (!monster)
-        return null;
-      return createMaskForMonsterActor(monster, actor);
-    }).filter(Boolean);
     const scene = state.scene.activeScene && sceneMap.get(state.scene.activeScene) || null;
     const expositions = [
       (scene && scene.content.type === 'exposition') ? expositionMap.get(scene.content.expositionId) : null
@@ -89,16 +76,6 @@ export const createRoomService = (
     ];
 
     const assets = [
-      ...(await Promise.all(characters
-        .map(character => character.initiativeIconAssetId)
-        .filter(Boolean)
-        .map(assetId => asset.peek(assetId))
-      )),
-      ...(await Promise.all(monsters
-        .map(monster => monster.initiativeIconAssetId)
-        .filter(Boolean)
-        .map(assetId => asset.peek(assetId))
-      )),
       ...(await Promise.all(locations
         .map(l => l.background.type === 'image' ? l.background.imageAssetId : null)
         .filter(Boolean)
@@ -109,9 +86,6 @@ export const createRoomService = (
     const roomPage = {
       room,
       state,
-
-      characters,
-      monsterMasks,
       
       scene,
       locations,

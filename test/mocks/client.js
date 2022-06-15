@@ -45,6 +45,9 @@ export const createMockWildspaceClient = ()/*: WildspaceClient*/ => {
   const room/*: any*/ = {
 
   };
+  const updates/*: any*/ = {
+
+  };
   const self = async () => {
     return { name: randomHumanName() }
   }
@@ -54,6 +57,7 @@ export const createMockWildspaceClient = ()/*: WildspaceClient*/ => {
     audio,
     game,
     room,
+    updates,
     self,
   }
 };

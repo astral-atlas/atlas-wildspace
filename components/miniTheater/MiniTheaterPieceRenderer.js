@@ -13,11 +13,19 @@ import type { MiniTheaterController } from "./useMiniTheaterController";
 import type { AssetDownloadURLMap } from "../asset/map";
 */
 
-import { SpriteMaterial, TextureLoader, Vector2, Vector3 } from "three";
+import {
+  BoxGeometry,
+  Color,
+  MeshBasicMaterial,
+  SpriteMaterial,
+  TextureLoader,
+  Vector2,
+  Vector3,
+} from "three";
 import { h, useEffect, useRef, useState } from "@lukekaalim/act";
 
 import { maxSpan, useTimeSpan, useAnimatedNumber, calculateSpanProgress } from "@lukekaalim/act-curve";
-import { sprite, useDisposable } from "@lukekaalim/act-three";
+import { mesh, sprite, useDisposable } from "@lukekaalim/act-three";
 
 import { isBoardPositionEqual } from "@astral-atlas/wildspace-models";
 
@@ -31,7 +39,7 @@ export type MiniTheaterPieceRendererProps = {
   controller: MiniTheaterController,
 
   characters: $ReadOnlyArray<Character>,
-  monsters: $ReadOnlyArray<MonsterActorMask>,
+  monsterMasks: $ReadOnlyArray<MonsterActorMask>,
   assets: AssetDownloadURLMap,
 
   piece: Piece,
@@ -79,16 +87,15 @@ const usePieceTexture = (piece, characters, monsters, assets) => {
   return material;
 }
 
-export const MiniTheaterPieceRenderer/*: Component<MiniTheaterPieceRendererProps>*/ = ({
+const MiniPieceRenderer = ({
   controller,
   assets,
   characters,
-  monsters,
+  monsterMasks,
 
   piece,
 }) => {
-  const material = usePieceTexture(piece, characters, monsters, assets)
-
+  const material = usePieceTexture(piece, characters, monsterMasks, assets)
 
   const [selected, setSelected] = useState(false);
   const [hover, setHover] = useState(false);
@@ -107,4 +114,45 @@ export const MiniTheaterPieceRenderer/*: Component<MiniTheaterPieceRendererProps
   }, [piece, controller])
 
   return h(MiniTheaterSprite, { position: piece.position, hover, selected, material })
+};
+
+const Box = ({ position }) => {
+  const geometry = useDisposable(() => new BoxGeometry(30, 9, 30), []);
+  const material = useDisposable(() => new MeshBasicMaterial({ color: new Color('#3b6a5b') }), []);
+
+  return h(mesh, {
+    geometry,
+    material,
+    position: new Vector3(position.x * 10, (position.z * 10) + 5, position.y * 10)
+  }, h('css2dObject', {}, h('button', {}, 'Delete')))
+};
+
+const TerrainPieceRenderer = ({ piece, represents }) => {
+
+  switch (represents.terrainType) {
+    case 'box':
+      return h(Box, { position: piece.position });
+    default:
+      return null;
+  }
+};
+
+export const MiniTheaterPieceRenderer/*: Component<MiniTheaterPieceRendererProps>*/ = ({
+  controller,
+  assets,
+  characters,
+  monsterMasks,
+
+  piece,
+}) => {
+  const { represents } = piece;
+  switch (represents.type) {
+    case 'character':
+    case 'monster':
+      return h(MiniPieceRenderer, { controller, assets, characters, monsterMasks, piece });
+    case 'terrain':
+      return h(TerrainPieceRenderer, { represents, piece });
+    default:
+      return null;
+  }
 };

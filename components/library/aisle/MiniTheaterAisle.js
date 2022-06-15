@@ -267,7 +267,7 @@ const MiniTheaterPreview = ({
       controller,
       characters,
       miniTheater: selectedMiniTheater,
-      monsters: monsterMasks,
+      monsterMasks,
       emitter,
       resources
     })

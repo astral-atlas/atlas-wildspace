@@ -10,6 +10,7 @@ import type { Scene } from "../game/scene";
 import type { MonsterActorID, MonsterActorMask } from "../monster/monsterActor";
 import type { RoomState } from "./state";
 import type { AssetInfo } from "../asset";
+import type { Room } from "./room";
 */
 
 import { c } from "@lukekaalim/cast";
@@ -23,14 +24,13 @@ import {
   castMonsterActorMask,
 } from "../monster/monsterActor.js";
 import { castCharacter } from "../character.js";
+import { castRoom } from "./room.js";
 
 
 /*::
 export type RoomPage = {
+  room: Room,
   state: RoomState,
-
-  characters:   $ReadOnlyArray<Character>,
-  monsterMasks: $ReadOnlyArray<MonsterActorMask>,
 
   scene:        ?Scene,
   locations:    $ReadOnlyArray<Location>,
@@ -44,10 +44,8 @@ export type RoomPage = {
 */
 
 export const castRoomPage/*: Cast<RoomPage>*/ = c.obj({
+  room: castRoom,
   state: castRoomState,
-
-  characters: c.arr(castCharacter),
-  monsterMasks: c.arr(castMonsterActorMask),
 
   locations: c.arr(castLocation),
   expositions: c.arr(castExposition),
@@ -63,7 +61,6 @@ export const castRoomPage/*: Cast<RoomPage>*/ = c.obj({
 /*::
 export type RoomPageEvent =
   | { type: 'next-page', page: RoomPage }
-  | { type: 'next-monster-mask', monsterActorId: MonsterActorID, monsterMask: MonsterActorMask }
 */
 
 export const castRoomPageEvent/*: Cast<RoomPageEvent>*/ = c.or('type', {
@@ -71,21 +68,11 @@ export const castRoomPageEvent/*: Cast<RoomPageEvent>*/ = c.or('type', {
     type: c.lit('next-page'),
     page: castRoomPage
   }),
-  'update-monster-mask': c.obj({
-    type: c.lit('next-monster-mask'),
-    monsterActorId: castMonsterActorId,
-    monsterMask: castMonsterActorMask
-  })
 })
 
 export const reduceRoomPageEvent = (roomPage/*: RoomPage*/, event/*: RoomPageEvent*/)/*: RoomPage*/ => {
   switch (event.type) {
     case 'next-page':
       return event.page;
-    case 'next-monster-mask':
-      return {
-        ...roomPage,
-        monsterMasks: roomPage.monsterMasks.map(m => m.id === event.monsterActorId ? event.monsterMask : m),
-      }
   }
 }

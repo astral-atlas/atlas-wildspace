@@ -74,6 +74,15 @@ export const createRoomRoutes/*: RoutesConstructor*/ = (services) => {
   
         return { status: HTTP_STATUS.created, body: { type: 'updated' } };
       }
+    },
+    DELETE: {
+      scope: { type: 'game-master-in-game' },
+      getGameId: r => r.query.gameId,
+      async handler({ game, query: { gameId, roomId }}) {
+        await data.room.set(game.id, roomId, null);
+        data.gameUpdates.publish(game.id, { type: 'rooms' })
+        return { status: HTTP_STATUS.created, body: { type: 'deleted' } };
+      }
     }
   });
   const allRoomsResourceRoute = createAuthorizedResource(roomAPI['/room/all'], {

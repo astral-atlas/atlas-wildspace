@@ -22,7 +22,7 @@ type ListElementAnimation<T> = {
   exitied: number,
 };
 
-type ListElementChangeReducers<T, S> = {
+export type ListElementChangeReducers<T, S> = {
   enter:  (value: T, nextIndex: number, now: number) => S,
   move:   (prevState: S, value: T, prevIndex: number, nextIndex: number, now: number) => S,
   update: (prevState: S, value: T) => S,

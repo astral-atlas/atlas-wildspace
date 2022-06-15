@@ -26,6 +26,8 @@ import { createRoomSceneClient } from './room/scene.js';
 /*::
 export type RoomClient = {
   read: (gameId: GameID, roomId: RoomID) => Promise<Room>,
+  destroy: (gameId: GameID, roomId: RoomID) => Promise<void>,
+
   connectUpdates: (gameId: GameID, roomId: RoomID, onUpdate: (state: RoomUpdate) => mixed) => { close: () => Promise<void> },
   
   readAudio: (gameId: GameID, roomId: RoomID) => Promise<RoomAudioState>,
@@ -60,6 +62,9 @@ export const createRoomClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceCli
     const { body: { room }} = await roomResource.GET({ query: { roomId, gameId }});
     return room;
   };
+  const destroy = async (gameId, roomId) => {
+    await roomResource.DELETE({ query: { roomId, gameId }});
+  }
   const connectUpdates = (gameId, roomId, onUpdate) => {
     const recieve = (e) => {
       onUpdate(e);
@@ -115,6 +120,7 @@ export const createRoomClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceCli
 
   return {
     read,
+    destroy,
     connectUpdates,
     readAudio,
     setAudio,

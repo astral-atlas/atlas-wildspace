@@ -25,7 +25,7 @@ import { useMiniTheaterCamera } from "./useMiniTheaterCamera";
 import { MiniTheaterCursorRenderer } from "./MiniTheaterCursorRenderer";
 import { BoardRenderer } from "../board/BoardRenderer";
 import { useSky } from "../sky/useSky";
-import { calculateBoardBox } from "@astral-atlas/wildspace-models";
+import { calculateBoardBox, createFloorForTerrain } from "@astral-atlas/wildspace-models";
 import { MiniTheaterPieceRenderer } from "./MiniTheaterPieceRenderer";
 
 /*::
@@ -36,11 +36,12 @@ export type MiniTheaterSceneProps = {
   resources: EncounterResources,
 
   characters: $ReadOnlyArray<Character>,
-  monsters: $ReadOnlyArray<MonsterActorMask>,
+  monsterMasks: $ReadOnlyArray<MonsterActorMask>,
   assets: AssetDownloadURLMap,
   
   controller: MiniTheaterController,
-  emitter?: KeyboardStateEmitter
+  emitter?: KeyboardStateEmitter,
+  controlSurfaceElementRef?: ?Ref<?HTMLElement>,
 };
 */
 const HARDCODED_BOARD = {
@@ -64,14 +65,15 @@ export const MiniTheaterScene/*: Component<MiniTheaterSceneProps>*/ = ({
   resources,
 
   assets,
-  monsters,
+  monsterMasks,
   characters,
   emitter,
+  controlSurfaceElementRef = null,
 }) => {
   
   const sceneController = useMiniTheaterSceneController(
     miniTheater,
-    render.canvasRef,
+    controlSurfaceElementRef || (render.canvasRef/*: any*/),
     controller,
     render.loop,
     emitter
@@ -86,7 +88,7 @@ export const MiniTheaterScene/*: Component<MiniTheaterSceneProps>*/ = ({
   
   useMiniTheaterCamera(
     sceneController.keyboardTrack,
-    render.canvasRef,
+    controlSurfaceElementRef || (render.canvasRef/*: any*/),
     render.cameraRef,
     render.loop,
     bounds,
@@ -108,7 +110,7 @@ export const MiniTheaterScene/*: Component<MiniTheaterSceneProps>*/ = ({
   const data = {
     assets,
     characters,
-    monsterMasks: monsters,
+    monsterMasks,
   }
   /*
   useEffect(() => {
@@ -141,13 +143,30 @@ export const MiniTheaterScene/*: Component<MiniTheaterSceneProps>*/ = ({
     }
   }, [resources])
   */
+
+  const board = {
+    ...HARDCODED_BOARD,
+    floors: [
+      ...HARDCODED_BOARD.floors,
+      ...miniTheater.pieces
+        .map(piece => {
+          const { represents } = piece;
+          if (represents.type !== 'terrain')
+            return [];
+
+          return createFloorForTerrain(represents.terrainType, piece.position, piece.visible)
+        })
+        .flat(1)
+    ]
+  }
+
   return [
     h(group, { ref: groupRef }),
     h(perspectiveCamera, { ref: render.cameraRef }),
-    h(BoardRenderer, { board: HARDCODED_BOARD, raycaster: sceneController.raycaster, onCursorOver, onCursorLeave }, [
+    h(BoardRenderer, { board, raycaster: sceneController.raycaster, onCursorOver, onCursorLeave }, [
       h(MiniTheaterCursorRenderer, { data, controller, resources }),
       miniTheater.pieces.map(piece =>
-        h(MiniTheaterPieceRenderer, { controller, piece, assets, characters, monsters }))
+        h(MiniTheaterPieceRenderer, { controller, piece, assets, characters, monsterMasks }))
     ]),
   ]
 }

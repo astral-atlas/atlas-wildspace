@@ -2,6 +2,7 @@
 /*::
 import type { Component, ElementNode } from "@lukekaalim/act";
 import type { KeyboardTrack, KeyboardTrackEmitter } from "../keyboard";
+import type { KeyboardStateEmitter } from "../keyboard/changes";
 */
 import { h, useEffect, useRef, useState } from '@lukekaalim/act';
 import { isKeyboardStateEqual, useElementKeyboard, useKeyboardTrack, useKeyboardTrackChanges } from '../keyboard';
@@ -16,6 +17,7 @@ import {
 } from "../animation";
 import { useBezierAnimation } from "@lukekaalim/act-curve/bezier";
 import { useRefMap } from "../editor/list";
+import { useKeyboardStateEmitterMiddleware } from '../keyboard/middleware';
 
 const directionalKeys = [
   'KeyW', 'KeyA', 'KeyS', 'KeyD',
@@ -36,7 +38,7 @@ const calculateKeyboardDirection = (keys) => {
 
   return new Vector2(x, y);
 }
-const getNextDirection = (screens, prev, next, prevDirection) => {
+const getNextDirection = (validDirections, prev, next, prevDirection) => {
   if (!focusKeys.find(k => next.value.has(k)))
     return prevDirection;
 
@@ -45,7 +47,7 @@ const getNextDirection = (screens, prev, next, prevDirection) => {
   if (nextDirection.x === 0 && nextDirection.y == 0 && focusKeys.find(k => prev.value.has(k)))
     return prevDirection;
 
-  if (!screens.find(s => s.position.equals(nextDirection)))
+  if (!validDirections.find(d => d.equals(nextDirection)))
     return prevDirection;
     
   if (prevDirection.x === nextDirection.x &&
@@ -55,45 +57,25 @@ const getNextDirection = (screens, prev, next, prevDirection) => {
 }
 
 export const useCompassKeysDirection = (
-  emitter/*: KeyboardTrackEmitter*/,
-  screens/*: CompassLayoutScreen[]*/,
+  emitter/*: KeyboardStateEmitter*/,
+  validDirections/*: Vector2[]*/,
   onDirectionChange/*:  Vector2 => mixed*/ = () => {},
   initialDirection/*: Vector2*/ = new Vector2(0, 0),
-)/*: [Vector2, Vector2 => void, KeyboardTrackEmitter]*/ => {
+)/*: [Vector2, Vector2 => void, KeyboardStateEmitter]*/ => {
   const [direction, setDirection] = useState/*:: <Vector2>*/(initialDirection)
-
-  useKeyboardTrackEmitterChanges(emitter, (prev, next) => {
-
+  const track = useKeyboardTrack(emitter)
+  useKeyboardTrackChanges(track, (prev, next) => {
     setDirection(prevDirection => {
-      const nextDirection = getNextDirection(screens, prev, next, prevDirection);
+      const nextDirection = getNextDirection(validDirections, prev, next, prevDirection);
       onDirectionChange(nextDirection)
       return nextDirection;
     })
+  }, [validDirections]);
+  const childEmitter = useKeyboardStateEmitterMiddleware(emitter, (state, event) => {
+    if (!focusKeys.some(k => state.has(k)))
+      return state;
+    return new Set([...state].filter(key => !directionalKeys.includes(key) && !focusKeys.includes(key)))
   })
-  const childEmitter = {
-    subscribe: (listener) => {
-      const processFrame = (frame) => {
-        if (!focusKeys.find(k => frame.value.has(k)))
-          return frame;
-        const keyBlacklist = [...directionalKeys, ...focusKeys];
-        const filteredValue = new Set(
-          [...frame.value]
-            .filter(key => !keyBlacklist.includes(key))
-        )
-        return { ...frame, value: filteredValue };
-      }
-      const middleListener = (prev, next) => {
-        const processedNext = processFrame(next);
-        const processedPrev = processFrame(prev);
-        if (!isKeyboardStateEqual(processedPrev.value, processedNext.value))
-          listener(processedPrev, processedNext);
-      }
-      const unsubscribe = emitter.subscribe(middleListener)
-      return () => {
-        unsubscribe();
-      };
-    }
-  }
 
   return [direction, setDirection, childEmitter];
 }
@@ -118,11 +100,13 @@ export const CompassLayout/*: Component<CompassLayoutProps>*/ = ({ direction, sc
   useEffect(() => {
     for (const [screenIndex, screenRef] of refMap) {
       const screen = screens[screenIndex];
+      if (!screen)
+        continue;
       if (direction.x === screen.position.x && direction.y === screen.position.y) {
         screenRef.style.display = 'initial';
       }
     }
-  }, [direction])
+  }, [direction, screens.length])
 
   useBezier2DAnimation(animation, (point) => {
     const { current: translator } = translatorRef;
@@ -142,12 +126,14 @@ export const CompassLayout/*: Component<CompassLayoutProps>*/ = ({ direction, sc
     if (point.progress[0] === 1 && point.progress[1] === 1) {
       for (const [screenIndex, screenRef] of refMap) {
         const screen = screens[screenIndex];
+        if (!screen)
+          return;
         if (direction.x !== screen.position.x || direction.y !== screen.position.y) {
           screenRef.style.display = 'none';
         }
       }
     }
-  })
+  }, [screens])
   const [setRef, refMap] = useRefMap()
 
   return [

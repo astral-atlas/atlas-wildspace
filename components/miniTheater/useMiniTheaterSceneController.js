@@ -25,30 +25,32 @@ export type MiniTheaterSceneController = {
 
 export const useMiniTheaterSceneController = (
   miniTheater/*: MiniTheater*/,
-  canvasRef/*: Ref<?HTMLCanvasElement>*/,
+  controlSurfaceElementRef/*: Ref<?HTMLElement>*/,
   miniTheaterController/*: MiniTheaterController*/,
   loop/*: LoopController*/,
   overrideKeyboardEmitter/*: ?KeyboardStateEmitter*/ = null,
   deps/*: mixed[]*/ = [],
 )/*: MiniTheaterSceneController*/ => {
   const raycaster = useRaycastManager();
-  useRaycastElement(raycaster, canvasRef);
+  useRaycastElement(raycaster, controlSurfaceElementRef);
   useEffect(() => {
     return loop.subscribeSimulate((c, v) => raycaster.onUpdate(c.camera))
   }, [])
 
-  const localKeyboardEmitter = useElementKeyboard(canvasRef);
+  const localKeyboardEmitter = useElementKeyboard(controlSurfaceElementRef);
   const keyboardEmitter = overrideKeyboardEmitter || localKeyboardEmitter;
 
   const keyboardTrack = useKeyboardTrack(keyboardEmitter);
 
   useEffect(() => {
-    const { current: canvas } = canvasRef;
-    if (!canvas)
+    const { current: controlSurfaceElement } = controlSurfaceElementRef;
+    if (!controlSurfaceElement)
       return;
     const onContextMenu = (e/*: MouseEvent*/) => {
+      if (e.target !== controlSurfaceElement)
+        return;
       e.preventDefault();
-      canvas.focus();
+      controlSurfaceElement.focus();
       const selected = miniTheaterController.selectionRef.current;
       const placement = miniTheaterController.placementRef.current;
       const cursor = miniTheaterController.cursorRef.current;
@@ -61,8 +63,10 @@ export const useMiniTheaterSceneController = (
       }
     };
     const onClick = (e/*: MouseEvent*/) => {
+      if (e.target !== controlSurfaceElement)
+        return;
       e.preventDefault();
-      canvas.focus();
+      controlSurfaceElement.focus();
 
       const cursor = miniTheaterController.cursorRef.current;
       const placement = miniTheaterController.placementRef.current;
@@ -77,12 +81,12 @@ export const useMiniTheaterSceneController = (
       
       return miniTheaterController.deselectPiece();
     }
-    canvas.addEventListener('contextmenu', onContextMenu);
-    canvas.addEventListener('click', onClick);
+    controlSurfaceElement.addEventListener('contextmenu', onContextMenu);
+    controlSurfaceElement.addEventListener('click', onClick);
 
     return () => {
-      canvas.removeEventListener('contextmenu', onContextMenu);
-      canvas.removeEventListener('click', onClick);
+      controlSurfaceElement.removeEventListener('contextmenu', onContextMenu);
+      controlSurfaceElement.removeEventListener('click', onClick);
     };
   }, [miniTheaterController, miniTheater.pieces, ...deps]);
 

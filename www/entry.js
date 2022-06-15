@@ -1,6 +1,6 @@
 // @flow strict
 import { h, Boundary, useEffect } from "@lukekaalim/act";
-import { render } from '@lukekaalim/act-three';
+import { render } from './src/renderer';
 
 import { App } from './src/App.js';
 import { PrepPage } from "./src/prep/index.js";

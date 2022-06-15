@@ -73,9 +73,10 @@ export const createBufferWildspaceGameData = ({ createBufferStore,  }/*: DataCon
 
   const scenes = createBufferCompositeTable(createBufferStore('scenes'), castScene);
   const expositions = createBufferCompositeTable(createBufferStore('expositions'), castExposition);
+  const miniTheaterTable = createBufferCompositeTable(createBufferStore('mini_theaters'), castMiniTheater);
   const miniTheaters = {
-    ...createBufferCompositeTable(createBufferStore('mini_theaters'), castMiniTheater),
-    ...createFakeTransactable/*:: <MiniTheater>*/(),
+    ...miniTheaterTable,
+    ...createFakeTransactable/*:: <MiniTheater>*/(miniTheaterTable),
   };
   const miniTheaterEvents = createMemoryChannel();
 

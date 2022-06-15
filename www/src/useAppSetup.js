@@ -11,11 +11,11 @@ import { loadConfigFromURL } from "../config";
 import { identityStore } from "../lib/storage";
 
 /*::
-export type AppSetup = {
+export type AppSetup = {|
   config: WWWConfig,
   client: WildspaceClient,
   proof: ?LinkProof
-};
+|};
 */
 
 const getLinkProof = (config) => {

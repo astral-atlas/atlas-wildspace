@@ -4,98 +4,56 @@ import type { ServerUpdateChannel } from "./meta";
 import type { ServerGameUpdateChannel } from "../update";
 import type { WildspaceData } from "@astral-atlas/wildspace-data";
 import type { GameID, GameUpdate, LibraryEvent, LibraryChannel } from "@astral-atlas/wildspace-models";
+import type { AssetService } from "../asset";
 
 export type ServerLibraryChannel = ServerUpdateChannel<LibraryChannel>;
-
-export type LibaryConnection = {
-  start: (onLibraryEvent: (event: LibraryEvent) => mixed) => void,
-  close: () => void,
-};
-
-export type LibraryConnectionService = {
-  create: (gameId: GameID) => LibaryConnection
-};
 */
 
-export const createLibraryConnectionService = (data/*: WildspaceData*/)/*: LibraryConnectionService*/ => {
-  const create = (gameId) => {
-    let subscription = null;
-    const start = (onLibraryEvent) => {
-      if (subscription)
-        subscription.unsubscribe()
-
-      const onGameUpdate = async (update) => {
-        switch (update.type) {
-          case 'monsterActors':
-            const { result: monsterActors } = await data.gameData.monsterActors.query(gameId);
-            return onLibraryEvent({ type: 'monster-actors', monsterActors })
-          case 'monsters':
-            const { result: monsters } = await data.monsters.query(gameId);
-            return onLibraryEvent({ type: 'monsters', monsters })
-          case 'mini-theater':
-            const { result: miniTheaters } = await data.gameData.miniTheaters.query(gameId);
-            return onLibraryEvent({ type: 'mini-theaters', miniTheaters })
-          case 'scenes':
-            const { result: scenes } = await data.gameData.scenes.query(gameId);
-            return onLibraryEvent({ type: 'scenes', scenes })
-          case 'locations':
-            const { result: locations } = await data.gameData.locations.query(gameId);
-            return onLibraryEvent({ type: 'locations', locations })
-          case 'exposition':
-            const { result: expositions } = await data.gameData.expositions.query(gameId);
-            return onLibraryEvent({ type: 'expositions', expositions })
-        }
-      }
-
-      subscription = data.gameUpdates.subscribe(gameId, onGameUpdate)
-    }
-    const close = () => {
-      if (subscription)
-        subscription.unsubscribe()
-    }
-
-    return {
-      start,
-      close,
-    }
-  }
-
-  return {
-    create
-  }
-};
-
-
-export const createServerLibraryChannel = (data/*: WildspaceData*/, { gameId, send }/*: ServerGameUpdateChannel*/)/*: ServerLibraryChannel*/ => {
+export const createServerLibraryChannel = (data/*: WildspaceData*/, asset/*: AssetService*/, { gameId, send }/*: ServerGameUpdateChannel*/)/*: ServerLibraryChannel*/ => {
   let subscription = null;
 
   const createLibraryEvent = async (update) => {
     switch (update.type) {
       case 'monsterActors':
         const { result: monsterActors } = await data.gameData.monsterActors.query(gameId);
-        return { type: 'monster-actors', monsterActors }
+        return { type: 'monster-actors', monsterActors, assets: [] }
       case 'monsters':
         const { result: monsters } = await data.monsters.query(gameId);
-        return { type: 'monsters', monsters }
+        const monsterAssets = await asset.batchPeek(monsters
+          .map(m => m.initiativeIconAssetId));
+        return { type: 'monsters', monsters, assets: monsterAssets }
+      case 'characters':
+        const { result: characters } = await data.characters.query(gameId);
+        const characterAssets = await asset.batchPeek(characters
+          .map(c => c.initiativeIconAssetId));
+        return { type: 'characters', characters, assets: characterAssets }
       case 'mini-theater':
         const { result: miniTheaters } = await data.gameData.miniTheaters.query(gameId);
-        return { type: 'mini-theaters', miniTheaters }
+        return { type: 'mini-theaters', miniTheaters, assets: [] }
       case 'scenes':
         const { result: scenes } = await data.gameData.scenes.query(gameId);
-        return { type: 'scenes', scenes }
+        return { type: 'scenes', scenes, assets: [] }
       case 'locations':
         const { result: locations } = await data.gameData.locations.query(gameId);
-        return { type: 'locations', locations }
+        const locationAssets = await asset.batchPeek(locations
+          .map(l => l.background.type === 'image' && l.background.imageAssetId || null));
+        return { type: 'locations', locations, assets: locationAssets }
       case 'exposition':
         const { result: expositions } = await data.gameData.expositions.query(gameId);
-        return { type: 'expositions', expositions };
+        return { type: 'expositions', expositions, assets: [] };
+      case 'rooms':
+        const { result: rooms } = await data.room.query(gameId);
+        return { type: 'rooms', rooms };
       default:
-        throw new Error();
+        return null;
     }
   }
 
   const onGameUpdate = async (update) => {
-    send({ type: 'library-event', event: await createLibraryEvent(update) })
+    const event = await createLibraryEvent(update);
+    if (!event)
+      return;
+    send({ type: 'library-event', event })
   }
 
   const onSubscribe = () => {

@@ -37,7 +37,12 @@ export type RoomResource = {|
     query: { gameId: GameID, roomId: RoomID },
     request: { room: Room },
     response: { type: 'updated' }
-  }
+  },
+  DELETE: {
+    query: { roomId: RoomID, gameId: GameID },
+    request: empty,
+    response: { type: 'deleted' }
+  },
 |};
 export type AllRoomsResource = {|
   GET: {
@@ -137,6 +142,10 @@ export const roomResourceDescription/*: ResourceDescription<RoomAPI['/room']> */
     toQuery: createObjectCaster({ roomId: castRoomId, gameId: castGameId }),
     toRequestBody: createObjectCaster({ room: castRoom }),
     toResponseBody: createObjectCaster({ type: createConstantCaster('updated') })
+  },
+  DELETE: {
+    toQuery: createObjectCaster({ roomId: castRoomId, gameId: castGameId }),
+    toResponseBody: createObjectCaster({ type: createConstantCaster('deleted') })
   }
 }
 
