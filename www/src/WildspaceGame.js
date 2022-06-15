@@ -95,6 +95,7 @@ export const WildspaceGame/*: Component<WildspaceGameProps>*/ = ({
   const gamePage = useGamePage(updates);
 
   const setSelectedGame = (gameId) => {
+    console.log(gameId);
     appController.setPage({ key: 'game', path: '/', query: { gameId }})
   }
 
@@ -148,7 +149,7 @@ const WildspaceGameMenu = ({
       h('li', {}, h(SelectEditor, {
         values: gameController.games.map(g => ({ value: g.id, title: g.name })),
         selected: gameController.gamePage.game.id,
-        onSelectionChange: gameController.setSelectedGame
+        onSelectedChange: gameController.setSelectedGame
       })),
       h('li', {}, h(EditorButton, {
         label: 'Player Preparation',
