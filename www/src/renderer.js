@@ -6,7 +6,7 @@ import type { Element as ActElement } from "@lukekaalim/act";
 import { createNullRenderer } from '@lukekaalim/act-renderer-core';
 import { createObjectRenderer, createSceneRenderer } from '@lukekaalim/act-three';
 import { createWebRenderer, setNodeChildren } from '@lukekaalim/act-web';
-import { createTree } from '@Lukekaalim/act-reconciler';
+import { createTree } from '@lukekaalim/act-reconciler';
 
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
