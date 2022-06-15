@@ -22,7 +22,6 @@ import { LibraryAisle } from "../LibraryAisle";
 import { LibraryShelf } from "../LibraryShelf";
 import { EditorForm, EditorButton, EditorTextInput } from "../../editor";
 import { PopupOverlay } from "../../layout";
-import { CharacterSheet2 } from "../../../www/characters/CharacterSheet2";
 import { LibraryFloor, LibraryFloorHeader } from "../LibraryFloor";
 import { CharacterSheet } from "../../paper/CharacterSheet";
 import debounce from "lodash.debounce";

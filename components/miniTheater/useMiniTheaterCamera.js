@@ -17,7 +17,7 @@ import { setFocusTransform2 } from "../utils/vector";
 
 export const useMiniTheaterCamera = (
   keyboard/*: KeyboardTrack*/,
-  canvasRef/*: Ref<?HTMLCanvasElement>*/,
+  controlSurfaceElementRef/*: Ref<?HTMLElement>*/,
   cameraRef/*: Ref<?PerspectiveCamera>*/,
   loop/*: LoopController*/,
   cameraBounds/*: ?Box2*/,
@@ -36,12 +36,12 @@ export const useMiniTheaterCamera = (
 
   useEffect(() => {
     const { current: camera } = cameraRef;
-    const { current: canvas } = canvasRef;
-    if (!camera || !canvas)
+    const { current: controlSurfaceElement } = controlSurfaceElementRef;
+    if (!camera || !controlSurfaceElement)
       return;
 
     const onWheel = (event/*: WheelEvent*/) => {
-      if ((document.activeElement !== canvas))
+      if ((!controlSurfaceElement.contains(document.activeElement) && controlSurfaceElement !== document.activeElement))
         return;
       event.preventDefault();
       setZoom(z => Math.min(1000, Math.max(10, z + (event.deltaY / 10))));
@@ -72,12 +72,12 @@ export const useMiniTheaterCamera = (
       );
     }
 
-    canvas.addEventListener('wheel', onWheel);
+    controlSurfaceElement.addEventListener('wheel', onWheel);
     const unsubscribeSim = loop.subscribeSimulate(onSimulate);
 
     return () => {
       unsubscribeSim();
-      canvas.removeEventListener('wheel', onWheel);
+      controlSurfaceElement.removeEventListener('wheel', onWheel);
     }
   }, [rotationAnim, zoomAnim])
 };

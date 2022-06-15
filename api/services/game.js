@@ -1,19 +1,16 @@
 // @flow strict
 /*::
 import type { UserID } from '@astral-atlas/sesame-models';
-import type { Game, GameID, Player } from '@astral-atlas/wildspace-models';
+import type { Game, GameID, Player, GamePage } from '@astral-atlas/wildspace-models';
 import type { WildspaceData } from '@astral-atlas/wildspace-data';
 import type { AuthService, Identity } from "./auth.js";
-import type { WikiService } from "./game/wiki";
 import type { GameConnectionService } from "./game/connection";
-import type { LibraryConnectionService } from "./game/library";
-import type { MiniTheaterConnectionService } from "./game/miniTheater";
+import type { RoomService } from "./room";
+import type { AssetService } from "./asset";
 */
+import { createMaskForMonsterActor } from '@astral-atlas/wildspace-models';
 import { v4 as uuid } from 'uuid';
-import { createWikiService } from './game/wiki.js';
 import { createGameConnectionService } from "./game/connection.js";
-import { createLibraryConnectionService } from './game/library.js';
-import { createMiniTheaterConnectionService } from './game/miniTheater.js';
 
 /*::
 export type GameService = {
@@ -28,10 +25,9 @@ export type GameService = {
   addPlayer: (gameId: GameID, playerId: UserID, authorizer: Identity) => Promise<void>,
   removePlayer: (gameId: GameID, playerId: UserID, authorizer: Identity) => Promise<void>,
 
-  wiki: WikiService,
+  getGamePage: (gameId: GameID) => Promise<?GamePage>,
+
   connection: GameConnectionService,
-  library: LibraryConnectionService,
-  miniTheater: MiniTheaterConnectionService,
 };
 
 export type GameIdentityScope =
@@ -42,7 +38,11 @@ export type GameIdentityScope =
 
 */
 
-export const createGameService = (data/*: WildspaceData*/, auth/*: AuthService*/)/*: GameService*/ => {
+export const createGameService = (
+  data/*: WildspaceData*/,
+  auth/*: AuthService*/,
+  asset/*: AssetService*/,
+)/*: GameService*/ => {
   const create = async (name, authorizer) => {
     if (authorizer.type === 'guest')
       throw new Error();
@@ -84,7 +84,7 @@ export const createGameService = (data/*: WildspaceData*/, auth/*: AuthService*/
   const assertGuest = async (gameId) => {
     const { result: game } = await data.game.get(gameId);
     if (!game)
-      throw new Error();
+      throw new Error(`No Game!`);
     return { game };
   };
   const assertUser = async (gameId, identity) => {
@@ -152,16 +152,67 @@ export const createGameService = (data/*: WildspaceData*/, auth/*: AuthService*/
     await data.gameParticipation.set(playerId, game.id, { joined: false, gameId: game.id });
   }
 
+  const getGamePage = async (gameId) => {
+    const [
+      { result: game },
+      { result: monsters },
+      { result: characters },
+      { result: monsterActors },
+      { result: magicItems },
+      { result: wikiDocs },
+      { result: rooms },
+    ] = await Promise.all([
+      data.game.get(gameId),
+      data.monsters.query(gameId),
+      data.characters.query(gameId),
+      data.gameData.monsterActors.query(gameId),
+      data.gameData.magicItems.query(gameId),
+      data.wiki.documents.query(gameId),
+      data.room.query(gameId),
+    ]);
+    if (!game)
+      return null;
+
+    const monsterMap = new Map(monsters.map(m => [m.id, m]));
+    const monsterMasks = monsterActors.map(actor => {
+      const monster = monsterMap.get(actor.monsterId);
+      return monster && createMaskForMonsterActor(monster, actor);
+    }).filter(Boolean);
+
+    const assets = [
+      ...(await Promise.all(characters
+        .map(character => character.initiativeIconAssetId)
+        .filter(Boolean)
+        .map(assetId => asset.peek(assetId))
+      )),
+      ...(await Promise.all(monsters
+        .map(monster => monster.initiativeIconAssetId)
+        .filter(Boolean)
+        .map(assetId => asset.peek(assetId))
+      )),
+    ].filter(Boolean);
+
+    const gamePage = {
+      game,
+
+      characters,
+      monsterMasks,
+
+      magicItems,
+      wikiDocs,
+
+      rooms,
+
+      assets,
+    };
+    return gamePage;
+  }
+
   const connection = createGameConnectionService(data);
-  const wiki = createWikiService(data, connection);
-  const library = createLibraryConnectionService(data);
-  const miniTheater = createMiniTheaterConnectionService(data);
 
   return {
     create, update, get, all, createScopeAssertion, removePlayer, addPlayer, listPlayers,
-    wiki,
+    getGamePage,
     connection,
-    library,
-    miniTheater,
   };
 };

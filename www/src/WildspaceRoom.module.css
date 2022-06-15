@@ -1,0 +1,31 @@
+.room {
+  width: 100%;
+  height: 100%;
+}
+
+.roomScreen {
+  width: 100%;
+  height: 100%;
+
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+}
+
+.roomScreenPane {
+  flex: 1;
+  margin: 2em;
+
+  background-color: rgba(255, 255, 255, 0.663);
+  border-radius: 8px;
+  border: 1px solid black;
+  backdrop-filter: blur(5px);
+}
+
+
+.backgroundScene {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  overflow: hidden;
+}

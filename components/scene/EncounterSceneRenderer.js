@@ -28,7 +28,7 @@ import { EncounterBoard } from "../encounter/EncounterBoard";
 import { useElementKeyboard } from "../keyboard";
 import { resourcesContext, useResourcesLoader } from "../encounter/useResources";
 import { raycastManagerContext } from "../raycast";
-import { ambientLight, directionalLight, group, orthographicCamera, perspectiveCamera, scene } from "@lukekaalim/act-three";
+import { ambientLight, directionalLight, group, orthographicCamera, perspectiveCamera, scene, useAnimationFrame } from "@lukekaalim/act-three";
 
 import classes from './EncounterSceneRenderer.module.css';
 import { calculateBoardBox } from "@astral-atlas/wildspace-models";
@@ -133,6 +133,7 @@ export const EncounterSceneRenderer/*: Component<EncounterSceneRendererProps>*/ 
       return;
 
     const cameraHelper = new CameraHelper(light.shadow.camera)
+    cameraHelper.matrixAutoUpdate = false;
     light.target = lightTarget;
 
     root.add(sky);
@@ -152,23 +153,35 @@ export const EncounterSceneRenderer/*: Component<EncounterSceneRendererProps>*/ 
 
   const [bias, setBias] = useState(-0.005);
 
+  const lightRootRef = useRef(null);
+
+  useAnimationFrame(() => {
+    const { current: lightRoot } = lightRootRef;
+    if (!lightRoot)
+      return;
+
+    lightRoot.rotateOnAxis(new Vector3(1, 0, 0), 0.01);
+  }, []);
+
   return [
     h('canvas', canvasProps),
     h(scene, { ref: renderSetup.sceneRef }, [
       h(ambientLight, { intensity: 0.2, color: new Color('orange') }),
-      h(directionalLight, {
-        ref: lightRef,
-        position: boardPositionToLocalVector({ x: 0, y: 0, z: 0 })
-          .add(new Vector3(-60, 100, -60)),
-        intensity: 0.8,
-        castShadow: true,
-        shadow: {
-          camera: new OrthographicCamera(-256, 256, -256, 256, 0, 500),
-          radis: 3,
-          bias,
-          mapSize: new Vector2(2048, 2048)
-        }
-      }),
+      h(group, { ref: lightRootRef }, [
+        h(directionalLight, {
+          ref: lightRef,
+          position: boardPositionToLocalVector({ x: 0, y: 0, z: 0 })
+            .add(new Vector3(-60, 100, -60)),
+          intensity: 0.8,
+          castShadow: true,
+          shadow: {
+            camera: new OrthographicCamera(-256, 256, -256, 256, 0, 500),
+            radis: 3,
+            bias,
+            mapSize: new Vector2(2048, 2048)
+          }
+        }),
+      ]),
       h(group, {
         ref: lightTargetRef,
         position: boardPositionToLocalVector({ x: 0, y: 0, z: 0 })

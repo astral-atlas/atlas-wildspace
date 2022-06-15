@@ -4,9 +4,10 @@ import type { Component } from "@lukekaalim/act";
 
 import type { UserID } from "@astral-atlas/sesame-models";
 import type { Game, LibraryData } from "@astral-atlas/wildspace-models";
-import type { WildspaceClient } from "@astral-atlas/wildspace-client2";
+import type { WildspaceClient, UpdatesConnection } from "@astral-atlas/wildspace-client2";
 
 import type { AssetDownloadURLMap } from "../../asset/map";
+import type { ElementNode } from "@lukekaalim/act";
 */
 
 import { h, useEffect, useState } from "@lukekaalim/act";
@@ -18,42 +19,30 @@ import { LibraryCatalogue } from "../LibraryCatalogue";
 import { SceneAisle } from "../aisle/ScenesAisle";
 import { ExpositionAisle } from "../aisle/ExpositionAisle";
 import { LocationAisle } from "../aisle/LocationAisle";
+import { RoomAisle } from "../aisle/RoomAisle";
 
 /*::
 export type GameMasterPrepLibraryProps = {
+  catalogueHeader?: ?ElementNode,
+
   client: WildspaceClient,
   game: Game,
   userId: UserID,
 
-  assets: AssetDownloadURLMap,
+  data: LibraryData,
 };
 */
 
 export const GameMasterPrepLibrary/*: Component<GameMasterPrepLibraryProps>*/ = ({
+  catalogueHeader = null,
   client,
   game,
   userId,
 
-  assets,
+  data,
 }) => {
-  const [data, setData] = useState/*:: <?LibraryData>*/()
 
-  useEffect(() => {
-    const run = async () => {
-      const updateClient = await client.game.updates.create(game.id)
-      const libraryClient = await client.game.updates.libraryConnectionClient.upgrade(updateClient);
-
-      libraryClient.subscribeLibrary(setData);
-      return updateClient;
-    }
-    const p = run();
-    return async () => {
-      const uc = await p;
-      uc.close();
-    }
-  }, [])
-  if (!data)
-    return null;
+  const assets = new Map(data.assets.map(a => [a.description.id, a]))
 
   const aisleComponents = [
     {
@@ -80,6 +69,7 @@ export const GameMasterPrepLibrary/*: Component<GameMasterPrepLibraryProps>*/ = 
       key: 'MONST',
       title: 'Monsters',
       component: h(MonsterAsile, {
+        assets,
         monsters: data.monsters,
         monsterActors: data.monsterActors,
         client, game, userId
@@ -116,6 +106,15 @@ export const GameMasterPrepLibrary/*: Component<GameMasterPrepLibraryProps>*/ = 
         client, game, userId
       })
     },
+    {
+      key: 'ROOM',
+      title: 'Room',
+      component: h(RoomAisle, {
+        assets,
+        rooms: data.rooms,
+        client, game, userId
+      })
+    },
   ]
 
   const [activeAisleKey, setActiveAisleKey] = useState(aisleComponents[0].key);
@@ -124,6 +123,10 @@ export const GameMasterPrepLibrary/*: Component<GameMasterPrepLibraryProps>*/ = 
 
   return h(Library, {
     catalogue: [
+      catalogueHeader && [
+        catalogueHeader,
+        h('hr'),
+      ],
       h(LibraryCatalogue, {
         activeAisleId: activeAisleKey,
         aisles: aisleComponents.map(a => ({ id: a.key, title: a.title })),

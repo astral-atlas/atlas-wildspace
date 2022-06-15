@@ -15,6 +15,7 @@ import type { NonPlayerCharacterID } from "./character.js";
 import type { LocationID } from "./location.js";
 import type { MiniTheaterID } from "./miniTheater.js";
 import type { ExpositionID } from "./exposition.js";
+import type { AssetID } from "../asset";
 
 export type SceneID = string;
 export type Scene = {

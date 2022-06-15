@@ -34,10 +34,10 @@ export const castExposition/*: Cast<Exposition>*/ = c.obj({
   name: c.str,
 
   subject: c.or('type', {
-    'npc': c.obj({ type: c.lit('npc'), npcId: castNonPlayerCharacterID }),
-    'character': c.obj({ type: c.lit('character'), characterId: castCharacterId }),
-    'location': c.obj({ type: c.lit('location'), locationId: castLocationId }),
-    'none': c.obj({ type: c.lit('none') }),
+    'npc':        c.obj({ type: (c.lit('npc')/*: Cast<'npc'>*/), npcId: castNonPlayerCharacterID }),
+    'character':  c.obj({ type: (c.lit('character')/*: Cast<'character'>*/), characterId: castCharacterId }),
+    'location':   c.obj({ type: (c.lit('location')/*: Cast<'location'>*/), locationId: castLocationId }),
+    'none':       c.obj({ type: (c.lit('none')/*: Cast<'none'>*/) }),
   }),
 
   overrideText: c.maybe(c.str)

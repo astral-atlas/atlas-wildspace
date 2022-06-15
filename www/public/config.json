@@ -1,4 +1,13 @@
 {
+  "identity": {
+    "type": "fake",
+    "proof": {
+      "type": "link",
+      "grantId": "100",
+      "userId": "100",
+      "secret": "secret"
+    }
+  },
   "www": {
     "sesame": {
       "httpOrigin": "https://sesame.astral-atlas.com"

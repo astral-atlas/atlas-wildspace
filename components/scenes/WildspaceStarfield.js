@@ -62,7 +62,7 @@ const ScrollingStarfield = ({ offset }) => {
     const progress = ((now * 100 / 1000) + offset) % 600
     const b = Math.abs(Math.sin((progress / 600) * Math.PI));
     points.position.z = -600 + progress
-    points.rotation.z = b;
+    //points.rotation.z = b;
 
     material.size = b * 1.3;
     if (material.color instanceof Color)

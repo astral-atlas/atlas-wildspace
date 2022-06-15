@@ -3,7 +3,8 @@
 /*:: import type {
   GameID, RoomID, Room, RoomState,
   RoomUpdate, EncounterState,
-  RoomAudioState, EncounterAction
+  RoomAudioState, EncounterAction,
+  RoomPage,
 } from "@astral-atlas/wildspace-models"; */
 /*:: import type { AssetClient } from './asset.js'; */
 /*:: import type { HTTPServiceClient, WSServiceClient } from './wildspace.js'; */
@@ -21,9 +22,12 @@ import { createRoomStateClient } from "./room/index.js";
 import { createLobbyClient } from './room/lobby.js';
 import { createRoomSceneClient } from './room/scene.js';
 
+
 /*::
 export type RoomClient = {
   read: (gameId: GameID, roomId: RoomID) => Promise<Room>,
+  destroy: (gameId: GameID, roomId: RoomID) => Promise<void>,
+
   connectUpdates: (gameId: GameID, roomId: RoomID, onUpdate: (state: RoomUpdate) => mixed) => { close: () => Promise<void> },
   
   readAudio: (gameId: GameID, roomId: RoomID) => Promise<RoomAudioState>,
@@ -35,6 +39,8 @@ export type RoomClient = {
   list: (gameId: GameID) => Promise<$ReadOnlyArray<Room>>,
   create: (gameId: GameID, title: string) => Promise<Room>,
   update: (gameId: GameID, roomId: RoomID, room: Room) => Promise<void>,
+
+  getRoomPage: (gameId: GameID, roomId: RoomID) => Promise<RoomPage>,
 
   state: RoomStateClient,
   lobby: LobbyClient,
@@ -48,6 +54,7 @@ export const createRoomClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceCli
   const roomEncounterResource = http.createResource(roomAPI['/room/encounter']);
   const roomEncounterActionsResource = http.createResource(roomAPI['/room/encounter/actions']);
   const allTracksResource = http.createResource(roomAPI['/room/all']);
+  const roomPageResource = http.createResource(roomAPI["/games/rooms/page"]);
 
   const updatesConnection = ws.createAuthorizedConnection(roomAPI['/room/updates']);
 
@@ -55,6 +62,9 @@ export const createRoomClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceCli
     const { body: { room }} = await roomResource.GET({ query: { roomId, gameId }});
     return room;
   };
+  const destroy = async (gameId, roomId) => {
+    await roomResource.DELETE({ query: { roomId, gameId }});
+  }
   const connectUpdates = (gameId, roomId, onUpdate) => {
     const recieve = (e) => {
       onUpdate(e);
@@ -99,18 +109,26 @@ export const createRoomClient = (http/*: HTTPServiceClient*/, ws/*: WSServiceCli
     await roomResource.PUT({ query: { gameId, roomId }, body: { room } });
   };
 
+  const getRoomPage = async (gameId, roomId) => {
+    const { body: { roomPage } } = await roomPageResource.GET({ query: { gameId, roomId } })
+    return roomPage;
+  }
+
   const state = createRoomStateClient(http, ws);
   const lobby = createLobbyClient(http);
   const scene = createRoomSceneClient(http);
 
   return {
     read,
+    destroy,
     connectUpdates,
     readAudio,
     setAudio,
     readEncounter,
     setEncounter,
     performEncounterActions,
+    getRoomPage,
+    
     list,
     create,
     update,

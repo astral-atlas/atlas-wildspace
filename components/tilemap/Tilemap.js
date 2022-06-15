@@ -37,6 +37,7 @@ export class TilemapTile2DTexture extends DataTexture {
     )
     this.tileIds = tileIds;
     this.mapSize = mapSize;
+    this.needsUpdate = true;
   }
 }
 
@@ -53,6 +54,7 @@ export class TilemapMaterial extends ShaderMaterial {
         tint: { value: [1, 1, 1, 1] },
         tiles: { value: tilesTexture },
         map: { value: mapTexture },
+        mapSize: { value: mapTexture.mapSize },
         tilesSize: { value: tileSize }
       }
     });

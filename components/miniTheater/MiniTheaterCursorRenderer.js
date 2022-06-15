@@ -98,11 +98,9 @@ export const MiniTheaterCursorRenderer/*: Component<MiniTheaterCursorRendererPro
 }
 
 const PlacementIndicator = ({ data, placement }) => {
-  console.log('HUH!')
   const material = useDisposable(() => new SpriteMaterial(), []);
 
   const assetId = getPieceAssetId(placement.placement, data.characters, data.monsterMasks);
-  console.log({ assetId })
 
   useEffect(() => {
     const asset = !!assetId && data.assets.get(assetId);

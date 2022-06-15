@@ -3,15 +3,16 @@
 import type { ResourceDescription } from "@lukekaalim/net-description/resource";
 import type { AdvancedGameCRUDAPI } from "./meta";
 
-import type { WikiDoc, WikiDocID } from "../../wiki.js";
+import type { WikiDoc, WikiDocID, WikiDocState } from "../../game.js";
 import type { GameID } from "../../game.js";
 */
 import { c } from "@lukekaalim/cast";
 
 import { createAdvancedCRUDGameAPI } from "./meta.js";
-import { castWikiDoc } from "../../wiki.js";
+import { castWikiDoc } from "../../game.js";
 import { castGameId } from "../../game.js";
-import { castWikiDocId } from "../../wiki/doc.js";
+import { castWikiDocId } from "../../game.js";
+import { castWikiDocState } from "../../game/wiki/state.js";
 
 /*::
 export type WikiResource = AdvancedGameCRUDAPI<{
@@ -36,30 +37,30 @@ const wikiResource/*: ResourceDescription<WikiResource>*/ = createAdvancedCRUDGa
   castPutResource: c.obj({ title: c.str }),
 });
 /*::
-export type WikiIDResource = {|
-  GET: {|
+export type WikiStateByIDResource = {|
+  GET: {
     query: {| gameId: GameID, wikiDocId: WikiDocID |},
     request: empty,
-    response: {| type: 'found', wikiDoc: WikiDoc |},
-  |}
+    response: {| type: 'found', wikiDocState: WikiDocState |},
+  }
 |};
 */
-const wikiIdResource/*: ResourceDescription<WikiIDResource>*/ = {
-  path: '/game/wiki/id',
+const wikiStateByIdResource/*: ResourceDescription<WikiStateByIDResource>*/ = {
+  path: '/game/wiki/state/id',
   GET: {
     castQuery: c.obj({ gameId: castGameId, wikiDocId: castWikiDocId }),
-    castResponse: c.obj({ type: c.lit('found'), wikiDoc: castWikiDoc }),
+    castResponse: c.obj({ type: c.lit('found'), wikiDocState: castWikiDocState }),
   }
 };
 
 /*::
 export type WikiAPI = {
   '/game/wiki': WikiResource,
-  '/game/wiki/id': WikiIDResource,
+  '/game/wiki/state/id': WikiStateByIDResource,
 };
 */
 
 export const wikiAPI = {
   '/game/wiki': wikiResource,
-  '/game/wiki/id': wikiIdResource,
+  '/game/wiki/state/id': wikiStateByIdResource,
 }

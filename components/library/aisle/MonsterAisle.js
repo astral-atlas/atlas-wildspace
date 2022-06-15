@@ -3,6 +3,7 @@
 import type { Component } from "@lukekaalim/act";
 import type { WildspaceClient } from "@astral-atlas/wildspace-client2";
 import type { LibraryData, Monster, MonsterActor, Game } from "@astral-atlas/wildspace-models";
+import type { AssetDownloadURLMap } from "../../asset/map";
 */
 
 import { h, useState } from "@lukekaalim/act";
@@ -25,6 +26,7 @@ import {
 /*::
 export type MonsterAisleProps = {
   game: Game,
+  assets: AssetDownloadURLMap,
   client: WildspaceClient,
   monsters: $ReadOnlyArray<Monster>,
   monsterActors: $ReadOnlyArray<MonsterActor>,
@@ -33,13 +35,17 @@ export type MonsterAisleProps = {
 
 export const MonsterAsile/*: Component<MonsterAisleProps>*/ = ({
   game,
+  assets,
   client,
   monsters,
   monsterActors
 }) => {
   const selection = useLibrarySelection();
-  const selectedMonster = monsters.find(m => selection.selected.has(`monster:${m.id}`));
   const selectedMonsterActor = monsterActors.find(m => selection.selected.has(`monster-actor:${m.id}`));
+  const selectedMonster = monsters.find(m =>
+    selection.selected.has(`monster:${m.id}`) ||
+    (selectedMonsterActor && selectedMonsterActor.monsterId == m.id)
+  );
 
   const [stagingMonsterName, setStagingMonsterName] = useState('');
 
@@ -51,6 +57,11 @@ export const MonsterAsile/*: Component<MonsterAisleProps>*/ = ({
   }
   const onDeleteMonster = (monster) => async () => {
     await client.game.monster.destroy(game.id, monster.id)
+  }
+
+  const onUploadMonsterIcon = async (monster, iconFile) => {
+    const assetInfo = await client.asset.create(`Monster:${iconFile.name}`, iconFile.type, new Uint8Array(await iconFile.arrayBuffer()));
+    onUpdateMonster(monster, { initiativeIconAssetId: assetInfo.description.id })
   }
 
   const [stagingActorName, setStagingActorName] = useState('');
@@ -116,7 +127,9 @@ export const MonsterAsile/*: Component<MonsterAisleProps>*/ = ({
         h(EditorTextInput, {
           label: 'Monster Name', text: selectedMonster.name,
           onTextInput: debounce((name) => onUpdateMonster(selectedMonster, { name })) }),
-        h(FilesButtonEditor, { label: 'Monster Icon' }),
+        h(FilesButtonEditor, { label: 'Monster Icon', onFilesChange: files => onUploadMonsterIcon(selectedMonster, files[0]) }),
+        !!selectedMonster.initiativeIconAssetId &&
+          h('img', { src: assets.get(selectedMonster.initiativeIconAssetId)?.downloadURL || '' }, ),
         h(EditorNumberInput, {
           label: 'Monster Max Hitpoints', number: selectedMonster.maxHitpoints,
           onNumberInput: debounce((maxHitpoints) => onUpdateMonster(selectedMonster, { maxHitpoints })),

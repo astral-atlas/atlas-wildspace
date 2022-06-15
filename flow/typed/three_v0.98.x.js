@@ -5,7 +5,7 @@
 /*::
 declare module three {
   declare export class Vector2 {
-    constructor(x: number, y: number): this;
+    constructor(x?: number, y?: number): this;
     isVector2: boolean;
     height: number;
     width: number;
@@ -742,9 +742,6 @@ declare module three {
     // vertexColors
     visible: boolean;
 
-    map: ?Texture;
-
-
     // TODO: Add EventDispatcher methods
 
     clone(): this;
@@ -762,6 +759,7 @@ declare module three {
 
   declare export class SpriteMaterial extends Material {
     constructor(inputs?: MaterialInputs): SpriteMaterial;
+    map?: ?Texture,
   }
 
   declare type ShaderMaterialInput = {
@@ -795,7 +793,6 @@ declare module three {
     // isMeshPhongMaterial,
     lightMap?: Texture,
     lightMapIntensity?: number,
-    map?: Texture,
     morphNormals?: bool,
     normalMap?: Texture,
     morphTargets?: bool,

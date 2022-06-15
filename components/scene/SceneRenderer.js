@@ -1,10 +1,13 @@
 // @flow strict
 /*::
-import type { Component } from '@lukekaalim/act';
+import type { Component, Ref } from '@lukekaalim/act';
 import type {
   Scene, SceneID,
   Exposition,
-  RoomState
+  RoomState, GamePage,
+  MonsterActorMask,
+  Character,
+  RoomPage
 } from '@astral-atlas/wildspace-models';
 
 import type { WildspaceClient } from "@astral-atlas/wildspace-client2";
@@ -12,6 +15,8 @@ import type { GameData } from "../game/data";
 import type { MiniTheater } from "../../models/game/miniTheater";
 import type { MiniTheaterController } from "../miniTheater/useMiniTheaterController";
 import type { EncounterResources } from "../encounter/useResources";
+import type { AssetDownloadURLMap } from "../asset/map";
+import type { KeyboardStateEmitter } from "../keyboard/changes";
 */
 
 import { h, useEffect, useRef } from "@lukekaalim/act";
@@ -25,6 +30,7 @@ import { EncounterSceneRenderer } from "./EncounterSceneRenderer";
 import { MiniTheaterCanvas } from "../miniTheater/MiniTheaterCanvas";
 import { useMiniTheaterController } from "../miniTheater/useMiniTheaterController";
 import { useResourcesLoader } from "../encounter";
+import { useFadeTransition } from "../transitions";
 
 /*::
 export type SceneRendererProps = {
@@ -232,16 +238,50 @@ const reducers = {
 
 /*::
 export type SceneBackgroundRendererProps = {
-  scene: Scene,
-  gameData: GameData,
-  roomState: RoomState,
-  client: WildspaceClient,
+  sceneBackground: SceneBackround,
 
-  miniTheaterController: MiniTheaterController,
-  miniTheaterView: MiniTheater,
-  resources: EncounterResources
+  assets: AssetDownloadURLMap,
+  emitter: KeyboardStateEmitter,
 };
+
+export type SceneBackround =
+  | { type: 'none' }
+  | { type: 'color', color: string }
+  | { type: 'image', imageURL: string }
+  | {
+      type: 'mini-theater',
+      miniTheater: MiniTheater,
+      characters: $ReadOnlyArray<Character>,
+      monsterMasks: $ReadOnlyArray<MonsterActorMask>,
+      controller: MiniTheaterController,
+      controlSurfaceElementRef: ?Ref<?HTMLElement>,
+    }
 */
+export const useSceneBackground = (
+  roomPage/*: ?RoomPage*/ = null,
+  gamePage/*: ?GamePage*/ = null,
+  miniTheater/*: ?MiniTheater*/ = null,
+  controller/*: ?MiniTheaterController*/ = null,
+  controlSurfaceElementRef/*: ?Ref<?HTMLElement>*/ = null
+)/*: SceneBackround*/ => {
+  if (!roomPage || !gamePage)
+    return { type: 'none' };
+  const { scene } = roomPage;
+  const { characters, monsterMasks } = gamePage;
+
+  if (!scene)
+    return { type: 'none' }
+  const { content } = scene;
+  switch (content.type) {
+    default:
+      return { type: 'none' };
+    case 'mini-theater':
+      if (!controller || !miniTheater)
+        return { type: 'none' };
+        
+      return { type: 'mini-theater', miniTheater, characters, monsterMasks, controller, controlSurfaceElementRef }
+  }
+}
 const HARDCODED_BOARD = {
   id: 'BOARD_0',
   floors: [
@@ -252,26 +292,31 @@ const HARDCODED_BOARD = {
   ]
 };
 export const SceneBackgroundRenderer/*: Component<SceneBackgroundRendererProps>*/ = ({
-  scene, gameData, roomState, client,
+  sceneBackground,
+  assets,
+  emitter,
 }) => {
-  const controller = useMiniTheaterController();
   const resources = useResourcesLoader();
-  const { content } = scene;
+  const [,anims] = useFadeTransition(sceneBackground, s => s.type, [sceneBackground])
 
-  switch (content.type) {
-    case 'exposition':
-      const exposition = gameData.expositions.find(e => e.id === content.expositionId);
-      if (!exposition)
+  return anims.map(({ value: sceneBackground }) => {
+    switch (sceneBackground.type) {
+      case 'color':
+      case 'image':
         return null;
-      return h(ExpositionSceneBackgroundRenderer, { exposition, gameData });
-    case 'mini-theater':
-      const miniTheater = gameData.miniTheaters.find(m => m.id == content.miniTheaterId);
-      if (!miniTheater)
+
+      case 'mini-theater':
+        const { miniTheater, characters, monsterMasks, controller, controlSurfaceElementRef } = sceneBackground;
+        return h(MiniTheaterCanvas, { 
+          assets, characters, controller,
+          miniTheater, monsterMasks, resources,
+          controlSurfaceElementRef, emitter
+        })
+      default:
         return null;
-      return null;
-    default:
-      return null;
-  }
+    }
+  })
+
 }
 
 /*::

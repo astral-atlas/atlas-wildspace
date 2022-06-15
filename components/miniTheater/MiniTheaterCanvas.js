@@ -1,7 +1,7 @@
 // @flow strict
 
 /*::
-import type { Component } from "@lukekaalim/act";
+import type { Component, Ref } from "@lukekaalim/act";
 import type { MiniTheater, Board, Character, MonsterActorMask, BoardPosition } from "@astral-atlas/wildspace-models";
 import type { MiniTheaterController } from "./useMiniTheaterController";
 import type { AssetDownloadURLMap } from "../asset/map";
@@ -25,10 +25,11 @@ export type MiniTheaterCanvasProps = {
   miniTheater: MiniTheater,
 
   characters: $ReadOnlyArray<Character>,
-  monsters: $ReadOnlyArray<MonsterActorMask>,
+  monsterMasks: $ReadOnlyArray<MonsterActorMask>,
   assets: AssetDownloadURLMap,
 
   emitter?: KeyboardStateEmitter,
+  controlSurfaceElementRef?: ?Ref<?HTMLElement>,
 
   resources: EncounterResources,
 }
@@ -38,11 +39,12 @@ export const MiniTheaterCanvas/*: Component<MiniTheaterCanvasProps>*/ = ({
   controller,
   miniTheater,
   characters,
-  monsters,
+  monsterMasks,
   assets,
   resources,
   emitter,
   children,
+  controlSurfaceElementRef,
 }) => {
   const render = useRenderSetup({}, ({ renderer }) => {
     renderer.shadowMap.enabled = true;
@@ -50,10 +52,11 @@ export const MiniTheaterCanvas/*: Component<MiniTheaterCanvasProps>*/ = ({
   });
 
   return [
+    h('div', { ref: render.rootRef, className: classes.miniTheaterOverlay }),
     h('canvas', { ref: render.canvasRef, tabIndex: 0, className: classes.miniTheaterCanvas }),
     h('scene', { ref: render.sceneRef, background: new Color('black') }, [
       children,
-      h(MiniTheaterScene, { controller, miniTheater, render, resources, characters, assets, monsters, emitter })
+      h(MiniTheaterScene, { controller, miniTheater, render, resources, characters, assets, monsterMasks, emitter, controlSurfaceElementRef })
     ])
   ]
 }

@@ -16,6 +16,7 @@ import { isBoardPositionEqual } from "@astral-atlas/wildspace-models";
 export type MiniTheaterPlacement =
   | { type: 'character', characterId: CharacterID }
   | { type: 'monster', monsterActorId: MonsterActorID }
+  | { type: 'terrain', terrainType: string }
 
 export type MiniTheaterController = {
   subscribePieceMove: (handler: (event: { pieceRef: PieceID, position: BoardPosition }) => mixed) => () => void,
@@ -95,6 +96,8 @@ export const useMiniTheaterController = ()/*: MiniTheaterController*/ => {
           return void invokeAction({ type: 'place', placement: { ...placement, position, visible: true }})
         case 'character':
           return void invokeAction({ type: 'place', placement: { ...placement, position, visible: true }})
+        case 'terrain':
+          return void invokeAction({ type: 'place', placement: { ...placement, position, visible: true }})
       }
     };
     const removePiece = (pieceRef) => {
@@ -105,6 +108,7 @@ export const useMiniTheaterController = ()/*: MiniTheaterController*/ => {
     const pickPlacement = (placement) => {
       deselectPiece();
       placementRef.current = { placement };
+      console.log('INVOKE', placement)
       invokePlacement(placementRef.current);
     };
     const clearPlacement = () => {

@@ -7,7 +7,8 @@ import { createWildspaceClient } from '@astral-atlas/wildspace-client2';
 import { createClient as createSesameClient } from '@astral-atlas/sesame-client';
 import { createWebClient } from '@lukekaalim/http-client'
 
-export const clientContext/*: Context<WildspaceClient>*/ = createContext(createWildspaceClient(({}/*: any*/), '127.0.0.1:5567'));
+
+export const clientContext/*: Context<WildspaceClient>*/ = createContext(createWildspaceClient(null, 'http://127.0.0.1:5567', 'ws://127.0.0.1:5567'));
 
 export const sesameContext/*: Context<SesameClient>*/ = createContext(createSesameClient(
   new URL('http://api.sesame.astral-atlas.com'),

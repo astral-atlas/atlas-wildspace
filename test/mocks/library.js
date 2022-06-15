@@ -35,7 +35,10 @@ export const createMockLibraryData = ()/*: LibraryData*/ => {
   ];
   const expositions = [
 
-  ]
+  ];
+  const locations = [
+
+  ];
 
 
   return {
@@ -47,6 +50,7 @@ export const createMockLibraryData = ()/*: LibraryData*/ => {
     miniTheaters,
     scenes,
     expositions,
+    locations,
   }
 };
 

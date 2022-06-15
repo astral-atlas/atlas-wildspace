@@ -23,6 +23,7 @@ import { createLibraryRoutes } from './game/library.js';
 import { createMonsterRoutes } from "./game/monsters.js";
 import { createMiniTheaterRoutes } from "./game/miniTheater.js";
 import { createExpositionRoutes } from './game/exposition.js';
+import { createGamePageRoutes } from "./game/page.js";
 
 export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute[], http: HTTPRoute[] }*/ => {
   const { data, auth, ...s } = services;
@@ -84,25 +85,11 @@ export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute
         socket.ping(Date.now());
         services.game.connection.heartbeat(gameId, connectionId, identity.grant.identity, Date.now())
       }, 1000)
-  
 
-      const wikiClient = services.game.wiki.connectClient(gameId, connectionId, identity.grant, event => send({ type: 'wiki', event }))
-      const { removeListener } = addRecieveListener(m => void (async (message) => {
-        try {
-          switch (message.type) {
-            case 'wiki':
-              return await wikiClient.handleAction(message.action);
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      })(m))
   
       socket.addEventListener('close', () => {
         clearInterval(interval)
         unsubscribe()
-        removeListener();
-        wikiClient.disconnect();
         services.game.connection.disconnect(gameId, connectionId);
         services.game.connection.getValidConnections(gameId, Date.now());
       });
@@ -121,6 +108,7 @@ export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute
   const monsterRoutes = createMonsterRoutes(services);
   const miniTheaterRoutes = createMiniTheaterRoutes(services)
   const expositionRoutes = createExpositionRoutes(services);
+  const gamePageRoutes = createGamePageRoutes(services);
   const http = [
     ...playersRoutes.http,
     ...encounterRoutes.http,
@@ -137,6 +125,7 @@ export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute
     ...monsterRoutes.http,
     ...miniTheaterRoutes.http,
     ...expositionRoutes.http,
+    ...gamePageRoutes.http
   ];
   const ws = [
     ...characterRoutes.ws,

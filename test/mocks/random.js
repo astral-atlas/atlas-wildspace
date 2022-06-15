@@ -15,7 +15,7 @@ export const randomSlice = /*:: <T>*/(a/*: T[]*/)/*: T[]*/ => {
   return a.slice(start, end);
 }
 
-export const randomIntRange = (max/*: number*/, min/*: number*/ = 0, seed/*: string*/ = uuid())/*: number*/ => {
+export const randomIntRange = (max/*: number*/, min/*: number*/ = 0, seed/*: ?string*/ = null)/*: number*/ => {
   return Math.round(min + (seedrandom(seed)() * (max - min)));
 }
 

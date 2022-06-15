@@ -6,7 +6,7 @@ import type { Ref } from "@lukekaalim/act";
 import type { Camera, PerspectiveCamera } from "three";
 */
 
-import { FullscreenToggle, HomepageRoomSelector, HompepageLoginPrompt, useAsync, useFullscreen, UserTablet, WildspaceStarfieldScene } from "@astral-atlas/wildspace-components";
+import { FullscreenToggle, HomepageRoomSelector, HompepageLoginPrompt, useAsync, useFullscreen, useRenderSetup, UserTablet, WildspaceStarfieldScene } from "@astral-atlas/wildspace-components";
 import { createContext, h, useEffect, useRef, useState } from "@lukekaalim/act";
 import { perspectiveCamera, scene, useRenderLoop, useResizingRenderer, useWebGLRenderer } from "@lukekaalim/act-three";
 
@@ -82,23 +82,11 @@ export const FullscreenCanvasScene/*: Component<{ cameraRef: Ref<?PerspectiveCam
     left: 0,
     top: 0
   };
-  const canvasRef = useRef();
-  const sceneRef = useRef();
-  const renderer = useWebGLRenderer(canvasRef, { antialias: true });
-
-  const size = useHalfResizingRenderer(canvasRef, renderer, size => {
-    const { current: camera } = cameraRef;
-    if (!camera || !size)
-      return;
-
-    camera.aspect = size.x / size.y;
-    camera.updateProjectionMatrix();
-  });
-  useRenderLoop(renderer, cameraRef, sceneRef);
+  const render = useRenderSetup({ cameraRef })
 
   return (
-    h('canvas', { ...props, style, ref: canvasRef },
-      h(scene, { ref: sceneRef, background: new Color(`#190535`) }, children))
+    h('canvas', { ...props, style, ref: render.canvasRef },
+      h(scene, { ref: render.sceneRef, background: new Color(`#190535`) }, children))
   );
 }
 

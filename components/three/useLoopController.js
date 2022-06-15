@@ -10,6 +10,7 @@ import { createContext, useMemo, useState } from "@lukekaalim/act";
 /*::
 export type RenderLoopConstants = {
   renderer: WebGLRenderer,
+  css2dRenderer: any,
   camera: Camera,
   canvas: HTMLCanvasElement,
   scene: Scene

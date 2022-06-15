@@ -15,7 +15,7 @@ users to an individual client
 import type { UserID } from "@astral-atlas/sesame-models";
 import type { Cast } from "@lukekaalim/cast";
 import type { CharacterID } from "../character.js";
-import type { WikiDocID } from "../wiki/doc";
+import type { WikiDocID } from "../game";
 
 export type RoomLobbyEvent =
   | {| type: 'append-messages', messages: $ReadOnlyArray<LobbyMessage> |}

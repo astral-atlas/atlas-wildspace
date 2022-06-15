@@ -20,6 +20,7 @@ import { createMetaRoutes, defaultOptions } from './meta.js';
 import { createStateRoutes } from './room/state.js';
 import { createLobbyRoutes } from "./room/lobby.js";
 import { createRoomSceneRoutes } from './room/scene.js';
+import { createRoomPageRoutes } from "./room/page.js";
 
 export const createRoomRoutes/*: RoutesConstructor*/ = (services) => {
   const { data, ...s } = services
@@ -72,6 +73,15 @@ export const createRoomRoutes/*: RoutesConstructor*/ = (services) => {
         data.gameUpdates.publish(game.id, { type: 'rooms' })
   
         return { status: HTTP_STATUS.created, body: { type: 'updated' } };
+      }
+    },
+    DELETE: {
+      scope: { type: 'game-master-in-game' },
+      getGameId: r => r.query.gameId,
+      async handler({ game, query: { gameId, roomId }}) {
+        await data.room.set(game.id, roomId, null);
+        data.gameUpdates.publish(game.id, { type: 'rooms' })
+        return { status: HTTP_STATUS.created, body: { type: 'deleted' } };
       }
     }
   });
@@ -232,6 +242,7 @@ export const createRoomRoutes/*: RoutesConstructor*/ = (services) => {
   const roomStateResources = createStateRoutes(services);
   const roomLobbyRoutes = createLobbyRoutes(services);
   const roomSceneRoutes = createRoomSceneRoutes(services);
+  const roomPageRoutes = createRoomPageRoutes(services);
 
   const http = [
     ...roomResourceRoutes,
@@ -243,6 +254,7 @@ export const createRoomRoutes/*: RoutesConstructor*/ = (services) => {
     ...allRoomsResourceRoute,
     ...roomEncounterActionsRoutes,
     ...roomSceneRoutes.http,
+    ...roomPageRoutes.http,
   ];
   const ws = [
     roomUpdateConnectionRoute,

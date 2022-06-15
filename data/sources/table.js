@@ -97,7 +97,7 @@ export const createBufferCompositeTable = /*:: <T>*/(
       const table = castTable(JSON.parse(buffer.toString('utf8')))
       return table;
     } catch (error) {
-      return [];
+      return [[], []];
     }
   };
   const get = async (partition, sort) => {

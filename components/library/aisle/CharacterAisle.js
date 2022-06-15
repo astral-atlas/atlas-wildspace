@@ -16,9 +16,9 @@ import { LibraryAisle } from "../LibraryAisle";
 import { LibraryShelf } from "../LibraryShelf";
 import { EditorForm, EditorButton, EditorTextInput } from "../../editor";
 import { PopupOverlay } from "../../layout";
-import { CharacterSheet2 } from "../../../www/characters/CharacterSheet2";
 import { LibraryFloor, LibraryFloorHeader } from "../LibraryFloor";
 import { CharacterSheet } from "../../paper/CharacterSheet";
+import { EditorHorizontalSection } from "../../editor/form";
 
 /*::
 export type CharacterAisleProps = {
@@ -41,6 +41,8 @@ export const CharacterAisle/*: Component<CharacterAisleProps>*/ = ({
   const selection = useLibrarySelection();
   const [filter, setFilter] = useState('');
 
+  const [showPaperPreview, setShowPaperPreview] = useState(false);
+
   const filteredCharacters = characters.filter(c => !filter || c.name.toLowerCase().includes(filter.toLowerCase()))
   const selectedCharacter = filteredCharacters.find(c => selection.selected.has(c.id));
 
@@ -49,6 +51,9 @@ export const CharacterAisle/*: Component<CharacterAisleProps>*/ = ({
   const onCreateNewCharacter = async () => {
     await client.game.character.create(game.id, "Untitled Character", userId);
   }
+  const onDeleteCharacter = (character) => async () => {
+    await client.game.character.remove(game.id, character.id);
+  }
 
   return [
     h(LibraryAisle, {
@@ -56,9 +61,13 @@ export const CharacterAisle/*: Component<CharacterAisleProps>*/ = ({
         h(LibraryFloorHeader, {
           title: 'Characters',
           filter: { text: filter, onFilterInput: f => setFilter(f) }
-        }),
-        h(EditorForm, {}, [
-          h(EditorButton, { label: 'Create new Character', onButtonClick: () => onCreateNewCharacter() })
+        }, [
+          h(EditorForm, {}, [
+            h(EditorHorizontalSection, {}, [
+              h(EditorTextInput, { label: 'Character Name' }),
+              h(EditorButton, { label: 'Create new Character', onButtonClick: () => onCreateNewCharacter() })
+            ])
+          ]),
         ]),
         h(LibraryShelf, { title: 'My Characters', selection, books: myCharacters.map(c => {
           const artAsset = c.art && c.art[0] && assets.get(c.art[0].assetId);
@@ -79,10 +88,16 @@ export const CharacterAisle/*: Component<CharacterAisleProps>*/ = ({
           }
         }) }),
       ]),
+      desk: [
+        !!selectedCharacter && h(EditorForm, {}, [
+          h(EditorButton, { label: 'Delete Character', onButtonClick: onDeleteCharacter(selectedCharacter) }),
+          h(EditorButton, { label: 'Show Character Sheet Preview', onButtonClick: () => setShowPaperPreview(true) }),
+        ])
+      ]
     }),
     h(PopupOverlay, {
-      visible: !!selectedCharacter,
-      onBackgroundClick: () => selection.replace([])
+      visible: !!selectedCharacter && showPaperPreview,
+      onBackgroundClick: () => setShowPaperPreview(false)
     }, selectedCharacter && h(CharacterSheet, {
       assets,
       character: selectedCharacter,

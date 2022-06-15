@@ -5,13 +5,12 @@ import type {
 
   WikiDocID, WikiDoc, WikiDocUpdate, WikiDocFocus, WikiDocEvent,
 
-  GameConnectionID, GameConnectionState
+  GameConnectionID, GameConnectionState,
+  WikiDocConnection, WikiDocFocusAction,
 } from '@astral-atlas/wildspace-models';
 import type { Table, CompositeTable } from './sources/table.js';
 import type { Channel } from './sources/channel.js';
-import type { WikiDocFocusAction } from "../models/wiki/focus";
 import type { Transactable } from "./sources/table2";
-import type { WikiDocConnection } from "../models/wiki/connection";
 */
 
 /*::
@@ -23,6 +22,6 @@ export type WikiData = {
   documentEvents: Channel<WikiDocID, WikiDocEvent>,
 
   documentFocus: CompositeTable<WikiDocID, GameConnectionID, WikiDocFocus>,
-  documentConnections: CompositeTable<WikiDocID, GameConnectionID, WikiDocConnection>
+  documentConnections: CompositeTable<WikiDocID, GameConnectionID, WikiDocConnection>,
 };
 */

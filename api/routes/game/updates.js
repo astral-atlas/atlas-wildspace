@@ -23,25 +23,14 @@ export const createUpdatesRoutes/*: RoutesConstructor*/ = (services) => {
         services.game.connection.heartbeat(gameId, connectionId, identity.grant.identity, Date.now())
       }, 1000)
 
-      const libraryConnection = services.game.library.create(gameId);
-      const miniTheaterConnection = services.game.miniTheater.create(
-        gameId,
-        (miniTheaterEvent, miniTheaterId) => send({ type: 'mini-theater-event', miniTheaterEvent, miniTheaterId })
-      );
-      const { removeListener } = addRecieveListener(m => void (async (message) => {
-        switch (message.type) {
-          case 'library-subscribe':
-            return libraryConnection.start(event => send({ type: 'library-event', event }));
-          case 'mini-theater-subscribe':
-            return miniTheaterConnection.setSubscription(message.miniTheaterIds)
-        }
-      })(m))
+      const updateChannels = services.update.create(gameId, identity.grant.identity, connectionId, send);
+
+      const { removeListener } = addRecieveListener(m => updateChannels.update(m));
   
       socket.addEventListener('close', () => {
         clearInterval(interval)
         removeListener();
-        libraryConnection.close();
-        miniTheaterConnection.close();
+        updateChannels.close();
         services.game.connection.disconnect(gameId, connectionId);
         services.game.connection.getValidConnections(gameId, Date.now());
       });

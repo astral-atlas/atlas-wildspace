@@ -56,7 +56,11 @@ export const useKeyboardTrack = (emitter/*: KeyboardStateEmitter*/)/*: KeyboardT
   return keyboardTrack;
 };
 
-export const useKeyboardTrackChanges = (track/*: ?KeyboardTrack*/, listener /*: (prev: KeyboardFrame, next: KeyboardFrame) => mixed*/) => {
+export const useKeyboardTrackChanges = (
+  track/*: ?KeyboardTrack*/,
+  listener /*: (prev: KeyboardFrame, next: KeyboardFrame) => mixed*/,
+  deps/*: mixed[]*/ = []
+) => {
   useEffect(() => {
     if (!track)
       return;
@@ -75,7 +79,7 @@ export const useKeyboardTrackChanges = (track/*: ?KeyboardTrack*/, listener /*: 
         cancelAnimationFrame(id);
     }
 
-  }, [track])
+  }, [track, ...deps])
 };
 
 /*::

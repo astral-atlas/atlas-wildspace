@@ -26,6 +26,7 @@ export type Piece = {
   represents:
     | { type: 'character', characterId: CharacterID }
     | { type: 'monster', monsterActorId: MonsterActorID }
+    | { type: 'terrain', terrainType: string }
 }
 */
 
@@ -37,7 +38,8 @@ export const castPiece/*: Cast<Piece>*/ = c.obj({
 
   represents: c.or('type', {
     'character': c.obj({ type: c.lit('character'), characterId: castCharacterId }),
-    'monster': c.obj({ type: c.lit('monster'), monsterActorId: castMonsterActorId })
+    'monster': c.obj({ type: c.lit('monster'), monsterActorId: castMonsterActorId }),
+    'terrain': c.obj({ type: c.lit('terrain'), terrainType: c.str }),
   })
 });
 
@@ -67,6 +69,7 @@ export const castMiniTheater/*: Cast<MiniTheater>*/ = c.obj({
 export type MiniTheaterPiecePlacement =
   | { type: 'monster', monsterActorId: MonsterActorID, position: BoardPosition, visible: boolean }
   | { type: 'character', characterId: CharacterID, position: BoardPosition, visible: boolean }
+  | { type: 'terrain', terrainType: string, position: BoardPosition, visible: boolean }
 
 
 export type MiniTheaterAction =
@@ -85,6 +88,12 @@ export const castMiniTheaterPiecePlacement/*: Cast<MiniTheaterPiecePlacement>*/ 
   character: c.obj({
     type: c.lit('character'),
     characterId: castCharacterId,
+    position: castBoardPosition,
+    visible: c.bool,
+  }),
+  terrain: c.obj({
+    type: c.lit('terrain'),
+    terrainType: c.str,
     position: castBoardPosition,
     visible: c.bool,
   })
@@ -129,6 +138,16 @@ const createPiece = (placement) => {
         represents: {
           type: 'character',
           characterId: placement.characterId,
+        },
+        position: placement.position,
+        visible: placement.visible
+      }
+    case 'terrain':
+      return {
+        id: uuid(),
+        represents: {
+          type: 'terrain',
+          terrainType: placement.terrainType,
         },
         position: placement.position,
         visible: placement.visible
@@ -257,3 +276,5 @@ export const reduceMiniTheaterEvent = (miniTheater/*: MiniTheater*/, event/*: Mi
       return miniTheater;
   }
 }
+
+export * from './miniTheater/index.js';

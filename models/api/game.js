@@ -9,7 +9,7 @@
 /*:: import type { EncounterAPI } from "./game/encounters.js"; */
 /*::
 import type { MagicItemAPI } from "./game/magicItem";
-import type { WikiDocEvent, WikiDocAction} from "../wiki.js";
+import type { WikiDocEvent, WikiDocAction} from "../game.js";
 import type { AuthorizedConnection } from "./meta";
 import type { GameConnectionID } from "../game/connection";
 import type { InitiativeAPI } from "./game/initiative";
@@ -18,6 +18,7 @@ import type { AdvancedUpdatesAPI } from "./game/advancedUpdates";
 import type { ExpositionAPI } from "./game/exposition";
 import type { ScenesAPI } from "./game/scene";
 import type { LibraryAPI } from './game/library';
+import type { GamePageAPI } from "./game/page";
 */
 
 import {
@@ -37,12 +38,13 @@ import { miniTheaterAPI } from './game/miniTheater.js';
 import { initiativeAPI } from './game/initiative.js';
 import { advancedUpdatesAPI } from "./game/advancedUpdates.js";
 
-import { castWikiDocAction, castWikiDocEvent } from "../wiki.js";
+import { castWikiDocAction, castWikiDocEvent } from "../game.js";
 import { wikiAPI } from './game/wiki.js';
 import { createAuthorizedConnectionDescription } from './meta.js';
 import { scenesAPI } from "./game/scene.js";
 import { expositionAPI } from './game/exposition.js';
 import { libraryAPI } from "./game/library.js";
+import { gamePageAPI } from "./game/page.js";
 
 /*::
 export type GameAPI = {
@@ -89,7 +91,8 @@ export type GameAPI = {
   ...MiniTheaterAPI,
   ...AdvancedUpdatesAPI,
   ...ExpositionAPI,
-  ...LibraryAPI
+  ...LibraryAPI,
+  ...GamePageAPI,
 };
 */
 
@@ -147,6 +150,7 @@ export const gameAPI = {
   ...advancedUpdatesAPI,
   ...expositionAPI,
   ...libraryAPI,
+  ...gamePageAPI,
   '/games': gameResourceDescription,
   '/games/all': allGamesResourceDescription,
   '/games/updates': gameStateConnectionDescription,

@@ -50,3 +50,5 @@ export * from './sky/index.js';
 export * from './three/index.js';
 export * from './miniTheater/index.js';
 export * from './toolbar/index.js';
+export * from './illusion/index.js';
+export * from './transitions/index.js';

@@ -9,6 +9,9 @@
 /*:: import type { AudioClient } from "./audio.js"; */
 /*:: import type { RoomClient } from "./room"; */
 /*:: import type { GameClient } from "./game"; */
+/*::
+import type { UpdatesConnectionClient } from "./updates";
+*/
 
 import { createAuthorizedClient, createJSONResourceClient, createWebClient } from "@lukekaalim/http-client";
 import { createJSONConnectionClient } from "@lukekaalim/ws-client";
@@ -17,6 +20,7 @@ import { createAssetClient } from "./asset.js";
 import { createAudioClient } from "./audio.js";
 import { createRoomClient } from "./room.js";
 import { createGameClient } from "./game.js";
+import { createUpdatesClient } from "./updates.js";
 import { encodeProofToken } from "@astral-atlas/sesame-models";
 
 
@@ -75,6 +79,7 @@ export type WildspaceClient = {
   audio: AudioClient,
   game: GameClient,
   room: RoomClient,
+  updates: UpdatesConnectionClient,
   self: () => Promise<{ name: string }>,
 };
 */
@@ -91,6 +96,7 @@ export const createWildspaceClient = (proof/*: ?LinkProof*/, httpOrigin/*: strin
   const audio = createAudioClient(authorizedClient, asset, httpOrigin, wsOrigin);
   const room = createRoomClient(httpService, wsService);
   const game = createGameClient(httpService, wsService);
+  const updates = createUpdatesClient(httpService, wsService, game, room);
 
   const selfResource = httpService.createResource(selfAPI['/self']);
   const self = async () => {
@@ -103,6 +109,7 @@ export const createWildspaceClient = (proof/*: ?LinkProof*/, httpOrigin/*: strin
     game,
     audio,
     room,
+    updates,
     self,
   }
 };
