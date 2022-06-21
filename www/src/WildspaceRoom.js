@@ -1,10 +1,13 @@
 // @flow strict
 /*::
+import type { UserID } from "@astral-atlas/sesame-models";
+
 import type { Component, Ref } from "@lukekaalim/act";
 import type { RoomID, GameID, Room, RoomPage, GamePage } from "@astral-atlas/wildspace-models";
 import type { UpdatesConnection } from "@astral-atlas/wildspace-client2";
-import type { AppController } from "./App";
-import type { AssetDownloadURLMap } from "@astral-atlas/wildspace-components";
+import type { CubicBezierAnimation } from "@lukekaalim/act-curve";
+
+import type { RoomRoute, AssetDownloadURLMap, WildspaceController } from "@astral-atlas/wildspace-components";
 */
 
 import { CompassLayout, EditorForm, EditorHorizontalSection, EditorVerticalSection, GameMasterPrepLibrary, SceneBackgroundRenderer, SelectEditor, ToolbarPalette, useCompassKeysDirection, useKeyboardTrack, useKeyboardTrackChanges, useMiniTheaterController, useSceneBackground } from "@astral-atlas/wildspace-components";
@@ -37,7 +40,7 @@ export type RoomAppPage =
   | { key: 'room', path: '/room', query: { gameId: GameID, roomId: RoomID }}
 
 export type RoomController = {
-  ...AppController,
+  ...WildspaceController,
   page: RoomAppPage,
 
   isGM: boolean,
@@ -51,17 +54,20 @@ export type RoomController = {
 }
 
 export type WildspaceRoomProps = {
-  page: RoomAppPage,
-  appController: AppController,
-  ref: (el: null | HTMLElement) => void,
+  userId: UserID,
+  loadingAnim: CubicBezierAnimation,
+  route: RoomRoute,
+  wildspace: WildspaceController,
 };
 */
 
 
-export const WildspaceRoom/*: Component<WildspaceRoomProps>*/ = ({ page, appController, ref }) => {
-  const updates = useUpdates(appController.client, page.query.gameId);
+export const WildspaceRoom/*: Component<WildspaceRoomProps>*/ = ({ wildspace, route }) => {
+  const updates = useUpdates(wildspace.client, route.gameId);
   const gamePage = useGamePage(updates);
-  const roomPage = useRoomPage(page.query.roomId, updates);
+  const roomPage = useRoomPage(route.roomId, updates);
+
+  return null;
 
   useEffect(() => {
     if (roomPage && gamePage)

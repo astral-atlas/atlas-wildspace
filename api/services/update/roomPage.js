@@ -6,6 +6,7 @@ import type { ServerUpdateChannel } from "./meta";
 import type { ServerGameUpdateChannel } from "../update";
 import type { RoomService } from "../room";
 */
+import { v4 as uuid } from 'uuid';
 
 /*::
 export type ServerRoomPageChannel = ServerUpdateChannel<RoomPageChannel>;
@@ -14,7 +15,7 @@ export type ServerRoomPageChannel = ServerUpdateChannel<RoomPageChannel>;
 export const createServerRoomPageChannel = (
   data/*: WildspaceData*/,
   roomService/*: RoomService*/,
-  { gameId, send }/*: ServerGameUpdateChannel*/
+  { gameId, send, connectionId, userId }/*: ServerGameUpdateChannel*/
 )/*: ServerRoomPageChannel*/ => {
   const onGameUpdate = (roomId) => async (gameUpdateEvent) => {
     const page = await roomService.getRoomPage(gameId, roomId);
@@ -38,11 +39,13 @@ export const createServerRoomPageChannel = (
       const gameUpdateSubscription = data.gameUpdates.subscribe(gameId, onGameUpdate(roomId));
       const roomUpdateSubscription = data.roomUpdates.subscribe(roomId, onRoomUpdate(roomId));
       const roomDataUpdateSubscription = data.roomData.updates.subscribe(roomId, onRoomUpdate(roomId));
+      const disconnect = roomService.connect(gameId, roomId, userId, connectionId);
 
       subscriptions.set(roomId, () => {
         gameUpdateSubscription.unsubscribe();
         roomUpdateSubscription.unsubscribe();
         roomDataUpdateSubscription.unsubscribe();
+        disconnect();
       })
     }
   };

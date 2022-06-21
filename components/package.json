@@ -23,9 +23,10 @@
     "@lukekaalim/act": "^2.2.3",
     "@lukekaalim/act-curve": "^3.1.2",
     "@lukekaalim/act-markdown": "^1.4.0",
-    "@lukekaalim/act-three": "^5.6.2",
+    "@lukekaalim/act-three": "^5.6.4",
     "@lukekaalim/act-web": "^2.0.1",
     "@mediapipe/holistic": "^0.5.1635989137",
+    "a11y-dialog": "^7.5.0",
     "color-string": "^1.9.0",
     "lodash.debounce": "^4.0.8",
     "math-random-seed": "^2.0.0",
@@ -42,6 +43,7 @@
     "prosemirror-view": "^1.23.13",
     "seedrandom": "^3.0.5",
     "spark-md5": "^3.0.2",
+    "upgrade": "^1.1.0",
     "uuid": "^8.3.2"
   }
 }

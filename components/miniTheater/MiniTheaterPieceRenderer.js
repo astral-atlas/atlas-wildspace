@@ -116,22 +116,31 @@ const MiniPieceRenderer = ({
   return h(MiniTheaterSprite, { position: piece.position, hover, selected, material })
 };
 
-const Box = ({ position }) => {
+const Box = ({ position, controller, piece }) => {
   const geometry = useDisposable(() => new BoxGeometry(30, 9, 30), []);
   const material = useDisposable(() => new MeshBasicMaterial({ color: new Color('#3b6a5b') }), []);
+
+  const [selected, setSelected] = useState(false);
+  useEffect(() => {
+    return controller.subscribeSelection(event => setSelected(!!event && event.pieceRef === piece.id))
+  }, [controller]);
 
   return h(mesh, {
     geometry,
     material,
     position: new Vector3(position.x * 10, (position.z * 10) + 5, position.y * 10)
-  }, h('css2dObject', {}, h('button', {}, 'Delete')))
+  }, [
+    //!selected && h('css2dObject', {}, h('button', { onClick: () => controller.selectPiece(piece.id) }, 'Select')),
+    h('css2dObject', {}, h('button', { onClick: () => controller.removePiece(piece.id) }, 'Delete'))
+  ]);
 };
 
-const TerrainPieceRenderer = ({ piece, represents }) => {
+
+const TerrainPieceRenderer = ({ piece, represents, controller }) => {
 
   switch (represents.terrainType) {
     case 'box':
-      return h(Box, { position: piece.position });
+      return h(Box, { position: piece.position, piece, controller });
     default:
       return null;
   }
@@ -151,7 +160,7 @@ export const MiniTheaterPieceRenderer/*: Component<MiniTheaterPieceRendererProps
     case 'monster':
       return h(MiniPieceRenderer, { controller, assets, characters, monsterMasks, piece });
     case 'terrain':
-      return h(TerrainPieceRenderer, { represents, piece });
+      return h(TerrainPieceRenderer, { represents, piece, controller });
     default:
       return null;
   }

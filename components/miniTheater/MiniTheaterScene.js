@@ -166,7 +166,7 @@ export const MiniTheaterScene/*: Component<MiniTheaterSceneProps>*/ = ({
     h(BoardRenderer, { board, raycaster: sceneController.raycaster, onCursorOver, onCursorLeave }, [
       h(MiniTheaterCursorRenderer, { data, controller, resources }),
       miniTheater.pieces.map(piece =>
-        h(MiniTheaterPieceRenderer, { controller, piece, assets, characters, monsterMasks }))
+        h(MiniTheaterPieceRenderer, { key: piece.id, controller, piece, assets, characters, monsterMasks }))
     ]),
   ]
 }

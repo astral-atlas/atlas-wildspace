@@ -1,25 +1,23 @@
 // @flow strict
 /*::
 import type { Element as ActElement } from "@lukekaalim/act";
+import type { RenderResult } from "@lukekaalim/act-renderer-core";
 */
 
 import { createNullRenderer } from '@lukekaalim/act-renderer-core';
-import { createObjectRenderer, createSceneRenderer } from '@lukekaalim/act-three';
+import { createObject, createObjectRenderer, createSceneRenderer } from '@lukekaalim/act-three';
 import { createWebRenderer, setNodeChildren } from '@lukekaalim/act-web';
 import { createTree } from '@lukekaalim/act-reconciler';
 
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import { setObjectProps } from "@lukekaalim/act-three/props";
+import { Sky } from "three/examples/jsm/objects/Sky.js";
+import { Water } from "three/examples/jsm/objects/Water.js";
 
-const detachedRenderer = {
-  render: (diff) => {
-    const nodes = diff.diffs.map(web.render).flat(1);
-    return [];
-  }
-}
 const web = createWebRenderer(diff => {
   switch (diff.next.element.type) {
     case 'detached':
-      detachedRenderer.render(diff);
+      diff.diffs.map(web.render);
       return [];
     case 'scene':
       three.render(diff);
@@ -30,16 +28,22 @@ const web = createWebRenderer(diff => {
 }, commit => {
   switch (commit.element.type) {
     case 'detached':
+    case 'scene':
       return [];
     default:
       return null;
   }
 })
-const css3d = createObjectRenderer((diff, parent) => {
-  if (parent instanceof CSS2DObject)
-    setNodeChildren(diff, parent.element, web.render(diff));
-  return []
-}, () => new CSS2DObject());
+
+const css3d = createObjectRenderer(
+  diff => (web.render(diff), []),
+  () => new CSS2DObject(),
+  (diff, parent) => {
+    setObjectProps(diff, parent);
+    if (parent instanceof CSS2DObject)
+      setNodeChildren(diff, parent.element, web.getNodes(diff.next));
+  }
+);
 
 const three = createObjectRenderer(diff => {
   switch (diff.next.element.type) {

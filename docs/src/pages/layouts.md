@@ -15,3 +15,6 @@
 ## PopupOverlay
 
 ::demo{name=popup}
+
+## SideOverlay
+::demo{name=side}

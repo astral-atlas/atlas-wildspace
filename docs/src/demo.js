@@ -14,7 +14,7 @@ import { useRenderLoopManager } from "./controls/loop";
 import styles from './demo.module.css';
 import { Vector3 } from "three";
 import { raycastManagerContext, useRaycastManager } from "./controls/raycast";
-import { EditorForm, EditorRangeInput } from "@astral-atlas/wildspace-components";
+import { EditorForm, EditorRangeInput, rootStyles } from "@astral-atlas/wildspace-components";
 
 const useAnimationContext = (canvasRef, sceneRef, cameraRef, webgl) => {
   const [onLoop, loopContext] = useRenderLoopManager()
@@ -154,7 +154,10 @@ export const DOMDemo/*: Component<DOMDemoProps>*/ = () => {
 
 
 export const LayoutDemo/*: Component<{ style?: {} }>*/ = ({ children, style }) => {
-  return h('div', { style: { position: 'relative', width: '100%', height: '512px', overflow: 'auto' } }, [
+  return h('div', {
+    style: { position: 'relative', width: '100%', height: '512px', overflow: 'auto' },
+    classList: [rootStyles.root]
+  }, [
     h('div', {  style: {
       ...style,
       position: 'relative',

@@ -17,6 +17,7 @@ import type {
   UpdateChannelClientMessage
 } from "@astral-atlas/wildspace-models";
 import type { AssetService } from "./asset";
+import type { Identity } from "./auth";
 */
 
 import { createServerMiniTheaterChannel } from "./update/miniTheater.js";
@@ -27,7 +28,7 @@ import { createServerGamePageChannel } from "./update/gamePage.js";
 
 /*::
 export type UpdateService = {
-  create: (gameId: GameID, userId: UserID, connectionId: GameConnectionID, send: UpdateChannelServerMessage => void) => {
+  create: (gameId: GameID, userId: UserID, connectionId: GameConnectionID, send: UpdateChannelServerMessage => void, identity: Identity) => {
     game: ServerGameUpdateChannel,
     miniTheater: ServerMiniTheaterChannel,
     wikiDoc: ServerWikiDocChannel,
@@ -43,6 +44,7 @@ export type UpdateService = {
 export type ServerGameUpdateChannel = {
   gameId: GameID,
   userId: UserID,
+  identity: Identity,
   connectionId: GameConnectionID,
 
   send: (message: UpdateChannelServerMessage) => void,
@@ -56,8 +58,8 @@ export const createUpdateService = (
   asset/*: AssetService*/,
 )/*: UpdateService*/ => {
 
-  const create = (gameId, userId, connectionId, send) => {
-    const game = { gameId, userId, connectionId, send }
+  const create = (gameId, userId, connectionId, send, identity) => {
+    const game = { gameId, userId, connectionId, send, identity }
     const miniTheater = createServerMiniTheaterChannel(data, game);
     const wikiDoc = createServerWikiDocChannel(data, game);
     const library = createServerLibraryChannel(data, asset, game);

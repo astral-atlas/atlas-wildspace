@@ -1,6 +1,6 @@
 // @flow strict
 /*::
-import type { RoomController } from "./WildspaceRoom";
+import type { RoomController } from "./room/useRoomController";
 import type { MiniTheater, MiniTheaterID } from "@astral-atlas/wildspace-models";
 import type { Component, Ref } from "@lukekaalim/act";
 */
@@ -67,6 +67,7 @@ export const WildspaceMiniTheaterScene/*: Component<WildspaceMiniTheaterScenePro
   useEffect(() => {
     const { current: attachement } = attachementRef;
     const { current: background } = backgroundRef;
+    console.log({attachement})
     if (!attachement || !background)
       return null;
 
@@ -86,6 +87,7 @@ export const WildspaceMiniTheaterScene/*: Component<WildspaceMiniTheaterScenePro
   const onTerrainToolClick = (terrainType) => () => {
     miniTheaterController.pickPlacement({ type: 'terrain', terrainType })
   }
+  console.log('TOOL USE')
 
   const tools = [
     ...characters
@@ -106,6 +108,44 @@ export const WildspaceMiniTheaterScene/*: Component<WildspaceMiniTheaterScenePro
       }))
     ] : []
   ];
+
+  const onBlur = () => {
+    console.log('lol!')
+  }
+  const onFocus = () => {
+
+  }
+
+  useEffect(() => {
+    const { current: screen } = screenRef;
+    const { current: background } = backgroundRef;
+    if (!screen || !background)
+      return;
+
+    let activeElement = document.activeElement;
+    const onFocusIn = (event/*: FocusEvent*/) => {
+      activeElement = event.target
+      console.log(activeElement);
+    };
+    const onFocusOut  = (event/*: FocusEvent*/) => {
+      activeElement = null
+      console.log(activeElement);
+    }
+    background.addEventListener('focusin', onFocusIn);
+    background.addEventListener('focusout', onFocusOut);
+    const observer = new MutationObserver(records => {
+      console.log('MUTATION')
+      const removed = new Set(records.map(r => [...r.removedNodes]).flat(1));
+      console.log(removed.has(activeElement))
+      console.log(document.activeElement)
+      if (removed.has(activeElement)) {
+        screen.focus();
+        activeElement = null
+        console.log(activeElement);
+      }
+    })
+    observer.observe(background, { childList: true, subtree: true })
+  }, [])
 
   return [
     h('div', { ref: screenRef, className: styles.sceneScreen, tabIndex: 0 }, [

@@ -23,6 +23,7 @@ import {
   useElementKeyboard, useKeyboardTrack, useKeyboardTrackEmitter
 } from '@astral-atlas/wildspace-components';
 import { Vector2 } from "three";
+import { SideOverlayDemo } from './SideOverlayDemo';
 
 /*::
 export type GridMenuProps = {
@@ -357,6 +358,8 @@ const Demo = ({ node }) => {
       return h(Compass2Demo)
     case 'popup':
       return h(PopupDemo);
+    case 'side':
+      return h(SideOverlayDemo)
     default:
       throw new Error();
   }

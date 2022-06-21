@@ -1,6 +1,6 @@
 // @flow strict
 /*::
-import type { Component } from "@lukekaalim/act";
+import type { Component, Ref } from "@lukekaalim/act";
 */
 
 import { h, useRef } from "@lukekaalim/act";
@@ -12,6 +12,7 @@ import { useAnimatedKeyedList } from "../animation/list";
 /*::
 export type PopupOverlayProps = {
   onBackgroundClick?: () => mixed,
+  popupRef?: Ref<?HTMLElement>,
   visible: boolean,
 }
 */
@@ -19,28 +20,39 @@ export type PopupOverlayProps = {
 export const PopupOverlay/*: Component<PopupOverlayProps>*/ = ({
   onBackgroundClick = () => {},
   visible = false,
+  popupRef = null,
   children
 }) => {
   const backgroundRef = useRef();
-  const popupRef = useRef();
   const onClick = (e) => {
     if (e.target !== e.currentTarget)
       return;
     onBackgroundClick();
   }
 
-  const [anim] = useAnimatedNumber(visible ? 1 : 0, visible ? 1 : 0, { duration: 1000, impulse: 3 });
+  const [anim] = useAnimatedNumber(visible ? 1 : 0, visible ? 1 : 0, { duration: 500, impulse: 3 });
   useBezierAnimation(anim, (point) => {
     const { current: background } = backgroundRef;
-    const { current: popup } = popupRef;
-    if (!background || !popup)
+    if (!background)
       return;
-    //popup.style.transform = `translate(0%, ${(1 - point.position) * 8}rem)`;
-    //background.style.opacity = `${point.position * 2}`;
+    background.style.opacity = `${point.position}`;
+
+    if (popupRef) {
+      const { current: popup } = popupRef;
+      if (popup)
+      popup.style.transform = `
+        translate3d(0%, ${(1 - point.position) * 8}rem, ${(1 - point.position) * -30}rem)
+        rotate3d(1, 0, 0, ${(1 - point.position) * 20}deg)
+      `;
+    }
   });
   
   return [
-    h('div', { onClick, class: classes.background, ref: backgroundRef, style: { pointerEvents: visible ? 'auto' : 'none', opacity: visible ? 1 : 0 } },
+    h('div', {
+      onClick,
+      class: classes.background,
+      ref: backgroundRef,
+      style: { pointerEvents: visible ? 'auto' : 'none' } },
       children),
   ];
 }

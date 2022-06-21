@@ -29,10 +29,10 @@ export type RenderSetup = {
 
 export const useRenderSetup = (
   overrides/*: {
-    canvasRef?:  Ref<?HTMLCanvasElement>,
-    cameraRef?: Ref<?PerspectiveCamera>,
-    rootRef?: Ref<?HTMLElement>,
-    keyboardEmitter?: KeyboardStateEmitter,
+    canvasRef?:  ?Ref<?HTMLCanvasElement>,
+    cameraRef?: ?Ref<?PerspectiveCamera>,
+    rootRef?: ?Ref<?HTMLElement>,
+    keyboardEmitter?: ?KeyboardStateEmitter,
   }*/ = {},
   onRendererInit/*: RenderLoopConstants => mixed*/ = _ => {},
   deps/*: mixed[]*/ = []
@@ -93,6 +93,10 @@ export const useRenderSetup = (
         return;
       const [contentSize] = entry.contentBoxSize;
       renderer.setSize(contentSize.inlineSize, contentSize.blockSize, false);
+      if (css2dRenderer) {
+        console.log("SET SIZE")
+        css2dRenderer.setSize(contentSize.inlineSize, contentSize.blockSize)
+      }
 
       camera.aspect = contentSize.inlineSize / contentSize.blockSize;
       camera.updateProjectionMatrix();

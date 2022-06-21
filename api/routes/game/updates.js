@@ -23,7 +23,7 @@ export const createUpdatesRoutes/*: RoutesConstructor*/ = (services) => {
         services.game.connection.heartbeat(gameId, connectionId, identity.grant.identity, Date.now())
       }, 1000)
 
-      const updateChannels = services.update.create(gameId, identity.grant.identity, connectionId, send);
+      const updateChannels = services.update.create(gameId, identity.grant.identity, connectionId, send, identity);
 
       const { removeListener } = addRecieveListener(m => updateChannels.update(m));
   

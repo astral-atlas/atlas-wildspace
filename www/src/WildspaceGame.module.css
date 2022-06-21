@@ -20,10 +20,21 @@
 
 .menuPrep {
   flex: 1;
-  margin: 2em;
+  margin: 3em 6em 3em 6em;
 
   background-color: rgba(255, 255, 255, 0.663);
   border-radius: 8px;
   border: 1px solid black;
   backdrop-filter: blur(5px);
+}
+
+.gameMenu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.gameMenu .gameSelector {
+  background-color: white;
+  padding: 1em;
 }

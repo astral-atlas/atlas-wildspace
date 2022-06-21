@@ -1,0 +1,13 @@
+.roomButtonColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.roomTitle {
+  font-weight: bold;
+}
+
+.roomConnections {
+  font-style: italic;
+  font-size: small;
+}

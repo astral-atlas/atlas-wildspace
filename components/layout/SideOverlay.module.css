@@ -1,0 +1,14 @@
+.sideOverlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+
+  width: 40%;
+}
+
+.sideOverlay.left {
+  left: 10em;
+}
+.sideOverlay.right {
+  right: 10em;
+}

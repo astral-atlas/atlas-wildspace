@@ -1,0 +1,8 @@
+.menuGameBreak {
+  max-width: 15em;
+
+  border: 0;
+  border-top: 1px solid white;
+
+  margin: 1em 2em 1em 2em;
+}

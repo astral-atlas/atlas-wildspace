@@ -1,0 +1,57 @@
+.screenSelector {
+  background-color: rgba(255, 255, 255, 0);
+  color: rgb(255, 255, 255);
+  border: 1px solid white;
+  border-radius: 1em;
+
+  padding: 1em;
+  border-radius: 1em;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  opacity: 0.4;
+
+  transition: all 0.5s;
+
+  max-height: 1.5em;
+  max-width: 1.5em;
+
+  margin: 1em 0 1em 0;
+
+  overflow: hidden;
+}
+.screenSelector:hover {
+  background-color: rgb(255, 255, 255);
+  color: black;
+  opacity: 1;
+
+
+  max-height: 15em;
+  max-width: 15em;
+}
+
+.screenSelector img {
+  height: 1.5em;
+  width: 1.5em;
+  filter: invert(0);
+  transition: filter 0.2s;
+}
+.screenSelector:hover img {
+  filter: invert(1);
+}
+
+.hoverHidden {
+  margin-left: 2em;
+}
+
+.screenSelect {
+  padding: 0.25em;
+  font-size: inherit;
+  font-family: inherit;
+  text-transform: capitalize
+}
+
+.screenSelect option {
+  text-transform: capitalize;
+}

@@ -25,7 +25,7 @@ export const createStateRoutes/*: RoutesConstructor*/ = (services) => {
       getRoomId: r => r.query.roomId,
       scope: { type: 'player-in-game' },
       async handler({ game, room }) {
-        const { result: lobby } = await services.data.roomData.lobby.get(game.id, room.id);
+        const { result: lobbyData } = await services.data.roomData.lobby.get(game.id, room.id);
         const { result: scene } = await services.data.roomData.scene.get(game.id, room.id);
         const { result: audio } = await services.data.roomAudio.get(game.id, room.id);
 
@@ -35,7 +35,7 @@ export const createStateRoutes/*: RoutesConstructor*/ = (services) => {
             volume: 0,
             playback: { type: 'none' }
           },
-          lobby: lobby || {
+          lobby: (lobbyData && lobbyData.state) || {
             playersConnected: [],
             messages: [],
           },
@@ -80,8 +80,8 @@ export const createStateRoutes/*: RoutesConstructor*/ = (services) => {
         lastHeartbeat: connetionStartTime
       }
 
-      const { result: lobby } = await services.data.roomData.lobby.get(gameId, roomId);
-      const prevLobby = lobby || { messages: [], playersConnected: [] };
+      const { result: lobbyData } = await services.data.roomData.lobby.get(gameId, roomId);
+      const prevLobby = (lobbyData && lobbyData.state) || { messages: [], playersConnected: [] };
       const playersConnected = [...prevLobby.playersConnected, lobbyConnection]
         .filter(c => c.lastHeartbeat > (connetionStartTime - heartbeatDuration))
 
@@ -89,7 +89,7 @@ export const createStateRoutes/*: RoutesConstructor*/ = (services) => {
         ...prevLobby,
         playersConnected,
       };
-      await services.data.roomData.lobby.set(gameId, roomId, nextLobby);
+      await services.data.roomData.lobby.set(gameId, roomId, { roomId, state: nextLobby, version: uuid() });
       await services.data.roomData.updates.publish(roomId, { type: 'lobby-event', lobbyEvent: { type: 'connection', playersConnected } })
       
       const heartbeatInterval = setInterval(async () => {
@@ -99,8 +99,8 @@ export const createStateRoutes/*: RoutesConstructor*/ = (services) => {
           lastHeartbeat: heartbeatTime
         }
 
-        const { result: lobby } = await services.data.roomData.lobby.get(gameId, roomId);
-        const prevLobby = lobby || { messages: [], playersConnected: [] };
+        const { result: lobbyData } = await services.data.roomData.lobby.get(gameId, roomId);
+        const prevLobby = (lobbyData && lobbyData.state) || { messages: [], playersConnected: [] };
         const playersConnected = [...prevLobby.playersConnected, nextLobbyConnection]
           .filter(c => c.lastHeartbeat > (heartbeatTime - heartbeatDuration))
 
@@ -109,7 +109,7 @@ export const createStateRoutes/*: RoutesConstructor*/ = (services) => {
           playersConnected,
         };
         connection.send({ type: 'heartbeat' });
-        await services.data.roomData.lobby.set(gameId, roomId, nextLobby);
+        await services.data.roomData.lobby.set(gameId, roomId, { roomId, state: nextLobby, version: uuid() });
       }, heartbeatDuration / 2)
 
       socket.addEventListener('close', () => void (async () => {
@@ -120,8 +120,8 @@ export const createStateRoutes/*: RoutesConstructor*/ = (services) => {
         legacyRoomSubscription.unsubscribe();
         clearInterval(heartbeatInterval);
 
-        const { result: lobby } = await services.data.roomData.lobby.get(gameId, roomId);
-        const prevLobby = lobby || { messages: [], playersConnected: [] };
+        //const { result: lobby } = await services.data.roomData.lobby.get(gameId, roomId);
+        //const prevLobby = lobby || { messages: [], playersConnected: [] };
         const playersConnected = prevLobby.playersConnected
           .filter(c => c.id !== lobbyConnection.id)
           .filter(c => c.lastHeartbeat > (heartbeatTime - heartbeatDuration))

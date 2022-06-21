@@ -2,7 +2,6 @@
 /*::
 import type { GameID } from "../game";
 import type { GameConnectionID } from "../connection";
-import type { LobbyConnectionID } from "../../room/lobby";
 import type { WikiDocID } from "./doc";
 import type { UserID } from "@astral-atlas/sesame-models";
 import type { Cast } from "@lukekaalim/cast/main";

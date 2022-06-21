@@ -158,7 +158,7 @@ declare module three {
   }
 
   declare export class Vector3 {
-    constructor(x: number, y: number, z: number): this;
+    constructor(x?: number, y?: number, z?: number): this;
 
     x: number;
     y: number;
@@ -251,6 +251,9 @@ declare module three {
     x: number;
     y: number;
     z: number;
+
+    clone(): Euler;
+    set(x: number, y: number, z: number): this;
   }
 
   declare export class Quaternion {

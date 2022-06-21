@@ -52,3 +52,8 @@ export * from './miniTheater/index.js';
 export * from './toolbar/index.js';
 export * from './illusion/index.js';
 export * from './transitions/index.js';
+export * from './storage/index.js';
+export * from './application/index.js';
+export * from './mainMenu/index.js';
+export * from './root/index.js';
+export * from './volume/index.js';

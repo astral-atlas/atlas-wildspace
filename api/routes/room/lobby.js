@@ -45,8 +45,8 @@ export const createLobbyRoutes/*: RoutesConstructor*/ = (services) => {
         if (!isValidContentForIdentity(content, identity))
           return { status: HTTP_STATUS.forbidden };
 
-        const { result: loadedLobby } = await services.data.roomData.lobby.get(game.id, room.id)
-        const prevLobby = loadedLobby || { messages: [], playersConnected: [] };
+        const { result: lobbyData } = await services.data.roomData.lobby.get(game.id, room.id)
+        const prevLobby = (lobbyData && lobbyData.state) || { messages: [], playersConnected: [] };
         const message = { id: v4(), timePosted: Date.now(), content };
         const maxMessages = 50;
         const nextLobby = {
@@ -60,7 +60,7 @@ export const createLobbyRoutes/*: RoutesConstructor*/ = (services) => {
           type: 'append-messages',
           messages: [message]
         }
-        await services.data.roomData.lobby.set(game.id, room.id, nextLobby);
+        await services.data.roomData.lobby.set(game.id, room.id, { roomId: room.id, state: nextLobby, version: uuid() });
         await services.data.roomData.updates.publish(room.id, { type: 'lobby-event', lobbyEvent });
         return { status: HTTP_STATUS.ok, body: { type: 'updated' } };
       }

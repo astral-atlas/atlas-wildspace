@@ -1,30 +1,42 @@
 // @flow strict
 /*::
 import type { Component, Ref } from "@lukekaalim/act";
+import type { Navigation } from "@lukekaalim/act-navigation";
 import type { WildspaceClient, UpdatesConnection } from "@astral-atlas/wildspace-client2";
 import type { GameID, Game, GamePage, RoomID } from "@astral-atlas/wildspace-models";
-import type { KeyboardStateEmitter } from "@astral-atlas/wildspace-components";
-import type { Navigation } from "@lukekaalim/act-navigation";
-import type { UserID, } from "@astral-atlas/sesame-models";
-
-import type { AppController } from "./App";
+import type { WildspaceController, GameRoute } from "@astral-atlas/wildspace-components";
+import type { UserID } from "@astral-atlas/sesame-models";
+import type { CubicBezierAnimation } from "@lukekaalim/act-curve";
 */
-import { h, useEffect, useState } from "@lukekaalim/act";
-import { CompassLayout, CornersLayout, EditorButton, GameMasterPrepLibrary, IllusionSelect, PlayerPrepLibrary, SelectEditor, useAnimatedKeyedList, useRefMap, useRenderSetup, WildspaceStarfieldScene } from "@astral-atlas/wildspace-components";
-import { HomepageRoomSelector } from "../../components/navigation";
-import { useURLParam } from "../hooks/navigation";
-import { Color, Vector2 } from "three";
+
+import { h, useEffect, useRef, useState } from "@lukekaalim/act";
+import {
+  CompassLayout, EditorButton, EditorRangeInput, GameMasterPrepLibrary,
+  LosersFollyScene,
+  MenuGameBreak,
+  MenuGameButton,
+  MenuGameColumn,
+  MenuGameDescriptor,
+  MenuGameIdEditor,
+  MenuGamePrepButton,
+  MenuGameRoomButton,
+  PlayerPrepLibrary, SelectEditor, useRenderSetup,
+  WildspaceStarfieldScene
+} from "@astral-atlas/wildspace-components";
+
+import { Color, Vector2, Euler, Vector3 } from "three";
 import { perspectiveCamera, scene } from "@lukekaalim/act-three";
-import { v4 as uuid } from 'uuid';
 
 import styles from './WildspaceGame.module.css';
-import { WildspaceRoom } from "./WildspaceRoom";
-import { createInitialCubicBezierAnimation, interpolateCubicBezierAnimation, maxSpan, useTimeSpan } from "@lukekaalim/act-curve";
-import { calculateCubicBezierAnimationPoint } from "@lukekaalim/act-curve/bezier";
+import { maxSpan, useBezierAnimation, useTimeSpan } from "@lukekaalim/act-curve";
+import { calculateCubicBezierAnimationPoint, useAnimatedNumber } from "@lukekaalim/act-curve/bezier";
+import { GameMenu } from "./game/GameMenu";
 
-export const useUpdates = (client/*: WildspaceClient*/, gameId/*: GameID*/)/*: ?UpdatesConnection*/ => {
+export const useUpdates = (client/*: WildspaceClient*/, gameId/*: ?GameID*/)/*: ?UpdatesConnection*/ => {
   const [updates, setUpdates] = useState(null)
   useEffect(() => {
+    if (!gameId)
+      return;
     const updatePromise = client.updates.create(gameId);
     updatePromise.then(setUpdates)
     return () => {
@@ -46,78 +58,83 @@ export const useGamePage = (updates/*: ?UpdatesConnection*/)/*: ?GamePage*/ => {
 /*::
 export type GameScreenType = 'main' | 'prep';
 export type GameController = {
-  ...AppController,
+  ...WildspaceController,
 
+  userId: UserID,
   games: $ReadOnlyArray<Game>,
   gamePage: GamePage,
-  setSelectedGame: GameID => void,
-
-  setPageToRoom: RoomID => void,
-  
+  selectedGame: Game,
   updates: UpdatesConnection,
 };
-
-export type GameAppPage =
-  | { key: 'game', path: '/', query: { gameId: ?GameID } }
-  | { key: 'game', path: '/prep', query: { gameId: GameID } }
 */
+
+export const useGameController = (
+  route/*: GameRoute*/,
+  wildspace/*: WildspaceController*/,
+  userId/*: UserID*/,
+)/*: ?GameController*/ => {
+  const [games, setGames] = useState(null);
+  useEffect(() => {
+    wildspace.client.game.list()
+      .then(setGames)
+  }, [wildspace])
+
+  const selectedGame = games && (games.find(game => game.id === route.gameId) || games[0]);
+
+  const updates = useUpdates(wildspace.client, selectedGame && selectedGame.id || null)
+  const gamePage = useGamePage(updates);
+
+  return updates && games && gamePage && selectedGame && {
+    ...wildspace,
+    updates,
+    userId,
+    
+    gamePage,
+    selectedGame,
+    games,
+  }
+};
 
 /*::
 export type WildspaceGameProps = {
-  page: GameAppPage,
-  appController: AppController,
-  ref: (el: null | HTMLElement) => void,
+  userId: UserID,
+  loadingAnim: CubicBezierAnimation,
+  route: GameRoute,
+  wildspace: WildspaceController,
 };
 */
 export const WildspaceGame/*: Component<WildspaceGameProps>*/ = ({
-  page,
-  appController,
-  ref,
+  userId,
+  route,
+  loadingAnim,
+  wildspace
 }) => {
-  const [games, setGames] = useState(null);
-  useEffect(() => {
-    appController.client.game.list()
-      .then(setGames)
-  }, [])
-
-  if (!games || games.length < 1)
-    return null;
-
-  const selectedGame = games.find(game => game.id === page.query.gameId) || games[0];
-
-  const directions = new Map([
-    ['/', new Vector2(0, 0)],
-    ['/prep', new Vector2(1, 0)],
-  ])
-  const direction = directions.get(appController.page.path) || new Vector2();
-
-  const updates = useUpdates(appController.client, selectedGame.id)
-  const gamePage = useGamePage(updates);
-
-  const setSelectedGame = (gameId) => {
-    console.log(gameId);
-    appController.setPage({ key: 'game', path: '/', query: { gameId }})
-  }
-
-  const gameController = gamePage && updates && {
-    ...appController,
-
-    games,
-    gamePage,
-    setSelectedGame,
-
-    updates,
-  }
-  useEffect(() => {
-    if (gameController)
-      appController.completeInitialLoad('game');
-  }, [!!gameController])
+  const ref = useRef();
+  const gameController = useGameController(route, wildspace, userId);
+  const directions = {
+    '/': new Vector2(0, 0),
+    '/prep': new Vector2(1, 0),
+  };
+  const direction = directions[route.path];
 
   const render = useRenderSetup()
+  const [gameLoadingAnim] = useAnimatedNumber(!!gameController ? 1 : 0, 0, { impulse: 3, duration: 1000 });
+
+  useTimeSpan(maxSpan([loadingAnim.span, gameLoadingAnim.span]), (now) => {
+    const { current: div } = ref;
+    if (!div)
+      return;
+    const gamePoint = calculateCubicBezierAnimationPoint(gameLoadingAnim, now);
+    const appPoint = calculateCubicBezierAnimationPoint(loadingAnim, now);
+
+    const max = Math.min(gamePoint.position, appPoint.position);
+    div.style.opacity = max;
+  }, [loadingAnim, gameLoadingAnim]);
+
 
   return h('div', { ref, className: styles.transitionContainer  }, [
     h('canvas', { ref: render.canvasRef, className: styles.menuCanvas }),
-    h(scene, { ref: render.sceneRef }, [
+    h(scene, { ref: render.sceneRef, background: new Color('black') }, [
       h(WildspaceStarfieldScene),
       h(perspectiveCamera, { ref: render.cameraRef })
     ]),
@@ -125,51 +142,15 @@ export const WildspaceGame/*: Component<WildspaceGameProps>*/ = ({
       h(CompassLayout, { direction, screens: [
         {
           position: new Vector2(1, 0),
-          content: h(WildspacePrepMenu, {
-            gameController,
-          })
+          content: h(WildspacePrepMenu, { gameController })
         },
         {
           position: new Vector2(0, 0),
-          content: h(WildspaceGameMenu, {
-            gameController,
-          })
+          content: h(GameMenu, { gameController })
         },
       ] }),
     ],
   ]);
-}
-
-const WildspaceGameMenu = ({
-  gameController,
-}) => {
-  
-  return [
-    h('menu', {}, [
-      h('li', {}, h(SelectEditor, {
-        values: gameController.games.map(g => ({ value: g.id, title: g.name })),
-        selected: gameController.gamePage.game.id,
-        onSelectedChange: gameController.setSelectedGame
-      })),
-      h('li', {}, h(EditorButton, {
-        label: 'Player Preparation',
-        onButtonClick: () => gameController.setPage({
-          key: 'game',
-          path: '/prep',
-          query: { gameId: gameController.gamePage.game.id }
-        }),
-      })),
-      gameController.gamePage.rooms.map(room =>
-        h('li', {},
-          h('button', {
-            onClick: () => gameController.setPage({
-              key: 'room',
-              path: '/room',
-              query: { gameId: gameController.gamePage.game.id, roomId: room.id }
-            }) },
-          room.title)))
-    ])
-  ]
 }
 
 const WildspacePrepMenu = ({ gameController }) => {
@@ -190,10 +171,10 @@ const WildspacePlayerPrepMenu = ({ gameController}) => {
   const assetMap = new Map(assets.map(a => [a.description.id, a]))
   
   return h(PlayerPrepLibrary, { assets: assetMap, characters, client, game, userId, catalogueHeader: [
-    h(EditorButton, { label: 'Back', onButtonClick: () => gameController.setPage({
-      key: 'game',
+    h(EditorButton, { label: 'Back', onButtonClick: () => gameController.router.setRoute({
+      page: 'game',
       path: '/',
-      query: { gameId: gameController.gamePage.game.id }
+      gameId: gameController.gamePage.game.id,
     }) })
   ] })
 }
@@ -207,10 +188,10 @@ const WildspaceGMPrepMenu = ({ gameController }) => {
   }, [updates])
 
   return library && h(GameMasterPrepLibrary, { data: library, client, game, updates, userId, catalogueHeader: [
-    h(EditorButton, { label: 'Back', onButtonClick: () => gameController.setPage({
-      key: 'game',
+    h(EditorButton, { label: 'Back', onButtonClick: () => gameController.router.setRoute({
+      page: 'game',
       path: '/',
-      query: { gameId: gameController.gamePage.game.id }
+      gameId: gameController.gamePage.game.id
     }) })
   ] })
 }

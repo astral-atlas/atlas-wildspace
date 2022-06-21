@@ -14,20 +14,29 @@ export type ServerGamePageChannel = ServerUpdateChannel<GamePageChannel>;
 export const createServerGamePageChannel = (
   data/*: WildspaceData*/,
   gameService/*: GameService*/,
-  { gameId, send }/*: ServerGameUpdateChannel*/
+  { gameId, send, identity }/*: ServerGameUpdateChannel*/
 )/*: ServerGamePageChannel*/ => {
   const onGameUpdate = async (gameUpdateEvent) => {
-    const page = await gameService.getGamePage(gameId);
+    const page = await gameService.getGamePage(gameId, identity);
     if (!page)
       return;
     const event = { type: 'next-page', page };
     send({ type: 'game-page-event', event })
   }
+  const onRoomLobbyUpdate = async ({ roomId, state }) => {
+    const event = { type: 'update-lobby-state', roomId, roomLobbyState: state }
+    send({ type: 'game-page-event', event })
+  }
 
-  let subscription = null
+  let unsubscribeAll = null
   const onSubscribe = () => {
     close();
-    subscription = data.gameUpdates.subscribe(gameId, onGameUpdate);
+    const gameSubscription = data.gameUpdates.subscribe(gameId, onGameUpdate);
+    const roomSubscription = data.roomData.lobbyUpdates.subscribe(gameId, onRoomLobbyUpdate);
+    unsubscribeAll = () => {
+      gameSubscription.unsubscribe();
+      roomSubscription.unsubscribe();
+    }
   };
 
   const update = (message) => {
@@ -38,8 +47,8 @@ export const createServerGamePageChannel = (
   };
 
   const close = async () => {
-    if (subscription)
-      subscription.unsubscribe();
+    if (unsubscribeAll)
+      unsubscribeAll();
   }
   return { close, update }
 }

@@ -20,6 +20,7 @@
   z-index: 3;
 
   background-color: rgba(0, 0, 0, 0.66);
+  perspective: 800px;
 }
 
 .popup {

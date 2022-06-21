@@ -8,7 +8,7 @@ import type { LoopController } from "../three";
 */
 import { Vector2, Vector3 } from "three";
 
-import { useEffect, useState } from "@lukekaalim/act";
+import { useEffect, useRef, useState } from "@lukekaalim/act";
 import { calculateCubicBezierAnimationPoint, useAnimatedNumber } from "@lukekaalim/act-curve";
 
 import { useParticle2dSimulation } from "../particle";
@@ -31,8 +31,9 @@ export const useMiniTheaterCamera = (
   const [rotation, setRotation] = useState/*:: <number>*/(0.125);
   const [rotationAnim] = useAnimatedNumber(rotation, rotation, { duration: 400, impulse: (0.125 * 3) });
 
+  const zoomRef = useRef(32);
   const [zoom, setZoom] = useState/*:: <number>*/(32);
-  const [zoomAnim] = useAnimatedNumber(zoom, zoom, { duration: 400, impulse: 3 });
+  const [] = useAnimatedNumber(zoom, zoom, { duration: 400, impulse: 3 });
 
   useEffect(() => {
     const { current: camera } = cameraRef;
@@ -44,7 +45,7 @@ export const useMiniTheaterCamera = (
       if ((!controlSurfaceElement.contains(document.activeElement) && controlSurfaceElement !== document.activeElement))
         return;
       event.preventDefault();
-      setZoom(z => Math.min(1000, Math.max(10, z + (event.deltaY / 10))));
+      zoomRef.current = Math.min(1000, Math.max(10, zoomRef.current + (event.deltaY / 10)));
     }
     const onSimulate = (c, v) => {
       const keys = keyboard.readDiff();
@@ -55,7 +56,6 @@ export const useMiniTheaterCamera = (
         setRotation(r => r + 0.125)
   
       const rotationPoint = calculateCubicBezierAnimationPoint(rotationAnim, v.now);
-      const zoomPoint = calculateCubicBezierAnimationPoint(zoomAnim, v.now);
 
       const rotationRadians = rotationPoint.position * 2 * Math.PI;
       const acceleration = getVector2ForKeyboardState(keys.next.value)
@@ -67,7 +67,7 @@ export const useMiniTheaterCamera = (
       setFocusTransform2(
         new Vector3(cameraParticle.position.x, 0, -cameraParticle.position.y),
         0.25 + rotationPoint.position,
-        new Vector2(-zoomPoint.position, zoomPoint.position),
+        new Vector2(-zoomRef.current, zoomRef.current),
         camera,
       );
     }
@@ -79,5 +79,5 @@ export const useMiniTheaterCamera = (
       unsubscribeSim();
       controlSurfaceElement.removeEventListener('wheel', onWheel);
     }
-  }, [rotationAnim, zoomAnim])
+  }, [rotationAnim])
 };

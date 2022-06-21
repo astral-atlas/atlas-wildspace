@@ -15,8 +15,8 @@ export const createGamePageRoutes/*: RoutesConstructor*/ = (services) => {
       getGameId: r => r.query.gameId,
       scope: { type: 'player-in-game' },
   
-      async handler({ game }) {
-        const gamePage = await services.game.getGamePage(game.id)
+      async handler({ game, identity }) {
+        const gamePage = await services.game.getGamePage(game.id, identity)
         if (!gamePage)
           return { status: HTTP_STATUS.not_found };
         return { status: HTTP_STATUS.ok, body: { type: 'found', gamePage } }
