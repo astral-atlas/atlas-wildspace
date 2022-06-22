@@ -79,8 +79,6 @@ export const MiniTheaterScene/*: Component<MiniTheaterSceneProps>*/ = ({
     emitter
   )
   
-  const boardBox = calculateBoardBox(HARDCODED_BOARD);
-
   const bounds = new Box2(
     new Vector2(-100, -100).multiplyScalar(10),
     new Vector2(100, 100).multiplyScalar(10)
@@ -147,7 +145,7 @@ export const MiniTheaterScene/*: Component<MiniTheaterSceneProps>*/ = ({
   const board = {
     ...HARDCODED_BOARD,
     floors: [
-      ...HARDCODED_BOARD.floors,
+      { type: 'box', box: miniTheater.baseArea },
       ...miniTheater.pieces
         .map(piece => {
           const { represents } = piece;

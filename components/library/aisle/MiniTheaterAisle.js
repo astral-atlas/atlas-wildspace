@@ -22,7 +22,11 @@ import { EditorForm, EditorButton, EditorTextInput, EditorHorizontalSection } fr
 import { PopupOverlay } from "../../layout";
 import { LibraryFloor, LibraryFloorHeader } from "../LibraryFloor";
 import { CharacterSheet } from "../../paper/CharacterSheet";
-import { EditorVerticalSection, SelectEditor } from "../../editor/form";
+import {
+  EditorNumberInput,
+  EditorVerticalSection,
+  SelectEditor,
+} from "../../editor/form";
 import { OrderedListEditor } from "../../editor/list";
 import { useRenderSetup } from "../../three";
 import { useMiniTheaterController } from "../../miniTheater/useMiniTheaterController";
@@ -75,10 +79,10 @@ export const MiniTheaterAisle/*: Component<MiniTheaterAisleProps>*/ = ({
   const deleteTheater = (theaterId) => async () => {
     await client.game.miniTheater.destroy(game.id, theaterId);
   }
-  const updateSelectedTheater = async ({ name = null, pieces = null }) => {
+  const updateSelectedTheater = async ({ name = null, pieces = null, baseArea = null }) => {
     if (!selectedMiniTheater)
       return;
-    await client.game.miniTheater.update(game.id, selectedMiniTheater.id, { name, pieces })
+    await client.game.miniTheater.update(game.id, selectedMiniTheater.id, { name, pieces, baseArea })
   }
   const applyAction = async (action/*: MiniTheaterAction*/) => {
     if (!selectedMiniTheater)
@@ -160,6 +164,36 @@ const MiniTheaterEditor = ({
       disabled: true,
       label: 'ID',
       text: selectedMiniTheater.id
+    }),
+    h(EditorNumberInput, {
+      label: 'X',
+      number: selectedMiniTheater.baseArea.size.x,
+      onNumberInput: x => updateSelectedTheater({
+        baseArea: {
+          ...selectedMiniTheater.baseArea,
+          size: { ...selectedMiniTheater.baseArea.size, x }
+        }
+      })
+    }),
+    h(EditorNumberInput, {
+      label: 'Y',
+      number: selectedMiniTheater.baseArea.size.y,
+      onNumberInput: y => updateSelectedTheater({
+        baseArea: {
+          ...selectedMiniTheater.baseArea,
+          size: { ...selectedMiniTheater.baseArea.size, y }
+        }
+      })
+    }),
+    h(EditorNumberInput, {
+      label: 'Z',
+      number: selectedMiniTheater.baseArea.size.z,
+      onNumberInput: z => updateSelectedTheater({
+        baseArea: {
+          ...selectedMiniTheater.baseArea,
+          size: { ...selectedMiniTheater.baseArea.size, z }
+        }
+      })
     }),
     h(EditorTextInput, {
       label: 'Name',

@@ -6,6 +6,7 @@ import type { UserID } from "@astral-atlas/sesame-models";
 import type { Character, CharacterID } from "../character";
 import type { BoardPosition } from "../encounter/map";
 import type { MonsterActor, MonsterActorID } from "../monster/monsterActor";
+import type { BoxBoardArea } from "../encounter/board";
 import type { Game } from "./game";
 */
 
@@ -15,6 +16,11 @@ import { v4 as uuid } from 'uuid';
 import { castBoardPosition } from "../encounter.js";
 import { castCharacterId } from "../character.js";
 import { castMonsterActorId } from "../monster/monsterActor.js";
+
+export const castBoxBoardArea/*: Cast<BoxBoardArea>*/ = c.obj({
+  size: castBoardPosition,
+  position: castBoardPosition,
+})
 
 /*::
 export type PieceID = string;
@@ -51,6 +57,7 @@ export type MiniTheater = {
   name: string,
   version: MiniTheaterVersion,
 
+  baseArea: BoxBoardArea,
   pieces: $ReadOnlyArray<Piece>,
 };
 */
@@ -62,6 +69,7 @@ export const castMiniTheater/*: Cast<MiniTheater>*/ = c.obj({
   name: c.str,
   version: castMiniTheaterVersion,
 
+  baseArea: castBoxBoardArea,
   pieces: c.arr(castPiece),
 });
 

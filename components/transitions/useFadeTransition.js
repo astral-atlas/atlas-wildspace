@@ -24,7 +24,7 @@ const getExit = (state) => {
 }
 
 /*::
-type TransitionState<T> = {
+export type TransitionState<T> = {
   key: string,
   value: T,
   anim: CubicBezierAnimation
@@ -46,7 +46,7 @@ export const useFadeTransition = /*:: <T>*/(
 
     const animateExit = (state) => ({
       ...state,
-      anim: interpolateCubicBezierAnimation(state.anim, 0, 500, 3, now), 
+      anim: interpolateCubicBezierAnimation(state.anim, 0, 1000, 3, now), 
     })
     const animateEntry = (value, hasPrevious) => ({
       key: uuid(),

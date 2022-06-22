@@ -21,6 +21,7 @@ export const createMiniTheaterRoutes/*: RoutesConstructor*/ = (services) => {
         name,
         version: uuid(),
 
+        baseArea: { position: { x: 0, y: 0, z: 0}, size: { x: 10, y: 10, z: 1 } },
         pieces: [],
       };
       await services.data.gameData.miniTheaters.set(game.id, miniTheater.id, miniTheater);
@@ -36,6 +37,7 @@ export const createMiniTheaterRoutes/*: RoutesConstructor*/ = (services) => {
           ...prev,
           name: miniTheater.name || prev.name,
           pieces: miniTheater.pieces || prev.pieces,
+          baseArea: miniTheater.baseArea || prev.baseArea,
           version: uuid(),
           id: miniTheaterId,
         };

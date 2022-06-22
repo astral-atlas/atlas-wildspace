@@ -1,9 +1,18 @@
 .backgroundCanvas {
   width: 100%;
   height: 100%;
+  display: flex;
 }
 
 .sceneScreen {
   width: 100%;
   height: 100%;
+}
+
+.sceneToolbar {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
 }

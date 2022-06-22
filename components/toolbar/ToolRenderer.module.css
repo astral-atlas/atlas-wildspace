@@ -1,0 +1,24 @@
+.actionTool {
+  display: flex;
+  flex-direction: column;
+
+  height: 100%;
+  width: 100%;
+}
+
+.actionTool {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.actionTool > span {
+  position: absolute;
+  bottom: 0;
+  background: white;
+}
+.actionTool > img {
+  height: 100%;
+  width: 100%;
+}
