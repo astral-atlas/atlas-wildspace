@@ -67,13 +67,14 @@ export const WildspaceRoomPage/*: Component<WildspaceRoomPageProps>*/ = ({
     const roomLoadingPoint =  calculateCubicBezierAnimationPoint(roomLoadAnim, now);
     div.style.opacity = Math.min(loadingPoint.position, roomLoadingPoint.position);
   }, [loadingAnim, roomLoadAnim])
+  const player = roomController.gamePage.players.find(p => p.userId === roomController.userId);
 
   return [
     h('div', { className: styles.room, ref }, [
       h('div', { className: styles.backgroundScene, ref: roomController.roomBackgroundRef }),
       !!roomController && !!screens && h(CompassLayout, { screens, direction: roomController.screenPosition }),
       h(RoomOverlay, {
-        name: 'bob',
+        name: player && player.name,
         sesameURL: new URL(wildspace.config.www.sesame.httpOrigin),
         volume: 0,
         onFullscreenClick: wildspace.toggleFullscreen,

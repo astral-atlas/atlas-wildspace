@@ -40,6 +40,10 @@ export const WildspaceGamePage/*: Component<WildspaceGameProps>*/ = ({
 }) => {
   const ref = useRef();
   const gameController = useGameController(route, wildspace, userId);
+
+  if (!gameController)
+    return null;
+
   const directions = {
     '/': new Vector2(0, 0),
     '/prep': new Vector2(1, 0),
@@ -60,6 +64,8 @@ export const WildspaceGamePage/*: Component<WildspaceGameProps>*/ = ({
     div.style.opacity = max;
   }, [loadingAnim, gameLoadingAnim]);
 
+  const player = gameController.gamePage.players.find(p => p.userId === gameController.userId);
+
 
   return [
     h('div', { ref, className: styles.transitionContainer  }, [
@@ -68,20 +74,18 @@ export const WildspaceGamePage/*: Component<WildspaceGameProps>*/ = ({
         h(WildspaceStarfieldScene),
         h(perspectiveCamera, { ref: render.cameraRef })
       ]),
-      !!gameController && [
-        h(CompassLayout, { direction, screens: [
-          {
-            position: new Vector2(0, 0),
-            content: h(GameMenu, { gameController })
-          },
-          {
-            position: new Vector2(1, 0),
-            content: h(PrepMenu, { gameController })
-          },
-        ] }),
-      ],
+      h(CompassLayout, { direction, screens: [
+        {
+          position: new Vector2(0, 0),
+          content: h(GameMenu, { gameController })
+        },
+        {
+          position: new Vector2(1, 0),
+          content: h(PrepMenu, { gameController })
+        },
+      ] }),
       h(GameOverlay, {
-        name: 'bob',
+        name: player && player.name,
         sesameURL: new URL('/', 'http://example.com'),
         onFullscreenClick: wildspace.toggleFullscreen
       }),
