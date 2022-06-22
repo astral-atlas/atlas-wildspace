@@ -3,10 +3,7 @@
 /*::
 
 declare module "three/examples/jsm/objects/Sky.js" {
-  declare export class Mesh {
-    
-  }
-
+  declare var Mesh: Class<any>;
   declare export class Sky extends Mesh {
 
   }

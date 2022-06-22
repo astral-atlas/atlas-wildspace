@@ -43,6 +43,6 @@ export const MiniTheaterOverlay/*: Component<MiniTheaterOverlayProps>*/ = ({
 
   return h(CornersLayout, {
     bottom: h('div', { style: { width: '100%' } },
-      h(ToolbarPalette, { tools }))
+      h(ToolbarPalette, { tools: [] }))
   })
 }

@@ -33,7 +33,7 @@ export type ListElementChangeReducers<T, S> = {
 export const useAnimatedKeyedList = /*:: <T, S>*/(
   list/*: $ReadOnlyArray<T>*/,
   getKey/*: T => string*/,
-  getExitTime/*: S => number*/,
+  getExitTime/*: (S, S[]) => number*/,
   reducers/*: ListElementChangeReducers<T, S>*/,
   deps/*: mixed[]*/ = [],
   { initial = new Map() }/*: ListChangesOptions<T, S>*/ = {}
@@ -89,7 +89,7 @@ export const useAnimatedKeyedList = /*:: <T, S>*/(
 
   const earliestExit = [...exiting]
     .reduce((earliestExit, [key, state]) => {
-      const exitTime = getExitTime(state);
+      const exitTime = getExitTime(state, [...exiting.values()]);
       
       if (earliestExit == null || exitTime < earliestExit.exitTime)
         return { exitTime, key };

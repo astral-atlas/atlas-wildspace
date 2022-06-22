@@ -3,6 +3,8 @@
 import { castUserId } from "@astral-atlas/sesame-models";
 import { c } from "@lukekaalim/cast";
 import { castCharacterId } from "../character.js";
+import { castGameConnectionId } from "../game/connection.js";
+
 
 /*.doc
 ## Lobby
@@ -16,6 +18,7 @@ import type { UserID } from "@astral-atlas/sesame-models";
 import type { Cast } from "@lukekaalim/cast";
 import type { CharacterID } from "../character.js";
 import type { WikiDocID } from "../game";
+import type { GameConnectionID } from "../game/connection";
 
 export type RoomLobbyEvent =
   | {| type: 'append-messages', messages: $ReadOnlyArray<LobbyMessage> |}
@@ -35,10 +38,8 @@ export type LobbyMessageContent =
 export type LobbyMessageNode =
   | { type: 'plaintext', plaintext: string }
 
-export type LobbyConnectionID = string;
 export type LobbyConnection = {
-  id: LobbyConnectionID,
-  lastHeartbeat: number,
+  gameConnectionId: GameConnectionID,
   userId: UserID,
 }
 export type RoomLobbyState = {
@@ -62,10 +63,8 @@ export const castLobbyMessage/*: Cast<LobbyMessage>*/ = c.obj({
   content: castLobbyMessageContent
 })
 
-export const castLobbyConnectionId/*: Cast<LobbyConnectionID>*/ = c.str;
 export const castLobbyConnection/*: Cast<LobbyConnection>*/ = c.obj({
-  id: castLobbyConnectionId,
-  lastHeartbeat: c.num,
+  gameConnectionId: castGameConnectionId,
   userId: castUserId, 
 });
 

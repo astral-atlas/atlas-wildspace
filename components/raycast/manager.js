@@ -77,7 +77,8 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
   const mouseEnteredRef = useRef(false);
   const { current: mousePosition } = useRef(new Vector2(0, 0));
   const onMouseMove = (event) => {
-    setDeviceCoords(event, mousePosition);
+    if (event.target === event.currentTarget)
+      setDeviceCoords(event, mousePosition);
   }
   const onMouseEnter = () => {
     mouseEnteredRef.current = true;

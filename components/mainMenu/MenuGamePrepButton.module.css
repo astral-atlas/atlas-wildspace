@@ -1,0 +1,21 @@
+.prepIcon {
+  height: 2em;
+
+  filter: invert(0);
+  transition: filter 0.2s;
+}
+button:hover .prepIcon, button:active .prepIcon, button:focus .prepIcon {
+  filter: invert(1);
+}
+
+.spacing {
+  flex: 1;
+}
+
+.buttonRow {
+  display: flex;
+  flex-direction: row;
+
+  position: relative;
+  align-items: center;
+}

@@ -38,7 +38,7 @@ export const createServerMiniTheaterChannel = (data/*: WildspaceData*/, updates/
     }
   }
   const onMiniTheaterAction = async (id, action) => {
-    const { next } = await data.gameData.miniTheaters.transaction(updates.gameId, id, prev => ({
+    const { next } = await data.gameData.miniTheaters.transaction(updates.game.id, id, prev => ({
       ...reduceMiniTheaterAction(prev, action),
       version: uuid(),
     }));

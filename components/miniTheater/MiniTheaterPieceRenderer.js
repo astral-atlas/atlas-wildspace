@@ -11,6 +11,7 @@ import type {
 
 import type { MiniTheaterController } from "./useMiniTheaterController";
 import type { AssetDownloadURLMap } from "../asset/map";
+import type { SwampResources } from "../encounter/useSwampResources";
 */
 
 import {
@@ -21,11 +22,12 @@ import {
   TextureLoader,
   Vector2,
   Vector3,
+  sRGBEncoding,
 } from "three";
 import { h, useEffect, useRef, useState } from "@lukekaalim/act";
 
 import { maxSpan, useTimeSpan, useAnimatedNumber, calculateSpanProgress } from "@lukekaalim/act-curve";
-import { mesh, sprite, useDisposable } from "@lukekaalim/act-three";
+import { group, mesh, sprite, useDisposable } from "@lukekaalim/act-three";
 
 import { isBoardPositionEqual } from "@astral-atlas/wildspace-models";
 
@@ -33,18 +35,9 @@ import { calculateBezier2DPoint, useAnimatedVector2 } from "../animation/2d";
 import { calculateCubicBezierAnimationPoint } from "@lukekaalim/act-curve/bezier";
 import { useAnimatedVector3 } from "../animation";
 import { MiniTheaterSprite } from "./MiniTheaterSprite";
+import { Object3DDuplicate } from "../three/Object3DDuplicate";
+import styles from './MiniTheaterPieceRenderer.module.css';
 
-/*::
-export type MiniTheaterPieceRendererProps = {
-  controller: MiniTheaterController,
-
-  characters: $ReadOnlyArray<Character>,
-  monsterMasks: $ReadOnlyArray<MonsterActorMask>,
-  assets: AssetDownloadURLMap,
-
-  piece: Piece,
-};
-*/
 
 export const getPieceAssetId = (
   represents/*: Piece["represents"]*/,
@@ -78,6 +71,7 @@ const usePieceTexture = (piece, characters, monsters, assets) => {
       return;
     
     const texture = new TextureLoader().load(info.downloadURL);
+    texture.encoding = sRGBEncoding;
     material.map = texture;
 
     return () => {
@@ -116,32 +110,74 @@ const MiniPieceRenderer = ({
   return h(MiniTheaterSprite, { position: piece.position, hover, selected, material })
 };
 
-const Box = ({ position }) => {
+const Box = ({ position, controller, piece }) => {
   const geometry = useDisposable(() => new BoxGeometry(30, 9, 30), []);
   const material = useDisposable(() => new MeshBasicMaterial({ color: new Color('#3b6a5b') }), []);
+
+  const [selected, setSelected] = useState(false);
+  useEffect(() => {
+    return controller.subscribeSelection(event => setSelected(!!event && event.pieceRef === piece.id))
+  }, [controller]);
 
   return h(mesh, {
     geometry,
     material,
     position: new Vector3(position.x * 10, (position.z * 10) + 5, position.y * 10)
-  }, h('css2dObject', {}, h('button', {}, 'Delete')))
+  }, [
+    h('css2dObject', {}, h('button', { className: styles.selectionButton, onClick: () => controller.selectPiece(piece.id) }, 'Select'))
+  ]);
 };
 
-const TerrainPieceRenderer = ({ piece, represents }) => {
+const SwampTerrain = ({ piece, controller, position, swampObject, swampResources }) => {
+  const swampMaterial = useDisposable(() => new MeshBasicMaterial({ map: swampResources.swampTexture }), [swampResources]);
+  const context = {
+    materials: new Map([
+      ['SwampResources', swampMaterial]
+    ]),
+  };
 
+  return h(group, { position: new Vector3(position.x * 10, position.z * 10, position.y * 10) }, [
+
+    h(Object3DDuplicate, { target: swampObject, context }),
+    h('css2dObject', {}, h('button', { className: styles.selectionButton, onClick: () => controller.selectPiece(piece.id) }, 'Select'))
+  ]);
+}
+
+
+const TerrainPieceRenderer = ({ piece, represents, controller, swampResources }) => {
+
+  const swampObject = swampResources.swampModel.children.find(c => c.name === represents.terrainType);
+  if (swampObject)
+    return h(SwampTerrain, { swampObject, controller, piece, swampResources, position: piece.position })
+  
   switch (represents.terrainType) {
     case 'box':
-      return h(Box, { position: piece.position });
+      return h(Box, { position: piece.position, piece, controller });
     default:
       return null;
   }
 };
+
+
+/*::
+export type MiniTheaterPieceRendererProps = {
+  controller: MiniTheaterController,
+
+  characters: $ReadOnlyArray<Character>,
+  monsterMasks: $ReadOnlyArray<MonsterActorMask>,
+  assets: AssetDownloadURLMap,
+  swampResources: SwampResources,
+
+  piece: Piece,
+};
+*/
 
 export const MiniTheaterPieceRenderer/*: Component<MiniTheaterPieceRendererProps>*/ = ({
   controller,
   assets,
   characters,
   monsterMasks,
+  swampResources,
 
   piece,
 }) => {
@@ -151,7 +187,7 @@ export const MiniTheaterPieceRenderer/*: Component<MiniTheaterPieceRendererProps
     case 'monster':
       return h(MiniPieceRenderer, { controller, assets, characters, monsterMasks, piece });
     case 'terrain':
-      return h(TerrainPieceRenderer, { represents, piece });
+      return h(TerrainPieceRenderer, { represents, piece, controller, swampResources });
     default:
       return null;
   }

@@ -9,5 +9,6 @@ export * from './EncounterBoardCharacterPiece.js';
 export * from './EncounterBoardPiece.js';
 
 export * from './useResources.js';
+export * from './useSwampResources.js';
 
 export * from './Tilemap.js';

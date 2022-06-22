@@ -1,0 +1,39 @@
+.playerConnectionContainer {
+  border: 1px solid black;
+  border-radius: 1em;
+  padding: 1em;
+  max-width: 15em;
+}
+
+.playerConnectionList {
+  list-style-type: none;
+  margin: 1em 0 0 0;
+  padding: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.playerConnection {
+  padding: 0.5em 1em 0.5em 1em;
+  background-color: white;
+  border-radius: 2em;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin: 0.5em 0 0.5em 0;
+}
+.playerConnection.disconnected {
+  background-color: rgb(150, 150, 150);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.playerConnection img {
+  margin-left: 1em;
+  height: 2em;
+  width: 2em;
+}

@@ -11,6 +11,7 @@ import type {
   MiniTheaterAction,
   MiniTheaterID,
 } from "../../game/miniTheater";
+import type { BoxBoardArea } from "../../encounter/board";
 import type { BoardPosition } from "../../encounter/map";
 */
 
@@ -25,6 +26,7 @@ import {
 import { castCharacterId, castMonsterId } from "../../character.js";
 import { castGameId } from "../../game/game.js";
 import { castPiece } from "../../game/miniTheater.js";
+import { castBoxBoardArea } from "../../game/miniTheater.js";
 
 /*::
 type MiniTheaterResource = AdvancedGameCRUDAPI<{|
@@ -34,7 +36,7 @@ type MiniTheaterResource = AdvancedGameCRUDAPI<{|
   resourceIdName: 'miniTheaterId',
 
   resourcePostInput: { name: string },
-  resourcePutInput: { name: ?string, pieces: ?$ReadOnlyArray<Piece> },
+  resourcePutInput: { name: ?string, pieces: ?$ReadOnlyArray<Piece>, baseArea: ?BoxBoardArea },
 |}>
 type MiniTheaterActionResource = {|
   POST: {
@@ -68,6 +70,7 @@ const miniTheater/*: ResourceDescription<MiniTheaterResource>*/ = createAdvanced
   castPutResource: c.obj({
     name: c.maybe(c.str),
     pieces: c.maybe(c.arr(castPiece)),
+    baseArea: c.maybe(castBoxBoardArea)
   }),
 });
 

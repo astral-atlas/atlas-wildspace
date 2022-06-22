@@ -1,8 +1,9 @@
 .userTablet {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 
-  border-radius: 24px;
+  border-radius: 2em;
   background-color: white;
+  border: 1px solid black;
 
   color: black;
   text-transform: lowercase;

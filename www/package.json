@@ -11,13 +11,14 @@
     "@lukekaalim/act": "^2.2.3",
     "@lukekaalim/act-curve": "^3.1.2",
     "@lukekaalim/act-navigation": "^1.1.0",
-    "@lukekaalim/act-three": "^5.6.2",
+    "@lukekaalim/act-three": "^5.6.4",
     "@lukekaalim/act-web": "^2.0.1",
     "@lukekaalim/cast": "^4.0.0",
     "@lukekaalim/http-client": "^5.2.0",
     "@lukekaalim/ws-client": "^2.1.0",
     "lodash.debounce": "^4.0.8",
-    "lodash.throttle": "^4.1.1"
+    "lodash.throttle": "^4.1.1",
+    "upgrade": "^1.1.0"
   },
   "devDependencies": {
     "vite": "^2.7.13"

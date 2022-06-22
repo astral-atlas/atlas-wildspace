@@ -15,6 +15,7 @@ import { h } from "@lukekaalim/act";
 import { CornersLayout } from "../layout/CornersLayout";
 import { FullscreenToggle } from "../ui";
 import { UserTablet } from "../user/UserTablet";
+import { MiniVolumeControl } from "../volume";
 import styles from './GameOverlay.module.css';
 
 
@@ -25,9 +26,6 @@ export type GameOverlayProps = {
   sesameURL: URL,
   name: ?string,
   onLogoutClick?: () => mixed,
-
-  volume: number,
-  onVolumeInput?: number => mixed,
 };
 */
 
@@ -37,19 +35,9 @@ export const GameOverlay/*: Component<GameOverlayProps>*/ = ({
   sesameURL,
   name,
   onLogoutClick = _ => {},
-
-  volume,
-  onVolumeInput = _ => {}
 }) => {
   return h(CornersLayout, {
     topLeft: h(FullscreenToggle, { onFullscreenClick }),
     topRight: name && h(UserTablet, { sesameURL, name: name, onLogoutClick }),
-    bottomLeft: h('input', {
-      className: styles.volume,
-      type: 'range',
-      value: volume,
-      min: 0, max: 1, step: 0.01,
-      onInput: e => onVolumeInput(e.target.valueAsNumber)
-    }),
   });
 }

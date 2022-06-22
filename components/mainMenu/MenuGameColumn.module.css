@@ -1,0 +1,7 @@
+.menuGameColumn {
+  display: flex;
+  flex-direction: column;
+
+  margin: 4em;
+  max-width: 300px;
+}

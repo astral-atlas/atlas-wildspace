@@ -6,6 +6,7 @@ import type { ServerUpdateChannel } from "./meta";
 import type { ServerGameUpdateChannel } from "../update";
 import type { RoomService } from "../room";
 */
+import { v4 as uuid } from 'uuid';
 
 /*::
 export type ServerRoomPageChannel = ServerUpdateChannel<RoomPageChannel>;
@@ -14,17 +15,17 @@ export type ServerRoomPageChannel = ServerUpdateChannel<RoomPageChannel>;
 export const createServerRoomPageChannel = (
   data/*: WildspaceData*/,
   roomService/*: RoomService*/,
-  { gameId, send }/*: ServerGameUpdateChannel*/
+  { game, send, connectionId, userId }/*: ServerGameUpdateChannel*/
 )/*: ServerRoomPageChannel*/ => {
   const onGameUpdate = (roomId) => async (gameUpdateEvent) => {
-    const page = await roomService.getRoomPage(gameId, roomId);
+    const page = await roomService.getRoomPage(game.id, roomId);
     if (!page)
       return;
     const event = { type: 'next-page', page };
     send({ type: 'room-page-event', roomId, event })
   }
   const onRoomUpdate = (roomId) => async (roomUpdate) => {
-    const page = await roomService.getRoomPage(gameId, roomId);
+    const page = await roomService.getRoomPage(game.id, roomId);
     if (!page)
       return;
     const event = { type: 'next-page', page };
@@ -35,14 +36,16 @@ export const createServerRoomPageChannel = (
   const onSubscribe = (roomIds) => {
     close();
     for (const roomId of roomIds) {
-      const gameUpdateSubscription = data.gameUpdates.subscribe(gameId, onGameUpdate(roomId));
+      const gameUpdateSubscription = data.gameUpdates.subscribe(game.id, onGameUpdate(roomId));
       const roomUpdateSubscription = data.roomUpdates.subscribe(roomId, onRoomUpdate(roomId));
       const roomDataUpdateSubscription = data.roomData.updates.subscribe(roomId, onRoomUpdate(roomId));
+      const disconnect = roomService.connect(game.id, roomId, userId, connectionId);
 
       subscriptions.set(roomId, () => {
         gameUpdateSubscription.unsubscribe();
         roomUpdateSubscription.unsubscribe();
         roomDataUpdateSubscription.unsubscribe();
+        disconnect();
       })
     }
   };

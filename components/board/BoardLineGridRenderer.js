@@ -47,7 +47,6 @@ export const BoardLineGrid/*: Component<BoardLineGridProps>*/ = ({
     (layer) * 10,
     (boardBox.position.y) * 10,
   )
-  //return h(mesh, { geometry, position, ref })
 
   const mapTexture = useDisposable(() => {
     const data = new Uint8Array(boardBox.size.x * boardBox.size.y * 4);
@@ -64,7 +63,7 @@ export const BoardLineGrid/*: Component<BoardLineGridProps>*/ = ({
       }
     }
     return new TilemapTile2DTexture(data, new Vector2(boardBox.size.x, boardBox.size.y));
-  }, [boardBox.size.x, boardBox.size.y, board.floors.length]);
+  }, [boardBox.size.x, boardBox.size.y, boardBox.size.z, board.floors.length]);
 
   return h(Tilemap, {
     position,

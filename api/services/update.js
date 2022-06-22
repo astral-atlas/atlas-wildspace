@@ -12,11 +12,13 @@ import type { RoomService } from "./room";
 import type { GameService } from "./game";
 import type { UserID } from "@astral-atlas/sesame-models";
 import type {
+  Game,
   GameID, GameConnectionID,
   UpdateChannelServerMessage,
   UpdateChannelClientMessage
 } from "@astral-atlas/wildspace-models";
 import type { AssetService } from "./asset";
+import type { Identity } from "./auth";
 */
 
 import { createServerMiniTheaterChannel } from "./update/miniTheater.js";
@@ -27,7 +29,7 @@ import { createServerGamePageChannel } from "./update/gamePage.js";
 
 /*::
 export type UpdateService = {
-  create: (gameId: GameID, userId: UserID, connectionId: GameConnectionID, send: UpdateChannelServerMessage => void) => {
+  create: (game: Game, userId: UserID, connectionId: GameConnectionID, send: UpdateChannelServerMessage => void, identity: Identity) => {
     game: ServerGameUpdateChannel,
     miniTheater: ServerMiniTheaterChannel,
     wikiDoc: ServerWikiDocChannel,
@@ -41,8 +43,9 @@ export type UpdateService = {
 };
 
 export type ServerGameUpdateChannel = {
-  gameId: GameID,
+  game: Game,
   userId: UserID,
+  identity: Identity,
   connectionId: GameConnectionID,
 
   send: (message: UpdateChannelServerMessage) => void,
@@ -56,13 +59,13 @@ export const createUpdateService = (
   asset/*: AssetService*/,
 )/*: UpdateService*/ => {
 
-  const create = (gameId, userId, connectionId, send) => {
-    const game = { gameId, userId, connectionId, send }
-    const miniTheater = createServerMiniTheaterChannel(data, game);
-    const wikiDoc = createServerWikiDocChannel(data, game);
-    const library = createServerLibraryChannel(data, asset, game);
-    const roomPage = createServerRoomPageChannel(data, roomService, game);
-    const gamePage = createServerGamePageChannel(data, gameService, game);
+  const create = (game, userId, connectionId, send, identity) => {
+    const gameUpdateChannel = { game, userId, connectionId, send, identity }
+    const miniTheater = createServerMiniTheaterChannel(data, gameUpdateChannel);
+    const wikiDoc = createServerWikiDocChannel(data, gameUpdateChannel);
+    const library = createServerLibraryChannel(data, asset, gameUpdateChannel);
+    const roomPage = createServerRoomPageChannel(data, roomService, gameUpdateChannel);
+    const gamePage = createServerGamePageChannel(data, gameService, gameUpdateChannel);
 
     const close = async () => {
       await Promise.all([
@@ -85,7 +88,7 @@ export const createUpdateService = (
     return {
       close,
       update,
-      game,
+      game: gameUpdateChannel,
       miniTheater,
       wikiDoc,
       library,

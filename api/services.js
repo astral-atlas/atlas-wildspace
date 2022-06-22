@@ -33,8 +33,8 @@ export const createServices = (config/*: APIConfig*/)/*: Services*/ => {
   const auth = createAuthService(config);
   const { data } = createData(config);
   const asset = createAssetService(data, config);
-  const room = createRoomService(data, asset);
   const game = createGameService(data, auth, asset);
+  const room = createRoomService(data, asset, game);
   const update = createUpdateService(data, room, game, asset);
 
   return {

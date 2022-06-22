@@ -10,14 +10,14 @@ export const createMockImageAsset = (id/*: ?string*/ = null)/*: AssetInfo*/ => {
   const randomId = uuid();
   return {
     description: {
-      id: id || randomId(),
+      id: id || randomId,
       MIMEType: 'image/jpg',
       bytes: 0,
       creator: 'CREATOR',
       name: 'Test Image',
       uploaded: Date.now(),
     },
-    downloadURL: createMockImageURL(id || randomId())
+    downloadURL: createMockImageURL(id || randomId)
   }
 };
 

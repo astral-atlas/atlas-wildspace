@@ -108,7 +108,6 @@ export const useMiniTheaterController = ()/*: MiniTheaterController*/ => {
     const pickPlacement = (placement) => {
       deselectPiece();
       placementRef.current = { placement };
-      console.log('INVOKE', placement)
       invokePlacement(placementRef.current);
     };
     const clearPlacement = () => {

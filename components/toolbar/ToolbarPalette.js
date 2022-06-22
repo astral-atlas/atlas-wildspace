@@ -1,25 +1,26 @@
 // @flow strict
 /*::
 import type { Component } from "@lukekaalim/act";
+import type { Tool } from "./Tool";
 */
 
 import { h } from "@lukekaalim/act"
 import classes from './ToolbarPalette.module.css';
+import { ToolRenderer } from "./ToolRenderer";
 
 /*::
 export type ToolbarPaletteProps = {
-  tools: {
-    onClick: () => mixed,
-    iconURL: string,
-  }[]
+  tools: Tool[]
 }
 */
 
 export const ToolbarPalette/*: Component<ToolbarPaletteProps>*/ = ({
-  tools
+  tools,
+  children
 }) => {
-  return h('menu', { className: classes.palette }, tools.map(tool =>
-    h('li', {},
-      h('button', { onClick: tool.onClick },
-        h('img', { src: tool.iconURL })))))
+  return h('menu', { className: classes.palette }, [
+    tools.map(tool =>
+      h('li', {}, h(ToolRenderer, { tool }))),
+    children
+  ])
 }

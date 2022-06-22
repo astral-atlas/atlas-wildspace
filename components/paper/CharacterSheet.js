@@ -1,6 +1,6 @@
 // @flow strict
 /*::
-import type { Component } from "@lukekaalim/act";
+import type { Component, Ref } from "@lukekaalim/act";
 import type { Character, Player, Game, Board } from "@astral-atlas/wildspace-models";
 import type { AssetDownloadURLMap } from "../asset/map";
 import type { WildspaceClient } from "@astral-atlas/wildspace-client2";
@@ -28,6 +28,7 @@ import debounce from "lodash.debounce";
 
 /*::
 export type CharacterSheetProps = {
+  ref?: Ref<?HTMLElement>,
   disabled?: boolean,
   character: Character,
   assets: AssetDownloadURLMap,
@@ -37,12 +38,13 @@ export type CharacterSheetProps = {
 */
 
 export const CharacterSheet/*: Component<CharacterSheetProps>*/ = ({
+  ref = null,
   disabled = false,
   character,
   assets,
   client,
 }) => {
-  return h('div', { class: classes.characterSheet },
+  return h('div', { ref, class: classes.characterSheet },
     h(FeatureSheet, { style: { display: 'inline', flexDirection: 'column' } }, 
       h(CharacterEditor, { character, disabled, assets, client }))
   );

@@ -1,0 +1,26 @@
+.menuGameButton {
+  padding: 1em 2em 1em 2em;
+
+  border: 1px solid white;
+  color: white;
+  border-radius: 0.5em;
+
+  font-family: inherit;
+  font-size: inherit;
+
+  background: rgba(0, 0, 0, 0);
+  transition: background 0.2s, color 0.2s, border 0.2s;
+
+  margin: 0.25em 0em 0.25em 0em;
+  text-align: start;
+
+  overflow: auto;
+}
+
+.menuGameButton:hover, .menuGameButton:active, .menuGameButton:focus {
+  color: black;
+  border: 1px solid black;
+  background: rgb(255, 250, 250, 1);
+
+  cursor: pointer;
+}

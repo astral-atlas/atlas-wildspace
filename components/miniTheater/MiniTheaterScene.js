@@ -14,6 +14,7 @@ import type { RenderSetup } from "../three/useRenderSetup";
 import type { EncounterResources } from "../encounter/useResources";
 import type { AssetDownloadURLMap } from "../asset/map";
 import type { KeyboardStateEmitter } from "../keyboard/changes";
+import type { SwampResources } from "../encounter/useSwampResources";
 */
 import { h, useEffect, useRef } from "@lukekaalim/act"
 import { group, perspectiveCamera, scene } from "@lukekaalim/act-three"
@@ -34,6 +35,7 @@ export type MiniTheaterSceneProps = {
 
   render: RenderSetup,
   resources: EncounterResources,
+  swampResources: SwampResources,
 
   characters: $ReadOnlyArray<Character>,
   monsterMasks: $ReadOnlyArray<MonsterActorMask>,
@@ -63,6 +65,7 @@ export const MiniTheaterScene/*: Component<MiniTheaterSceneProps>*/ = ({
   render,
   controller,
   resources,
+  swampResources,
 
   assets,
   monsterMasks,
@@ -79,8 +82,6 @@ export const MiniTheaterScene/*: Component<MiniTheaterSceneProps>*/ = ({
     emitter
   )
   
-  const boardBox = calculateBoardBox(HARDCODED_BOARD);
-
   const bounds = new Box2(
     new Vector2(-100, -100).multiplyScalar(10),
     new Vector2(100, 100).multiplyScalar(10)
@@ -147,7 +148,7 @@ export const MiniTheaterScene/*: Component<MiniTheaterSceneProps>*/ = ({
   const board = {
     ...HARDCODED_BOARD,
     floors: [
-      ...HARDCODED_BOARD.floors,
+      { type: 'box', box: miniTheater.baseArea },
       ...miniTheater.pieces
         .map(piece => {
           const { represents } = piece;
@@ -166,7 +167,7 @@ export const MiniTheaterScene/*: Component<MiniTheaterSceneProps>*/ = ({
     h(BoardRenderer, { board, raycaster: sceneController.raycaster, onCursorOver, onCursorLeave }, [
       h(MiniTheaterCursorRenderer, { data, controller, resources }),
       miniTheater.pieces.map(piece =>
-        h(MiniTheaterPieceRenderer, { controller, piece, assets, characters, monsterMasks }))
+        h(MiniTheaterPieceRenderer, { key: piece.id, controller, piece, assets, characters, monsterMasks, swampResources }))
     ]),
   ]
 }

@@ -10,7 +10,7 @@ import type { AssetDownloadURLMap } from "../../asset/map";
 import type { WildspaceClient } from '@astral-atlas/wildspace-client2';
 */
 
-import { h, useState } from "@lukekaalim/act"
+import { h, useRef, useState } from "@lukekaalim/act"
 import { useLibrarySelection } from "../librarySelection";
 import { LibraryAisle } from "../LibraryAisle";
 import { LibraryShelf } from "../LibraryShelf";
@@ -55,6 +55,8 @@ export const CharacterAisle/*: Component<CharacterAisleProps>*/ = ({
     await client.game.character.remove(game.id, character.id);
   }
 
+  const popupRef = useRef()
+
   return [
     h(LibraryAisle, {
       floor: h(LibraryFloor, {}, [
@@ -96,9 +98,11 @@ export const CharacterAisle/*: Component<CharacterAisleProps>*/ = ({
       ]
     }),
     h(PopupOverlay, {
+      popupRef,
       visible: !!selectedCharacter && showPaperPreview,
       onBackgroundClick: () => setShowPaperPreview(false)
     }, selectedCharacter && h(CharacterSheet, {
+      ref: popupRef,
       assets,
       character: selectedCharacter,
       client,
