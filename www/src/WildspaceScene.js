@@ -94,6 +94,9 @@ export const WildspaceMiniTheaterScene/*: Component<WildspaceMiniTheaterScenePro
     miniTheaterController.pickPlacement({ type: 'terrain', terrainType })
   }
 
+  const [selected, setSelected] = useState(null);
+  useEffect(() => miniTheaterController.subscribeSelection(setSelected), []);
+
   const tools = [
     ...characters
       .filter(c => c.playerId === userId)
@@ -115,15 +118,22 @@ export const WildspaceMiniTheaterScene/*: Component<WildspaceMiniTheaterScenePro
         type: 'swatch',
         title: 'terrain',
         tools: [
-          ...['box'].map(terrainType => ({
+          ...['box', 'WoodenPlatform', 'SwampTree', 'Stump', 'LilyPad'].map(terrainType => ({
             type: 'action',
             onAction: onTerrainToolClick(terrainType),
-            title: 'Box',
+            title: terrainType,
             iconURL: ''
           }))
         ]
+      },
+      selected && {
+        type: 'action',
+        title: 'Delete Selected',
+        onAction: () => {
+          miniTheaterController.removePiece(selected.pieceRef);
+        }
       }
-    ] : []
+    ].filter(Boolean) : []
   ];
 
   const onBlur = () => {
@@ -179,6 +189,7 @@ export const WildspaceMiniTheaterScene/*: Component<WildspaceMiniTheaterScenePro
         monsterMasks,
         resources,
         emitter,
+        swampResources: roomController.swampResources,
         controlSurfaceElementRef: screenRef
       })
     ])),

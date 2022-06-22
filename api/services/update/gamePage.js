@@ -14,10 +14,10 @@ export type ServerGamePageChannel = ServerUpdateChannel<GamePageChannel>;
 export const createServerGamePageChannel = (
   data/*: WildspaceData*/,
   gameService/*: GameService*/,
-  { gameId, send, identity }/*: ServerGameUpdateChannel*/
+  { game, send, identity, userId }/*: ServerGameUpdateChannel*/
 )/*: ServerGamePageChannel*/ => {
   const onGameUpdate = async (gameUpdateEvent) => {
-    const page = await gameService.getGamePage(gameId, identity);
+    const page = await gameService.getGamePage(game.id, identity, game.gameMasterId === userId);
     if (!page)
       return;
     const event = { type: 'next-page', page };
@@ -31,8 +31,8 @@ export const createServerGamePageChannel = (
   let unsubscribeAll = null
   const onSubscribe = () => {
     close();
-    const gameSubscription = data.gameUpdates.subscribe(gameId, onGameUpdate);
-    const roomSubscription = data.roomData.lobbyUpdates.subscribe(gameId, onRoomLobbyUpdate);
+    const gameSubscription = data.gameUpdates.subscribe(game.id, onGameUpdate);
+    const roomSubscription = data.roomData.lobbyUpdates.subscribe(game.id, onRoomLobbyUpdate);
     unsubscribeAll = () => {
       gameSubscription.unsubscribe();
       roomSubscription.unsubscribe();

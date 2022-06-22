@@ -17,14 +17,22 @@ export type PlayerConnectionListProps = {
 };
 */
 export const PlayerConnectionList/*: Component<PlayerConnectionListProps>*/ = ({ players, lobbyConnections }) => {
+
+  const playerConnections = players.map(player => {
+    const connection = lobbyConnections.find(c => player.userId === c.userId);
+    return [player, connection]
+  })
+  const connectedPlayers = playerConnections.filter(([p, c]) => c);
+  const disconnectedPlayers = playerConnections.filter(([p, c]) => !c);
+
   return [
     h('div', { className: styles.playerConnectionContainer }, [
       h('span', {}, 'Players Connected: '),
       h('ul', { className: styles.playerConnectionList }, [
-        players.map(player => {
-          const connection = lobbyConnections.find(c => player.userId === c.userId);
-          return h('li', {}, h(PlayerConnection, { player, connection }))
-        })
+        connectedPlayers.map(([player, connection]) =>
+          h('li', {}, h(PlayerConnection, { player, connection }))),
+          disconnectedPlayers.map(([player]) =>
+          h('li', {}, h(PlayerConnection, { player, connection: null })))
       ])
     ])
   ]
@@ -38,7 +46,7 @@ export type PlayerConnectionProps = {
 */
 
 export const PlayerConnection/*: Component<PlayerConnectionProps>*/ = ({ player, connection }) => {
-  return h('div', { className: styles.playerConnection }, [
+  return h('div', { classList: [styles.playerConnection, connection ? styles.connected : styles.disconnected] }, [
     player.name,
     h('span', { className: styles.spacer }),
     h('img', { src: connection ? connectedIconURL : disconnectedIconURL })

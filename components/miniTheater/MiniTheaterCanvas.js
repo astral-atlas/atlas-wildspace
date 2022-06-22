@@ -7,6 +7,7 @@ import type { MiniTheaterController } from "./useMiniTheaterController";
 import type { AssetDownloadURLMap } from "../asset/map";
 import type { EncounterResources } from "../encounter/useResources";
 import type { KeyboardStateEmitter } from "../keyboard/changes";
+import type { SwampResources } from "../encounter/useSwampResources";
 */
 
 import { h} from "@lukekaalim/act";
@@ -32,6 +33,7 @@ export type MiniTheaterCanvasProps = {
   controlSurfaceElementRef?: ?Ref<?HTMLElement>,
 
   resources: EncounterResources,
+  swampResources: SwampResources,
 }
 */
 
@@ -42,6 +44,7 @@ export const MiniTheaterCanvas/*: Component<MiniTheaterCanvasProps>*/ = ({
   monsterMasks,
   assets,
   resources,
+  swampResources,
   emitter,
   children,
   controlSurfaceElementRef,
@@ -56,7 +59,12 @@ export const MiniTheaterCanvas/*: Component<MiniTheaterCanvasProps>*/ = ({
     h('canvas', { ref: render.canvasRef, tabIndex: 0, className: classes.miniTheaterCanvas }),
     h('scene', { ref: render.sceneRef, background: new Color('black') }, [
       children,
-      h(MiniTheaterScene, { controller, miniTheater, render, resources, characters, assets, monsterMasks, emitter, controlSurfaceElementRef })
+      h(MiniTheaterScene, {
+        controller, miniTheater, render,
+        resources, swampResources,
+        characters, assets,
+        monsterMasks, emitter, controlSurfaceElementRef
+      })
     ])
   ]
 }

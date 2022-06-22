@@ -25,7 +25,7 @@ import { applyWikiDocUpdate } from "@astral-atlas/wildspace-models";
 
 export const createServerWikiDocChannel = (
   data/*: WildspaceData*/,
-  { gameId, userId, connectionId, send }/*: ServerGameUpdateChannel*/
+  { game, userId, connectionId, send }/*: ServerGameUpdateChannel*/
 )/*: ServerWikiDocChannel*/ => {
 
   const subscriptions = new Map();
@@ -55,7 +55,7 @@ export const createServerWikiDocChannel = (
   const onUpdate = async (wikiDocId, clientId, steps, version) => {
     const update = { version, steps, userId, clientId };
     try {
-      await data.wiki.documents.transaction(gameId, wikiDocId, wikiDoc => applyWikiDocUpdate(wikiDoc, update), 4);
+      await data.wiki.documents.transaction(game.id, wikiDocId, wikiDoc => applyWikiDocUpdate(wikiDoc, update), 4);
       data.wiki.documentEvents.publish(wikiDocId, { type: 'update', docId: wikiDocId, update });
     } catch (error) {
       // this is expected

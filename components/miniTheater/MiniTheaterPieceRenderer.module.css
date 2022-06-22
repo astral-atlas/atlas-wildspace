@@ -1,0 +1,8 @@
+.selectionButton {
+  opacity: 0.1;
+  transition: all 0.2;
+}
+
+.selectionButton:hover {
+  opacity: 1;
+}

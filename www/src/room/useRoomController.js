@@ -1,7 +1,7 @@
 // @flow strict
 /*::
 import type { UserID } from "@astral-atlas/sesame-models";
-import type { WildspaceController, RoomRoute, AssetDownloadURLMap } from '@astral-atlas/wildspace-components';
+import type { WildspaceController, RoomRoute, AssetDownloadURLMap, SwampResources } from '@astral-atlas/wildspace-components';
 import type { UpdatesConnection } from '@astral-atlas/wildspace-client2';
 import type { RoomPage, GamePage } from '@astral-atlas/wildspace-models';
 import type { Ref } from "@lukekaalim/act";
@@ -25,11 +25,13 @@ export type RoomController = {
 
   screenPosition: Vector2,
 
+  swampResources: SwampResources,
+
   roomBackgroundRef: Ref<?HTMLElement>,
 }
 */
 
-import { useCompassKeysDirection } from "@astral-atlas/wildspace-components";
+import { useCompassKeysDirection, useSwampResources } from "@astral-atlas/wildspace-components";
 import { useEffect, useMemo, useRef } from "@lukekaalim/act";
 
 export const playerScreens/*: { [string]: Vector2 }*/ = {
@@ -73,7 +75,9 @@ export const useRoomController = (
     wildspace.router.setRoute({ ...route, screen: nextScreen })
   }, screenPosition);
 
-  const roomController = updates && gamePage && roomPage && assets && {
+  const swampResources = useSwampResources();
+
+  const roomController = updates && gamePage && roomPage && assets && swampResources && {
     ...wildspace,
     isGM,
     userId,
@@ -84,6 +88,7 @@ export const useRoomController = (
     screenPosition,
     gamePage,
     roomPage,
+    swampResources,
     roomBackgroundRef,
   }
 

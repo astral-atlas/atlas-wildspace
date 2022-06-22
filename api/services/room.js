@@ -121,6 +121,7 @@ export const createRoomService = (
         playersConnected: [],
       }
     }
+    console.log(defaultLobby);
     data.roomData.lobby.transaction(gameId, roomId, async (prev) => {
       const validConnections = await game.connection.getValidConnections(gameId, Date.now());
       return {
@@ -137,7 +138,7 @@ export const createRoomService = (
     }, 3, defaultLobby)
       .then(({ next, prev }) => {
         return data.roomData.lobbyUpdates.publish(gameId, next);
-      }).catch(console.warn)
+      }).catch(e => console.warn('DIDNT CONNECT', e))
 
     return () => {
       data.roomData.lobby.transaction(gameId, roomId, async (prev) => {

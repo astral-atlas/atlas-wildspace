@@ -22,6 +22,10 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+  margin: 0.5em 0 0.5em 0;
+}
+.playerConnection.disconnected {
+  background-color: rgb(150, 150, 150);
 }
 
 .spacer {

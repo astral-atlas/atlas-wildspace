@@ -2,7 +2,8 @@
 /*::
 import type { Component } from '@lukekaalim/act';
 */
-import { GameOverlay, rootStyles, useAppSetup, useFadeTransition, useWildspaceController } from "@astral-atlas/wildspace-components";
+import { requestLinkGrant } from "@astral-atlas/sesame-components";
+import { GameOverlay, HompepageLoginPrompt, rootStyles, useAppSetup, useFadeTransition, useWildspaceController } from "@astral-atlas/wildspace-components";
 
 import { h, useRef } from "@lukekaalim/act";
 import { WildspaceGamePage } from "./game/GamePage";
@@ -19,7 +20,10 @@ export const App/*: Component<>*/ = () => {
   const anims = useFadeTransition(route, r => r.page, [route]);
 
   if (!wildspace.proof)
-    return 'Login plz';
+    return h('button', { onClick: async () => {
+      const { proof } = await requestLinkGrant(new URL(`https://sesame.astral-atlas.com`))
+      wildspace.setProof(proof);
+    } }, 'Login plz');
   const { userId } = wildspace.proof;
 
   const pageElement = anims.map(({ key, value: route, anim: loadingAnim }) => {

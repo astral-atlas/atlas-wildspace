@@ -25,7 +25,7 @@ export type GameService = {
   addPlayer: (gameId: GameID, playerId: UserID, authorizer: Identity) => Promise<void>,
   removePlayer: (gameId: GameID, playerId: UserID, authorizer: Identity) => Promise<void>,
 
-  getGamePage: (gameId: GameID, authorizer: Identity) => Promise<?GamePage>,
+  getGamePage: (gameId: GameID, authorizer: Identity, isGM: boolean) => Promise<?GamePage>,
 
   connection: GameConnectionService,
 };
@@ -152,7 +152,7 @@ export const createGameService = (
     await data.gameParticipation.set(playerId, game.id, { joined: false, gameId: game.id });
   }
 
-  const getGamePage = async (gameId, identity) => {
+  const getGamePage = async (gameId, identity, isGM) => {
     const [
       { result: game },
       players,
@@ -161,7 +161,7 @@ export const createGameService = (
       { result: monsterActors },
       { result: magicItems },
       { result: wikiDocs },
-      { result: rooms },
+      { result: allRooms },
       { result: roomLobbyData, },
     ] = await Promise.all([
       data.game.get(gameId),
@@ -196,8 +196,11 @@ export const createGameService = (
         .map(assetId => asset.peek(assetId))
       )),
     ].filter(Boolean);
+    const rooms = allRooms.filter(r => !r.hidden || isGM);
 
-    const roomLobbies = roomLobbyData.map((lobbyData) => [lobbyData.roomId, lobbyData.state]);
+    const roomLobbies = roomLobbyData
+      .filter(l => rooms.some(r => l.roomId === r.id))
+      .map((lobbyData) => [lobbyData.roomId, lobbyData.state])
 
     const gamePage = {
       game,

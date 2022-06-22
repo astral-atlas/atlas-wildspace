@@ -32,6 +32,7 @@ export const createDynamoDBTrasactable = /*:: <PK: string, SK: string, V: {}>*/(
   createVersionAttributes/*: (V) => { key: string, value: mixed }*/,
 )/*: Transactable<PK, SK, V>*/ => {
   const getValueOrDefault = async (Key, defaultValue) => {
+    console.log('GET', Key, defaultValue)
     try {
       const output =  await db.getItem({ TableName: tableName, Key });
       const prevValue = castValue(readValueTypes({ M: output.Item }));
@@ -56,15 +57,17 @@ export const createDynamoDBTrasactable = /*:: <PK: string, SK: string, V: {}>*/(
       await db.putItem({
         Item: nextItem,
         TableName: tableName,
-        ConditionExpression: '#v = :v',
-        ExpressionAttributeNames: { '#v': version.key },
-        ExpressionAttributeValues: { ':v': writeValueTypes(version.value) }
+        ...(defaultValue !== prevValue ? {
+          ConditionExpression:  '#v = :v',
+          ExpressionAttributeNames: { '#v': version.key },
+          ExpressionAttributeValues: { ':v': writeValueTypes(version.value) }
+        } : {}),
       });
       return { prev: prevValue, next: nextValue };
     } catch (error) {
       if (retries < 1)
         throw error;
-      return transaction(partitionKey, sortKey, updater, retries - 1);
+      return transaction(partitionKey, sortKey, updater, retries - 1, defaultValue);
     }
   }
   return {
