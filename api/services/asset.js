@@ -19,6 +19,7 @@ export const createS3AssetService = (data/*: WildspaceData*/, config/*: AWSS3Ass
   const client = new S3({ region: config.region });
 
   const calculateDownloadURL = async (key) => {
+    return `http://wildspace-data-mildly-kindly-diverse-seahorse.s3-website-ap-southeast-2.amazonaws.com/${key}`;
     const { result } = await data.assetLinkCache.get(key, Date.now());
     if (result) {
       return result.downloadURL;
