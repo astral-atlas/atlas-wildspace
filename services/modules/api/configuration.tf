@@ -18,7 +18,8 @@ resource "aws_ssm_parameter" "api_config" {
       type: "awsS3",
       bucket: aws_s3_bucket.asset_data.bucket,
       keyPrefix: "/wildspace/assets",
-      region: "ap-southeast-2"
+      region: "ap-southeast-2",
+      url: { type: "api", host: "https://api.wildspace.astral-atlas.com" }
     },
     "auth": {
       type: "sesame",
