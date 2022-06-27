@@ -22,6 +22,7 @@ import { createBufferWildspaceRoomData, createTableWildspaceRoomData } from "../
 import { createMemoryBufferStore } from '../../sources/buffer.js';
 import { createTableWildspaceGameData } from "./game.js";
 import { createTableWikiData } from './wiki.js';
+import { createTableAssetData } from "../../asset.js";
 
 /*::
 export type TableDataConstructors = {
@@ -48,6 +49,7 @@ export type TableDataConstructors = {
 export const createTableWildspaceData = (constructors/*: TableDataConstructors*/)/*: WildspaceData*/ => {
   const assets = constructors.createTable('assets', m.castAssetDescription);
   const assetData = createFakeCompositeTable();
+  const assetsData = createTableAssetData(constructors);
   const assetLinkCache = createExpiryTable(createMemoryBufferStore(), c.obj({ downloadURL: c.str }));
   
 
@@ -76,6 +78,7 @@ export const createTableWildspaceData = (constructors/*: TableDataConstructors*/
   return {
     assets,
     assetData,
+    assetsData,
     assetLinkCache,
 
     gameData,

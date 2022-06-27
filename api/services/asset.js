@@ -1,5 +1,9 @@
 // @flow strict
-/*:: import type { AssetID, AssetDescription, APIConfig, AWSS3AssetConfig, AssetInfo } from '@astral-atlas/wildspace-models'; */
+/*:: import type {
+  AssetID, AssetDescription,
+  APIConfig, AssetConfig,
+  AWSS3AssetConfig, AssetInfo
+} from '@astral-atlas/wildspace-models'; */
 /*:: import type { WildspaceData } from '@astral-atlas/wildspace-data'; */
 import { S3, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
@@ -11,14 +15,17 @@ import { join } from 'path';
 export type AssetService = {
   peek: (id: AssetID) => Promise<?AssetInfo>,
   batchPeek: (ids: (?AssetID)[]) => Promise<AssetInfo[]>,
-  put: (MIMEType: string, bytes: number, name: string) => Promise<{ downloadURL: string, description: AssetDescription, uploadURL: string }>
+  put: (MIMEType: string, bytes: number, name: string) => Promise<{ downloadURL: string, description: AssetDescription, uploadURL: string }>,
+
+  getAssetDataStream: AssetID => Promise<{ stream: stream$Readable, type: string, length: number }>
 };
 */
 
 export const createS3AssetService = (data/*: WildspaceData*/, config/*: AWSS3AssetConfig*/)/*: AssetService*/ => {
   const client = new S3({ region: config.region });
+  const urlConfig = config.url || { type: 'awsS3' };
 
-  const calculateDownloadURL = async (key) => {
+  const calculateS3DownloadURL = async (key) => {
     const { result } = await data.assetLinkCache.get(key, Date.now());
     if (result) {
       return result.downloadURL;
@@ -33,6 +40,15 @@ export const createS3AssetService = (data/*: WildspaceData*/, config/*: AWSS3Ass
     await data.assetLinkCache.set(key, { downloadURL }, (durationSeconds * 1000) + Date.now())
 
     return downloadURL;
+  }
+
+  const calculateDownloadURL = async (key, id) => {
+    switch (urlConfig.type) {
+      case 'awsS3':
+        return await calculateS3DownloadURL(key);
+      case 'api':
+        return `${urlConfig.host}/assets/data?assetId=${id}`;
+    }
   };
 
   const peek = async (id)/*: Promise<?AssetInfo>*/ => {
@@ -40,7 +56,7 @@ export const createS3AssetService = (data/*: WildspaceData*/, config/*: AWSS3Ass
     if (!description)
       return null
     const key = join(config.keyPrefix, description.id);
-    const downloadURL = await calculateDownloadURL(key);
+    const downloadURL = await calculateDownloadURL(key, id);
 
     return { description, downloadURL };
   };
@@ -62,17 +78,31 @@ export const createS3AssetService = (data/*: WildspaceData*/, config/*: AWSS3Ass
     });
     await data.assets.set(description.id, description);
     const uploadURL = await getSignedUrl(client, putObject, { expiresIn: 600 });
-    const downloadURL = await calculateDownloadURL(key);
+    const downloadURL = await calculateDownloadURL(key, description.id);
 
     return { description, uploadURL, downloadURL };
   };
   const batchPeek = async (ids)/*: Promise<AssetInfo[]>*/ => {
     return Promise.all(ids.filter(Boolean).map(peek)).then(assetInfos =>  assetInfos.filter(Boolean))
   }
-  return { peek, put, batchPeek };
+  const getAssetDataStream = async (assetId) => {
+    const key = join(config.keyPrefix, assetId);
+    const input = {
+      Key: key,
+      Bucket: config.bucket,
+    };
+    const { Body, ContentLength, ContentType } = await client.getObject(input);
+    return {
+      type: ContentType,
+      length: parseInt(ContentLength, 10),
+      stream: Body,
+    }
+  }
+
+  return { peek, put, batchPeek, getAssetDataStream };
 };
 
-export const createLocalAssetService = (data/*: WildspaceData*/)/*: AssetService*/ => {
+export const createLocalAssetService = (data/*: WildspaceData*/, config/*: AssetConfig*/)/*: AssetService*/ => {
   const peek = async (id)/*: Promise<?AssetInfo>*/ => {
     const { result: description } = await data.assets.get(id);
     if (!description)
@@ -97,13 +127,16 @@ export const createLocalAssetService = (data/*: WildspaceData*/)/*: AssetService
   const batchPeek = async (ids) => {
     return Promise.all(ids.filter(Boolean).map(peek)).then(assetInfos =>  assetInfos.filter(Boolean))
   }
-  return { peek, put, batchPeek };
+  const getAssetDataStream = async () => {
+    throw new Error();
+  }
+  return { peek, put, batchPeek, getAssetDataStream };
 };
 
 export const createAssetService = (data/*: WildspaceData*/, config/*: APIConfig*/)/*: AssetService*/ => {
   switch (config.asset.type) {
     case 'local':
-      return createLocalAssetService(data);
+      return createLocalAssetService(data, config.asset);
     case 'awsS3':
       return createS3AssetService(data, config.asset);
     default:

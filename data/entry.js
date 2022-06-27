@@ -21,6 +21,7 @@ import type {
 
 import type { WildspaceGameData } from "./game";
 import type { WildspaceRoomData } from "./room";
+import type { AssetData } from "./asset";
 import type { WikiData } from "./wiki.js";
 
 import type { Transactable } from "./sources/table2";
@@ -49,6 +50,7 @@ import { createDynamoDBTrasactable } from './sources/table2.js';
 export type WildspaceData = {
   assets: Table<AssetID, AssetDescription>,
   assetData: BufferDB<AssetID>,
+  assetsData: AssetData,
 
   assetLinkCache: ExpiryTable<{ downloadURL: string }>,
 

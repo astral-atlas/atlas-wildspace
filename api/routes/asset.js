@@ -40,13 +40,16 @@ export const createAssetRoutes = ({ data, asset }/*: Services*/)/*: { ws: WebSoc
         const range = getRequestRange(headers);
         if (!assetId)
           return { status: HTTP_STATUS.not_found, body: null, headers: {} };
-        const { result: buffer } = await data.assetData.get(assetId);
+        const { stream, length } = await asset.getAssetDataStream(assetId);
+        const buffer = await readStreamBytes(stream, length);
         const { result: description } = await data.assets.get(assetId);
         if (!buffer || !description)
           return { status: HTTP_STATUS.not_found, body: null, headers: {} };
 
         const contentHeaders = {
           'content-type': description.MIMEType,
+          'cache-control': 'public, max-age=604800, immutable',
+          'vary': 'Origin',
         };
         const { status: rangeStatus, headers: rangeHeaders, slice } = getRangeResponseHead(range, description.bytes);
 

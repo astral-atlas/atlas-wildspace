@@ -19,6 +19,7 @@ import { createExpiryTable } from "./sources/expiry.js";
 import { createBufferWildspaceGameData } from './game.js';
 import { createBufferWildspaceRoomData } from "./room.js";
 import { createFakeTransactable } from './sources/table2.js';
+import { createBufferAssetData } from "./asset.js";
 
 /*::
 type DataConstructors = {
@@ -30,6 +31,7 @@ type DataConstructors = {
 export const createBufferWildspaceData = ({ createBufferStore, createBufferDB }/*: DataConstructors*/)/*: { data: WildspaceData }*/ => {
   const assets = createBufferTable(createBufferStore('assets'), m.castAssetDescription);
   const assetData = createBufferDB('assetData');
+  const assetsData = createBufferAssetData({ createBufferStore, createBufferDB });
   const assetLinkCache = createExpiryTable(createBufferStore('asset_links'), c.obj({ downloadURL: c.str }))
 
   const game = createBufferTable(createBufferStore('game'), c.obj({ id: m.castGameId, name: c.str, gameMasterId: sm.castUserId }));
@@ -66,6 +68,7 @@ export const createBufferWildspaceData = ({ createBufferStore, createBufferDB }/
   const data = {
     assets,
     assetData,
+    assetsData,
     assetLinkCache,
 
     game,

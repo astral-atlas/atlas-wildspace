@@ -14,8 +14,30 @@ export type DataConfig =
   | {| type: 'awsS3', bucket: string, keyPrefix: string, region: string |}
   | {| type: 'dynamodb', tableName: string, region: string |}
 
-export type AWSS3AssetConfig = { type: 'awsS3', bucket: string, keyPrefix: string, region: string };
-export type LocalAssetConfig = { type: 'local' };
+export type APIAssetURLConfig = {
+  type: 'api',
+  host: string,
+}
+export type AWSS3AssetURLConfig = {
+  type: 'awsS3',
+}
+export type AssetURLConfig =
+  | APIAssetURLConfig
+  | AWSS3AssetURLConfig
+
+export type AWSS3AssetConfig = {
+  type: 'awsS3',
+  bucket: string,
+  keyPrefix: string,
+  region: string,
+  url: ?AssetURLConfig,
+};
+export type LocalAssetConfig = {
+  type: 'local',
+  url: ?APIAssetURLConfig,
+};
+
+
 export type AssetConfig = 
   | AWSS3AssetConfig
   | LocalAssetConfig
@@ -58,8 +80,30 @@ export const castDataConfig/*: Cast<DataConfig>*/ = c.or('type', {
   'memory': c.obj({ type: c.lit('memory') }),
   'dynamodb': c.obj({ type: c.lit('dynamodb'), tableName: c.str, region: c.str }),
 })
-export const castAWSS3AssetConfig/*: Cast<AWSS3AssetConfig>*/ = c.obj({ type: c.lit('awsS3'), bucket: c.str, keyPrefix: c.str, region: c.str });
-export const castLocalAssetConfig/*: Cast<LocalAssetConfig>*/ = c.obj({ type: c.lit('local') });
+export const castAPIAssetURLConfig/*: Cast<APIAssetURLConfig>*/ = c.obj({
+  type: c.lit('api'),
+  host: c.str,
+})
+export const castAWSS3AssetURLConfig/*: Cast<AWSS3AssetURLConfig>*/ = c.obj({
+  type: c.lit('awsS3'),
+})
+export const castAssetURLConfig/*: Cast<AssetURLConfig>*/ = c.or('type', {
+  'api': castAPIAssetURLConfig,
+  'awsS3': castAWSS3AssetURLConfig,
+});
+
+
+export const castAWSS3AssetConfig/*: Cast<AWSS3AssetConfig>*/ = c.obj({
+  type: c.lit('awsS3'),
+  bucket: c.str,
+  keyPrefix: c.str,
+  region: c.str,
+  url: c.maybe(castAssetURLConfig),
+});
+export const castLocalAssetConfig/*: Cast<LocalAssetConfig>*/ = c.obj({
+  type: c.lit('local'),
+  url: c.maybe(castAPIAssetURLConfig),
+});
 
 export const castAssetConfig/*: Cast<AssetConfig>*/ = c.or('type', {
   'awsS3': castAWSS3AssetConfig,
