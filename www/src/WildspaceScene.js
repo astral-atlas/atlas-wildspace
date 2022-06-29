@@ -6,7 +6,7 @@ import type { Component, Ref } from "@lukekaalim/act";
 import type { CubicBezierAnimation } from "@lukekaalim/act-curve/bezier";
 */
 
-import { MiniTheaterCanvas, ToolbarPalette, useFadeTransition, useMiniTheaterController, useResourcesLoader } from "@astral-atlas/wildspace-components";
+import { MarkdownRenderer, MiniTheaterCanvas, ToolbarPalette, useFadeTransition, useMiniTheaterController, useResourcesLoader } from "@astral-atlas/wildspace-components";
 import { useKeyboardStateEmitterMiddleware } from "@astral-atlas/wildspace-components/keyboard/middleware";
 import { h, useEffect, useRef, useState } from "@lukekaalim/act";
 
@@ -265,7 +265,7 @@ export const WildspaceExpositionScene/*: Component<WildspaceExpositionSceneProps
 
   return [
     h('div', { ref: screenRef, className: styles.sceneScreen, tabIndex: 0 }, [
-      'hello',
+      !!exposition && h(ExpositionScreen, { exposition, roomPage })
     ]),
     h('detached', {}, h('div', { ref: backgroundRef, className: styles.backgroundCanvas }, [
       anims.map(({ anim, key, value: { background, assets } }) => {
@@ -274,6 +274,31 @@ export const WildspaceExpositionScene/*: Component<WildspaceExpositionSceneProps
     ])),
   ]
 }
+
+const ExpositionScreen = ({ exposition, roomPage }) => {
+
+  const getSubjectText = (subject) => {
+    switch (subject.type) {
+      case 'location':
+        const location = roomPage.locations.find(l => l.id == subject.locationId);
+        if (!location)
+          return null;
+        return location.description.plaintext;
+      default:
+      case 'none':
+        return null
+    }
+  }
+
+  const expositionText = exposition.overrideText || getSubjectText(exposition.subject)
+
+  if (!expositionText)
+    return null;
+
+  return h('div', { className: styles.expositionDialogueContainer }, [
+    h('div', { className: styles.expositionDialogueBox }, h(MarkdownRenderer, { markdownText: expositionText }))
+  ])
+};
 
 const ExpositionBackground = ({ key, background, assets, anim, expositionAnim }) => {
   if (!background) {
@@ -306,7 +331,6 @@ const ExpositionBackground = ({ key, background, assets, anim, expositionAnim })
         }
       });
     case 'color':
-      console.log('COLOR')
       return h('div', { ref, style: { backgroundColor: background.color }});
   }
 }

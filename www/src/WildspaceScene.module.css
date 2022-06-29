@@ -17,3 +17,32 @@
   margin-left: auto;
   margin-right: auto;
 }
+
+.expositionDialogueContainer {
+  display: flex;
+  flex-direction: row;
+  position: absolute;
+  bottom: 0;
+  max-height: 50%;
+  width: 100%;
+}
+
+.expositionDialogueBox {
+  padding: 1em;
+  background-color: rgba(0, 0, 0, 0.747);
+  border-radius: 1em;
+  
+  max-width: 50%;
+  margin: 4em auto 4em auto;
+
+  overflow-y: auto;
+}
+
+
+@supports (backdrop-filter: blur(10px)) {
+  .expositionDialogueBox {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+}
