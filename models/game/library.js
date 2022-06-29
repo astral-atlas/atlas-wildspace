@@ -106,6 +106,16 @@ export type LibraryEvent =
       locations: $ReadOnlyArray<Location>,
       assets: $ReadOnlyArray<AssetInfo>,
     }
+  | {
+      type: 'audio-tracks',
+      tracks: $ReadOnlyArray<AudioTrack>,
+      assets: $ReadOnlyArray<AssetInfo>,
+    }
+  | {
+      type: 'audio-playlists',
+      playlists: $ReadOnlyArray<AudioPlaylist>,
+      assets: $ReadOnlyArray<AssetInfo>,
+    }
 */
 
 export const castLibraryEvent/*: Cast<LibraryEvent>*/ = c.or('type', {
@@ -148,10 +158,19 @@ export const castLibraryEvent/*: Cast<LibraryEvent>*/ = c.or('type', {
     locations: c.arr(castLocation),
     assets: c.arr(castAssetInfo),
   }),
+  'audio-tracks': c.obj({
+    type: c.lit('audio-tracks'),
+    tracks: c.arr(castAudioTrack),
+    assets: c.arr(castAssetInfo),
+  }),
+  'audio-playlists': c.obj({
+    type: c.lit('audio-playlists'),
+    playlists: c.arr(castAudioPlaylist),
+    assets: c.arr(castAssetInfo),
+  }),
 });
 
 export const reduceLibraryEvent = (data/*: LibraryData*/, event/*: LibraryEvent*/)/*: LibraryData*/ => {
-  console.log(data, event)
   switch (event.type) {
     case 'rooms':
       return {
@@ -198,6 +217,18 @@ export const reduceLibraryEvent = (data/*: LibraryData*/, event/*: LibraryEvent*
       return {
         ...data,
         locations: event.locations,
+        assets: [...data.assets, ...event.assets],
+      };
+    case 'audio-tracks':
+      return {
+        ...data,
+        tracks: event.tracks,
+        assets: [...data.assets, ...event.assets],
+      };
+    case 'audio-playlists':
+      return {
+        ...data,
+        playlists: event.playlists,
         assets: [...data.assets, ...event.assets],
       };
     default:

@@ -44,6 +44,16 @@ export const createServerLibraryChannel = (data/*: WildspaceData*/, asset/*: Ass
       case 'rooms':
         const { result: rooms } = await data.room.query(game.id);
         return { type: 'rooms', rooms };
+      case 'tracks':
+        const { result: tracks } = await data.tracks.query(game.id);
+        const trackAssets = await asset.batchPeek(tracks
+          .map(t => [t.trackAudioAssetId, t.coverImageAssetId])
+          .flat(1));
+        return { type: 'audio-tracks', tracks, assets: trackAssets };
+      case 'playlists':
+        const { result: playlists } = await data.playlists.query(game.id);
+        const playlistsAssets = await asset.batchPeek([]);
+        return { type: 'audio-playlists', playlists, assets: playlistsAssets };
       default:
         return null;
     }

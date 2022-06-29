@@ -10,11 +10,12 @@ import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { v4 as uuid } from 'uuid';
 import { join } from 'path';
+import { Readable } from "stream";
 
 /*::
 export type AssetService = {
   peek: (id: AssetID) => Promise<?AssetInfo>,
-  batchPeek: (ids: (?AssetID)[]) => Promise<AssetInfo[]>,
+  batchPeek: (ids: $ReadOnlyArray<?AssetID>) => Promise<AssetInfo[]>,
   put: (MIMEType: string, bytes: number, name: string) => Promise<{ downloadURL: string, description: AssetDescription, uploadURL: string }>,
 
   getAssetDataStream: AssetID => Promise<{ stream: stream$Readable, type: string, length: number }>
@@ -36,7 +37,7 @@ export const createS3AssetService = (data/*: WildspaceData*/, config/*: AWSS3Ass
       Bucket: config.bucket,
     });
     const durationSeconds = 60 * 60 * 3;
-    const downloadURL = await getSignedUrl(client, getObject, { expiresIn: durationSeconds, ExpiresIn: durationSeconds })
+    const downloadURL = await getSignedUrl(client, getObject, { expiresIn: durationSeconds })
     await data.assetLinkCache.set(key, { downloadURL }, (durationSeconds * 1000) + Date.now())
 
     return downloadURL;
@@ -127,8 +128,13 @@ export const createLocalAssetService = (data/*: WildspaceData*/, config/*: Asset
   const batchPeek = async (ids) => {
     return Promise.all(ids.filter(Boolean).map(peek)).then(assetInfos =>  assetInfos.filter(Boolean))
   }
-  const getAssetDataStream = async () => {
-    throw new Error();
+  const getAssetDataStream = async (assetId) => {
+    const { result: buffer } = await data.assetData.get(assetId);
+    const { result: description } = await data.assets.get(assetId);
+    if (!buffer || !description)
+      throw new Error();
+    const stream = Readable.from(buffer);
+    return { stream, length: buffer.byteLength, type: description.MIMEType }
   }
   return { peek, put, batchPeek, getAssetDataStream };
 };

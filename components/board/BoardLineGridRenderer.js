@@ -63,7 +63,7 @@ export const BoardLineGrid/*: Component<BoardLineGridProps>*/ = ({
       }
     }
     return new TilemapTile2DTexture(data, new Vector2(boardBox.size.x, boardBox.size.y));
-  }, [boardBox.size.x, boardBox.size.y, boardBox.size.z, board.floors.length]);
+  }, [board.floors]);
 
   return h(Tilemap, {
     position,

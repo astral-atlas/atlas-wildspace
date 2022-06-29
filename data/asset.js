@@ -1,13 +1,13 @@
 // @flow strict
 
 import { c } from "@lukekaalim/cast"
+import { createBufferCompositeTable } from "./sources/table.js";
 
 /*::
 import type { BufferStore } from "./sources/buffer";
 import type { CompositeTable } from "./sources/table";
 import type { TableDataConstructors } from "./wildspace/table";
 import type { UserID } from "@astral-atlas/sesame-models/src/user";
-import { createBufferCompositeTable } from "./sources/table";
 
 export type AssetData = {
   authorization: CompositeTable<UserID, string, { secret: string, expires: number }>,

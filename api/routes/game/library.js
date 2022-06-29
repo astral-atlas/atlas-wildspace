@@ -43,6 +43,7 @@ export const createLibraryRoutes/*: RoutesConstructor*/ = (services) => {
         const assets = await services.asset.batchPeek([
           ...characters.map(c => c.initiativeIconAssetId),
           ...monsters.map(m => m.initiativeIconAssetId),
+          ...tracks.map(t => [t.trackAudioAssetId, t.coverImageAssetId]).flat(1),
           ...locations.map(l => l.background.type === 'image' && l.background.imageAssetId || null)
         ])
         const library = {

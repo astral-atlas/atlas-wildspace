@@ -16,7 +16,7 @@ import type { AssetDownloadURLMap } from "../asset/map";
 import type { KeyboardStateEmitter } from "../keyboard/changes";
 import type { SwampResources } from "../encounter/useSwampResources";
 */
-import { h, useEffect, useRef } from "@lukekaalim/act"
+import { h, useEffect, useMemo, useRef } from "@lukekaalim/act"
 import { group, perspectiveCamera, scene } from "@lukekaalim/act-three"
 
 import { Box2, Vector2 } from "three";
@@ -145,20 +145,22 @@ export const MiniTheaterScene/*: Component<MiniTheaterSceneProps>*/ = ({
   }, [resources])
   */
 
+  const floors = useMemo(() => [
+    { type: 'box', box: miniTheater.baseArea },
+    ...miniTheater.pieces
+      .map(piece => {
+        const { represents } = piece;
+        if (represents.type !== 'terrain')
+          return [];
+
+        return createFloorForTerrain(represents.terrainType, piece.position, piece.visible)
+      })
+      .flat(1)
+  ], [miniTheater]);
+
   const board = {
     ...HARDCODED_BOARD,
-    floors: [
-      { type: 'box', box: miniTheater.baseArea },
-      ...miniTheater.pieces
-        .map(piece => {
-          const { represents } = piece;
-          if (represents.type !== 'terrain')
-            return [];
-
-          return createFloorForTerrain(represents.terrainType, piece.position, piece.visible)
-        })
-        .flat(1)
-    ]
+    floors,
   }
 
   return [

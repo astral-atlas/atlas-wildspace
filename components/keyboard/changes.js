@@ -57,7 +57,6 @@ export const useElementKeyboard = /*:: <T: Element>*/(
     const currentKeys = new Set(initKeys);
 
     const onKeyDown = (event/*: KeyboardEvent*/) => {
-      console.log(event);
       const { target } = event;
       if (target instanceof HTMLElement && (elementBlocklist.has(target.tagName) || target.isContentEditable))
         return;

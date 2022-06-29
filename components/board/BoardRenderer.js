@@ -89,7 +89,7 @@ export const BoardRenderer/*: Component<BoardRendererProps>*/ = ({
       for (const unsubscribe of unsubscribeAll)
         unsubscribe();
     }
-  }, [board, raycaster]);
+  }, [board, raycaster, onCursorOver, onCursorLeave]);
 
   const boardCenter = useMemo(() =>
     boardPositionToLocalVector({ x: 0, y: 0, z: 0 }, boardBox),
@@ -98,9 +98,10 @@ export const BoardRenderer/*: Component<BoardRendererProps>*/ = ({
   
   return [
     h(group, { ref }, useMemo(() => {
-      return Array.from({ length: boardBox.size.z }).map((_, i) => {
-        const layer = i - Math.floor(boardBox.size.z / 2) + boardBox.position.z;
-        return h(BoardLineGrid, { ref: createRef(layer), board, boardBox, layer })
+      return Array.from({ length: boardBox.size.z + 2 }).map((_, i) => {
+        const layer = i - Math.ceil(boardBox.size.z / 2) + boardBox.position.z - 1;
+
+        return h(BoardLineGrid, { key: layer, ref: createRef(layer), board, boardBox, layer })
       });
     }, [boardBox])),
     h(group, { position: boardCenter, ref: boardGroupRef }, [

@@ -30,6 +30,7 @@ import { createGamePageConnection } from "./updates/gamePage";
 
 /*::
 export type GameUpdatesConnection = {
+  socket: WebSocket,
   gameId: GameID,
 
   subscribe: (message: UpdateChannelServerMessage => mixed) => () => void,
@@ -78,8 +79,11 @@ export const createUpdatesClient = (
     const send = (message) => {
       updateConnection.send(message);
     }
+    const socket = updateConnection.socket;
 
     const updates = {
+      socket,
+
       gameId,
       send,
 

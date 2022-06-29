@@ -130,7 +130,7 @@ export const Tilemap/*: Component<TilemapProps>*/ = ({
     buffer.setIndex(new BufferAttribute(indices, 1));
     return buffer;
   },
-    [mapTexture.mapSize.x, mapTexture.mapSize.y, scale]
+    [mapTexture, scale]
   );
 
   const material = useTilemapMaterial(mapTexture, tilesTexture, tileSize, color, opacity);

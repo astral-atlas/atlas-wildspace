@@ -32,7 +32,7 @@ export const createMiniTheaterRoutes/*: RoutesConstructor*/ = (services) => {
       return miniTheaters;
     },
     async update({ game, query: { miniTheaterId }, body: { miniTheater } }) {
-      const next = await services.data.gameData.miniTheaters.transaction(game.id, miniTheaterId, prev => {
+      const { prev, next } = await services.data.gameData.miniTheaters.transaction(game.id, miniTheaterId, prev => {
         const next = {
           ...prev,
           name: miniTheater.name || prev.name,
@@ -43,6 +43,7 @@ export const createMiniTheaterRoutes/*: RoutesConstructor*/ = (services) => {
         };
         return next;
       }, 3);
+      services.data.gameData.miniTheaterEvents.publish(miniTheaterId, { type: 'update', miniTheater: next });
       return next;
     },
     async destroy({ game, query: { miniTheaterId } }) {

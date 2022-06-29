@@ -20,6 +20,8 @@ import { SceneAisle } from "../aisle/ScenesAisle";
 import { ExpositionAisle } from "../aisle/ExpositionAisle";
 import { LocationAisle } from "../aisle/LocationAisle";
 import { RoomAisle } from "../aisle/RoomAisle";
+import { AudioTrackAisle } from "../aisle/AudioTrackAisle";
+import { AudioPlaylistAisle } from "../aisle/AudioPlaylistAisle";
 
 /*::
 export type GameMasterPrepLibraryProps = {
@@ -113,6 +115,27 @@ export const GameMasterPrepLibrary/*: Component<GameMasterPrepLibraryProps>*/ = 
         assets,
         rooms: data.rooms,
         client, game, userId
+      })
+    },
+    {
+      key: 'TRACK',
+      title: 'Audio Tracks',
+      component: h(AudioTrackAisle, {
+        assets,
+        tracks: data.tracks,
+        game,
+        client,
+      })
+    },
+    {
+      key: 'PLAYLIST',
+      title: 'Audio Playlists',
+      component: h(AudioPlaylistAisle, {
+        assets,
+        tracks: data.tracks,
+        playlists: data.playlists,
+        game,
+        client,
       })
     },
   ]

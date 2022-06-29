@@ -1,8 +1,20 @@
 // @flow strict
 /*::
 import type { BoardArea } from "../../encounter/board";
+import type { SceneResourceID, TextureResourceID } from "../resources/resource";
 */
 
+/*::
+export type TerrainPropID = string;
+export type TerrainProp = {
+  id: TerrainPropID,
+
+  name: string,
+
+  sceneResourceId: SceneResourceID,
+  textureResourceId: TextureResourceID,
+};
+*/
 
 export const createFloorForTerrain = (
   terrainType,

@@ -52,13 +52,8 @@ const MeshDuplicate = ({ target, context }) => {
 
   const material = Array.isArray(targetMaterial) ? getMaterialArray(targetMaterial) : (getMaterial(targetMaterial) || fallbackMaterial);
 
-  const ref = useRef();
-  useEffect(() => {
-    console.log(ref);
-  }, [])
-
   // $FlowFixMe
-  return h(mesh, { geometry: target.geometry, material, ref, rotation: target.rotation, scale: target.scale }, [
+  return h(mesh, { geometry: target.geometry, material, rotation: target.rotation, scale: target.scale }, [
     target.children.map(target =>
       h(Object3DDuplicate, { key: target.id, target, context }))
   ])

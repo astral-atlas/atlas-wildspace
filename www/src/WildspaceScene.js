@@ -1,7 +1,7 @@
 // @flow strict
 /*::
 import type { RoomController } from "./room/useRoomController";
-import type { MiniTheater, MiniTheaterID } from "@astral-atlas/wildspace-models";
+import type { MiniTheater, MiniTheaterID, ExpositionID, RoomPage } from "@astral-atlas/wildspace-models";
 import type { Component, Ref } from "@lukekaalim/act";
 import type { CubicBezierAnimation } from "@lukekaalim/act-curve/bezier";
 */
@@ -11,7 +11,8 @@ import { useKeyboardStateEmitterMiddleware } from "@astral-atlas/wildspace-compo
 import { h, useEffect, useRef, useState } from "@lukekaalim/act";
 
 import styles from './WildspaceScene.module.css';
-import { useBezierAnimation } from "@lukekaalim/act-curve";
+import { calculateCubicBezierAnimationPoint, useBezierAnimation, useTimeSpan } from "@lukekaalim/act-curve";
+import { maxSpan } from "@lukekaalim/act-curve/schedule";
 
 /*::
 export type WildspaceSceneProps = {
@@ -25,8 +26,8 @@ export const WildspaceScene/*: Component<WildspaceSceneProps>*/ = ({ roomControl
   const { scene } = roomPage;
 
   const content = scene && scene.content || { type: 'none' };
-  const anims = useFadeTransition(content, c => c.type, [scene]);
-  return anims.map(({ key, anim, value: content }) => {
+  const anims = useFadeTransition({ roomPage, content }, ({ content }) => content.type, [content, roomPage]);
+  return anims.map(({ key, anim, value: { roomPage, content } }) => {
     switch (content.type) {
       case 'mini-theater':
         return h(WildspaceMiniTheaterScene, {
@@ -35,6 +36,15 @@ export const WildspaceScene/*: Component<WildspaceSceneProps>*/ = ({ roomControl
           attachementRef,
           roomController,
           miniTheaterId: content.miniTheaterId
+        })
+      case 'exposition':
+        return h(WildspaceExpositionScene, {
+          key,
+          anim,
+          attachementRef,
+          roomController,
+          roomPage,
+          expositionId: content.expositionId,
         })
       default:
         return null;
@@ -78,9 +88,6 @@ export const WildspaceMiniTheaterScene/*: Component<WildspaceMiniTheaterScenePro
       return null;
 
     attachement.appendChild(background);
-    return () => {
-      attachement.removeChild(background);
-    }
   }, [])
   const screenRef = useRef();
 
@@ -194,4 +201,112 @@ export const WildspaceMiniTheaterScene/*: Component<WildspaceMiniTheaterScenePro
       })
     ])),
   ]
+}
+
+/*::
+export type WildspaceExpositionSceneProps = {
+  attachementRef: Ref<?HTMLElement>,
+  expositionId: ExpositionID,
+  roomController: RoomController,
+  roomPage: RoomPage,
+  anim: CubicBezierAnimation,
+};
+*/
+
+export const WildspaceExpositionScene/*: Component<WildspaceExpositionSceneProps>*/ = ({
+  attachementRef,
+  expositionId,
+  roomController,
+  roomPage,
+  anim: expositionAnim
+}) => {
+
+  const backgroundRef = useRef()
+  const screenRef = useRef();
+  useEffect(() => {
+    const { current: attachement } = attachementRef;
+    const { current: background } = backgroundRef;
+    if (!attachement || !background)
+      return null;
+
+    attachement.appendChild(background);
+  }, [])
+
+  const { assets } = roomController;
+  const { expositions, locations } = roomPage;
+
+  const exposition = expositions.find(e => e.id === expositionId);
+
+  const getBackgroundForSubject = (subject) => {
+    switch (subject.type) {
+      case 'location':
+        const location = locations.find(l => l.id === subject.locationId);
+        if (!location)
+          return null;
+        return location.background;
+      default:
+        return null;
+    }
+  };
+  const getBackgroundKey = ({ background }) => {
+    if (!background)
+      return 'none';
+    switch (background.type) {
+      case 'color':
+        return background.color;
+      case 'image':
+        return background.imageAssetId || 'none';
+      default:
+        return 'none';
+    }
+  }
+  const background = exposition && getBackgroundForSubject(exposition.subject);
+  const anims = useFadeTransition({ background, assets }, getBackgroundKey, [background]);
+
+  return [
+    h('div', { ref: screenRef, className: styles.sceneScreen, tabIndex: 0 }, [
+      'hello',
+    ]),
+    h('detached', {}, h('div', { ref: backgroundRef, className: styles.backgroundCanvas }, [
+      anims.map(({ anim, key, value: { background, assets } }) => {
+        return h(ExpositionBackground, { key, background, assets, anim, expositionAnim });
+      }),
+    ])),
+  ]
+}
+
+const ExpositionBackground = ({ key, background, assets, anim, expositionAnim }) => {
+  if (!background) {
+    return null;
+  }
+  const ref = useRef();
+
+  useTimeSpan(maxSpan([expositionAnim.span, anim.span]), (now) => {
+    const { current: element } = ref;
+    if (!element)
+      return;
+    const expositionPoint = calculateCubicBezierAnimationPoint(expositionAnim, now);
+    const point = calculateCubicBezierAnimationPoint(anim, now);
+    element.style.opacity = Math.min(point.position, expositionPoint.position);
+  }, [expositionAnim, anim])
+  
+  switch (background.type) {
+    case 'image':
+      const imageAsset = !!background.imageAssetId && assets.get(background.imageAssetId);
+      if (!imageAsset) {
+        return null;
+      }
+      return h('div', {
+        ref,
+        style: {
+          position: 'absolute', width: '100%', height: '100%',
+          backgroundImage: `url(${imageAsset.downloadURL})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center center'
+        }
+      });
+    case 'color':
+      console.log('COLOR')
+      return h('div', { ref, style: { backgroundColor: background.color }});
+  }
 }
