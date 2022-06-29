@@ -93,7 +93,10 @@ export const createRoomService = (
         .map(l => l.background.type === 'image' ? l.background.imageAssetId : null)
         .filter(Boolean)
         .map(imageAssetId => asset.peek(imageAssetId))
-      ))
+      )),
+      ...await asset.batchPeek([
+        ...tracks.map(t => t.trackAudioAssetId)
+      ]),
     ].filter(Boolean);
 
     const roomPage = {

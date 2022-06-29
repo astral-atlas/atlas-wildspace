@@ -6,7 +6,7 @@ import type { CubicBezierAnimation } from "@lukekaalim/act-curve";
 import type { UserID } from "@astral-atlas/sesame-models";
 */
 
-import { CompassLayout, CompassLayoutMinimap, GameOverlay, RoomOverlay } from "@astral-atlas/wildspace-components";
+import { CompassLayout, CompassLayoutMinimap, GameOverlay, PlaylistPlayer, RoomOverlay } from "@astral-atlas/wildspace-components";
 import { h, useEffect, useRef, useState } from "@lukekaalim/act";
 import { allScreens, useRoomController } from "./useRoomController";
 import { RoomControlScreen } from "./screens/RoomControlScreen";
@@ -69,18 +69,28 @@ export const WildspaceRoomPage/*: Component<WildspaceRoomPageProps>*/ = ({
   }, [loadingAnim, roomLoadAnim])
   const player = roomController.gamePage.players.find(p => p.userId === roomController.userId);
 
+  const { playlist, tracks, state } = roomController.roomPage;
+  const assets = roomController.assets;
+
+  roomController.updates.updates.socket
+
   return [
     h('div', { className: styles.room, ref }, [
       h('div', { className: styles.backgroundScene, ref: roomController.roomBackgroundRef }),
       !!roomController && !!screens && h(CompassLayout, { screens, direction: roomController.screenPosition }),
+      !!playlist && state.audio.playback.type === 'playlist' &&
+        h(PlaylistPlayer, { playlists: [playlist], assets, state: state.audio.playback.playlist, tracks, volume: roomController.volume.music }),
       h(RoomOverlay, {
         name: player && player.name,
         sesameURL: new URL(wildspace.config.www.sesame.httpOrigin),
-        volume: 0,
+        volume: roomController.volume.music,
+        onVolumeInput: roomController.setMusicVolume,
         onFullscreenClick: wildspace.toggleFullscreen,
         direction: roomController.screenPosition,
         screens: Object.keys(allScreens),
         screen: route.screen,
+        gameUpdatesConnection: roomController.updates.updates,
+        reconnectGameUpdates: roomController.reconnectGameUpdates,
         onScreenChange: screen => roomController.router.setRoute({ ...route, screen })
       }),
     ])

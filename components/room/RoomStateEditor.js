@@ -11,6 +11,7 @@ import {
   EditorHorizontalSection,
   EditorVerticalSection,
 } from "../editor/form";
+import { AudioStateEditor } from "../game/audio";
 
 /*::
 export type RoomStateEditorProps = {

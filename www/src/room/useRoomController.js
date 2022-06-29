@@ -21,18 +21,23 @@ export type RoomController = {
   roomPage: RoomPage,
   gamePage: GamePage,
   updates: UpdatesConnection,
+  reconnectGameUpdates: () => void,
   assets: AssetDownloadURLMap,
 
   screenPosition: Vector2,
 
   swampResources: SwampResources,
+  volume: {
+    music: number,
+  },
+  setMusicVolume: (musicVolume: number) => void,
 
   roomBackgroundRef: Ref<?HTMLElement>,
 }
 */
 
 import { useCompassKeysDirection, useSwampResources } from "@astral-atlas/wildspace-components";
-import { useEffect, useMemo, useRef } from "@lukekaalim/act";
+import { useEffect, useMemo, useRef, useState } from "@lukekaalim/act";
 
 export const playerScreens/*: { [string]: Vector2 }*/ = {
   'scene':      new Vector2(0, 0),
@@ -54,9 +59,17 @@ export const useRoomController = (
   route/*: RoomRoute*/,
   userId/*: UserID*/,
 )/*: ?RoomController*/ => {
-  const updates = useUpdates(wildspace.client, route.gameId);
+  const [updateConnectionTime, setUpdateConnectionTime] = useState(Date.now());
+  const reconnectGameUpdates = () => {
+    setUpdateConnectionTime(Date.now())
+  }
+  const updates = useUpdates(wildspace.client, route.gameId, [updateConnectionTime]);
   const gamePage = useGamePage(updates);
   const roomPage = useRoomPage(route.roomId, updates);
+  const [volume, setVolume] = useState/*:: <{ music: number }>*/({ music: 0 });
+  const setMusicVolume = (music) => {
+    setVolume(volume => ({ ...volume, music }))
+  }
 
   const isGM = !!gamePage && userId === gamePage.game.gameMasterId;
 
@@ -83,11 +96,14 @@ export const useRoomController = (
     userId,
     emitter,
     updates,
+    reconnectGameUpdates,
     route,
     assets,
     screenPosition,
     gamePage,
     roomPage,
+    volume,
+    setMusicVolume,
     swampResources,
     roomBackgroundRef,
   }

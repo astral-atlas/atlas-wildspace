@@ -48,6 +48,25 @@ export const PlaylistPlayer/*: Component<PlaylistPlayerProps>*/ = ({
   return h('audio', { ref, src: asset.downloadURL, volume });
 }
 
+const createPlaylistPlaybackController = (playbackState/*: PlaylistPlaybackState*/) => {
+
+  const trackChangeSubscribers = new Set();
+  const subscribeTrackChange = (subscriber) => {
+    trackChangeSubscribers.add(subscriber);
+    return () => {
+      trackChangeSubscribers.delete(subscriber);
+    }
+  };
+  const play = () => {
+
+  };
+  const stop = () => {
+
+  };
+
+};
+
+
 export const usePlaylistPlaybackTrack = (
   tracks/*: AudioTrack[]*/,
   state/*: PlaylistPlaybackState*/,
@@ -62,11 +81,14 @@ export const usePlaylistPlaybackTrack = (
     const update = () => {
       const nextTrack = calculatePlaylistCurrentTrack(state, tracks, Date.now());
       setCurrentTrack(nextTrack);
+      console.log('update')
       if (!nextTrack)
         return;
-      const remainingTrackTime = nextTrack.track.trackLengthMs - nextTrack.trackProgress;
+      const remainingTrackTime = nextTrack.track.trackLengthMs - (nextTrack.trackProgress % nextTrack.track.trackLengthMs);
+      console.log(nextTrack.track.trackLengthMs, nextTrack.trackProgress);
       id = setTimeout(update, remainingTrackTime);
     };
+    console.log('effect')
     update();
 
     return () => {

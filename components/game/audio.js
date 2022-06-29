@@ -106,7 +106,7 @@ export const useAudioPlayback = (
     const { current: audio } = ref;
     if (!audio || !currentTrack)
       return;
-    const trackProgressSeconds = currentTrack.trackProgress / 1000;
+    const trackProgressSeconds = (currentTrack.trackProgress % currentTrack.track.trackLengthMs) / 1000;
     const trackDrift = Math.abs(trackProgressSeconds - audio.currentTime);
 
     if (trackDrift > 1)

@@ -70,6 +70,7 @@ export const AudioTrackAisle/*: Component<AudioTrackAisleProps>*/ = ({
   const onTrackFilesSelect = async (files) => {
     const nextStagingTracks = await Promise.all(files.map(async file => {
       const { title, album, artist, duration } = await parseAudioMetadata(file);
+      console.log(duration)
       return {
         id: uuid(),
         audioFile: file,
@@ -79,7 +80,7 @@ export const AudioTrackAisle/*: Component<AudioTrackAisleProps>*/ = ({
         album,
         artist,
 
-        trackLengthMs: duration * 10000,
+        trackLengthMs: duration * 1000,
       };
     }))
     const trackAlbumName = nextStagingTracks.map(t => t.album).find(Boolean);

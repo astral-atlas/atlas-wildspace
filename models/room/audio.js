@@ -76,6 +76,8 @@ export const calculatePlaylistCurrentTrack = (
 
   const loopedProgress = (progress % totalLength) || 0;
 
+  console.log(progress, offsets)
+
   const nextTrackIndex = offsets.findIndex(offset => loopedProgress < offset);
   const index = nextTrackIndex - 1;
 

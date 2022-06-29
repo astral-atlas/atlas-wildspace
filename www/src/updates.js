@@ -6,7 +6,7 @@ import type { UpdatesConnection, WildspaceClient } from "@astral-atlas/wildspace
 
 import { useEffect, useState } from "@lukekaalim/act";
 
-export const useUpdates = (client/*: WildspaceClient*/, gameId/*: ?GameID*/)/*: ?UpdatesConnection*/ => {
+export const useUpdates = (client/*: WildspaceClient*/, gameId/*: ?GameID*/, deps/*: mixed[]*/ = [])/*: ?UpdatesConnection*/ => {
   const [updates, setUpdates] = useState(null)
   
   useEffect(() => {
@@ -17,7 +17,7 @@ export const useUpdates = (client/*: WildspaceClient*/, gameId/*: ?GameID*/)/*: 
     return () => {
       updatePromise.then(updates => updates.updates.close());
     }
-  }, [client, gameId])
+  }, [client, gameId, ...deps])
 
   return updates;
 }
