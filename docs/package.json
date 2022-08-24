@@ -19,7 +19,8 @@
   },
   "homepage": "https://github.com/astral-atlas/wildspace#readme",
   "devDependencies": {
-    "vite": "2.7.13"
+    "vite": "2.7.13",
+    "@lukekaalim/identify": "*"
   },
   "dependencies": {
     "@astral-atlas/wildspace-client2": "^1.0.0",

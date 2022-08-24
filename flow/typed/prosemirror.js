@@ -69,6 +69,7 @@ declare module "prosemirror-transform" {
 
   declare export class Step {
     static fromJSON(schema: Schema<any>, input: mixed): Step;
+    toJSON(): mixed;
     apply(node: Node): { doc: Node },
   }
 }
@@ -104,7 +105,7 @@ declare module "prosemirror-model" {
   }
 
   declare class OrderedMap<K, V> {
-
+    append: (input: { [K]: V } | OrderedMap<K, V>) => this,
   }
 
   declare export class Schema<TNodeType: string> {

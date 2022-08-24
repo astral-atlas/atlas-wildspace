@@ -5,7 +5,7 @@ import type { ResourceDescription } from "@lukekaalim/net-description";
 import type { InitativeID, Initiative } from "../../game/initiative";
 import type { GameID } from "../../game/game";
 import type { CharacterID } from "../../character";
-import type { Exposition, ExpositionID } from "../../game/exposition";
+import type { Exposition } from "../../game/exposition";
 */
 
 import { c } from "@lukekaalim/cast";
@@ -13,7 +13,7 @@ import { castInitiative, castInitiativeId } from "../../game/initiative.js";
 import { createAdvancedCRUDGameAPI, createCRUDGameAPI } from "./meta.js";
 import { castGameId } from "../../game/game.js";
 import { castCharacterId } from "../../character.js";
-import { castExposition, castExpositionId } from "../../game/exposition.js";
+import { castExposition } from "../../game/exposition.js";
 
 /*::
 type ExpositionResource = AdvancedGameCRUDAPI<{
@@ -34,7 +34,7 @@ export type ExpositionAPI = {|
 const exposition/*: ResourceDescription<ExpositionResource>*/ = createAdvancedCRUDGameAPI({
   path: '/games/exposition',
   castResource: castExposition,
-  castResourceId: castExpositionId,
+  castResourceId: c.str,
   resourceName: 'exposition',
   resourceIdName: 'expositionId',
   castPostResource: c.obj({ name: c.str }),

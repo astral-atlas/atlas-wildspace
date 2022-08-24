@@ -10,15 +10,17 @@ import classes from './Library.module.css';
 export type LibraryAisleProps = {
   floor?: ElementNode,
   desk?: ?ElementNode,
+  wideDesk?: boolean
 };
 */
 
 export const LibraryAisle/*: Component<LibraryAisleProps>*/ = ({
   floor,
-  desk
+  desk,
+  wideDesk = false
 }) => {
   return [
     h('div', { class: classes.floor }, floor),
-    !!desk && h('div', { class: classes.desk }, desk),
+    !!desk && h('div', { classList: [classes.desk, wideDesk && classes.wide] }, desk),
   ]
 };

@@ -1,6 +1,8 @@
 // @flow strict
 
 /*::
+import type { AudioPlaylistID } from "../audio";
+
 export type RoomActions =
-  | { type: 'scene', }
+  | {| type: 'load-scene', audio: { playlistId: AudioPlaylistID },  |}
 */

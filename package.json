@@ -12,7 +12,9 @@
     "costume",
     "docs",
     "task",
-    "test"
+    "test",
+    "identify",
+    "bundle"
   ],
   "devDependencies": {
     "concurrently": "^7.0.0",

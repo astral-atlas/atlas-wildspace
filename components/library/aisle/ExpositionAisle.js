@@ -16,7 +16,7 @@ import type { AssetDownloadURLMap } from "../../asset/map";
 import type { WildspaceClient } from '@astral-atlas/wildspace-client2';
 */
 
-import { h, useState } from "@lukekaalim/act"
+import { h, useEffect, useRef, useState } from "@lukekaalim/act"
 import { useLibrarySelection } from "../librarySelection";
 import { LibraryAisle } from "../LibraryAisle";
 import { LibraryShelf } from "../LibraryShelf";
@@ -60,9 +60,6 @@ export const ExpositionAisle/*: Component<ExpositionAisleProps>*/ = ({
   const onCreateNewExposition = async () => {
     await client.game.exposition.create(game.id, { name: stagingName });
   }
-  const onUpdateExposition = async (exposition, expositionProps) => {
-    await client.game.exposition.update(game.id, exposition.id, { ...exposition, ...expositionProps });
-  }
   const onDeleteExposition = async (exposition) => {
     await client.game.exposition.destroy(game.id, exposition.id);
   }
@@ -81,29 +78,118 @@ export const ExpositionAisle/*: Component<ExpositionAisleProps>*/ = ({
           id: e.id,
         })) }),
       ]),
+      wideDesk: true,
       desk: [
-        !!selectedExposition && h(EditorForm, {}, [
-          h(EditorTextInput, { label: 'Name', text: selectedExposition.name, onTextInput: debounce(name => onUpdateExposition(selectedExposition, { name }), 1000) }),
-          h(EditorButton, { label: 'Delete Scene', onButtonClick: () => onDeleteExposition(selectedExposition) }),
-          h(ExpositionSubjectEditor, { selectedExposition, locations, onUpdateExposition })
-        ])
+        !!selectedExposition && h(ExpositionEditor, {
+          game,
+          exposition: selectedExposition,
+          locations,
+          client
+        })
       ]
     }),
   ];
 };
 
-const ExpositionSubjectEditor = ({ selectedExposition, locations, onUpdateExposition }) => {
-  const { subject } = selectedExposition;
+const ExpositionEditor = ({ game, exposition, locations, client }) => {
+  const { name } = exposition;
+  const onUpdateExposition = async (nextExposition) => {
+    await client.game.exposition.update(game.id, exposition.id, { ...exposition, ...nextExposition });
+  }
+  const onDeleteExposition = async () => {
+    await client.game.exposition.destroy(game.id, exposition.id);
+  }
 
+  const onUpdateSubject = async (index, nextSubject) => {
+    if (!nextSubject)
+      await onUpdateExposition({
+        ...exposition,
+        subjects: exposition.subjects.filter((s, i) => i !== index)
+      })
+    else
+      await onUpdateExposition({
+        ...exposition,
+        subjects: exposition.subjects.map((s, i) => i === index ? {
+          ...s,
+          ...nextSubject,
+        } : s)
+      })
+  }
+  const onAddSubject = async (nextSubject) => {
+    setStagingSubject(null);
+    await onUpdateExposition({
+      ...exposition,
+      subjects: [...exposition.subjects, nextSubject]
+    })
+  }
+
+  const [statingSubject, setStagingSubject] = useState(null);
+
+  return h(EditorForm, {}, [
+    h(EditorTextInput, { label: 'Name', text: name, onTextInput: debounce(name => onUpdateExposition({ name }), 1000) }),
+    h(EditorButton, { label: 'Delete Exposition', onButtonClick: () => onDeleteExposition() }),
+    h('ol', {}, exposition.subjects.map((subject, index) => h('li', { key: getValueOfSubject(subject) + index }, [
+      h(ExpositionSubjectEditor, {
+        label: 'Edit Subject',
+        subject,
+        locations,
+        onUpdateSubject: s => onUpdateSubject(index, s) })
+    ]))),
+    h(ExpositionSubjectEditor, {
+      key: 'None',
+      label: 'Select Subject to Add',
+      subject: statingSubject,
+      locations,
+      onUpdateSubject: s => setStagingSubject(s)
+    }),
+    h(EditorButton, { label: 'Add Subject', disabled: !statingSubject, onButtonClick: () => statingSubject && onAddSubject(statingSubject) }),
+
+  ])
+}
+const getValueOfSubject = (subject) => {
+  switch (subject.type) {
+    case 'location':
+      return `location:${subject.locationId}`
+    default:
+      return '';
+  }
+}
+const getSubjectOfValue = (value, locationValues) => {
+  const location = locationValues.get(value)
+  if (location)
+    return { type: 'location', locationId: location.id }
+  return null;
+}
+
+const ExpositionSubjectEditor = ({ label = '', subject = null, locations, onUpdateSubject }) => {
+  const locationValues = new Map(locations.map(l => [`location:${l.id}`, l]));
+
+  const selected = subject && getValueOfSubject(subject) || '';
+
+  const ref = useRef();
+  useEffect(() => {
+    const { current: select } = ref;
+    if (!select)
+      return;
+    select.value = subject && getValueOfSubject(subject) || '';
+  }, [subject])
+  
   return [
-    h(EditorButton, { label: 'Clear Subject', onButtonClick: () => onUpdateExposition(selectedExposition, { subject: { type: 'none' } }) }),
     h(SelectEditor, {
-      values: [...locations.map(e => ({ value: e.id, title: e.title })), { value: '', title: 'None' }],
-      selected: subject.type === 'location' && subject.locationId || '',
-      onSelectedChange: locationId => {
-        if (!locationId)
-          return;
-        onUpdateExposition(selectedExposition, { subject: { type: 'location', locationId }})
+      ref,
+      label,
+      groups: [
+        {
+          title: 'locations',
+          values: [...locationValues].map(([value, location]) =>
+            ({ value, title: location.title }))
+        },
+      ],
+      values: [{ value: '', title: 'None' }],
+      selected,
+      onSelectedChange: (value) => {
+        const subject = getSubjectOfValue(value, locationValues);
+        onUpdateSubject(subject)
       }
     }),
   ]

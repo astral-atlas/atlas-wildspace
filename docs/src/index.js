@@ -25,6 +25,10 @@ import { initiativePage, initiativePages } from "./initiative";
 import { toolbarPage, toolbarPages } from "./toolbar";
 import { mainMenuPage, mainMenuPages } from "./mainMenu";
 
+import test from 'flow:./index.js';
+
+console.log(test);
+
 /*::
 export type Page = {
   content: ElementNode,

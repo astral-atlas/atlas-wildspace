@@ -1,6 +1,7 @@
 // @flow strict
 /*::
 import type { BoardArea } from "../../encounter/board";
+import type { BoardPosition } from "../../encounter/map";
 import type { SceneResourceID, TextureResourceID } from "../resources/resource";
 */
 
@@ -17,9 +18,9 @@ export type TerrainProp = {
 */
 
 export const createFloorForTerrain = (
-  terrainType,
-  terrainPosition,
-  visible
+  terrainType/*: string*/,
+  terrainPosition/*: BoardPosition*/,
+  visible/*: boolean*/ = false
 )/*: BoardArea[]*/ => {
   if (!visible)
     return [];

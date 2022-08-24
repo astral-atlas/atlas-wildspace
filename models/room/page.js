@@ -32,7 +32,6 @@ export type RoomPage = {
   room: Room,
   state: RoomState,
 
-  scene:        ?Scene,
   locations:    $ReadOnlyArray<Location>,
   expositions:  $ReadOnlyArray<Exposition>,
 
@@ -49,7 +48,6 @@ export const castRoomPage/*: Cast<RoomPage>*/ = c.obj({
 
   locations: c.arr(castLocation),
   expositions: c.arr(castExposition),
-  scene: c.maybe(castScene),
 
   tracks: c.arr(castAudioTrack),
   playlist: c.maybe(castAudioPlaylist),
@@ -61,6 +59,7 @@ export const castRoomPage/*: Cast<RoomPage>*/ = c.obj({
 /*::
 export type RoomPageEvent =
   | { type: 'next-page', page: RoomPage }
+  | { type: 'next-state', roomState: RoomState }
 */
 
 export const castRoomPageEvent/*: Cast<RoomPageEvent>*/ = c.or('type', {
@@ -68,11 +67,19 @@ export const castRoomPageEvent/*: Cast<RoomPageEvent>*/ = c.or('type', {
     type: c.lit('next-page'),
     page: castRoomPage
   }),
+  'next-state': c.obj({
+    type: c.lit('next-state'),
+    roomState: castRoomState
+  }),
 })
 
 export const reduceRoomPageEvent = (roomPage/*: RoomPage*/, event/*: RoomPageEvent*/)/*: RoomPage*/ => {
   switch (event.type) {
     case 'next-page':
       return event.page;
+    case 'next-state':
+      return { ...roomPage, state: event.roomState };
+    default:
+      return roomPage;
   }
 }

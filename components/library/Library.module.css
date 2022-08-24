@@ -150,6 +150,9 @@
 
   width: 16rem;
 }
+.desk.wide {
+  width: 32rem;
+}
 
 .floor {
   position: relative;

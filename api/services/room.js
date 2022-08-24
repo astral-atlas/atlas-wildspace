@@ -6,7 +6,6 @@ import type { WildspaceData } from '@astral-atlas/wildspace-data';
 
 import type { AssetService } from "./asset";
 import type { GameService } from "./game";
-
 */
 
 import { v4 as uuid } from 'uuid';
@@ -58,28 +57,22 @@ export const createRoomService = (
     const state = {
       roomId: room.id,
       audio: audioState || { playback: { type: 'none' }, volume: 0 },
-      scene: sceneState || { activeScene: null },
+      scene: sceneState || { type: 'none' },
       lobby: (lobbyData && {
         ...lobbyData.state,
         playersConnected: lobbyData.state.playersConnected.filter(pc => validConnections.some(gc => gc.id === pc.gameConnectionId))
       }) || { messages: [], playersConnected: [] },
     }
 
-    const sceneMap = new Map(allScenes.map(s => [s.id, s]));
-    const expositionMap = new Map(allExposisions.map(e => [e.id, e]))
     const locationMap = new Map(allLocations.map(l => [l.id, l]))
     const playlistMap = new Map(allPlaylists.map(p => [p.id, p]))
     const trackMap = new Map(allTracks.map(t => [t.id, t]))
 
-    const scene = state.scene.activeScene && sceneMap.get(state.scene.activeScene) || null;
-    const expositions = [
-      (scene && scene.content.type === 'exposition') ? expositionMap.get(scene.content.expositionId) : null
-    ].filter(Boolean);
+    const expositions = [];
+    const sceneSubject = state.scene.type === 'exposition' && state.scene.exposition.subject;
+
     const locations = [
-      ...expositions
-        .map(exposition => exposition.subject.type === "location" ? exposition.subject : null)
-        .filter(Boolean)
-        .map(subject => locationMap.get(subject.locationId)),
+      sceneSubject && sceneSubject.type === 'location' && locationMap.get(sceneSubject.locationId) || null,
     ].filter(Boolean);
 
     const playlist = state.audio.playback.type === 'playlist' && playlistMap.get(state.audio.playback.playlist.id) || null;
@@ -103,7 +96,6 @@ export const createRoomService = (
       room,
       state,
       
-      scene,
       locations,
       expositions,
 
