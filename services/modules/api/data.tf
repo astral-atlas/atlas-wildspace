@@ -37,7 +37,7 @@ resource "aws_dynamodb_table" "api_data" {
   }
 
   ttl {
-    attribute_name = "TTL"
+    attribute_name = "ExpiryTime"
     enabled        = false
   }
 }

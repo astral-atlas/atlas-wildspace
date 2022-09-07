@@ -8,6 +8,7 @@ import type { Cast } from "@lukekaalim/cast";
 import { c } from "@lukekaalim/cast";
 import { createBufferTable } from "./table.js";
 import type { CompositeKey } from "./key";
+import type { DynamoDB } from "@aws-sdk/client-dynamodb";
 
 /*::
 export type ExpiryTable<Value> = {
@@ -39,7 +40,36 @@ export const createExpiryTable = /*:: <Value>*/(
 
 /*::
 export type Expirable<V: {}> = {
-  queryUnexpired: (key: CompositeKey<string, string>) => null,
-  set: (key: CompositeKey<string, string>, expiry: number) => null,
+  queryUnexpired: (partitionKey: string) => null,
+  expire: (key: CompositeKey<string, string>) => null,
+  expireTTL: (key: CompositeKey<string, string>, ttl: number) => null,
+  set: (key: CompositeKey<string, string>, value: number, expiry: number) => null,
 }
 */
+
+export const createDynamoDBExpirable = /*:: <V: {}>*/(
+  dynamodb/*: DynamoDB*/,
+  tableName/*: string*/,
+  castValue/*: Cast<V>*/,
+  partitionKey/*: string*/,
+  sortKey/*: string*/,
+  expiryKey/*: string*/
+)/*: Expirable<V>*/ => {
+  const queryUnexpired = async (key) => {
+    dynamodb.query({
+      TableName: tableName,
+      
+      KeyConditionExpression: `#pkn=:pk`,
+      ExpressionAttributeNames: {
+        [`#pkn`]: partitionKeyName,
+      },
+      ExpressionAttributeValues: {
+        [`:pk`]: { S: createPK(pk) },
+      }
+    });
+  }
+
+  return {
+
+  }
+}
