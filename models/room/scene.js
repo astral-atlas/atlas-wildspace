@@ -10,6 +10,7 @@ import type { SceneID, Scene, SceneContent } from "../game/scene";
 import type { Cast } from "@lukekaalim/cast/main";
 import type { Exposition } from "../game/exposition";
 import type { MiniTheater, MiniTheaterID } from "../game/miniTheater";
+import type { RoomStateAction } from "./actions";
 
 export type RoomSceneState = {
   content: SceneContent,
@@ -20,17 +21,9 @@ export const castRoomSceneState/*: Cast<RoomSceneState>*/ = c.obj({
   content: castSceneContent,
 })
 
-/*::
-export type RoomSceneAction =
-  | { type: 'scene-change', scene: Scene }
-*/
-export const castRoomSceneAction/*: Cast<RoomSceneAction>*/ = c.or('type', {
-  'scene-change': c.obj({ type: c.lit('scene-change'), scene: castScene })
-});
-
-export const reduceSceneState = (state/*: RoomSceneState*/, action/*: RoomSceneAction*/)/*: RoomSceneState*/ => {
+export const reduceSceneState = (state/*: RoomSceneState*/, action/*: RoomStateAction*/)/*: RoomSceneState*/ => {
   switch (action.type) {
-    case 'scene-change':
+    case 'load-scene':
       return { ...state, content: action.scene.content };
     default:
       return state;

@@ -152,6 +152,12 @@ export const createGameService = (
     await data.gameParticipation.set(playerId, game.id, { joined: false, gameId: game.id });
   }
 
+  const getRoomConnectionCounts = async (gameId) => {
+    const { resultPairs } = await data.roomData.roomConnectionCounts.table.query(gameId);
+    return resultPairs
+      .map(([key, item]) => ({ id: key, connectionCount: item.count }))
+  };
+
   const getGamePage = async (gameId, identity, isGM) => {
     const [
       { result: game },
@@ -162,7 +168,7 @@ export const createGameService = (
       { result: magicItems },
       { result: wikiDocs },
       { result: allRooms },
-      { result: roomLobbyData, },
+      roomConnectionCounts,
     ] = await Promise.all([
       data.game.get(gameId),
       listPlayers(gameId, identity),
@@ -172,7 +178,7 @@ export const createGameService = (
       data.gameData.magicItems.query(gameId),
       data.wiki.documents.query(gameId),
       data.room.query(gameId),
-      data.roomData.lobby.query(gameId),
+      getRoomConnectionCounts(gameId),
     ]);
     if (!game)
       return null;
@@ -198,10 +204,6 @@ export const createGameService = (
     ].filter(Boolean);
     const rooms = allRooms.filter(r => !r.hidden || isGM);
 
-    const roomLobbies = roomLobbyData
-      .filter(l => rooms.some(r => l.roomId === r.id))
-      .map((lobbyData) => [lobbyData.roomId, lobbyData.state])
-
     const gamePage = {
       game,
 
@@ -213,7 +215,7 @@ export const createGameService = (
       wikiDocs,
 
       rooms,
-      roomLobbies,
+      roomConnectionCounts,
 
       assets,
     };

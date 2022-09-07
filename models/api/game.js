@@ -15,7 +15,6 @@ import type { GameConnectionID } from "../game/connection";
 import type { InitiativeAPI } from "./game/initiative";
 import type { MiniTheaterAPI } from "./game/miniTheater";
 import type { AdvancedUpdatesAPI } from "./game/advancedUpdates";
-import type { ExpositionAPI } from "./game/exposition";
 import type { ScenesAPI } from "./game/scene";
 import type { LibraryAPI } from './game/library';
 import type { GamePageAPI } from "./game/page";
@@ -42,7 +41,6 @@ import { castWikiDocAction, castWikiDocEvent } from "../game.js";
 import { wikiAPI } from './game/wiki.js';
 import { createAuthorizedConnectionDescription } from './meta.js';
 import { scenesAPI } from "./game/scene.js";
-import { expositionAPI } from './game/exposition.js';
 import { libraryAPI } from "./game/library.js";
 import { gamePageAPI } from "./game/page.js";
 
@@ -90,7 +88,6 @@ export type GameAPI = {
   ...InitiativeAPI,
   ...MiniTheaterAPI,
   ...AdvancedUpdatesAPI,
-  ...ExpositionAPI,
   ...LibraryAPI,
   ...GamePageAPI,
 };
@@ -148,7 +145,6 @@ export const gameAPI = {
   ...scenesAPI,
   ...initiativeAPI,
   ...advancedUpdatesAPI,
-  ...expositionAPI,
   ...libraryAPI,
   ...gamePageAPI,
   '/games': gameResourceDescription,

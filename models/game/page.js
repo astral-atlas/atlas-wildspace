@@ -8,7 +8,6 @@ import type { Game, Player } from "./game";
 import type { MagicItem } from "./magicItem";
 import type { WikiDoc } from "./wiki/doc";
 import type { Cast } from "@lukekaalim/cast";
-import type { RoomLobbyState } from "../room/lobby";
 import type { UserID } from "@astral-atlas/sesame-models/src/user";
 */
 import { c } from "@lukekaalim/cast";
@@ -20,7 +19,6 @@ import { castRoom } from "../room/room.js";
 import { castWikiDoc } from "./wiki/doc.js";
 import { castMagicItem } from "./magicItem.js";
 import { castMonsterActorMask, castMonsterActorId } from "../monster/monsterActor.js";
-import { castRoomLobbyState } from "../room/lobby.js";
 import { castRoomId } from "../room/room.js";
 import { castPlayer } from "./game.js";
 /*::
@@ -35,7 +33,10 @@ export type GamePage = {
   wikiDocs: $ReadOnlyArray<WikiDoc>,
 
   rooms: $ReadOnlyArray<Room>,
-  roomLobbies: $ReadOnlyArray<[RoomID, RoomLobbyState]>,
+  roomConnectionCounts: $ReadOnlyArray<{
+    id: RoomID,
+    connectionCount: number
+  }>,
 
   assets: $ReadOnlyArray<AssetInfo>,
 };
@@ -52,7 +53,7 @@ export const castGamePage/*: Cast<GamePage>*/ = c.obj({
   wikiDocs: c.arr(castWikiDoc),
 
   rooms: c.arr(castRoom),
-  roomLobbies: c.arr(c.tup([castRoomId, castRoomLobbyState])),
+  roomConnectionCounts: c.arr(c.obj({ id: castRoomId, connectionCount: c.num })),
 
   assets: c.arr(castAssetInfo)
 })
@@ -60,7 +61,7 @@ export const castGamePage/*: Cast<GamePage>*/ = c.obj({
 /*::
 export type GamePageEvent =
   | { type: 'next-page', page: GamePage }
-  | { type: 'update-lobby-state', roomId: RoomID, roomLobbyState: RoomLobbyState }
+  | { type: 'room-connection-change', roomId: RoomID, connectionCount: number }
   | { type: 'update-monster-mask', monsterActorId: MonsterActorID, monsterMask: MonsterActorMask }
   | { type: 'update-character', characterId: CharacterID, character: Character }
 */
@@ -69,10 +70,10 @@ export const castGamePageEvent/*: Cast<GamePageEvent>*/ = c.or('type', {
     type: c.lit('next-page'),
     page: castGamePage
   }),
-  'update-lobby-state': c.obj({
-    type: c.lit('update-lobby-state'),
+  'room-connection-change': c.obj({
+    type: c.lit('room-connection-change'),
     roomId: castRoomId,
-    roomLobbyState: castRoomLobbyState,
+    connectionCount: c.num,
   }),
   'update-monster-mask': c.obj({
     type: c.lit('update-monster-mask'),
@@ -90,12 +91,15 @@ export const reduceGamePageEvent = (page/*: GamePage*/, event/*: GamePageEvent*/
   switch (event.type) {
     case 'next-page':
       return event.page;
-    case 'update-lobby-state':
+    case 'room-connection-change':
+      const { connectionCount, roomId } = event;
       return {
         ...page,
-        roomLobbies: page.roomLobbies.map(([roomId, roomLobbyState]) => roomId === event.roomId
-        ? [roomId, event.roomLobbyState]
-        : [roomId, roomLobbyState])
+        roomConnectionCounts: page.roomConnectionCounts.map(connection => {
+          if (connection.id !== roomId)
+            return connection;
+          return { ...connection, connectionCount }
+        })
       };
     case 'update-character':
       return {

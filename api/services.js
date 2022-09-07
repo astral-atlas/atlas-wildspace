@@ -31,7 +31,7 @@ export type Services = {
 
 export const createServices = (config/*: APIConfig*/)/*: Services*/ => {
   const auth = createAuthService(config);
-  const { data } = createData(config);
+  const data = createData(config);
   const asset = createAssetService(data, config);
   const game = createGameService(data, auth, asset);
   const room = createRoomService(data, asset, game);

@@ -11,6 +11,8 @@ import type { MonsterActorID, MonsterActorMask } from "../monster/monsterActor";
 import type { RoomState } from "./state";
 import type { AssetInfo } from "../asset";
 import type { Room } from "./room";
+import type { GameConnectionID } from "../game/connection";
+import type { UserID } from "@astral-atlas/sesame-models/src/user";
 */
 
 import { c } from "@lukekaalim/cast";
@@ -25,12 +27,17 @@ import {
 } from "../monster/monsterActor.js";
 import { castCharacter } from "../character.js";
 import { castRoom } from "./room.js";
-
+import { castGameConnectionId } from "../game/connection";
+import { castUserId } from "@astral-atlas/sesame-models";
 
 /*::
 export type RoomPage = {
   room: Room,
   state: RoomState,
+  connections: $ReadOnlyArray<{|
+    id: GameConnectionID,
+    userId: UserID
+  |}>,
 
   locations:    $ReadOnlyArray<Location>,
   expositions:  $ReadOnlyArray<Exposition>,
@@ -45,6 +52,10 @@ export type RoomPage = {
 export const castRoomPage/*: Cast<RoomPage>*/ = c.obj({
   room: castRoom,
   state: castRoomState,
+  connections: c.arr(c.obj({
+    id: castGameConnectionId,
+    userId: castUserId,
+  })),
 
   locations: c.arr(castLocation),
   expositions: c.arr(castExposition),

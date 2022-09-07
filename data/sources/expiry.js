@@ -7,6 +7,7 @@ import type { Cast } from "@lukekaalim/cast";
 
 import { c } from "@lukekaalim/cast";
 import { createBufferTable } from "./table.js";
+import type { CompositeKey } from "./key";
 
 /*::
 export type ExpiryTable<Value> = {
@@ -35,3 +36,10 @@ export const createExpiryTable = /*:: <Value>*/(
   };
   return { get, set }
 };
+
+/*::
+export type Expirable<V: {}> = {
+  queryUnexpired: (key: CompositeKey<string, string>) => null,
+  set: (key: CompositeKey<string, string>, expiry: number) => null,
+}
+*/

@@ -9,7 +9,12 @@ import { c, castArray } from '@lukekaalim/cast';
 import { createLockFunction } from './lock.js';
 
 /*::
-export type Page<Key, Value> = { result: $ReadOnlyArray<Value>, keys: Key[], next: Key | null };
+export type Page<Key, Value> = {
+  result: $ReadOnlyArray<Value>,
+  keys: Key[],
+  next: Key | null,
+  resultPairs: $ReadOnlyArray<[Key, Value]>
+};
 
 export type Table<Key, Value> = {
   get: (key: Key) => Promise<{ result: Value | null }>,
@@ -17,11 +22,13 @@ export type Table<Key, Value> = {
   scan: (from?: null | Key, limit?: null | number) => Promise<Page<Key, Value>>
 };
 
-export type CompositeTable<PartitionKey, SortKey, Value> = {|
-  get: (partition: PartitionKey, sort: SortKey) => Promise<{ result: Value | null }>,
-  set: (partition: PartitionKey, sort: SortKey, value: null | Value) => Promise<void>,
-  scan: (from?: { partition?: ?PartitionKey, sort?: ?SortKey }, limit?: null | number) => Promise<Page<{ partition: PartitionKey, sort: SortKey }, Value>>,
-  query: (partition: PartitionKey) => Promise<Page<SortKey, Value>>
+export type CompositeKey<PK, SK> = { partition: PK, sort: SK };
+
+export type CompositeTable<PK, SK, Value> = {|
+  get: (partition: PK, sort: SK) => Promise<{ result: Value | null }>,
+  set: (partition: PK, sort: SK, value: null | Value) => Promise<void>,
+  scan: (from?: { partition?: ?PK, sort?: ?SK }, limit?: null | number) => Promise<Page<{ partition: PK, sort: SK }, Value>>,
+  query: (partition: PK) => Promise<Page<SK, Value>>
 |};
 */
 
@@ -44,7 +51,7 @@ export const createMemoryTableLock = /*:: <K, V>*/(table/*: Table<K, V>*/)/*: Ta
   const lockedSet = createLockFunction(({ k, v }) => table.set(k, v));
   return {
     ...table,
-    set: (k, v) => lockedSet({ k, v})
+    set: (k, v) => lockedSet({ k, v })
   }
 };
 export const createMemoryCompositeTableLock = /*:: <P, S, V>*/(table/*: CompositeTable<P, S, V>*/)/*: CompositeTable<P, S, V>*/ => {
@@ -81,9 +88,14 @@ export const createBufferTable = /*:: <T>*/(store/*: BufferStore*/, castValue/*:
   const scan = async () => {
     const table = await loadTable();
     // TODO: this is broken!
-    return { result: table.map(e => e.value), keys: table.map(e => e.key), next: null };
+    return {
+      resultPairs: table.map(e => [e.key, e.value]),
+      result: table.map(e => e.value),
+      keys: table.map(e => e.key),
+      next: null
+    };
   }
-  return createMemoryTableLock({ get, set, scan, });
+  return createMemoryTableLock({ get, set, scan });
 };
 export const createBufferCompositeTable = /*:: <T>*/(
   store/*: BufferStore*/,
@@ -120,7 +132,8 @@ export const createBufferCompositeTable = /*:: <T>*/(
       .filter(e => !partition || e.partition === partition);
     const result = validKeys.map(e => e.value);
     const keys = validKeys.map(e => ({ partition: e.partition, sort: e.sort }))
-    return { result, keys, next: null };
+    const resultPairs = validKeys.map(e => [{ partition: e.partition, sort: e.sort }, e.value]);
+    return { result, keys, next: null, resultPairs };
   };
   const query = async (partition) => {
     const [table] = await loadTable();
@@ -128,7 +141,8 @@ export const createBufferCompositeTable = /*:: <T>*/(
       .filter(e => e.partition === partition)
     const result = entries.map(e => e.value);
     const keys = entries.map(e => e.sort)
-    return { result, keys, next: null };
+    const resultPairs = entries.map(e => [e.sort, e.value]);
+    return { result, keys, resultPairs, next: null };
   };
   return createMemoryCompositeTableLock({ get, set, scan, query });
 };
@@ -187,15 +201,15 @@ export const readValueTypes = (value/*: DynamoDBValueType*/)/*: mixed*/ => {
   throw new Error();
 }
 
-export const createDynamoDBCompositeTable = /*:: <PartitionKey, SortKey, Item>*/(
+export const createDynamoDBCompositeTable = /*:: <Item>*/(
   tableName/*: string*/,
   partitionKeyName/*: string*/,
   sortKeyName/*: string*/,
-  createPK/*: PartitionKey => string*/,
-  createSK/*: SortKey => string*/,
+  createPK/*: string => string*/,
+  createSK/*: string => string*/,
   castItem/*: Cast<Item>*/,
   client/*: DynamoDB*/,
-)/*: CompositeTable<PartitionKey, SortKey, Item>*/ => {
+)/*: CompositeTable<string, string, Item>*/ => {
 
   const get = async (pk, sk) => {
     try {
@@ -228,8 +242,25 @@ export const createDynamoDBCompositeTable = /*:: <PartitionKey, SortKey, Item>*/
   };
   const scan = async () => {
     const { Items } = await client.scan({ TableName: tableName })
-    const result = Items.map(item => readValueTypes({ M: item })).map(castItem);
-    return { result, keys: [], next: null };
+    const itemValues = Items.map(item => readValueTypes({ M: item }))
+
+    const resultPairs = itemValues
+      .map(item => {
+        if (typeof item !== 'object' || item === null)
+          return null;
+        const partition = item[partitionKeyName];
+        const sort = item[sortKeyName];
+        if (typeof partition !== 'string' || typeof sort !== 'string')
+          return null;
+        return [
+          { partition, sort },
+          castItem(item)
+        ]
+      })
+      .filter(Boolean);
+    const result = resultPairs.map(([k, v]) => v);
+    const keys = resultPairs.map(([k, v]) => k);
+    return { result, keys, resultPairs, next: null };
   };
   const castQuery = createFaultTolerantArrayCaster(castItem);
   const query = async (pk) => {
@@ -246,26 +277,18 @@ export const createDynamoDBCompositeTable = /*:: <PartitionKey, SortKey, Item>*/
     const itemValue = Items.map(item => readValueTypes({ M: item }))
     const keys/*: any*/ = itemValue.map(item => (typeof item === 'object' && item) ? item[sortKeyName] : '<NONE>')
     const [result, rejects] = castQuery(itemValue);
-    /*
-    if (rejects.length > 0) {
-      await client.batchWriteItem({ RequestItems: {
-        [tableName]: rejects.map(r => {
-          const index = itemValue.indexOf(r);
-          const item = Items[index];
-          const action = {
-            DeleteRequest: {
-              Key: {
-                [partitionKeyName]: item[partitionKeyName],
-                [sortKeyName]: item[sortKeyName]
-              }
-            }
-          }
-          return action;
-        }),
-      }});
-    }
-    */
-    return { result, keys, next: null };
+    const resultPairs = result
+      .map(item => {
+        if (typeof item !== 'object' || item === null)
+          return null;
+        const sort = item[sortKeyName];
+        if (typeof sort !== 'string')
+          return null;
+        return [sort, castItem(item)]
+      })
+      .filter(Boolean);
+
+    return { result, keys, resultPairs, next: null };
   };
   return {
     get,
@@ -291,7 +314,8 @@ export const createDynamoDBSimpleTable = /*:: <Key, Item>*/(
     return { result };
   };
   const scan = async () => {
-    return { result: [], keys: [], next: null };
+    throw new Error('Unimplimented');
+    //return { result: [], keys: [], resultPairs: [], next: null };
   };
   const set = async (key, item) => {
     if (!item)
@@ -302,7 +326,7 @@ export const createDynamoDBSimpleTable = /*:: <Key, Item>*/(
       [keyName]: { S: createKey(key) },
       [sortKeyName]: { S: "_" }
     };
-    console.log(Item);
+
     await client.putItem({ TableName: tableName, Item });
   };
   return { get, scan, set };

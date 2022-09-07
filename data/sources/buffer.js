@@ -59,6 +59,9 @@ export type BufferDB<K: string> = {
 }
 */
 
+/**
+ * Store arbitrary buffers of data in a file, and retrieve consistently via key
+ */
 export const createFileStreamBufferDB = /*:: <K: string>*/(directoryPath/*: string*/)/*: BufferDB<K>*/ => {
   const get = async (key) => {
     try {
@@ -81,6 +84,9 @@ export const createFileStreamBufferDB = /*:: <K: string>*/(directoryPath/*: stri
 
   return { get, set };
 };
+/**
+ * Store arbitrary buffers of data in memory, and retrieve via key
+ */
 export const createMemoryBufferDB = ()/*: BufferDB<string>*/ => {
   const db = new Map();
   const get = async (key) => {
@@ -95,6 +101,9 @@ export const createMemoryBufferDB = ()/*: BufferDB<string>*/ => {
   }
   return { get, set };
 }
+/**
+ * Store arbitrary buffers of data in AWS S3, and retrieve via key
+ */
 export const createAWSS3BufferDB = (s3/*: S3*/, bucket/*: string*/, prefix/*: string*/)/*: BufferDB<string>*/ => ({
   async get (key) {
     const bucketKey = join(prefix, key);
@@ -116,3 +125,16 @@ export const createAWSS3BufferDB = (s3/*: S3*/, bucket/*: string*/, prefix/*: st
       await s3.deleteObject({ Bucket: bucket, Key: bucketKey });
   }
 });
+
+export const createBufferStore = /*:: <T: string>*/(bufferDB/*: BufferDB<T>*/, key/*: T*/)/*: BufferStore*/ => {
+  const get = async () => {
+    const { result } =  await bufferDB.get(key);
+    if (!result)
+      throw new Error();
+    return result;
+  };
+  const set = async (input) => {
+    await bufferDB.set(key, input)
+  };
+  return { get, set };
+}
