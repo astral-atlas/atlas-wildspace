@@ -23,7 +23,6 @@ export const createLibraryRoutes/*: RoutesConstructor*/ = (services) => {
           { result: monsters },
           { result: monsterActors },
           { result: miniTheaters },
-          { result: expositions },
           { result: scenes },
           { result: locations },
           { result: tracks },
@@ -34,7 +33,6 @@ export const createLibraryRoutes/*: RoutesConstructor*/ = (services) => {
           services.data.monsters.query(game.id),
           services.data.gameData.monsterActors.query(game.id),
           services.data.gameData.miniTheaters.query(game.id),
-          services.data.gameData.expositions.query(game.id),
           services.data.gameData.scenes.query(game.id),
           services.data.gameData.locations.query(game.id),
           services.data.tracks.query(game.id),
@@ -49,7 +47,6 @@ export const createLibraryRoutes/*: RoutesConstructor*/ = (services) => {
         const library = {
           rooms,
           characters,
-          expositions,
           monsters,
           monsterActors,
           miniTheaters,

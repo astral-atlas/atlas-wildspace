@@ -9,6 +9,7 @@ import type { MagicItem } from "./magicItem";
 import type { WikiDoc } from "./wiki/doc";
 import type { Cast } from "@lukekaalim/cast";
 import type { UserID } from "@astral-atlas/sesame-models/src/user";
+import type { GameConnectionID } from "./connection";
 */
 import { c } from "@lukekaalim/cast";
 
@@ -34,8 +35,8 @@ export type GamePage = {
 
   rooms: $ReadOnlyArray<Room>,
   roomConnectionCounts: $ReadOnlyArray<{
-    id: RoomID,
-    connectionCount: number
+    roomId: RoomID,
+    count: number
   }>,
 
   assets: $ReadOnlyArray<AssetInfo>,
@@ -53,7 +54,7 @@ export const castGamePage/*: Cast<GamePage>*/ = c.obj({
   wikiDocs: c.arr(castWikiDoc),
 
   rooms: c.arr(castRoom),
-  roomConnectionCounts: c.arr(c.obj({ id: castRoomId, connectionCount: c.num })),
+  roomConnectionCounts: c.arr(c.obj({ roomId: castRoomId, count: c.num })),
 
   assets: c.arr(castAssetInfo)
 })
@@ -61,7 +62,7 @@ export const castGamePage/*: Cast<GamePage>*/ = c.obj({
 /*::
 export type GamePageEvent =
   | { type: 'next-page', page: GamePage }
-  | { type: 'room-connection-change', roomId: RoomID, connectionCount: number }
+  | { type: 'room-connections-change', connections: $ReadOnlyArray<{ roomId: RoomID, count: number }> }
   | { type: 'update-monster-mask', monsterActorId: MonsterActorID, monsterMask: MonsterActorMask }
   | { type: 'update-character', characterId: CharacterID, character: Character }
 */
@@ -70,10 +71,12 @@ export const castGamePageEvent/*: Cast<GamePageEvent>*/ = c.or('type', {
     type: c.lit('next-page'),
     page: castGamePage
   }),
-  'room-connection-change': c.obj({
-    type: c.lit('room-connection-change'),
-    roomId: castRoomId,
-    connectionCount: c.num,
+  'room-connections-change': c.obj({
+    type: c.lit('room-connections-change'),
+    connections: c.arr(c.obj({
+      roomId: castRoomId,
+      count: c.num,
+    })),
   }),
   'update-monster-mask': c.obj({
     type: c.lit('update-monster-mask'),
@@ -91,15 +94,10 @@ export const reduceGamePageEvent = (page/*: GamePage*/, event/*: GamePageEvent*/
   switch (event.type) {
     case 'next-page':
       return event.page;
-    case 'room-connection-change':
-      const { connectionCount, roomId } = event;
+    case 'room-connections-change':
       return {
         ...page,
-        roomConnectionCounts: page.roomConnectionCounts.map(connection => {
-          if (connection.id !== roomId)
-            return connection;
-          return { ...connection, connectionCount }
-        })
+        roomConnectionCounts: event.connections
       };
     case 'update-character':
       return {

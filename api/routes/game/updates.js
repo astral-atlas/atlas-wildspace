@@ -20,7 +20,8 @@ export const createUpdatesRoutes/*: RoutesConstructor*/ = (services) => {
 
       const interval = setInterval(() => {
         socket.ping(Date.now());
-        services.game.connection.heartbeat(gameId, connectionId, identity.grant.identity, Date.now())
+        services.game.connection.heartbeat(gameId, connectionId, Date.now())
+        updateChannels.heartbeat();
       }, 1000)
 
       const updateChannels = services.update.create(game, identity.grant.identity, connectionId, send, identity);
@@ -32,7 +33,6 @@ export const createUpdatesRoutes/*: RoutesConstructor*/ = (services) => {
         removeListener();
         updateChannels.close();
         services.game.connection.disconnect(gameId, connectionId);
-        services.game.connection.getValidConnections(gameId, Date.now());
       });
     }
   })

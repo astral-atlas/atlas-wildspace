@@ -3,21 +3,6 @@
 /*:: import type { BufferStore, BufferDB } from './sources/buffer.js'; */
 /*:: import type { Channel } from './sources/channel.js'; */
 
-import { c } from "@lukekaalim/cast"
-import { createBufferCompositeTable } from "./sources/table.js"
-import {
-  castGameConnectionState,
-  castLocation,
-  castMagicItem,
-  castMiniTheater,
-  castNonPlayerCharacter,
-  castExposition,
-  castScene,
-  castMonsterActor
-} from "@astral-atlas/wildspace-models";
-import { createFakeTransactable } from "./sources/table2.js";
-import { createMemoryChannel } from "./sources/channel.js";
-
 /*::
 import type { Table, CompositeTable } from './sources/table.js';
 
@@ -34,6 +19,7 @@ import type {
 } from "@astral-atlas/wildspace-models";
 
 import type { Transactable } from "./sources/table2";
+import type { ExpirableCompositeTable } from "./sources/expiry";
 */
 
 /*::
@@ -44,7 +30,7 @@ export type WildspaceGameData = {
 
   monsterActors: CompositeTable<GameID, MonsterActorID, MonsterActor>,
 
-  connections:  CompositeTable<GameID, GameConnectionID, GameConnectionState>,
+  connections:  ExpirableCompositeTable<GameID, GameConnectionID, GameConnectionState>,
 
   scenes:       CompositeTable<GameID, SceneID, Scene>,
   miniTheaters: {|
@@ -53,8 +39,4 @@ export type WildspaceGameData = {
   |},
   miniTheaterEvents: Channel<MiniTheaterID, MiniTheaterEvent>
 };
-
-type DataConstructors = {
-  createBufferStore: (name: string) => BufferStore,
-}
 */

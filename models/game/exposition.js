@@ -1,10 +1,13 @@
 // @flow strict
 
 import { c } from "@lukekaalim/cast";
-import { castNonPlayerCharacterID } from "./character.js";
-import { castCharacterId } from "../character.js";
-import { castLocationId } from "./location.js";
 import { castRichText } from "./wiki/richText.js";
+import {
+  castLocationResourceReference,
+  castMiniTheaterResourceReference,
+  castNPCResourceReference,
+} from "./resource.js";
+import { castAssetID } from "../asset.js";
 
 /*::
 import type { Cast } from "@lukekaalim/cast";
@@ -12,14 +15,22 @@ import type { CharacterID } from "../character";
 import type { NonPlayerCharacterID } from "./character";
 import type { LocationID } from "./location";
 import type { RichText } from "./wiki/richText";
+import type { AssetID } from "../asset";
+import type {
+  LocationResourceReference,
+  MiniTheaterResourceReference,
+  NPCResourceReference,
+} from "./resource";
+import type { MiniTheaterID } from "./miniTheater";
 
 export type ExpositionSubject = 
-  | { type: 'npc', npcId: NonPlayerCharacterID }
-  | { type: 'location', locationId: LocationID }
+  | LocationResourceReference
+  | NPCResourceReference
   | { type: 'none' }
 
-export type ExpositionBackground = 
-  | { type: 'location', locationId: LocationID }
+export type ExpositionBackground =
+  | MiniTheaterResourceReference
+  | { type: 'image', assetId: AssetID }
   | { type: 'color', color: string }
 
 export type Exposition = {
@@ -30,12 +41,13 @@ export type Exposition = {
 */
 
 export const castExpositionSubject/*: Cast<ExpositionSubject>*/ = c.or('type', {
-  'npc': c.obj({ type: c.lit('npc'), npcId: castNonPlayerCharacterID }),
-  'location': c.obj({ type: c.lit('location'), locationId: castLocationId }),
+  'npc': castNPCResourceReference,
+  'location': castLocationResourceReference,
   'none': c.obj({ type: c.lit('none') })
 })
 export const castExpositionBackground/*: Cast<ExpositionBackground>*/ = c.or('type', {
-  'location': c.obj({ type: c.lit('location'), locationId: castLocationId }),
+  'mini-theater': castMiniTheaterResourceReference,
+  'image': c.obj({ type: c.lit('image'), assetId: castAssetID }),
   'color': c.obj({ type: c.lit('color'), color: c.str }),
 })
 

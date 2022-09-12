@@ -32,7 +32,7 @@ import type { Cast } from "@lukekaalim/cast";
 import { createTableWildspaceData } from './wildspace/index.js';
 import { DynamoDB } from "@aws-sdk/client-dynamodb";
 import { createAWSSources } from './sources.js';
-import { createMemorySources } from "./sources";
+import { createMemorySources } from "./sources.js";
 
 /*::
 export type WildspaceData = {

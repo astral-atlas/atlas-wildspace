@@ -57,3 +57,8 @@ export const castAssetInfo/*: Cast<AssetInfo>*/ = c.obj({
   downloadURL: c.str,
   description: castAssetDescription,
 });
+
+export const castAssetInfoDatabase/*: Cast<AssetInfoDatabase>*/ = c.arr(c.tup/*:: <[Cast<AssetID>, Cast<?AssetInfo>]>*/([
+  castAssetID,
+  c.maybe(castAssetInfo)
+]));

@@ -37,7 +37,6 @@ export type LibraryData = {|
 
   miniTheaters: $ReadOnlyArray<MiniTheater>,
   scenes: $ReadOnlyArray<Scene>,
-  expositions: $ReadOnlyArray<Exposition>,
 
   locations: $ReadOnlyArray<Location>,
 
@@ -56,7 +55,6 @@ export const castLibraryData/*: Cast<LibraryData>*/ = c.obj({
 
   miniTheaters: c.arr(castMiniTheater),
   scenes: c.arr(castScene),
-  expositions: c.arr(castExposition),
   locations: c.arr(castLocation),
 
   tracks: c.arr(castAudioTrack),
@@ -205,12 +203,6 @@ export const reduceLibraryEvent = (data/*: LibraryData*/, event/*: LibraryEvent*
       return {
         ...data,
         scenes: event.scenes,
-        assets: [...data.assets, ...event.assets],
-      };
-    case 'expositions':
-      return {
-        ...data,
-        expositions: event.expositions,
         assets: [...data.assets, ...event.assets],
       };
     case 'locations':

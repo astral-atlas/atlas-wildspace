@@ -25,8 +25,6 @@ export type GameService = {
   addPlayer: (gameId: GameID, playerId: UserID, authorizer: Identity) => Promise<void>,
   removePlayer: (gameId: GameID, playerId: UserID, authorizer: Identity) => Promise<void>,
 
-  getGamePage: (gameId: GameID, authorizer: Identity, isGM: boolean) => Promise<?GamePage>,
-
   connection: GameConnectionService,
 };
 
@@ -152,81 +150,10 @@ export const createGameService = (
     await data.gameParticipation.set(playerId, game.id, { joined: false, gameId: game.id });
   }
 
-  const getRoomConnectionCounts = async (gameId) => {
-    const { resultPairs } = await data.roomData.roomConnectionCounts.table.query(gameId);
-    return resultPairs
-      .map(([key, item]) => ({ id: key, connectionCount: item.count }))
-  };
-
-  const getGamePage = async (gameId, identity, isGM) => {
-    const [
-      { result: game },
-      players,
-      { result: monsters },
-      { result: characters },
-      { result: monsterActors },
-      { result: magicItems },
-      { result: wikiDocs },
-      { result: allRooms },
-      roomConnectionCounts,
-    ] = await Promise.all([
-      data.game.get(gameId),
-      listPlayers(gameId, identity),
-      data.monsters.query(gameId),
-      data.characters.query(gameId),
-      data.gameData.monsterActors.query(gameId),
-      data.gameData.magicItems.query(gameId),
-      data.wiki.documents.query(gameId),
-      data.room.query(gameId),
-      getRoomConnectionCounts(gameId),
-    ]);
-    if (!game)
-      return null;
-
-
-    const monsterMap = new Map(monsters.map(m => [m.id, m]));
-    const monsterMasks = monsterActors.map(actor => {
-      const monster = monsterMap.get(actor.monsterId);
-      return monster && createMaskForMonsterActor(monster, actor);
-    }).filter(Boolean);
-
-    const assets = [
-      ...(await Promise.all(characters
-        .map(character => character.initiativeIconAssetId)
-        .filter(Boolean)
-        .map(assetId => asset.peek(assetId))
-      )),
-      ...(await Promise.all(monsters
-        .map(monster => monster.initiativeIconAssetId)
-        .filter(Boolean)
-        .map(assetId => asset.peek(assetId))
-      )),
-    ].filter(Boolean);
-    const rooms = allRooms.filter(r => !r.hidden || isGM);
-
-    const gamePage = {
-      game,
-
-      players,
-      characters,
-      monsterMasks,
-
-      magicItems,
-      wikiDocs,
-
-      rooms,
-      roomConnectionCounts,
-
-      assets,
-    };
-    return gamePage;
-  }
-
   const connection = createGameConnectionService(data);
 
   return {
     create, update, get, all, createScopeAssertion, removePlayer, addPlayer, listPlayers,
-    getGamePage,
     connection,
   };
 };

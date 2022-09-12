@@ -38,9 +38,6 @@ export const createServerLibraryChannel = (data/*: WildspaceData*/, asset/*: Ass
         const locationAssets = await asset.batchPeek(locations
           .map(l => l.background.type === 'image' && l.background.imageAssetId || null));
         return { type: 'locations', locations, assets: locationAssets }
-      case 'exposition':
-        const { result: expositions } = await data.gameData.expositions.query(game.id);
-        return { type: 'expositions', expositions, assets: [] };
       case 'rooms':
         const { result: rooms } = await data.room.query(game.id);
         return { type: 'rooms', rooms };

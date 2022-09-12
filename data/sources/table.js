@@ -22,7 +22,7 @@ export type Table<Key, Value> = {
   scan: (from?: null | Key, limit?: null | number) => Promise<Page<Key, Value>>
 };
 
-export type CompositeKey<PK, SK> = { partition: PK, sort: SK };
+export type CompositeKey<PK, SK> = {| partition: PK, sort: SK |};
 
 export type CompositeTable<PK, SK, Value> = {|
   get: (partition: PK, sort: SK) => Promise<{ result: Value | null }>,
@@ -32,7 +32,7 @@ export type CompositeTable<PK, SK, Value> = {|
 |};
 */
 
-const createFaultTolerantArrayCaster = /*:: <T, I = mixed>*/(
+export const createFaultTolerantArrayCaster = /*:: <T, I = mixed>*/(
   castRow/*: Cast<T>*/
 )/*: ($ReadOnlyArray<I> => [$ReadOnlyArray<T>, $ReadOnlyArray<I>])*/ => {
   const castFaultTolerantArray = (array) => {
@@ -201,7 +201,16 @@ export const readValueTypes = (value/*: DynamoDBValueType*/)/*: mixed*/ => {
   throw new Error();
 }
 
-export const createDynamoDBCompositeTable = /*:: <Item>*/(
+export const writeDynamoDBItem = (item/*: { +[string]: mixed }*/)/*: { +[string]: DynamoDBValueType }*/ => {
+  // $FlowFixMe
+  return Object.fromEntries(Object.entries(item).map(([name, value]) => [name, writeValueTypes(value)]))
+}
+export const readDynamoDBItem = (item/*: { +[string]: DynamoDBValueType }*/)/*: { +[string]: mixed }*/ => {
+  // $FlowFixMe
+  return readValueTypes({ M: item });
+}
+
+export const createDynamoDBCompositeTable = /*:: <Item: {}>*/(
   tableName/*: string*/,
   partitionKeyName/*: string*/,
   sortKeyName/*: string*/,
@@ -298,7 +307,7 @@ export const createDynamoDBCompositeTable = /*:: <Item>*/(
   };
 }
 
-export const createDynamoDBSimpleTable = /*:: <Key, Item>*/(
+export const createDynamoDBSimpleTable = /*:: <Key, Item: {}>*/(
   tableName/*: string*/,
   keyName/*: string*/,
   sortKeyName/*: string*/,

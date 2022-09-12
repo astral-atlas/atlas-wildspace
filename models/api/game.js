@@ -18,6 +18,7 @@ import type { AdvancedUpdatesAPI } from "./game/advancedUpdates";
 import type { ScenesAPI } from "./game/scene";
 import type { LibraryAPI } from './game/library';
 import type { GamePageAPI } from "./game/page";
+import type { GameRoomsAPI } from "./game/rooms";
 */
 
 import {
@@ -43,6 +44,7 @@ import { createAuthorizedConnectionDescription } from './meta.js';
 import { scenesAPI } from "./game/scene.js";
 import { libraryAPI } from "./game/library.js";
 import { gamePageAPI } from "./game/page.js";
+import { gamesRoomsAPI } from './game/rooms.js';
 
 /*::
 export type GameAPI = {
@@ -90,6 +92,7 @@ export type GameAPI = {
   ...AdvancedUpdatesAPI,
   ...LibraryAPI,
   ...GamePageAPI,
+  ...GameRoomsAPI,
 };
 */
 
@@ -147,6 +150,7 @@ export const gameAPI = {
   ...advancedUpdatesAPI,
   ...libraryAPI,
   ...gamePageAPI,
+  ...gamesRoomsAPI,
   '/games': gameResourceDescription,
   '/games/all': allGamesResourceDescription,
   '/games/updates': gameStateConnectionDescription,

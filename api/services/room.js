@@ -1,21 +1,26 @@
 // @flow strict
 /*::
 import type { UserID } from "@astral-atlas/sesame-models";
-import type { RoomID, GameID, RoomUpdate, RoomPage, GameConnectionID } from '@astral-atlas/wildspace-models';
+import type { RoomID, GameID, RoomPage, GameConnectionID, RoomResources, RoomState } from '@astral-atlas/wildspace-models';
 import type { WildspaceData } from '@astral-atlas/wildspace-data';
 
 import type { AssetService } from "./asset";
 import type { GameService } from "./game";
+import type { RoomConnectionService } from "./room/connection";
 */
 
 import { v4 as uuid } from 'uuid';
-import { createMaskForMonsterActor } from "@astral-atlas/wildspace-models";
+import { 
+  emptyRoomResources,
+  mergeRoomResources,
+} from "@astral-atlas/wildspace-models";
+import { createRoomConnectionService } from './room/connection.js';
 
 /*::
 export type RoomService = {
-  getRoomPage: (gameId: GameID, roomId: RoomID) => Promise<?RoomPage>,
-
-  connect: (gameId: GameID, roomId: RoomID, userId: UserID, connectionId: GameConnectionID) => () => void,
+  connection: RoomConnectionService,
+  getResources: (gameId: GameID, roomId: RoomID, roomState: RoomState) => Promise<RoomResources>,
+  getState: (gameId: GameID, roomId: RoomID) => Promise<RoomState>,
 };
 */
 
@@ -24,136 +29,84 @@ export const createRoomService = (
   asset/*: AssetService*/,
   game/*: GameService*/,
 )/*: RoomService*/ => {
-  const getRoomPage = async (gameId, roomId) => {
-    const [
-      { result: room },
-      { result: sceneState },
-      { result: audioState },
-      { result: lobbyData },
-      { result: allScenes },
-      { result: allLocations },
-      { result: allExposisions },
-      { result: allPlaylists },
-      { result: allTracks },
-      validConnections,
-    ] = await Promise.all([
-      data.room.get(gameId, roomId),
-      data.roomData.scene.get(gameId, roomId),
-      data.roomAudio.get(gameId, roomId),
-      data.roomData.lobby.get(gameId, roomId),
-
-      data.gameData.scenes.query(gameId),
-      data.gameData.locations.query(gameId),
-      data.gameData.expositions.query(gameId),
-
-      data.playlists.query(gameId),
-      data.tracks.query(gameId),
-
-      game.connection.getValidConnections(gameId, Date.now()),
-    ]);
-    if (!room)
-      return null;
-
-    const state = {
-      roomId: room.id,
-      audio: audioState || { playback: { type: 'none' }, volume: 0 },
-      scene: sceneState || { type: 'none' },
-      lobby: (lobbyData && {
-        ...lobbyData.state,
-        playersConnected: lobbyData.state.playersConnected.filter(pc => validConnections.some(gc => gc.id === pc.gameConnectionId))
-      }) || { messages: [], playersConnected: [] },
-    }
-
-    const locationMap = new Map(allLocations.map(l => [l.id, l]))
-    const playlistMap = new Map(allPlaylists.map(p => [p.id, p]))
-    const trackMap = new Map(allTracks.map(t => [t.id, t]))
-
-    const expositions = [];
-    const sceneSubject = state.scene.type === 'exposition' && state.scene.exposition.subject;
-
-    const locations = [
-      sceneSubject && sceneSubject.type === 'location' && locationMap.get(sceneSubject.locationId) || null,
-    ].filter(Boolean);
-
-    const playlist = state.audio.playback.type === 'playlist' && playlistMap.get(state.audio.playback.playlist.id) || null;
-    const tracks = [
-      ...(playlist ? playlist.trackIds.map(trackId => trackMap.get(trackId)) : [])
-        .filter(Boolean)
-    ];
-
-    const assets = [
-      ...(await Promise.all(locations
-        .map(l => l.background.type === 'image' ? l.background.imageAssetId : null)
-        .filter(Boolean)
-        .map(imageAssetId => asset.peek(imageAssetId))
-      )),
-      ...await asset.batchPeek([
-        ...tracks.map(t => t.trackAudioAssetId)
-      ]),
-    ].filter(Boolean);
-
-    const roomPage = {
-      room,
-      state,
-      
-      locations,
-      expositions,
-
-      playlist,
-      tracks,
-
-      assets,
-    };
-    return roomPage;
-  };
-
-  const connect = (gameId, roomId, userId, gameConnectionId) => {
-    const defaultLobby = {
+  const createDefaultRoomState = (gameId, roomId) => {
+    return {
       version: uuid(),
       roomId,
-      state: {
-        messages: [],
-        playersConnected: [],
-      }
+    
+      audio: { volume: 0, playback: { type: 'none' } },
+      scene: { content: { type: 'none' } },
     }
-    console.log(defaultLobby);
-    data.roomData.lobby.transaction(gameId, roomId, async (prev) => {
-      const validConnections = await game.connection.getValidConnections(gameId, Date.now());
-      return {
-        version: uuid(),
-        roomId,
-        state: {
-          ...prev.state,
-          playersConnected: [
-            ...prev.state.playersConnected.filter(pc => validConnections.some(gc => gc.id === pc.gameConnectionId)),
-            { gameConnectionId, userId }
-          ],
-        }
-      };
-    }, 3, defaultLobby)
-      .then(({ next, prev }) => {
-        return data.roomData.lobbyUpdates.publish(gameId, next);
-      }).catch(e => console.warn('DIDNT CONNECT', e))
-
-    return () => {
-      data.roomData.lobby.transaction(gameId, roomId, async (prev) => {
+  }
+  const mergeResourcePromises = async (resourcePromises/*: Array<Promise<?RoomResources>>*/) => {
+    const allResources = await Promise.all(resourcePromises)
+    return allResources
+      .filter(Boolean)
+      .reduce(mergeRoomResources, emptyRoomResources)
+  }
+  const getAudioResources = async (gameId, roomId, audioState)/*: Promise<?RoomResources>*/ => {
+    const { playback } = audioState;
+    switch (playback.type) {
+      case 'playlist':
+        const { result: playlist } = await data.playlists.get(gameId, playback.playlist.id);
+        if (!playlist)
+          return null;
+        const { result: allTracks } = await data.tracks.query(gameId);
+        const trackMap = new Map(allTracks.map(t => [t.id, t]));
+        const playlistTracks = playlist.trackIds
+          .map(trackId => trackMap.get(trackId))
+          .filter(Boolean)
         return {
-          version: uuid(),
-          roomId,
-          state: { 
-            ...prev.state,
-            playersConnected: prev.state.playersConnected
-              .filter(p => p.gameConnectionId !== gameConnectionId),
-          },
+          ...emptyRoomResources,
+          audioPlaylists: [playlist],
+          audioTracks: playlistTracks
         };
-      }).then(({ next, prev }) => {
-          return data.roomData.lobbyUpdates.publish(gameId, next);
-        }).catch(console.warn)
+      default:
+      case 'none':
+        return null;
     }
-  };
+  }
+  const getExpositionSubjectResources = async (gameId, subject) => {
+    switch (subject.type) {
+      case 'location':
+        const { result: location } = await data.gameData.locations.get(gameId, subject.locationId);
+        if (!location)
+          return null;
+        return {
+          ...emptyRoomResources,
+          locations: [location],
+        }
+      default:
+      case 'npc':
+      case 'none':
+        return null;
+    }
+  }
+  const getSceneResources = async (gameId, roomId, sceneState) => {
+    const { content } = sceneState;
+    switch (content.type) {
+      case 'exposition':
+        return getExpositionSubjectResources(gameId, content.exposition.subject);
+      case 'mini-theater':
+      case 'none':
+      default:
+        return null;
+    }
+  }
+  const getResources = async (gameId, roomId, state) => {
+    return mergeResourcePromises([
+      getAudioResources(gameId, roomId, state.audio),
+      getSceneResources(gameId, roomId, state.scene)
+    ]);
+  }
+  const getState = async (gameId, roomId) => {
+    const { result } = await data.roomData.roomStates.table.get(gameId, roomId);
+    return result || createDefaultRoomState(gameId, roomId);
+  }
 
   return {
-    getRoomPage,
-    connect,
+    connection: createRoomConnectionService(data),
+    getResources,
+    getState,
   }
 }

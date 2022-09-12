@@ -8,12 +8,12 @@ import type {
   GameID, Game,
 } from '../../game.js';
 import type {
-  AssetID, AssetDescription, AssetInfo
+  AssetID, AssetDescription, AssetInfo, AssetInfoDatabase
 } from '../../asset.js';
 */
 import { c } from '@lukekaalim/cast';
 import { castGameId } from '../../game.js';
-import { castAssetDescription, castAssetID } from "../../asset.js";
+import { castAssetInfoDatabase } from "../../asset.js";
 
 /*::
 export type CRUDGameAPI<Resource, ResourceName: string, ResourceID: string> = {|
@@ -22,7 +22,7 @@ export type CRUDGameAPI<Resource, ResourceName: string, ResourceID: string> = {|
     request: empty,
     response: {
       type: 'found', [ResourceName]: $ReadOnlyArray<Resource>,
-      relatedAssets: $ReadOnlyArray<[AssetID, ?AssetInfo]>
+      relatedAssets: AssetInfoDatabase
     },
   },
   POST: {
@@ -58,10 +58,7 @@ export const createCRUDGameAPI = /*:: <Resource, ResourceName: string, ResourceI
       toResponseBody: c.obj({
         type: c.lit('found'),
         [name]: c.arr(castResource),
-        relatedAssets: c.arr(c.tup([
-          castAssetID,
-          c.maybe(c.obj({ description: castAssetDescription, downloadURL: c.str }))
-        ]))
+        relatedAssets: castAssetInfoDatabase,
       }),
     },
     POST: {
@@ -111,7 +108,7 @@ export type AdvancedGameCRUDAPI<T: AdvancedGameCRUDAPIDescription> = {|
     response: {
       type: 'found',
       [T["resourceName"]]: $ReadOnlyArray<T["resource"]>,
-      relatedAssets: $ReadOnlyArray<[AssetID, ?AssetInfo]>
+      relatedAssets: AssetInfoDatabase,
     },
   },
   POST: {
@@ -149,10 +146,7 @@ export const createAdvancedCRUDGameAPI = /*:: <T: AdvancedGameCRUDAPIDescription
       toResponseBody: c.obj({
         type: c.lit('found'),
         [resourceName]: c.arr(castResource),
-        relatedAssets: c.arr(c.tup([
-          castAssetID,
-          c.maybe(c.obj({ description: castAssetDescription, downloadURL: c.str }))
-        ]))
+        relatedAssets: castAssetInfoDatabase,
       }),
     },
     POST: {

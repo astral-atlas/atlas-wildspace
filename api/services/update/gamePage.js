@@ -5,6 +5,8 @@ import type { GameID, GamePageChannel } from "@astral-atlas/wildspace-models";
 import type { ServerUpdateChannel } from "./meta";
 import type { ServerGameUpdateChannel } from "../update";
 import type { GameService } from "../game";
+import type { RoomService } from "../room";
+import type { PageService } from "../page";
 */
 
 /*::
@@ -13,18 +15,22 @@ export type ServerGamePageChannel = ServerUpdateChannel<GamePageChannel>;
 
 export const createServerGamePageChannel = (
   data/*: WildspaceData*/,
-  gameService/*: GameService*/,
+  pageService/*: PageService*/,
+  roomService/*: RoomService*/,
   { game, send, identity, userId }/*: ServerGameUpdateChannel*/
 )/*: ServerGamePageChannel*/ => {
   const onGameUpdate = async (gameUpdateEvent) => {
-    const page = await gameService.getGamePage(game.id, identity, game.gameMasterId === userId);
+    const page = await pageService.getGamePage(game.id, identity, game.gameMasterId === userId);
     if (!page)
       return;
     const event = { type: 'next-page', page };
     send({ type: 'game-page-event', event })
   }
-  const onRoomLobbyUpdate = async ({ roomId, state }) => {
-    const event = { type: 'update-lobby-state', roomId, roomLobbyState: state }
+  const onRoomConnectionUpdate = async (update) => {
+    const event = {
+      type: 'room-connections-change',
+      connections: update.counts
+    };
     send({ type: 'game-page-event', event })
   }
 
@@ -32,10 +38,10 @@ export const createServerGamePageChannel = (
   const onSubscribe = () => {
     close();
     const gameSubscription = data.gameUpdates.subscribe(game.id, onGameUpdate);
-    const roomSubscription = data.roomData.lobbyUpdates.subscribe(game.id, onRoomLobbyUpdate);
+    const connectionSubscription = roomService.connection.subscribeConnectionChange(game.id, onRoomConnectionUpdate);
     unsubscribeAll = () => {
       gameSubscription.unsubscribe();
-      roomSubscription.unsubscribe();
+      connectionSubscription.unsubscribe();
     }
   };
 

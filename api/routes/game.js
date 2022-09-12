@@ -22,12 +22,11 @@ import { createUpdatesRoutes } from "./game/updates.js";
 import { createLibraryRoutes } from './game/library.js';
 import { createMonsterRoutes } from "./game/monsters.js";
 import { createMiniTheaterRoutes } from "./game/miniTheater.js";
-import { createExpositionRoutes } from './game/exposition.js';
 import { createGamePageRoutes } from "./game/page.js";
+import { createGameRoomsRoutes } from "./game/rooms.js";
 
 export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute[], http: HTTPRoute[] }*/ => {
   const { data, auth, ...s } = services;
-  const { createGameConnection } = createMetaRoutes(services);
 
   const gameResourceRoutes = createJSONResourceRoutes(gameAPI['/games'], {
     ...defaultOptions,
@@ -70,31 +69,6 @@ export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute
       }
     }
   });
-  const gameUpdates = createGameConnection(gameAPI['/games/updates'], {
-    getGameId: r => r.gameId,
-    scope: { type: 'player-in-game' },
-    async handler({ connection: { query: { gameId }, send, addRecieveListener }, socket, identity }) {
-      const connectionId = uuid();
-      send({ type: 'connected', connectionId });
-
-      const { unsubscribe } = data.gameUpdates.subscribe(gameId, update => {
-        send({ type: 'updated', update });
-      });
-  
-      const interval = setInterval(() => {
-        socket.ping(Date.now());
-        services.game.connection.heartbeat(gameId, connectionId, identity.grant.identity, Date.now())
-      }, 1000)
-
-  
-      socket.addEventListener('close', () => {
-        clearInterval(interval)
-        unsubscribe()
-        services.game.connection.disconnect(gameId, connectionId);
-        services.game.connection.getValidConnections(gameId, Date.now());
-      });
-    }
-  })
 
   const characterRoutes = createCharacterRoutes({ ...s, auth, data });
   const playersRoutes= createPlayersRoutes({ ...s, auth, data });
@@ -107,8 +81,8 @@ export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute
   const libraryRoutes = createLibraryRoutes(services);
   const monsterRoutes = createMonsterRoutes(services);
   const miniTheaterRoutes = createMiniTheaterRoutes(services)
-  const expositionRoutes = createExpositionRoutes(services);
   const gamePageRoutes = createGamePageRoutes(services);
+  const gameRoomsRoutes = createGameRoomsRoutes(services);
   const http = [
     ...playersRoutes.http,
     ...encounterRoutes.http,
@@ -124,8 +98,8 @@ export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute
     ...libraryRoutes.http,
     ...monsterRoutes.http,
     ...miniTheaterRoutes.http,
-    ...expositionRoutes.http,
-    ...gamePageRoutes.http
+    ...gamePageRoutes.http,
+    ...gameRoomsRoutes.http,
   ];
   const ws = [
     ...characterRoutes.ws,
@@ -133,7 +107,7 @@ export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute
     ...updatesRoute.ws,
     ...libraryRoutes.ws,
     ...monsterRoutes.ws,
-    gameUpdates,
+    ...gameRoomsRoutes.ws,
   ];
   return { http, ws };
 };

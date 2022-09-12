@@ -8,6 +8,7 @@
 /*::
 import type { RoomService } from "./services/room";
 import type { UpdateService } from "./services/update";
+import type { PageService } from "./services/page";
 */
 
 import { createData } from "@astral-atlas/wildspace-data";
@@ -16,6 +17,7 @@ import { createGameService } from './services/game.js';
 import { createRoomService } from './services/room.js';
 import { createAssetService } from './services/asset.js';
 import { createUpdateService } from "./services/update.js";
+import { createPageService } from "./services/page.js";
 
 /*::
 export type Services = {
@@ -25,7 +27,8 @@ export type Services = {
   room: RoomService,
   update: UpdateService,
   asset: AssetService,
-  config: APIConfig
+  config: APIConfig,
+  page: PageService,
 };
 */
 
@@ -35,7 +38,8 @@ export const createServices = (config/*: APIConfig*/)/*: Services*/ => {
   const asset = createAssetService(data, config);
   const game = createGameService(data, auth, asset);
   const room = createRoomService(data, asset, game);
-  const update = createUpdateService(data, room, game, asset);
+  const page = createPageService(data, game, room, asset);
+  const update = createUpdateService(data, page, room, game, asset);
 
   return {
     auth,
@@ -45,5 +49,6 @@ export const createServices = (config/*: APIConfig*/)/*: Services*/ => {
     asset,
     config,
     update,
+    page,
   };
 };

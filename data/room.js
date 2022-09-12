@@ -7,6 +7,8 @@ import { createBufferCompositeTable } from "./sources/table.js"
 import * as m from "@astral-atlas/wildspace-models"
 import { createMemoryChannel } from "./sources/channel.js";
 import { c } from "@lukekaalim/cast";
+import { castGameConnectionId, castRoomConnectionState, castRoomId } from "@astral-atlas/wildspace-models";
+import { createNamespacedDynamoDBTable } from "./sources/dynamoTable.js";
 
 /*::
 import type { Table, CompositeTable } from './sources/table.js';
@@ -16,13 +18,17 @@ import type {
   LocationID, Location,
   NonPlayerCharacterID, NonPlayerCharacter,
   RoomSceneState,
+  RoomConnectionState,
+  Room,
 } from "@astral-atlas/wildspace-models";
 import type { GameConnectionID } from "../models/game/connection";
 import type { Cast } from "@lukekaalim/cast";
 import type { RoomState } from "../models/room/state";
 import type { WildspaceDataSources } from "./sources";
 import type { Transactable } from "./sources/table2";
-import type { Room } from "../models/room/room";
+import type { ExpirableCompositeTable } from "./sources/expiry";
+import { createSortRemappedExpiryTable } from "./sources";
+import type { DynamoDBTable } from "./sources/dynamoTable";
 */
 
 /*::
@@ -32,13 +38,15 @@ export type WildspaceRoomData = {
     table: CompositeTable<GameID, RoomID, RoomState>,
     transactable: Transactable<GameID, RoomID, RoomState>
   },
-  roomConnectionCounts: {
-    table: CompositeTable<GameID, RoomID, { count: number }>,
-    transactable: Transactable<GameID, RoomID, { count: number }>
-  },
-  roomConnections: CompositeTable<RoomID, GameConnectionID, {}>,
+  roomConnections: DynamoDBTable<GameID, [RoomID, GameConnectionID], RoomConnectionState>,
+  roomConnectionUpdates: Channel<GameID, {
+    connections: $ReadOnlyArray<RoomConnectionState>,
+    counts: $ReadOnlyArray<{ roomId: RoomID, count: number }>
+  }>,
 };
 */
+
+const castConnectionSortPair/*: Cast<[RoomID, GameConnectionID]>*/ = c.tup([castRoomId, castGameConnectionId]);
 
 export const createTableWildspaceRoomData = (sources/*: WildspaceDataSources*/)/*: WildspaceRoomData*/ => {
   const rooms = sources.createCompositeTable('rooms', m.castRoom);
@@ -46,16 +54,24 @@ export const createTableWildspaceRoomData = (sources/*: WildspaceDataSources*/)/
     table: sources.createCompositeTable('roomStates', m.castRoomState),
     transactable: sources.createTransactable('roomStates', m.castRoomState, 'version')
   }
-  const roomConnectionCounts = {
-    table: sources.createCompositeTable('roomConnectionCounts', c.obj({ count: c.num })),
-    transactable: sources.createTransactable('roomConnectionCounts', c.obj({ count: c.num }), 'count'),
-  };
-  const roomConnections = sources.createCompositeTable('roomConnections', c.obj({}))
+  const roomConnections = createNamespacedDynamoDBTable(
+    sources.createDynamoDBTable('roomConnections', m.castRoomConnectionState),
+    pk => pk,
+    sk => sk.join(':'),
+    sk => castConnectionSortPair(sk.split(':')),
+  );
+  const roomConnectionUpdates = sources.createChannel('roomConnectionUpdates', c.obj({
+    connections: c.arr(m.castRoomConnectionState),
+    counts : c.arr(c.obj({
+      roomId: m.castRoomId,
+      count: c.num
+    }))
+  }));
 
   return {
     rooms,
     roomStates,
-    roomConnectionCounts,
-    roomConnections
+    roomConnections,
+    roomConnectionUpdates,
   }
 }

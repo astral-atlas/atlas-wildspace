@@ -36,7 +36,7 @@ export const createTableWildspaceGameData = (sources/*: WildspaceDataSources*/)/
   const magicItems = sources.createCompositeTable('magicItems', castMagicItem);
   const monsterActors = sources.createCompositeTable('monsterActors', castMonsterActor);
 
-  const connections = sources.createCompositeTable('game_connections', castGameConnectionState);
+  const connections = sources.createExpiryTable('game_connections', castGameConnectionState);
 
   const scenes = sources.createCompositeTable('scenes', castScene)
   const expositions = sources.createCompositeTable('expositions', castExposition)

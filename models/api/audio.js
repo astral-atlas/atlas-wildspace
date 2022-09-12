@@ -21,6 +21,7 @@ import { castIdentityProof } from "@astral-atlas/sesame-models";
 import { castGameId } from "../game.js";
 import { castAudioTrack, castAudioTrackId, castAudioPlaylistId, castAudioPlaylist } from "../audio.js";
 import { castAssetID, castAssetDescription } from "../asset.js";
+import { castAssetInfo } from "../asset.js";
 
 /*::
 export type AudioPlaylistResource = {|
@@ -130,9 +131,9 @@ export const allAudioTracksResourceDescription/*: ResourceDescription<AllAudioTr
     toResponseBody: createObjectCaster({
       type: createConstantCaster('found'),
       tracks: createArrayCaster(castAudioTrack),
-      relatedAssets: c.arr(c.tup([
+      relatedAssets: c.arr(c.tup/*:: <[Cast<AssetID>, Cast<?AssetInfo>]>*/([
         castAssetID,
-        c.maybe(c.obj({ description: castAssetDescription, downloadURL: c.str }))
+        c.maybe(castAssetInfo)
       ]))
     }),
   },
@@ -167,9 +168,9 @@ export const allAudioPlaylistsResourceDescription/*: ResourceDescription<AllAudi
     toResponseBody: createObjectCaster({
       type: createConstantCaster('found'),
       playlists: createArrayCaster(castAudioPlaylist),
-      relatedAssets: c.arr(c.tup([
+      relatedAssets: c.arr(c.tup/*:: <[Cast<AssetID>, Cast<?AssetInfo>]>*/([
         castAssetID,
-        c.maybe(c.obj({ description: castAssetDescription, downloadURL: c.str }))
+        c.maybe(castAssetInfo)
       ]))
     }),
   },
