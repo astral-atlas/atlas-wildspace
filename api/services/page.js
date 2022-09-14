@@ -108,6 +108,7 @@ export const createPageService = (
       state,
       resources,
       assets,
+      version: state.version,
       connections: connections.map(c => ({ id: c.gameConnectionId, userId: c.userId })),
     };
     return roomPage;

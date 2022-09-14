@@ -11,6 +11,7 @@ export const createMockMiniTheater = ()/*: MiniTheater*/ => ({
   name: randomGameName(),
   version: uuid(),
   
+  baseArea: { position: { x: 0, y: 0, z: 0}, size: { x: 10, y: 10, z: 1 } },
   pieces: [],
 });
 

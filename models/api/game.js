@@ -17,7 +17,6 @@ import type { MiniTheaterAPI } from "./game/miniTheater";
 import type { AdvancedUpdatesAPI } from "./game/advancedUpdates";
 import type { ScenesAPI } from "./game/scene";
 import type { LibraryAPI } from './game/library';
-import type { GamePageAPI } from "./game/page";
 import type { GameRoomsAPI } from "./game/rooms";
 */
 
@@ -43,7 +42,6 @@ import { wikiAPI } from './game/wiki.js';
 import { createAuthorizedConnectionDescription } from './meta.js';
 import { scenesAPI } from "./game/scene.js";
 import { libraryAPI } from "./game/library.js";
-import { gamePageAPI } from "./game/page.js";
 import { gamesRoomsAPI } from './game/rooms.js';
 
 /*::
@@ -91,7 +89,6 @@ export type GameAPI = {
   ...MiniTheaterAPI,
   ...AdvancedUpdatesAPI,
   ...LibraryAPI,
-  ...GamePageAPI,
   ...GameRoomsAPI,
 };
 */
@@ -149,7 +146,6 @@ export const gameAPI = {
   ...initiativeAPI,
   ...advancedUpdatesAPI,
   ...libraryAPI,
-  ...gamePageAPI,
   ...gamesRoomsAPI,
   '/games': gameResourceDescription,
   '/games/all': allGamesResourceDescription,

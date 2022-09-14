@@ -20,6 +20,7 @@ export const createUpdatesRoutes/*: RoutesConstructor*/ = (services) => {
 
       const interval = setInterval(() => {
         socket.ping(Date.now());
+        // TODO: move game connection heartbeat into (core) update channel
         services.game.connection.heartbeat(gameId, connectionId, Date.now())
         updateChannels.heartbeat();
       }, 1000)

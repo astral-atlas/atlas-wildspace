@@ -2,7 +2,7 @@
 /*::
 import type { Object3D } from "three";
 */
-import { Vector2, Vector3 } from "three";
+import { Vector2, Vector3, Matrix4, Quaternion } from "three";
 
 export const rotateVector = (
   rotation/*: number*/,
@@ -59,3 +59,11 @@ export const setFocusTransform2 = (
     .add(focusTarget)
   subject.lookAt(focusTarget);
 };
+
+export const lookAt = (position/*: Vector3*/, target/*: Vector3*/, up/*: Vector3*/)/*: Quaternion*/ => {
+  const m1 = new Matrix4();
+  m1.lookAt(position, target, up);
+  const q1 = new Quaternion();
+  q1.setFromRotationMatrix(m1);
+  return q1;
+}

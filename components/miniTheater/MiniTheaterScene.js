@@ -5,6 +5,7 @@ import type {
   MiniTheater,
   Character,
   MonsterActorMask,
+  MiniVector, MiniQuaternion,
 } from "@astral-atlas/wildspace-models";
 import type { Group, PerspectiveCamera } from "three";
 
@@ -15,6 +16,8 @@ import type { EncounterResources } from "../encounter/useResources";
 import type { AssetDownloadURLMap } from "../asset/map";
 import type { KeyboardStateEmitter } from "../keyboard/changes";
 import type { SwampResources } from "../encounter/useSwampResources";
+import type { MiniTheaterMode } from "./useMiniTheaterMode";
+import type { MiniTheaterRenderResources } from "./useMiniTheaterResources";
 */
 import { h, useEffect, useMemo, useRef } from "@lukekaalim/act"
 import { group, perspectiveCamera, scene } from "@lukekaalim/act-three"
@@ -28,21 +31,17 @@ import { BoardRenderer } from "../board/BoardRenderer";
 import { useSky } from "../sky/useSky";
 import { calculateBoardBox, createFloorForTerrain } from "@astral-atlas/wildspace-models";
 import { MiniTheaterPieceRenderer } from "./MiniTheaterPieceRenderer";
+import { useMiniTheaterMode } from "./useMiniTheaterMode";
 
 /*::
+
 export type MiniTheaterSceneProps = {
+  mode: MiniTheaterMode,
   miniTheater: MiniTheater,
 
   render: RenderSetup,
-  resources: EncounterResources,
-  swampResources: SwampResources,
-
-  characters: $ReadOnlyArray<Character>,
-  monsterMasks: $ReadOnlyArray<MonsterActorMask>,
-  assets: AssetDownloadURLMap,
+  resources: MiniTheaterRenderResources,
   
-  controller: MiniTheaterController,
-  emitter?: KeyboardStateEmitter,
   controlSurfaceElementRef?: ?Ref<?HTMLElement>,
 };
 */
@@ -61,45 +60,43 @@ const HARDCODED_BOARD = {
 };
 
 export const MiniTheaterScene/*: Component<MiniTheaterSceneProps>*/ = ({
+  mode,
   miniTheater,
-  render,
-  controller,
-  resources,
-  swampResources,
 
-  assets,
-  monsterMasks,
-  characters,
-  emitter,
+  render,
+  resources,
+
   controlSurfaceElementRef = null,
 }) => {
   
   const sceneController = useMiniTheaterSceneController(
     miniTheater,
     controlSurfaceElementRef || (render.canvasRef/*: any*/),
-    controller,
-    render.loop,
-    emitter
+    mode.type === "full-control" ? mode.controller : null,
+    render.loop
   )
   
   const bounds = new Box2(
     new Vector2(-100, -100).multiplyScalar(10),
     new Vector2(100, 100).multiplyScalar(10)
   )
-  
-  useMiniTheaterCamera(
-    sceneController.keyboardTrack,
-    controlSurfaceElementRef || (render.canvasRef/*: any*/),
-    render.cameraRef,
+
+  useMiniTheaterMode(
+    mode,
     render.loop,
-    bounds,
-  )
+    render.cameraRef,
+    (render.canvasRef/*: any*/),
+    [render]
+  );
+  
   
   const onCursorOver = (position) => {
-    controller.moveCursor(position);
+    if (mode.type === "full-control" || mode.type === "stalled-control")
+      mode.controller.moveCursor(position);
   };
   const onCursorLeave = () => {
-    controller.clearCursor()
+    if (mode.type === "full-control" || mode.type === "stalled-control")
+      mode.controller.clearCursor()
   }
   // Trash
   const sky = useSky(220, 0);
@@ -107,43 +104,6 @@ export const MiniTheaterScene/*: Component<MiniTheaterSceneProps>*/ = ({
   const lightTargetRef = useRef();
 
   const groupRef = useRef/*:: <?Group>*/()
-
-  const data = {
-    assets,
-    characters,
-    monsterMasks,
-  }
-  /*
-  useEffect(() => {
-    const { current: root } = groupRef;
-    const { current: light } = lightRef;
-    const { current: lightTarget } = lightTargetRef;
-    
-    if (!root || !light || !lightTarget)
-      return;
-
-    light.target = lightTarget;
-
-    root.add(sky);
-    root.add(resources.pirateScene);
-
-    sky.scale.setScalar( 4500 );
-    const boardPositionToLocalVector = (position, boardBox) => {
-      return new Vector3(
-        (position.x + 0.5 + Math.floor(boardBox.size.x/2)) * 10,
-        (position.z * 10),
-        (position.y + 0.5 + Math.floor(boardBox.size.y/2)) * 10,
-      )
-    }
-    resources.pirateScene.position.copy(boardPositionToLocalVector({ x: 1, y: -1, z: 0 }, boardBox).add(new Vector3(0, 0, 5)))
-    resources.pirateScene.translateY(-2)
-
-    return () => {
-      root.remove(resources.pirateScene);
-      root.remove(sky);
-    }
-  }, [resources])
-  */
 
   const floors = useMemo(() => [
     { type: 'box', box: miniTheater.baseArea },
@@ -163,13 +123,20 @@ export const MiniTheaterScene/*: Component<MiniTheaterSceneProps>*/ = ({
     floors,
   }
 
+  const controller = (
+    (mode.type === "full-control" || mode.type === "stalled-control")
+    && mode.controller
+    || null
+  );
+
   return [
     h(group, { ref: groupRef }),
     h(perspectiveCamera, { ref: render.cameraRef }),
     h(BoardRenderer, { board, raycaster: sceneController.raycaster, onCursorOver, onCursorLeave }, [
-      h(MiniTheaterCursorRenderer, { data, controller, resources }),
+      controller &&
+        h(MiniTheaterCursorRenderer, { resources, controller, resources }),
       miniTheater.pieces.map(piece =>
-        h(MiniTheaterPieceRenderer, { key: piece.id, controller, piece, assets, characters, monsterMasks, swampResources }))
+        h(MiniTheaterPieceRenderer, { key: piece.id, controller, piece, resources}))
     ]),
   ]
 }

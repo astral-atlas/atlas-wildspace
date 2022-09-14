@@ -1,12 +1,12 @@
 // @flow strict
 /*::
-import type { RoomClient } from "../room.js";
 import type { GameUpdatesConnection } from "../updates";
 import type { GameUpdateChannel } from "./meta";
 import type {
   GameID,
   RoomID, RoomPage
 } from "@astral-atlas/wildspace-models";
+import type { PageClient } from "../page";
 */
 
 import { reduceRoomPageEvent, roomPageChannel } from "@astral-atlas/wildspace-models";
@@ -17,8 +17,8 @@ export type RoomPageConnection = GameUpdateChannel<RoomID, RoomPage>;
 */
 
 export const createRoomPageConnection = (
-  room/*: RoomClient*/,
   updates/*: GameUpdatesConnection*/,
+  pageClient/*: PageClient*/,
 )/*: RoomPageConnection*/ => {
   const channel = createUpdateChannel(roomPageChannel, {
     createSubscribeEvent(roomId, roomIds) {
@@ -37,7 +37,7 @@ export const createRoomPageConnection = (
       return [message.roomId];
     },
     async getInitialResource(gameId, roomId) {
-      return await room.getRoomPage(gameId, roomId);
+      return await pageClient.getRoomPage(gameId, roomId);
     }
   }, updates);
   return channel; 

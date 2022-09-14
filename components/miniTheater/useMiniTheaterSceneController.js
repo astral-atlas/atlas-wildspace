@@ -19,16 +19,14 @@ import { isBoardPositionEqual } from "@astral-atlas/wildspace-models";
 /*::
 export type MiniTheaterSceneController = {
   raycaster: RaycastManager,
-  keyboardTrack: KeyboardTrack
 }
 */
 
 export const useMiniTheaterSceneController = (
   miniTheater/*: MiniTheater*/,
   controlSurfaceElementRef/*: Ref<?HTMLElement>*/,
-  miniTheaterController/*: MiniTheaterController*/,
+  miniTheaterController/*: ?MiniTheaterController*/,
   loop/*: LoopController*/,
-  overrideKeyboardEmitter/*: ?KeyboardStateEmitter*/ = null,
   deps/*: mixed[]*/ = [],
 )/*: MiniTheaterSceneController*/ => {
   const raycaster = useRaycastManager();
@@ -37,14 +35,9 @@ export const useMiniTheaterSceneController = (
     return loop.subscribeSimulate((c, v) => raycaster.onUpdate(c.camera))
   }, [])
 
-  const localKeyboardEmitter = useElementKeyboard(controlSurfaceElementRef);
-  const keyboardEmitter = overrideKeyboardEmitter || localKeyboardEmitter;
-
-  const keyboardTrack = useKeyboardTrack(keyboardEmitter);
-
   useEffect(() => {
     const { current: controlSurfaceElement } = controlSurfaceElementRef;
-    if (!controlSurfaceElement)
+    if (!controlSurfaceElement || !miniTheaterController)
       return;
     const onContextMenu = (e/*: MouseEvent*/) => {
       if (e.target !== controlSurfaceElement)
@@ -92,6 +85,5 @@ export const useMiniTheaterSceneController = (
 
   return {
     raycaster,
-    keyboardTrack
   }
 }

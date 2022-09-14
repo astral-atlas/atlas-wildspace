@@ -9,7 +9,7 @@ import type { Exposition } from "../game/exposition";
 import type { Location } from "../game/location";
 import type { Scene } from "../game/scene";
 import type { MonsterActorID, MonsterActorMask } from "../monster/monsterActor";
-import type { RoomState } from "./state";
+import type { RoomState, RoomStateVersion } from "./state";
 import type { AssetInfo } from "../asset";
 import type { Room } from "./room";
 import type { GameConnectionID } from "../game/connection";
@@ -19,7 +19,7 @@ import type { RoomResources } from "./resources";
 import { c } from "@lukekaalim/cast";
 import { castUserId } from "@astral-atlas/sesame-models";
 
-import { castRoomState } from "./state.js";
+import { castRoomState, castRoomStateVersion } from "./state.js";
 import { castRoom } from "./room.js";
 import { castGameConnectionId } from "../game/connection.js";
 import { castRoomResources } from "./resources.js";
@@ -35,6 +35,7 @@ export type RoomPage = {
     userId: UserID
   |}>,
 
+  version: RoomStateVersion,
   resources: RoomResources,
   assets: $ReadOnlyArray<AssetInfo>,
 };
@@ -49,6 +50,7 @@ export const castRoomPage/*: Cast<RoomPage>*/ = c.obj({
     userId: castUserId,
   })),
 
+  version: castRoomStateVersion,
   resources: castRoomResources,
   assets: c.arr(castAssetInfo),
 });

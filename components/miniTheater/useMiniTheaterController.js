@@ -2,6 +2,7 @@
 /*::
 import type {
   PieceID,
+  MiniTheater,
   MiniTheaterAction,
   BoardPosition, MonsterActorID, CharacterID
 } from '@astral-atlas/wildspace-models';

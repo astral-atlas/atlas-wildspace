@@ -49,11 +49,6 @@ export const createServerRoomPageChannel = (
     for (const roomId of roomIds) {
       // Side Effects
       await roomService.connection.connect(game.id, roomId, connectionId, userId);
-      const initialPage = await pageService.getRoomPage(game.id, roomId);
-      if (!initialPage)
-        throw new Error();
-
-      send({ type: 'room-page-event', roomId, event: { type: 'next-page', page: initialPage } })
 
       // Subscriptions
       const gameUpdateSubscription = data.gameUpdates.subscribe(game.id, onGameUpdate(roomId));

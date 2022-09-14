@@ -1,9 +1,6 @@
-import { identify } from "@lukekaalim/identify";
-
 export default {
   assetsInclude: ['**/*.gltf', '**/*.glb', '**/*.ogg'],
   plugins: [
-    identify()
   ],
   build: {
     sourcemap: true,

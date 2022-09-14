@@ -22,8 +22,9 @@ import type { RoomStateAction } from "./actions";
 */
 
 /*::
+export type RoomStateVersion = string;
 export type RoomState = {|
-  version: string,
+  version: RoomStateVersion,
   roomId: RoomID,
 
   audio: RoomAudioState,
@@ -31,6 +32,7 @@ export type RoomState = {|
 |};
 */
 
+export const castRoomStateVersion/*: Cast<RoomStateVersion>*/ = c.str;
 export const castRoomState/*: Cast<RoomState>*/ = c.obj({
   roomId: castRoomId,
   audio: castRoomAudioState,

@@ -2,14 +2,15 @@
 
 /*::
 declare module "prosemirror-state" {
-  import type { Schema } from "prosemirror-model";
+  import type { Schema, Node } from "prosemirror-model";
   import type { EditorView } from "prosemirror-view";
 
   declare export class EditorState<TNodes, TMarks> {
+    
+    static create<Nodes, Marks>({ schema: Schema<any>, doc?: Node }): EditorState<Nodes, Marks>;
 
-    static create<Nodes, Marks>({ schema: Schema<any> }): EditorState<Nodes, Marks>;
-
-    apply(...any): EditorState<any, any>;
+    apply(transaction: Transaction): EditorState<any, any>;
+    doc: Node,
     selection: Selection;
     tr: Transaction;
   }
@@ -49,13 +50,22 @@ declare module "prosemirror-state" {
 declare module "prosemirror-view" {
   import type { EditorState, Transaction } from "prosemirror-state";
 
+  declare export type EditorProps = {
+    editable?: (state: EditorState) => boolean
+  }
+  declare export type DirectEditorProps = {
+    ...EditorProps,
+    state?: EditorState<any, any>,
+    dispatchTransaction?: (transaction: Transaction) => void,
+  }
+
   declare export class EditorView {
-    constructor(target: Element, props?: { state: EditorState<any, any> }): EditorView;
+    constructor(target: Element, props?: DirectEditorProps): EditorView;
     destroy(): void;
     isDestroyed: boolean;
     dom: HTMLElement;
     hasFocus(): boolean;
-    setProps(props: mixed): void;
+    setProps(props: DirectEditorProps): void;
     updateState(state: EditorState<any, any>): void;
     dispatch(state: Transaction): void;
     domAtPos(number, number): { offset: number, node: Node };
@@ -75,9 +85,11 @@ declare module "prosemirror-transform" {
 }
 
 declare module "prosemirror-model" {
+  declare export type JSONNode = mixed;
+
   declare export class Node {
-    static fromJSON(schema: Schema<any>, input: mixed): Node,
-    toJSON(): mixed;
+    static fromJSON(schema: Schema<any>, input: JSONNode): Node,
+    toJSON(): JSONNode;
   }
 
   declare export type AttributeSpec = {
@@ -124,6 +136,7 @@ declare module "prosemirror-model" {
     nodes: { [TNodeType]: NodeSpec } | OrderedMap<TNodeType, NodeSpec>;
 
     node(type: string, attrs?: ?{}, content?: Node[] | Node | null): Node;
+    text(content: string): Node;
   }
 }
 

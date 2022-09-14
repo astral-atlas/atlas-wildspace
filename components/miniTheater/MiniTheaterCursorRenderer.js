@@ -5,7 +5,7 @@ import type { CubicBezierAnimation } from "@lukekaalim/act-curve";
 
 import type { EncounterResources } from "../encounter/useResources";
 import type { MiniTheaterController } from "./useMiniTheaterController";
-import type { MiniTheaterData } from "./useMiniTheaterData";
+import type { MiniTheaterRenderResources } from "./useMiniTheaterResources";
 */
 
 import { h, useContext, useEffect, useRef, useState } from "@lukekaalim/act";
@@ -34,22 +34,17 @@ import { MiniTheaterSprite } from "./MiniTheaterSprite";
 /*::
 export type MiniTheaterCursorRendererProps = {
   controller: MiniTheaterController,
-  data: MiniTheaterData,
-  
-  resources: EncounterResources
+  resources: MiniTheaterRenderResources,
 }
 */
 
 export const MiniTheaterCursorRenderer/*: Component<MiniTheaterCursorRendererProps>*/ = ({
   controller,
   resources,
-  data,
 }) => {
-  
-  const { cursorGeometry: geometry, texture } = resources;
   const ref = useRef();
   const [visible, setVisible] = useState(false);
-
+  return null;
   const material = useDisposable(() => {
     return new MeshBasicMaterial({
       map: texture,
@@ -92,18 +87,18 @@ export const MiniTheaterCursorRenderer/*: Component<MiniTheaterCursorRendererPro
 
   return [
     h(mesh, { geometry, material, ref, controller }, [
-      !!placement && h(PlacementIndicator, { placement, data })
+      !!placement && h(PlacementIndicator, { placement, resources })
     ]),
   ];
 }
 
-const PlacementIndicator = ({ data, placement }) => {
+const PlacementIndicator = ({ resources, placement }) => {
   const material = useDisposable(() => new SpriteMaterial(), []);
 
-  const assetId = getPieceAssetId(placement.placement, data.characters, data.monsterMasks);
+  const assetId = getPieceAssetId(placement.placement, resources);
 
   useEffect(() => {
-    const asset = !!assetId && data.assets.get(assetId);
+    const asset = !!assetId && resources.assets.get(assetId);
     if (!asset)
       return;
     const texture = new TextureLoader().load(asset.downloadURL);
@@ -111,7 +106,7 @@ const PlacementIndicator = ({ data, placement }) => {
     return () => {
       texture.dispose();
     }
-  }, [assetId, data.assets])
+  }, [assetId, resources.assets])
   
   return h(sprite, {
     material,

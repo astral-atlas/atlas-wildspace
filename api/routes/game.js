@@ -22,7 +22,6 @@ import { createUpdatesRoutes } from "./game/updates.js";
 import { createLibraryRoutes } from './game/library.js';
 import { createMonsterRoutes } from "./game/monsters.js";
 import { createMiniTheaterRoutes } from "./game/miniTheater.js";
-import { createGamePageRoutes } from "./game/page.js";
 import { createGameRoomsRoutes } from "./game/rooms.js";
 
 export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute[], http: HTTPRoute[] }*/ => {
@@ -81,7 +80,6 @@ export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute
   const libraryRoutes = createLibraryRoutes(services);
   const monsterRoutes = createMonsterRoutes(services);
   const miniTheaterRoutes = createMiniTheaterRoutes(services)
-  const gamePageRoutes = createGamePageRoutes(services);
   const gameRoomsRoutes = createGameRoomsRoutes(services);
   const http = [
     ...playersRoutes.http,
@@ -98,7 +96,6 @@ export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute
     ...libraryRoutes.http,
     ...monsterRoutes.http,
     ...miniTheaterRoutes.http,
-    ...gamePageRoutes.http,
     ...gameRoomsRoutes.http,
   ];
   const ws = [

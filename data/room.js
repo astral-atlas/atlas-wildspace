@@ -7,7 +7,7 @@ import { createBufferCompositeTable } from "./sources/table.js"
 import * as m from "@astral-atlas/wildspace-models"
 import { createMemoryChannel } from "./sources/channel.js";
 import { c } from "@lukekaalim/cast";
-import { castGameConnectionId, castRoomConnectionState, castRoomId } from "@astral-atlas/wildspace-models";
+import { castGameConnectionId, castRoomConnectionState, castRoomId, castRoomStateVersion } from "@astral-atlas/wildspace-models";
 import { createNamespacedDynamoDBTable } from "./sources/dynamoTable.js";
 
 /*::
@@ -23,11 +23,10 @@ import type {
 } from "@astral-atlas/wildspace-models";
 import type { GameConnectionID } from "../models/game/connection";
 import type { Cast } from "@lukekaalim/cast";
-import type { RoomState } from "../models/room/state";
+import type { RoomState, RoomStateVersion } from "../models/room/state";
 import type { WildspaceDataSources } from "./sources";
 import type { Transactable } from "./sources/table2";
 import type { ExpirableCompositeTable } from "./sources/expiry";
-import { createSortRemappedExpiryTable } from "./sources";
 import type { DynamoDBTable } from "./sources/dynamoTable";
 */
 
@@ -36,6 +35,7 @@ export type WildspaceRoomData = {
   rooms: CompositeTable<GameID, RoomID, Room>,
   roomStates: {
     table: CompositeTable<GameID, RoomID, RoomState>,
+    versions: DynamoDBTable<GameID, [RoomID, RoomStateVersion], RoomState>,
     transactable: Transactable<GameID, RoomID, RoomState>
   },
   roomConnections: DynamoDBTable<GameID, [RoomID, GameConnectionID], RoomConnectionState>,
@@ -47,11 +47,18 @@ export type WildspaceRoomData = {
 */
 
 const castConnectionSortPair/*: Cast<[RoomID, GameConnectionID]>*/ = c.tup([castRoomId, castGameConnectionId]);
+const castRoomStateVersionPair/*: Cast<[RoomID, RoomStateVersion]>*/ = c.tup([castRoomId, castRoomStateVersion]);
 
 export const createTableWildspaceRoomData = (sources/*: WildspaceDataSources*/)/*: WildspaceRoomData*/ => {
   const rooms = sources.createCompositeTable('rooms', m.castRoom);
   const roomStates = {
     table: sources.createCompositeTable('roomStates', m.castRoomState),
+    versions: createNamespacedDynamoDBTable(
+      sources.createDynamoDBTable('roomStateVersions', m.castRoomState),
+      pk => pk,
+      sk => sk.join(':'),
+      sk => castRoomStateVersionPair(sk.split(':')),
+    ),
     transactable: sources.createTransactable('roomStates', m.castRoomState, 'version')
   }
   const roomConnections = createNamespacedDynamoDBTable(

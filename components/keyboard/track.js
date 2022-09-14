@@ -8,10 +8,11 @@ import { isKeyboardStateEqual } from "./changes";
 
 /*::
 export type KeyboardFrame = Frame<KeyboardState>;
+export type KeyboardDiff = { prev: KeyboardFrame, next: KeyboardFrame };
 
 export type KeyboardTrack = {
   readAll: () => KeyboardFrame[],
-  readDiff: () => { prev: KeyboardFrame, next: KeyboardFrame },
+  readDiff: () => KeyboardDiff,
 };
 */
 

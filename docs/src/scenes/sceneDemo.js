@@ -3,7 +3,7 @@
 import type { Component } from '@lukekaalim/act';
 import type {  } from '@astral-atlas/wildspace-models';
 */
-import { SceneBackgroundRenderer, SceneRenderer, useAnimatedKeyedList, useMiniTheaterController, useResourcesLoader } from '@astral-atlas/wildspace-components';
+import { MiniTheaterCanvas, ProseMirror, prosePlugins, SceneContainer, SceneContentBackgroundRenderer, SceneContentForegroundRenderer, SceneRenderer, useAnimatedKeyedList, useElementKeyboard, useKeyboardTrack, useMiniTheaterController, useProseMirrorEditorState, useProseMirrorProps, useProseMirrorView, useResourcesLoader } from '@astral-atlas/wildspace-components';
 import { h, useEffect, useRef, useState } from '@lukekaalim/act';
 
 import cityImgURL from './city.jpg';
@@ -11,142 +11,149 @@ import riceFieldURL from './rice_field.jpg';
 import { useAnimationFrame } from "@lukekaalim/act-three/hooks";
 import { useAnimation } from '@lukekaalim/act-curve';
 import { LayoutDemo } from '../demo';
-import { createMockWildspaceClient } from "@astral-atlas/wildspace-test";
+import { createMockImageAsset, createMockMiniTheater, createMockWildspaceClient } from "@astral-atlas/wildspace-test";
+import { v4 } from "uuid";
+import { emptyRootNode, proseSchema } from '@astral-atlas/wildspace-models';
+import { EditorState } from "prosemirror-state";
+import { EditorView } from "prosemirror-view";
+import { Node } from "prosemirror-model";
+
+const initialState = EditorState.create({
+  schema: proseSchema,
+  plugins: [...prosePlugins],
+  doc: proseSchema.node("doc", {}, proseSchema.node("paragraph", {}, proseSchema.text("Hello!")))
+});
+
+const image = createMockImageAsset();
 
 export const ExpositionSceneDemo/*: Component<>*/ = () => {
-  const sceneA = {
-    id: 'a',
-    tags: [],
-    description: { type: 'inherit' },
-    subject: { type: 'location', location: '0' },
-    title: 'demo scene A'
-  };
-  const sceneB = {
-    id: 'b',
-    tags: [],
-    description: { type: 'inherit' },
-    subject: { type: 'location', location: '1' },
-    title: 'demo scene B'
-  };
-  const sceneC = {
-    id: 'c',
-    tags: [],
-    description: { type: 'inherit' },
-    subject: { type: 'location', location: '2' },
-    title: 'demo scene C'
-  };
-  const sceneD = {
-    id: 'd',
-    tags: [],
-    description: { type: 'inherit' },
-    subject: { type: 'location', location: '3' },
-    title: 'green'
-  };
-  const sceneE = {
-    id: 'e',
-    encounterId: 'ENCOUNTER_A'
-  }
-  const [activeScene, setActiveScene] = useState({ type: 'exposition', ref: sceneA.id });
-
-  const gameData = {
-    locations: [
-      {
-        id: '0',
-        background: { type: 'image', imageAssetId: 'city' },
-        title: 'city',
-        description: { type: 'plaintext', plaintext: 'Hello!' },
-        tags: [],
-      },
-      {
-        id: '1',
-        background: { type: 'image', imageAssetId: 'city' },
-        title: 'inner city',
-        description: { type: 'plaintext', plaintext: 'The Inner City!' },
-        tags: [],
-      },
-      {
-        id: '2',
-        background: { type: 'image', imageAssetId: 'rice_field' },
-        title: 'rice field',
-        description: { type: 'plaintext', plaintext: 'motherfucker' },
-        tags: [],
-      },
-      {
-        id: '3',
-        background: { type: 'color', color: 'green' },
-        title: 'algae',
-        description: { type: 'plaintext', plaintext: 'fields of green' },
-        tags: [],
-      },
-    ],
-    scenes: {
-      exposition: [sceneA, sceneB, sceneC, sceneD],
-      encounter: [sceneE]
-    },
-    game: {
-      id: 'GAME_0',
-    },
-    characters: [],
-    players: [],
-    playlists: [],
-    tracks: [],
-    assets: new Map([
-      ['city', { downloadURL: cityImgURL }],
-      ['rice_field', { downloadURL: riceFieldURL }],
-    ]),
-  }
-  const onExpositionSceneClick = (id) => () => {
-    setActiveScene({ type: 'exposition', ref: id })
-  }
-  const onEncounterSceneClick = (id) => () => {
-    setActiveScene({ type: 'mini-theater', miniTheaterSceneId: id })
-  }
-  const scene = gameData.scenes.exposition.find(s => s.id === activeScene);
-
-  const [arr, setArr] = useState([{ key: Math.random(), value: 'Original!' }]);
-  const reducers = {
-    enter(v, i, t) {
-      return { enter: t, exit: -1, key: v.key, value: v.value };
-    },
-    move(v, pi, ni, t) {
-      return v;
-    },
-    exit(v, t) {
-      return { enter: v.enter, exit: t, key: v.key, value: v.value};
+  const editorRef = useRef();
+  const [editorState, setEditorState] = useState(initialState)
+  useEffect(() => {
+    const { current: container } =  editorRef;
+    if (!container)
+      return;
+    const dispatchTransaction = (transaction) => {
+      const next = view.state.apply(transaction)
+      setEditorState(next);
+      view.updateState(next)
     }
-  }
-  const client = createMockWildspaceClient()
-  const encounterState = {
-    minis: [],
-  };
-  const roomState/*: any*/ = {
-    encounter: encounterState,
-  };
+    const view = new EditorView(container, { state: initialState, dispatchTransaction });
 
-  const resources = useResourcesLoader();
+    setEditorState(initialState);
+    return () => view.destroy();
+  }, [])
+
+  const expositionContent = {
+    type: 'exposition',
+    exposition: {
+      background: { type: 'color', color: 'red' },
+      subject: { type: 'none' },
+      description: {
+        version: 0,
+        rootNode: editorState.doc.toJSON()
+      }
+    }
+  };
+  const expositionImageContent = {
+    type: 'exposition',
+    exposition: {
+      background: { type: 'image', assetId: image.description.id },
+      subject: { type: 'none' },
+      description: {
+        version: 0,
+        rootNode: editorState.doc.toJSON()
+      }
+    }
+  };
+  const [fixedTransform, setFixedTransform] = useState({
+    position: { x: 63.065798892507026, y: 32, z: 18.74563945239002 },
+    rotation: { x: -0.35355339059327373, y: 0.35355339059327373, z: 0.1464466094067262, w: 0.8535533905932737 }
+  })
+  const expositionTheaterContent = {
+    type: 'exposition',
+    exposition: {
+      background: {
+        type: 'mini-theater', miniTheaterId: '0',
+        ...fixedTransform,
+      },
+      subject: { type: 'none' },
+      description: { version: 0, rootNode: editorState.doc.toJSON() }
+    }
+  };
+  const miniTheaterContent = {
+    type: 'mini-theater',
+    miniTheaterId: '0',
+  };
+  const [mode, setMode] = useState('mini-theater')
+  const content = ({
+    'mini-theater': miniTheaterContent,
+    'exposition': expositionContent,
+    'exposition-image': expositionImageContent,
+    'exposition-theater': expositionTheaterContent,
+  })[mode] || miniTheaterContent
+
+  const miniTheater = createMockMiniTheater();
   const miniTheaterController = useMiniTheaterController();
-  const miniTheaterView = {
-    characterPieces: [],
-    monsterPieces: [],
-    miniTheater: {
-      id: 'THEATER_ID',
-      characterPieceIds: [],
-      monsterPieceIds: [],
-      name: ''
-    }
-  }
+  const miniTheaterResources = {
+    
+  };
+
+  const overrideCanvasRef = useRef();
+  const overrideCameraRef = useRef();
+  const emitter = useElementKeyboard(overrideCanvasRef);
+  const keys = useKeyboardTrack(emitter);
 
   return [
-    h('div', { style: { display: 'flex' } }, [
-      gameData.scenes.exposition.map(scene =>
-        h('button', { onClick: onExpositionSceneClick(scene.id) }, scene.title)),
-      gameData.scenes.encounter.map(scene =>
-        h('button', { onClick: onEncounterSceneClick(scene.id) }, scene.id)),
+    h('menu', {}, [
+      h('button', { onClick: () => setMode('mini-theater') }, 'Mini Theater'),
+      h('button', { onClick: () => setMode('exposition') }, 'Color Exposition'),
+      h('button', { onClick: () => setMode('exposition-theater') }, 'Theater Exposition'),
+      h('button', { onClick: () => setMode('exposition-image') }, 'Theater Image'),
     ]),
-    h(LayoutDemo, {}, [
-      h(SceneBackgroundRenderer, { scene: activeScene, gameData, client, roomState, resources, miniTheaterController, miniTheaterView }),
-      h(SceneRenderer, { scene: activeScene, gameData }),
+    h(LayoutDemo, { }, [
+      h(SceneContainer, {}, [
+        h(SceneContentBackgroundRenderer, {
+          content,
+          freeCam: true,
+          assets: new Map([image].map(a => [a.description.id, a])),
+          miniTheater,
+          miniTheaterController,
+          miniTheaterResources
+        }),
+        h(SceneContentForegroundRenderer, {
+          content,
+        }),
+      ]),
     ]),
+    h('menu', {}, [
+      h('button', { onClick: () => {
+        const { current: camera } = overrideCameraRef;
+        if (!camera)
+          return;
+        setFixedTransform({
+          position: {
+            x: camera.position.x,
+            y: camera.position.y,
+            z: camera.position.z,
+          },
+          rotation: {
+            x: camera.quaternion.x,
+            y: camera.quaternion.y,
+            z: camera.quaternion.z,
+            w: camera.quaternion.w,
+          }
+        })
+      } }, 'Save'),
+    ]),
+    h(MiniTheaterCanvas, {
+      mode: { type: 'free-cam', keys },
+      overrideCanvasRef,
+      overrideCameraRef,
+      miniTheater,
+      resources: miniTheaterResources
+    }),
+    h('div', { ref: editorRef })
   ]
 }
 

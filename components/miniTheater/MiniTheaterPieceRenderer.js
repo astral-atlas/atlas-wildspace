@@ -12,6 +12,7 @@ import type {
 import type { MiniTheaterController } from "./useMiniTheaterController";
 import type { AssetDownloadURLMap } from "../asset/map";
 import type { SwampResources } from "../encounter/useSwampResources";
+import type { MiniTheaterRenderResources } from "./useMiniTheaterResources";
 */
 
 import {
@@ -41,17 +42,16 @@ import styles from './MiniTheaterPieceRenderer.module.css';
 
 export const getPieceAssetId = (
   represents/*: Piece["represents"]*/,
-  characters/*: $ReadOnlyArray<Character>*/,
-  monsters/*: $ReadOnlyArray<MonsterActorMask>*/
+  resources/*: MiniTheaterRenderResources*/,
 )/*: ?AssetID*/ => {
   switch (represents.type) {
     case 'character':
-      const character = characters.find(c => c.id == represents.characterId)
+      const character = resources.characters.get(represents.characterId)
       if (!character)
         return null;
       return character.initiativeIconAssetId;
     case 'monster':
-      const monster = monsters.find(m => m.id === represents.monsterActorId);
+      const monster = resources.characters.get(represents.monsterActorId);
       if (!monster)
         return null;
       return monster.initiativeIconAssetId;
@@ -60,13 +60,13 @@ export const getPieceAssetId = (
   }
 }
 
-const usePieceTexture = (piece, characters, monsters, assets) => {
+const usePieceTexture = (piece, resources) => {
   const material = useDisposable(() => {
     return new SpriteMaterial()
   }, [])
-  const assetId = getPieceAssetId(piece.represents, characters, monsters)
+  const assetId = getPieceAssetId(piece.represents, resources)
   useEffect(() => {
-    const info = !!assetId && assets.get(assetId);
+    const info = !!assetId && resources.assets.get(assetId);
     if (!info)
       return;
     
@@ -83,18 +83,17 @@ const usePieceTexture = (piece, characters, monsters, assets) => {
 
 const MiniPieceRenderer = ({
   controller,
-  assets,
-  characters,
-  monsterMasks,
-
+  resources,
   piece,
 }) => {
-  const material = usePieceTexture(piece, characters, monsterMasks, assets)
+  const material = usePieceTexture(piece, resources)
 
   const [selected, setSelected] = useState(false);
   const [hover, setHover] = useState(false);
 
   useEffect(() => {
+    if (!controller)
+      return;
     const unsubscribeSelection = controller.subscribeSelection((selection) => {
       setSelected(!!selection && selection.pieceRef === piece.id)
     })
@@ -116,6 +115,8 @@ const Box = ({ position, controller, piece }) => {
 
   const [selected, setSelected] = useState(false);
   useEffect(() => {
+    if (!controller)
+      return;
     return controller.subscribeSelection(event => setSelected(!!event && event.pieceRef === piece.id))
   }, [controller]);
 
@@ -124,7 +125,7 @@ const Box = ({ position, controller, piece }) => {
     material,
     position: new Vector3(position.x * 10, (position.z * 10) + 5, position.y * 10)
   }, [
-    h('css2dObject', {}, h('button', { className: styles.selectionButton, onClick: () => controller.selectPiece(piece.id) }, 'Select'))
+    h('css2dObject', {}, h('button', { className: styles.selectionButton, onClick: () => controller && controller.selectPiece(piece.id) }, 'Select'))
   ]);
 };
 
@@ -139,13 +140,14 @@ const SwampTerrain = ({ piece, controller, position, swampObject, swampResources
   return h(group, { position: new Vector3(position.x * 10, position.z * 10, position.y * 10) }, [
 
     h(Object3DDuplicate, { target: swampObject, context }),
-    h('css2dObject', {}, h('button', { className: styles.selectionButton, onClick: () => controller.selectPiece(piece.id) }, 'Select'))
+    h('css2dObject', {}, h('button', { className: styles.selectionButton, onClick: () => controller && controller.selectPiece(piece.id) }, 'Select'))
   ]);
 }
 
 
-const TerrainPieceRenderer = ({ piece, represents, controller, swampResources }) => {
-
+const TerrainPieceRenderer = ({ piece, represents, controller, resources }) => {
+  return null;
+  /*
   const swampObject = swampResources.swampModel.children.find(c => c.name === represents.terrainType);
   if (swampObject)
     return h(SwampTerrain, { swampObject, controller, piece, swampResources, position: piece.position })
@@ -156,38 +158,30 @@ const TerrainPieceRenderer = ({ piece, represents, controller, swampResources })
     default:
       return null;
   }
+  */
 };
 
 
 /*::
 export type MiniTheaterPieceRendererProps = {
-  controller: MiniTheaterController,
-
-  characters: $ReadOnlyArray<Character>,
-  monsterMasks: $ReadOnlyArray<MonsterActorMask>,
-  assets: AssetDownloadURLMap,
-  swampResources: SwampResources,
-
+  controller: ?MiniTheaterController,
+  resources: MiniTheaterRenderResources,
   piece: Piece,
 };
 */
 
 export const MiniTheaterPieceRenderer/*: Component<MiniTheaterPieceRendererProps>*/ = ({
   controller,
-  assets,
-  characters,
-  monsterMasks,
-  swampResources,
-
+  resources,
   piece,
 }) => {
   const { represents } = piece;
   switch (represents.type) {
     case 'character':
     case 'monster':
-      return h(MiniPieceRenderer, { controller, assets, characters, monsterMasks, piece });
+      return h(MiniPieceRenderer, { controller, resources, piece });
     case 'terrain':
-      return h(TerrainPieceRenderer, { represents, piece, controller, swampResources });
+      return h(TerrainPieceRenderer, { represents, piece, controller, resources });
     default:
       return null;
   }
