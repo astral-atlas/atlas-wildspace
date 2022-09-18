@@ -36,7 +36,7 @@ export type GamePageAPI = {|
 
 
 const gamePage/*: ResourceDescription<GamePageResource>*/ = {
-  path: '/games/game',
+  path: '/pages/game',
   GET: {
     toQuery: c.obj({ gameId: castGameId }),
     toResponseBody: c.obj({ type: c.lit('found'), gamePage: castGamePage })

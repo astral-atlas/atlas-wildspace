@@ -6,7 +6,7 @@ import {
   castLocationResourceReference,
   castMiniTheaterResourceReference,
   castNPCResourceReference,
-} from "./resource.js";
+} from "./references.js";
 import { castAssetID } from "../asset.js";
 import { castMiniVector } from "./miniTheater.js";
 import { castMiniTheaterId } from "./miniTheater.js";
@@ -23,7 +23,7 @@ import type {
   LocationResourceReference,
   MiniTheaterResourceReference,
   NPCResourceReference,
-} from "./resource";
+} from "./references";
 import type { MiniTheaterID } from "./miniTheater";
 import type { MiniQuaternion, MiniVector } from "./miniTheater/primitives";
 

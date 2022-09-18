@@ -4,54 +4,62 @@ import { Quaternion, Vector2, Vector3 } from "three";
 
 /*::
 import type { BasicTransform } from "../animation/transform";
+import type { Object3D } from "three";
 
 
 export type FreeCameraController = {
   update: () => void,
-  setVelocity: (velocity: Vector2) => void,
+  setVelocity: (velocity: Vector3) => void,
   moveCursor: (movementX: number, movementY: number) => void,
 
-  getControllerTransform(): BasicTransform
+  getControllerTransform(): BasicTransform,
+  setObjectTransform(object: Object3D): void
 }
 */
+
+const X_AXIS = new Vector3(0, 1, 0);
+const Y_AXIS = new Vector3(1, 0, 0);
 
 export const createFreeCameraController = ()/*: FreeCameraController*/ => {
   const position = new Vector3(-20, 20, -20);
   const mouseRotation = new Vector2(-4, 0.4);
-  const velocity = new Vector2(0, 0);
+  const rotation = new Quaternion();
+  const velocity = new Vector3(0, 0, 0);
 
-  const getRotationQuaternion = () => {
-    const a = new Quaternion()
-      .setFromAxisAngle(new Vector3(0, 1, 0), -mouseRotation.x);
-    const b = new Quaternion()
-      .setFromAxisAngle(new Vector3(1, 0, 0), -mouseRotation.y);
+  const setRotation = (x, y) => {
+    mouseRotation.x += x / 1000;
+    mouseRotation.y += y / 1000;
 
-    a.multiply(b)
-
-    return a;
+    rotation
+      .setFromAxisAngle(X_AXIS, -mouseRotation.x)
+      .multiply(new Quaternion().setFromAxisAngle(Y_AXIS, -mouseRotation.y));
   }
 
   const getControllerTransform = () => {
     return {
       position,
-      rotation: getRotationQuaternion()
+      rotation
     }
   }
   const setVelocity = (nextVelocity) => {
-    velocity.set(nextVelocity.x, -nextVelocity.y);
+    velocity.copy(nextVelocity)
   }
   const update = () => {
-    position.add(new Vector3(velocity.x, 0, velocity.y).applyQuaternion(getRotationQuaternion()));
-    velocity.set(0, 0);
+    position.add(velocity.applyQuaternion(rotation));
+    velocity.set(0, 0, 0);
   }
   const moveCursor = (x, y) => {
-    mouseRotation.x += x / 1000;
-    mouseRotation.y += y / 1000;
+    setRotation(x, y);
+  }
+  const setObjectTransform = (object) => {
+    object.position.copy(position);
+    object.quaternion.copy(rotation);
   }
   return {
     getControllerTransform,
     moveCursor,
     update,
     setVelocity,
+    setObjectTransform,
   }
 };

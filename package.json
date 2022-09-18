@@ -13,11 +13,10 @@
     "docs",
     "task",
     "test",
-    "identify",
     "bundle"
   ],
   "devDependencies": {
-    "concurrently": "^7.0.0",
+    "concurrently": "^7.4.0",
     "flow-bin": "^0.186.0"
   },
   "scripts": {

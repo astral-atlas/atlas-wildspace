@@ -33,7 +33,6 @@ export type SceneAisleProps = {
   userId: UserID,
   
   scenes: $ReadOnlyArray<Scene>,
-  expositions: $ReadOnlyArray<Exposition>,
   miniTheaters: $ReadOnlyArray<MiniTheater>,
   locations: $ReadOnlyArray<Location>,
 
@@ -48,7 +47,6 @@ export const SceneAisle/*: Component<SceneAisleProps>*/ = ({
   userId,
 
   scenes,
-  expositions,
   miniTheaters,
   locations,
 

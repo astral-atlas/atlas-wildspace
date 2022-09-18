@@ -3,6 +3,7 @@
 import type { RoutesConstructor } from "../../routes";
 */
 import { createMetaRoutes, createCRUDConstructors } from "../meta.js";
+import { createTerrainRoutes } from "./miniTheater/terrain.js";
 import { createMiniTheaterEventFromAction, gameAPI, isMiniTheaterActionAuthorized, reduceMiniTheaterAction } from "@astral-atlas/wildspace-models";
 import { HTTP_STATUS } from "@lukekaalim/net-description";
 import { v4 as uuid } from "uuid";
@@ -90,11 +91,13 @@ export const createMiniTheaterRoutes/*: RoutesConstructor*/ = (services) => {
       }
     }
   });
+  const terrainRoutes = createTerrainRoutes(services);
 
   const http = [
     ...miniTheaterRoutes,
     ...miniTheaterByIdRoutes,
     ...miniTheaterActionRoutes,
+    ...terrainRoutes.http,
   ];
   const ws = [];
   return { http, ws };

@@ -51,7 +51,7 @@ export const getPieceAssetId = (
         return null;
       return character.initiativeIconAssetId;
     case 'monster':
-      const monster = resources.characters.get(represents.monsterActorId);
+      const monster = resources.monsterMasks.get(represents.monsterActorId);
       if (!monster)
         return null;
       return monster.initiativeIconAssetId;
@@ -66,6 +66,7 @@ const usePieceTexture = (piece, resources) => {
   }, [])
   const assetId = getPieceAssetId(piece.represents, resources)
   useEffect(() => {
+    console.log(assetId, piece, resources);
     const info = !!assetId && resources.assets.get(assetId);
     if (!info)
       return;

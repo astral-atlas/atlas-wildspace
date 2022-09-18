@@ -14,15 +14,19 @@ export const createUpdatesRoutes/*: RoutesConstructor*/ = (services) => {
     scope: { type: 'player-in-game' },
 
     async handler({ game, connection: { query: { gameId }, send, addRecieveListener }, socket, identity }) {
-
-      const connectionId = uuid();
+      const connectionId = await services.game.connection.connect(gameId, identity.grant.identity, Date.now());
       send({ type: 'connected', connectionId });
+      console.log('CONNECT', connectionId);
 
-      const interval = setInterval(() => {
-        socket.ping(Date.now());
-        // TODO: move game connection heartbeat into (core) update channel
-        services.game.connection.heartbeat(gameId, connectionId, Date.now())
-        updateChannels.heartbeat();
+      const interval = setInterval(async () => {
+        try {
+          socket.ping(Date.now());
+          // TODO: move game connection heartbeat into (core) update channel
+          await services.game.connection.heartbeat(gameId, connectionId, Date.now())
+          updateChannels.heartbeat();
+        } catch (error) {
+          console.error(error);
+        }
       }, 1000)
 
       const updateChannels = services.update.create(game, identity.grant.identity, connectionId, send, identity);
@@ -30,10 +34,12 @@ export const createUpdatesRoutes/*: RoutesConstructor*/ = (services) => {
       const { removeListener } = addRecieveListener(m => updateChannels.update(m));
   
       socket.addEventListener('close', () => {
+        console.log('CLOSE');
         clearInterval(interval)
         removeListener();
         updateChannels.close();
-        services.game.connection.disconnect(gameId, connectionId);
+        services.game.connection.disconnect(gameId, connectionId)
+          .catch(console.error);
       });
     }
   })

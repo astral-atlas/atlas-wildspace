@@ -19,7 +19,7 @@
   "homepage": "https://github.com/astral-atlas/wildspace#readme",
   "dependencies": {
     "@craftamap/esbuild-plugin-html": "^0.4.0",
-    "esbuild": "^0.14.49",
-    "esbuild-css-modules-plugin": "^2.4.0"
+    "esbuild": "^0.14.54",
+    "esbuild-css-modules-plugin": "^2.5.2"
   }
 }

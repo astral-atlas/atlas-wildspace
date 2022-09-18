@@ -12,3 +12,5 @@ export * from './library.js';
 export * from './exposition.js';
 export * from './wiki.js';
 export * from './page.js';
+export * from './resources.js';
+export * from './references.js';

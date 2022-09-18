@@ -257,6 +257,8 @@ export type GameCRUDResourceImplementation<T: AdvancedGameCRUDAPIDescription> = 
   destroy: (request: GameCRUDResourceRequest<T, "DELETE">, id: T["resourceId"]) => Awaitable<void>,
 
   gameUpdateType?: GameUpdate["type"],
+  readScope?: GameIdentityScope,
+  gameDataKey?: string,
 }
 
 export type CRUDConstructors = {
@@ -274,9 +276,10 @@ export const createCRUDConstructors = (services/*: Services*/)/*: CRUDConstructo
     resource/*: ResourceDescription<AdvancedGameCRUDAPI<T>>*/,
     implementation/*: GameCRUDResourceImplementation<T>*/,
   ) => {
+    const readScope = implementation.readScope || { type: 'player-in-game' };
     return createAuthorizedResource(resource, {
       GET: {
-        scope: { type: 'player-in-game' },
+        scope: readScope,
         getGameId: r => r.query.gameId,
         async handler(request) {
           if (request.identity.type === 'guest')
@@ -298,6 +301,8 @@ export const createCRUDConstructors = (services/*: Services*/)/*: CRUDConstructo
 
           if (implementation.gameUpdateType)
             services.data.gameUpdates.publish(request.game.id, { type: implementation.gameUpdateType });
+          if (implementation.gameDataKey)
+            services.data.gameData.gameDataEvent.publish(request.game.id, implementation.gameDataKey);
 
           return { status: HTTP_STATUS.ok, body: { type: 'created', [implementation.name]: resource } }
         }
@@ -315,6 +320,8 @@ export const createCRUDConstructors = (services/*: Services*/)/*: CRUDConstructo
           
           if (implementation.gameUpdateType)
             services.data.gameUpdates.publish(request.game.id, { type: implementation.gameUpdateType });
+          if (implementation.gameDataKey)
+            services.data.gameData.gameDataEvent.publish(request.game.id, implementation.gameDataKey);
 
           return { status: HTTP_STATUS.ok, body: { type: 'updated', [implementation.name]: resource } }
         }
@@ -331,6 +338,8 @@ export const createCRUDConstructors = (services/*: Services*/)/*: CRUDConstructo
           
           if (implementation.gameUpdateType)
             services.data.gameUpdates.publish(request.game.id, { type: implementation.gameUpdateType });
+          if (implementation.gameDataKey)
+            services.data.gameData.gameDataEvent.publish(request.game.id, implementation.gameDataKey);
 
           return { status: HTTP_STATUS.ok, body: { type: 'deleted' } }
         }

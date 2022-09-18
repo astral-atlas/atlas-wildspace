@@ -26,7 +26,7 @@ export const createGameConnectionService = (data/*: WildspaceData*/)/*: GameConn
     }
     const expiresBy = unixNow + CONNECTION_TIMEOUT_SECONDS;
 
-    await data.gameData.connections.set(key, connection, expiresBy);
+    await data.gameData.connections.set(key, null, null, expiresBy, connection);
     return gameConnectionId;
   };
 
@@ -42,17 +42,17 @@ export const createGameConnectionService = (data/*: WildspaceData*/)/*: GameConn
       heartbeat: unixNow,
     };
 
-    await data.gameData.connections.set(key, nextConnection, expiresBy);
+    await data.gameData.connections.set({ partition: gameId, sort: connectionId }, null, null, expiresBy, nextConnection);
   };
 
   const disconnect = async (gameId, connectionId) => {
-    await data.gameData.connections.set({ partition: gameId, sort: connectionId }, null, 0);
+    await data.gameData.connections.remove({ partition: gameId, sort: connectionId });
   }
 
   const list = async (gameId) => {
     const { results } = await data.gameData.connections.query(gameId);
 
-    return results.map(r => r.value);
+    return results.map(r => r.result);
   }
 
   return {

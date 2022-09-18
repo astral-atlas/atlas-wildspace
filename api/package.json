@@ -20,23 +20,23 @@
   },
   "homepage": "https://github.com/astral-atlas/wildspace#readme",
   "dependencies": {
-    "@astral-atlas/sesame-client": "^3.1.1",
-    "@astral-atlas/sesame-models": "^11.6.0",
-    "@astral-atlas/wildspace-data": "*",
-    "@astral-atlas/wildspace-models": "*",
-    "@aws-sdk/client-dynamodb": "^3.82.0",
-    "@aws-sdk/client-ssm": "^3.58.0",
-    "@aws-sdk/s3-presigned-post": "^3.46.0",
-    "@aws-sdk/s3-request-presigner": "^3.46.0",
+    "@astral-atlas/sesame-client": "^3.2.0",
+    "@astral-atlas/sesame-models": "^11.7.0",
+    "@astral-atlas/wildspace-data": "^1.0.0",
+    "@astral-atlas/wildspace-models": "^1.0.0",
+    "@aws-sdk/client-dynamodb": "^3.172.0",
+    "@aws-sdk/client-ssm": "^3.171.0",
+    "@aws-sdk/s3-presigned-post": "^3.171.0",
+    "@aws-sdk/s3-request-presigner": "^3.173.0",
     "@lukekaalim/http-client": "^5.2.0",
-    "@lukekaalim/http-server": "^13.6.0",
+    "@lukekaalim/http-server": "^13.7.0",
     "@lukekaalim/ws-server": "^2.0.1",
-    "json5": "^2.2.0",
-    "redis": "^4.1.0",
+    "json5": "^2.2.1",
+    "redis": "^4.3.1",
     "uuid": "^8.3.2",
-    "ws": "^8.2.2"
+    "ws": "^8.8.1"
   },
   "devDependencies": {
-    "nodemon": "^2.0.15"
+    "nodemon": "^2.0.20"
   }
 }

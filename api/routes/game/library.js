@@ -17,45 +17,7 @@ export const createLibraryRoutes/*: RoutesConstructor*/ = (services) => {
       scope: { type: 'game-master-in-game' },
       getGameId: r => r.query.gameId,
       async handler({ game }) {
-        const [
-          { result: rooms },
-          { result: characters },
-          { result: monsters },
-          { result: monsterActors },
-          { result: miniTheaters },
-          { result: scenes },
-          { result: locations },
-          { result: tracks },
-          { result: playlists },
-        ] = await Promise.all([
-          services.data.room.query(game.id),
-          services.data.characters.query(game.id),
-          services.data.monsters.query(game.id),
-          services.data.gameData.monsterActors.query(game.id),
-          services.data.gameData.miniTheaters.query(game.id),
-          services.data.gameData.scenes.query(game.id),
-          services.data.gameData.locations.query(game.id),
-          services.data.tracks.query(game.id),
-          services.data.playlists.query(game.id),
-        ])
-        const assets = await services.asset.batchPeek([
-          ...characters.map(c => c.initiativeIconAssetId),
-          ...monsters.map(m => m.initiativeIconAssetId),
-          ...tracks.map(t => [t.trackAudioAssetId, t.coverImageAssetId]).flat(1),
-          ...locations.map(l => l.background.type === 'image' && l.background.imageAssetId || null)
-        ])
-        const library = {
-          rooms,
-          characters,
-          monsters,
-          monsterActors,
-          miniTheaters,
-          scenes,
-          locations,
-          tracks,
-          playlists,
-          assets,
-        };
+        const library = await services.page.library.getLibraryData(game.id);
         return { status: HTTP_STATUS.ok, body: { type: 'found', library } }
       }
     }

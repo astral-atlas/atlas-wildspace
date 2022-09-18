@@ -1,6 +1,7 @@
 // @flow strict
 
 import { createMaskForMonsterActor, getRoomResourcesAssetIds } from "@astral-atlas/wildspace-models";
+import { createLibraryPageService } from "./page/libraryPage.js";
 import { countRoomConnections } from "./room/connection.js";
 
 /*::
@@ -10,10 +11,12 @@ import type { GameService } from "./game";
 import type { GameID, GamePage, RoomID, RoomPage } from "@astral-atlas/wildspace-models";
 import type { RoomService } from "./room";
 import type { AssetService } from "./asset";
+import type { LibraryPageService } from "./page/libraryPage";
 
 export type PageService = {
   getGamePage: (gameId: GameID, identity: Identity, isGM: boolean) => Promise<?GamePage>,
   getRoomPage: (gameId: GameID, roomId: RoomID) => Promise<?RoomPage>,
+  library: LibraryPageService,
 };
 */
 
@@ -113,9 +116,11 @@ export const createPageService = (
     };
     return roomPage;
   };
+  const library = createLibraryPageService(data, assetService);
 
   return {
     getGamePage,
     getRoomPage,
+    library,
   }
 }

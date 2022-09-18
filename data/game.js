@@ -16,10 +16,15 @@ import type {
 
   MonsterActor,
   MonsterActorID,
+
+  TerrainProp,
+  TerrainPropID,
 } from "@astral-atlas/wildspace-models";
 
 import type { Transactable } from "./sources/table2";
 import type { ExpirableCompositeTable } from "./sources/expiry";
+import type { DynamoDBTable } from "./sources/dynamoTable";
+import type { ModelResource, ModelResourceID } from "../models/game/resources";
 */
 
 /*::
@@ -30,13 +35,22 @@ export type WildspaceGameData = {
 
   monsterActors: CompositeTable<GameID, MonsterActorID, MonsterActor>,
 
-  connections:  ExpirableCompositeTable<GameID, GameConnectionID, GameConnectionState>,
+  connections:  DynamoDBTable<GameID, GameConnectionID, GameConnectionState>,
 
   scenes:       CompositeTable<GameID, SceneID, Scene>,
   miniTheaters: {|
     ...CompositeTable<GameID, MiniTheaterID, MiniTheater>,
     ...Transactable<GameID, MiniTheaterID, MiniTheater>,
   |},
-  miniTheaterEvents: Channel<MiniTheaterID, MiniTheaterEvent>
+  miniTheaterEvents: Channel<MiniTheaterID, MiniTheaterEvent>,
+
+  resources: {
+    models: DynamoDBTable<GameID, ModelResourceID, ModelResource>,
+  },
+  miniTheater: {
+    terrainProps: DynamoDBTable<GameID, TerrainPropID, TerrainProp>,
+  },
+
+  gameDataEvent: Channel<GameID, string>,
 };
 */

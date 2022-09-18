@@ -11,9 +11,9 @@ import riceFieldURL from './rice_field.jpg';
 import { useAnimationFrame } from "@lukekaalim/act-three/hooks";
 import { useAnimation } from '@lukekaalim/act-curve';
 import { LayoutDemo } from '../demo';
-import { createMockImageAsset, createMockMiniTheater, createMockWildspaceClient } from "@astral-atlas/wildspace-test";
+import { createMockImageAsset, createMockMiniTheater, createMockMonster, createMockMonsterActor, createMockMonsterPiece, createMockWildspaceClient } from "@astral-atlas/wildspace-test";
 import { v4 } from "uuid";
-import { emptyRootNode, proseSchema } from '@astral-atlas/wildspace-models';
+import { createMaskForMonsterActor, emptyRootNode, proseSchema } from '@astral-atlas/wildspace-models';
 import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { Node } from "prosemirror-model";
@@ -93,10 +93,23 @@ export const ExpositionSceneDemo/*: Component<>*/ = () => {
     'exposition-theater': expositionTheaterContent,
   })[mode] || miniTheaterContent
 
-  const miniTheater = createMockMiniTheater();
+  const monsterIcon = createMockImageAsset();
+  const monster = createMockMonster({ initiativeIconAssetId: monsterIcon.description.id })
+  const monsterActor = createMockMonsterActor(monster)
+  const monsterPiece = createMockMonsterPiece(monsterActor.id);
+  const miniTheater = createMockMiniTheater([monsterPiece]);
+
   const miniTheaterController = useMiniTheaterController();
   const miniTheaterResources = {
-    
+    assets: new Map([
+      [monsterIcon.description.id, monsterIcon]
+    ]),
+    monsterMasks: new Map([
+      [monsterActor.id, createMaskForMonsterActor(monster, monsterActor)]
+    ]),
+    characters: new Map(),
+    meshMap: new Map(),
+    textureMap: new Map(),
   };
 
   const overrideCanvasRef = useRef();

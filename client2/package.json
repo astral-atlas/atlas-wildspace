@@ -15,9 +15,9 @@
   },
   "homepage": "https://github.com/astral-atlas/wildspace#readme",
   "dependencies": {
-    "@astral-atlas/sesame-models": "^11.6.0",
+    "@astral-atlas/sesame-models": "^11.7.0",
     "@astral-atlas/wildspace-models": "^1.0.0",
     "@lukekaalim/http-client": "^6.0.0",
-    "@lukekaalim/ws-client": "^2.0.1"
+    "@lukekaalim/ws-client": "^2.1.0"
   }
 }

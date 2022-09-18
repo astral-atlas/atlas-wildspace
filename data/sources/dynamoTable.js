@@ -1,6 +1,7 @@
 // @flow strict
 
 import { c } from "@lukekaalim/cast";
+import { readDynamoDBItem, writeDynamoDBItem, writeValueTypes } from "./table.js";
 
 
 /*::
@@ -8,7 +9,6 @@ import type { CompositeKey } from "./table";
 import type { DynamoDB } from "@aws-sdk/client-dynamodb";
 import type { Cast } from "@lukekaalim/cast/main";
 
-import { readDynamoDBItem, writeDynamoDBItem, writeValueTypes } from "./table";
 
 export type DynamoDBTable<PK, SK, Item> = {
   get: (key: CompositeKey<PK, SK>) =>
@@ -46,10 +46,10 @@ export const createLiveDynamoDBTable = /*:: <I>*/(
       return { result: null, version: null }
     const value = readDynamoDBItem(Item);
     const result = castItem(value[valueKeyName]);
-    const expiresBy = c.num(value[expiryKeyName]);
+    const expiresBy = c.maybe(c.num)(value[expiryKeyName]);
     const version = value[versionKeyName];
 
-    if (expiresBy < (Date.now() * 1000))
+    if (typeof expiresBy === 'number' && expiresBy < (Date.now() / 1000))
       return { result: null, version: null };
 
     return { result: (result/*: I*/), expiresBy, version }
@@ -58,8 +58,8 @@ export const createLiveDynamoDBTable = /*:: <I>*/(
     await dynamodb.deleteItem({
       TableName: tableName,
       Key: {
-        [partitionKeyName]: key.partition,
-        [sortKeyName]: key.sort,
+        [partitionKeyName]: { S: key.partition },
+        [sortKeyName]: { S: key.sort },
       }
     })
   }
@@ -85,7 +85,7 @@ export const createLiveDynamoDBTable = /*:: <I>*/(
     const { Items } = await dynamodb.query({
       TableName: tableName,
       
-      FilterExpression: '#exp < :expiry_cutoff',
+      FilterExpression: 'attribute_not_exists(#exp) OR #exp = :null OR #exp < :expiry_cutoff',
       KeyConditionExpression: `#pkn=:pk`,
       ExpressionAttributeNames: {
         [`#pkn`]: partitionKeyName,
@@ -93,7 +93,8 @@ export const createLiveDynamoDBTable = /*:: <I>*/(
       },
       ExpressionAttributeValues: {
         [`:pk`]: { S: partitionKey },
-        [`:expiry_cutoff`]: { N: (Date.now() * 1000).toString() },
+        [`:null`]: { NULL: true },
+        [`:expiry_cutoff`]: { N: (Date.now() / 1000).toString() },
       }
     });
 
@@ -137,7 +138,7 @@ export const createNamespacedDynamoDBTable = /*:: <PK, SKA, SKB, Item>*/(
       return table.remove(transformKey(key));
     },
     async query(partitionKey) {
-      const { results } = await table.query(partitionKey);
+      const { results } = await table.query(transformPartition(partitionKey));
       const mappedResults = results.map(result => ({
         ...result,
         sortKey: reverseTransformSort(result.sortKey),

@@ -8,6 +8,8 @@ import type { Room } from "../room/room";
 import type { Exposition } from "./exposition";
 import type { Location } from "./location";
 import type { MiniTheater } from "./miniTheater";
+import type { TerrainProp } from "./miniTheater/terrain";
+import type { ModelResource } from "./resources";
 import type { Scene } from "./scene";
 import type { Cast } from "@lukekaalim/cast/main";
 */
@@ -23,12 +25,15 @@ import { castLocation } from "./location.js";
 import {
   castMiniTheater,
 } from "./miniTheater.js";
+import { castTerrainProp } from "./miniTheater/terrain.js";
+import { castModelResource } from "./resources.js";
 import { castScene } from "./scene.js";
 import { c } from "@lukekaalim/cast";
 
 /*::
 export type LibraryData = {|
   rooms: $ReadOnlyArray<Room>,
+  modelResources: $ReadOnlyArray<ModelResource>,
 
   characters: $ReadOnlyArray<Character>,
   monsters: $ReadOnlyArray<Monster>,
@@ -36,6 +41,7 @@ export type LibraryData = {|
   monsterActors: $ReadOnlyArray<MonsterActor>,
 
   miniTheaters: $ReadOnlyArray<MiniTheater>,
+  terrainProps: $ReadOnlyArray<TerrainProp>,
   scenes: $ReadOnlyArray<Scene>,
 
   locations: $ReadOnlyArray<Location>,
@@ -48,12 +54,14 @@ export type LibraryData = {|
 */
 export const castLibraryData/*: Cast<LibraryData>*/ = c.obj({
   rooms: c.arr(castRoom),
+  modelResources: c.arr(castModelResource),
   characters: c.arr(castCharacter),
   monsters: c.arr(castMonster),
 
   monsterActors: c.arr(castMonsterActor),
 
   miniTheaters: c.arr(castMiniTheater),
+  terrainProps: c.arr(castTerrainProp),
   scenes: c.arr(castScene),
   locations: c.arr(castLocation),
 
@@ -65,6 +73,10 @@ export const castLibraryData/*: Cast<LibraryData>*/ = c.obj({
 
 /*::
 export type LibraryEvent =
+  | {
+      type: 'reload',
+      data: LibraryData
+    }
   | {
       type: 'rooms',
       rooms: $ReadOnlyArray<Room>,
@@ -117,6 +129,10 @@ export type LibraryEvent =
 */
 
 export const castLibraryEvent/*: Cast<LibraryEvent>*/ = c.or('type', {
+  'reload': c.obj({
+    type: c.lit('reload'),
+    data: castLibraryData,
+  }),
   'rooms': c.obj({
     type: c.lit('rooms'),
     rooms: c.arr(castRoom),
@@ -170,6 +186,8 @@ export const castLibraryEvent/*: Cast<LibraryEvent>*/ = c.or('type', {
 
 export const reduceLibraryEvent = (data/*: LibraryData*/, event/*: LibraryEvent*/)/*: LibraryData*/ => {
   switch (event.type) {
+    case 'reload':
+      return event.data;
     case 'rooms':
       return {
         ...data,

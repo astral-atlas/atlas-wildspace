@@ -13,6 +13,7 @@ import { createGameRoutes } from './routes/game.js';
 import { selfAPI } from '@astral-atlas/wildspace-models';
 import { defaultOptions } from './routes/meta.js';
 import { createHomeRoutes } from "./routes/home.js";
+import { createPageRoutes } from "./routes/pages.js";
 
 /*::
 export type RoutesConstructor = (services: Services) => { ws: WebSocketRoute[], http: HTTPRoute[] };
@@ -22,6 +23,7 @@ export const createRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute[], 
   const audioRoutes = createAudioRoutes(services);
   const assetRoutes = createAssetRoutes(services);
   const gameRoutes = createGameRoutes(services);
+  const pagesRoutes = createPageRoutes(services);
 
   const selfRoutes = createJSONResourceRoutes(selfAPI['/self'], {
     ...defaultOptions,
@@ -48,6 +50,7 @@ export const createRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute[], 
     ...gameRoutes.http,
     ...selfRoutes,
     ...homeRoutes.http,
+    ...pagesRoutes.http,
   ];
   return { ws, http }
 };

@@ -6,13 +6,13 @@ import { randomGameName } from "./random";
 import { randomIntRange } from "./random.js";
 import { v4 as uuid } from 'uuid';
 
-export const createMockMiniTheater = ()/*: MiniTheater*/ => ({
+export const createMockMiniTheater = (pieces/*: Piece[]*/ = [])/*: MiniTheater*/ => ({
   id: uuid(),
   name: randomGameName(),
   version: uuid(),
   
   baseArea: { position: { x: 0, y: 0, z: 0}, size: { x: 10, y: 10, z: 1 } },
-  pieces: [],
+  pieces,
 });
 
 export const createMockMonsterPiece = (monsterActorId/*: MonsterActorID*/)/*: Piece*/ => ({

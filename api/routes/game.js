@@ -23,6 +23,7 @@ import { createLibraryRoutes } from './game/library.js';
 import { createMonsterRoutes } from "./game/monsters.js";
 import { createMiniTheaterRoutes } from "./game/miniTheater.js";
 import { createGameRoomsRoutes } from "./game/rooms.js";
+import { createResourcesRoutes } from './game/resources.js';
 
 export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute[], http: HTTPRoute[] }*/ => {
   const { data, auth, ...s } = services;
@@ -31,6 +32,7 @@ export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute
     ...defaultOptions,
 
     GET: async ({ query: { gameId }, headers: { authorization }}) => {
+      console.log('GET')
       const identity = await auth.getAuthFromHeader(authorization);
       const game = await s.game.get(gameId, identity);
     
@@ -81,6 +83,7 @@ export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute
   const monsterRoutes = createMonsterRoutes(services);
   const miniTheaterRoutes = createMiniTheaterRoutes(services)
   const gameRoomsRoutes = createGameRoomsRoutes(services);
+  const resourceRoutes = createResourcesRoutes(services);
   const http = [
     ...playersRoutes.http,
     ...encounterRoutes.http,
@@ -97,6 +100,7 @@ export const createGameRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute
     ...monsterRoutes.http,
     ...miniTheaterRoutes.http,
     ...gameRoomsRoutes.http,
+    ...resourceRoutes.http,
   ];
   const ws = [
     ...characterRoutes.ws,

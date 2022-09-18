@@ -59,7 +59,7 @@ declare module '@aws-sdk/client-dynamodb' {
       TableName: string,
       KeyConditionExpression: string,
       ExpressionAttributeNames?: { [string]: string },
-      ExpressionAttributeValues?: { [string]: { S: string } | { N: string } | { B: string } },
+      ExpressionAttributeValues?: { [string]: DynamoDBValueType },
     },
     Output: {
       Items: { [string]: DynamoDBValueType }[]

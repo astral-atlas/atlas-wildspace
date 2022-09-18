@@ -40,13 +40,13 @@ export const RoomAisle/*: Component<RoomAisleProps>*/ = ({
   const selectedRoom = rooms.find(r => selection.selected.has(r.id));
 
   const onCreateRoom = async () => {
-    await client.room.create(game.id, 'Untitled Room')
+    await client.game.rooms.create(game.id, { title: 'Untitled Room', hidden: true })
   }
   const onUpdateRoom = async (room, roomProps) => {
-    await client.room.update(game.id, room.id, { ...room, ...roomProps })
+    await client.game.rooms.update(game.id, room.id, { ...room, ...roomProps });
   }
   const onDeleteRoom = async (room) => {
-    await client.room.destroy(game.id, room.id)
+    await client.game.rooms.destroy(game.id, room.id)
   }
 
   return h(LibraryAisle, {

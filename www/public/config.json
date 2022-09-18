@@ -1,6 +1,6 @@
 {
   "identity": {
-    "type": "fake",
+    "type": "store",
     "proof": {
       "type": "link",
       "id": "string",

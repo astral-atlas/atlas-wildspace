@@ -5,11 +5,17 @@ import type { ServerGameUpdateChannel } from "../update";
 import type { WildspaceData } from "@astral-atlas/wildspace-data";
 import type { GameID, GameUpdate, LibraryEvent, LibraryChannel } from "@astral-atlas/wildspace-models";
 import type { AssetService } from "../asset";
+import type { PageService } from "../page";
 
 export type ServerLibraryChannel = ServerUpdateChannel<LibraryChannel>;
 */
 
-export const createServerLibraryChannel = (data/*: WildspaceData*/, asset/*: AssetService*/, { game, send }/*: ServerGameUpdateChannel*/)/*: ServerLibraryChannel*/ => {
+export const createServerLibraryChannel = (
+  data/*: WildspaceData*/,
+  asset/*: AssetService*/,
+  pages/*: PageService*/,
+  { game, send }/*: ServerGameUpdateChannel*/,
+)/*: ServerLibraryChannel*/ => {
   let subscription = null;
 
   const createLibraryEvent = async (update) => {
@@ -55,6 +61,7 @@ export const createServerLibraryChannel = (data/*: WildspaceData*/, asset/*: Ass
         return null;
     }
   }
+  let gameDataEventSubscription = null;
 
   const onGameUpdate = async (update) => {
     const event = await createLibraryEvent(update);
@@ -62,12 +69,19 @@ export const createServerLibraryChannel = (data/*: WildspaceData*/, asset/*: Ass
       return;
     send({ type: 'library-event', event })
   }
+  const onGameDataEvent = async (eventKey) => {
+    console.log('Sending RELOAD event')
+    const event = { type: 'reload', data: await pages.library.getLibraryData(game.id) };
+    send({ type: 'library-event', event })
+  }
 
   const onSubscribe = () => {
     subscription = data.gameUpdates.subscribe(game.id, onGameUpdate)
+    gameDataEventSubscription = data.gameData.gameDataEvent.subscribe(game.id, onGameDataEvent)
   };
   const onUnsubscribe = () => {
     subscription?.unsubscribe();
+    gameDataEventSubscription?.unsubscribe();
   }
 
   const update = (event) => {

@@ -2,8 +2,16 @@
 /*::
 import type { BoardArea } from "../../encounter/board";
 import type { BoardPosition } from "../../encounter/map";
-import type { SceneResourceID, TextureResourceID } from "../resources/resource";
+import type {
+  ModelResourceID,
+  ModelResourcePath,
+  TextureResourceID,
+} from "../resources";
+import type { Cast } from "@lukekaalim/cast";
 */
+
+import { castModelResourceId, castModelResourcePath } from "../resources.js";
+import { c } from "@lukekaalim/cast";
 
 /*::
 export type TerrainPropID = string;
@@ -12,10 +20,19 @@ export type TerrainProp = {
 
   name: string,
 
-  sceneResourceId: SceneResourceID,
-  textureResourceId: TextureResourceID,
+  modelResourceId: ModelResourceID,
+  modelPath: ModelResourcePath,
+  iconPreviewCameraModelPath: ?ModelResourcePath,
 };
 */
+export const castTerrainPropId/*: Cast<TerrainPropID>*/ = c.str;
+export const castTerrainProp/*: Cast<TerrainProp>*/ = c.obj({
+  id: castTerrainPropId,
+  name: c.str,
+  modelResourceId: castModelResourceId,
+  modelPath: castModelResourcePath,
+  iconPreviewCameraModelPath: c.maybe(castModelResourcePath),
+})
 
 export const createFloorForTerrain = (
   terrainType/*: string*/,

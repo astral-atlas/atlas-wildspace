@@ -66,7 +66,7 @@ export const createUpdateService = (
     const gameUpdateChannel = { game, userId, connectionId, send, identity }
     const miniTheater = createServerMiniTheaterChannel(data, gameUpdateChannel);
     const wikiDoc = createServerWikiDocChannel(data, gameUpdateChannel);
-    const library = createServerLibraryChannel(data, asset, gameUpdateChannel);
+    const library = createServerLibraryChannel(data, asset, pageService, gameUpdateChannel);
     const roomPage = createServerRoomPageChannel(data, gameService, roomService, pageService, gameUpdateChannel);
     const gamePage = createServerGamePageChannel(data, pageService, roomService, gameUpdateChannel);
 

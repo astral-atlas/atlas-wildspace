@@ -22,7 +22,7 @@
   "homepage": "https://github.com/astral-atlas/wildspace#readme",
   "dependencies": {
     "@aws-sdk/client-sts": "^3.38.0",
-    "json5": "^2.2.0",
-    "redis": "^4.1.0"
+    "json5": "^2.2.1",
+    "redis": "^4.3.1"
   }
 }

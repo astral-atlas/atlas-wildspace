@@ -1,7 +1,7 @@
 // @flow strict
 /*::
-import type { JSONSerializedNode } from "../../prose.js";
 import type { Cast } from "@lukekaalim/cast";
+import type { JSONNode } from "prosemirror-model";
 */
 import { c } from "@lukekaalim/cast";
 import { proseNodeJSONSerializer, proseStepJSONSerializer, castJSONSerializedNode } from "../../prose.js";
@@ -9,7 +9,7 @@ import { proseNodeJSONSerializer, proseStepJSONSerializer, castJSONSerializedNod
 /*::
 export type RichTextVersion = number;
 export type RichText = {
-  rootNode: JSONSerializedNode,
+  rootNode: JSONNode,
   version: RichTextVersion,
 };
 */

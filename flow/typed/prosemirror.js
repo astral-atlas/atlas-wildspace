@@ -5,7 +5,7 @@ declare module "prosemirror-state" {
   import type { Schema, Node } from "prosemirror-model";
   import type { EditorView } from "prosemirror-view";
 
-  declare export class EditorState<TNodes, TMarks> {
+  declare export class EditorState<TNodes = any, TMarks = any> {
     
     static create<Nodes, Marks>({ schema: Schema<any>, doc?: Node }): EditorState<Nodes, Marks>;
 
@@ -51,7 +51,7 @@ declare module "prosemirror-view" {
   import type { EditorState, Transaction } from "prosemirror-state";
 
   declare export type EditorProps = {
-    editable?: (state: EditorState) => boolean
+    editable?: (state: EditorState<>) => boolean
   }
   declare export type DirectEditorProps = {
     ...EditorProps,

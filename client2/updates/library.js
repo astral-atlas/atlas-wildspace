@@ -27,6 +27,7 @@ export const createLibraryConnection = (
 
   const librarySubscribers = new Set();
   const onUpdate = async (event) => {
+    console.log(event, libraryDataPromise)
     if (event.type !== 'library-event')
       return
     if (!libraryDataPromise)
@@ -43,6 +44,7 @@ export const createLibraryConnection = (
     const promise = library.get(updates.gameId);
     updates.send({ type: 'library-subscribe' })
     libraryDataPromise = promise;
+    console.log('Setting Promise')
     return promise;
   }
   const onLastUnsubscriber = () => {

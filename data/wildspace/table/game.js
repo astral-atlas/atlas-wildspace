@@ -12,7 +12,9 @@ import {
   castScene,
   castMonster,
   castMonsterActor,
-  castMiniTheaterEvent
+  castMiniTheaterEvent,
+  castTerrainProp,
+  castModelResource
 } from "@astral-atlas/wildspace-models";
 
 /*::
@@ -36,7 +38,7 @@ export const createTableWildspaceGameData = (sources/*: WildspaceDataSources*/)/
   const magicItems = sources.createCompositeTable('magicItems', castMagicItem);
   const monsterActors = sources.createCompositeTable('monsterActors', castMonsterActor);
 
-  const connections = sources.createExpiryTable('game_connections', castGameConnectionState);
+  const connections = sources.createDynamoDBTable('game_connections', castGameConnectionState);
 
   const scenes = sources.createCompositeTable('scenes', castScene)
   const expositions = sources.createCompositeTable('expositions', castExposition)
@@ -45,6 +47,14 @@ export const createTableWildspaceGameData = (sources/*: WildspaceDataSources*/)/
     ...sources.createTransactable('mini_theater', castMiniTheater, 'version')
   };
   const miniTheaterEvents = sources.createChannel('mini_theater', castMiniTheaterEvent);
+
+  const resources = {
+    models: sources.createDynamoDBTable('resources_models', castModelResource),
+  };
+  const miniTheater = {
+    terrainProps: sources.createDynamoDBTable('mini_theater_terrain_props', castTerrainProp),
+  }
+  const gameDataEvent = sources.createChannel('game_data', c.str);
 
   return {
     locations,
@@ -56,5 +66,8 @@ export const createTableWildspaceGameData = (sources/*: WildspaceDataSources*/)/
     expositions,
     miniTheaters,
     miniTheaterEvents,
+    resources,
+    miniTheater,
+    gameDataEvent,
   }
 }
