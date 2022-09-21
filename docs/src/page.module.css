@@ -1,0 +1,11 @@
+.wideDocument {
+  max-width: 80em;
+}
+
+
+.wideDocument p,
+.wideDocument h1,
+.wideDocument h2 {
+  max-width: 40em;
+  margin: 18px auto 18px auto;
+}

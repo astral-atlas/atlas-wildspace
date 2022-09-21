@@ -8,9 +8,8 @@ import {
   castNPCResourceReference,
 } from "./references.js";
 import { castAssetID } from "../asset.js";
-import { castMiniVector } from "./miniTheater.js";
-import { castMiniTheaterId } from "./miniTheater.js";
-import { castMiniQuaternion } from "./miniTheater/primitives.js";
+import { castMiniTheaterId } from "./miniTheater/miniTheater.js";
+import { castMiniQuaternion, castMiniVector } from "./miniTheater/primitives.js";
 
 /*::
 import type { Cast } from "@lukekaalim/cast";

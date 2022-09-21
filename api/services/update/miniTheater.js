@@ -2,21 +2,26 @@
 /*::
 import type { ServerUpdateChannel } from "./meta";
 import type { ServerGameUpdateChannel } from "../update";
+import type { GameService } from "../game";
 import type { WildspaceData } from "@astral-atlas/wildspace-data";
-import type { GameID, GameUpdate, MiniTheaterEvent, MiniTheaterID, MiniTheaterChannel } from "@astral-atlas/wildspace-models";
+import type { GameID, GameUpdate, MiniTheaterAction, MiniTheaterID, MiniTheaterChannel } from "@astral-atlas/wildspace-models";
 */
 
-import { createMiniTheaterEventFromAction, reduceMiniTheaterAction } from "@astral-atlas/wildspace-models";
+import { reduceMiniTheaterAction } from '@astral-atlas/wildspace-models';
 import { v4 as uuid } from 'uuid';
 
 /*::
 export type MiniTheaterConnectionService = {
-  create: (gameId: GameID, (MiniTheaterEvent, MiniTheaterID) => mixed) => ServerMiniTheaterChannel,
+  create: (gameId: GameID, (MiniTheaterAction, MiniTheaterID) => mixed) => ServerMiniTheaterChannel,
 };  
 export type ServerMiniTheaterChannel = ServerUpdateChannel<MiniTheaterChannel>;
 */
 
-export const createServerMiniTheaterChannel = (data/*: WildspaceData*/, updates/*: ServerGameUpdateChannel*/)/*: ServerMiniTheaterChannel*/ => { 
+export const createServerMiniTheaterChannel = (
+  data/*: WildspaceData*/,
+  gameService/*: GameService*/,
+  updates/*: ServerGameUpdateChannel*/
+)/*: ServerMiniTheaterChannel*/ => { 
   const subscriptions = new Set()
 
   const onMiniTheaterEvent = (miniTheaterId, miniTheaterEvent) => {
@@ -34,15 +39,13 @@ export const createServerMiniTheaterChannel = (data/*: WildspaceData*/, updates/
       const onEvent = (event) => {
         onMiniTheaterEvent(id, event)
       }
-      subscriptions.add(data.gameData.miniTheaterEvents.subscribe(id, onEvent));
+      subscriptions.add(gameService.miniTheater.subscribeEvents(id, onEvent));
     }
   }
   const onMiniTheaterAction = async (id, action) => {
-    const { next } = await data.gameData.miniTheaters.transaction(updates.game.id, id, prev => ({
-      ...reduceMiniTheaterAction(prev, action),
-      version: uuid(),
-    }));
-    data.gameData.miniTheaterEvents.publish(id, createMiniTheaterEventFromAction(action, next))
+    const { game, userId } = updates;
+    const isGM = game.gameMasterId === userId;
+    await gameService.miniTheater.applyAction(updates.game.id, id, action, isGM);
   }
   const update = (event) => {
     switch (event.type) {

@@ -16,6 +16,7 @@ import { v4 as uuid } from 'uuid';
 import { LibraryAisle } from "@astral-atlas/wildspace-components/library/LibraryAisle";
 import { createMockCharacter, createMockImageAsset, createMockWildspaceClient } from "@astral-atlas/wildspace-test"
 import { GameMasterPrepLibraryDemo } from "./prep";
+import { WidePage } from "../page";
 
 const BookDemo = () => {
   const selection = useLibrarySelection()
@@ -194,7 +195,7 @@ const directives = {
 }
 
 export const libraryPrepPage/*: Page*/ = {
-  content: h(Document, {}, h(Markdown, { text: libraryPrepText, directives })),
+  content: h(WidePage, {}, h(Markdown, { text: libraryPrepText, directives })),
   link: { children: [], name: 'Prep Library', href: '/library/prep' }
 }
 

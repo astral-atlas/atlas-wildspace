@@ -7,10 +7,12 @@ import type { AuthService, Identity } from "./auth.js";
 import type { GameConnectionService } from "./game/connection";
 import type { RoomService } from "./room";
 import type { AssetService } from "./asset";
+import type { MiniTheaterService } from "./game/miniTheater";
 */
 import { createMaskForMonsterActor } from '@astral-atlas/wildspace-models';
 import { v4 as uuid } from 'uuid';
 import { createGameConnectionService } from "./game/connection.js";
+import { createMiniTheaterService } from "./game/miniTheater.js";
 
 /*::
 export type GameService = {
@@ -26,6 +28,7 @@ export type GameService = {
   removePlayer: (gameId: GameID, playerId: UserID, authorizer: Identity) => Promise<void>,
 
   connection: GameConnectionService,
+  miniTheater: MiniTheaterService,
 };
 
 export type GameIdentityScope =
@@ -151,9 +154,11 @@ export const createGameService = (
   }
 
   const connection = createGameConnectionService(data);
+  const miniTheater = createMiniTheaterService(data);
 
   return {
     create, update, get, all, createScopeAssertion, removePlayer, addPlayer, listPlayers,
     connection,
+    miniTheater,
   };
 };

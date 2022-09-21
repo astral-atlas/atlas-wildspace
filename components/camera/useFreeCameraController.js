@@ -107,6 +107,8 @@ export const useFreeCameraController = (render/*: RenderSetup*/)/*: FreeCameraCo
     canvas.addEventListener('click', onClick)
     
     const unsubscribeInput = render.loop.subscribeInput((c, v) => {
+      if (document.pointerLockElement !== canvas)
+        return;
       const { next: keys } = render.keyboard.readDiff();
       const velocity = getFreecamVelocity(keys.value);
       controller.setVelocity(velocity);

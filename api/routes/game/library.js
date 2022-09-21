@@ -4,7 +4,7 @@ import type { RoutesConstructor } from "../../routes";
 
 */
 import { createMetaRoutes, createCRUDConstructors } from "../meta.js";
-import { gameAPI, isMiniTheaterActionAuthorized, reduceMiniTheaterAction } from "@astral-atlas/wildspace-models";
+import { gameAPI, isPermissableAction } from "@astral-atlas/wildspace-models";
 import { HTTP_STATUS } from "@lukekaalim/net-description";
 import { v4 as uuid } from "uuid";
 

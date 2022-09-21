@@ -1,7 +1,7 @@
 // @flow strict
 
 import { c } from "@lukekaalim/cast";
-import { castMiniTheaterId } from "./miniTheater.js";
+import { castMiniTheaterId } from "./miniTheater/miniTheater.js";
 import { castAudioPlaylistId } from "../audio.js";
 import { castExposition } from "./exposition.js";
 
@@ -11,7 +11,7 @@ import type { Cast } from "@lukekaalim/cast";
 import type { EncounterID } from "../encounter";
 import type { NonPlayerCharacterID } from "./character.js";
 import type { LocationID } from "./location.js";
-import type { MiniTheaterID } from "./miniTheater.js";
+import type { MiniTheaterID } from "./miniTheater/index.js";
 import type { AssetID } from "../asset";
 import type { AudioPlaylistID } from "../audio";
 import type { Exposition } from "./exposition";

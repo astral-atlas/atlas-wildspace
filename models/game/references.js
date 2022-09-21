@@ -11,7 +11,7 @@ import type { Cast } from "@lukekaalim/cast/main";
 
 import { c } from "@lukekaalim/cast";
 import { castLocationId } from "./location.js";
-import { castMiniTheaterId } from "./miniTheater.js";
+import { castMiniTheaterId } from "./miniTheater/miniTheater.js";
 import { castSceneId } from "./scene.js";
 import { castNonPlayerCharacterID } from "./character.js";
 

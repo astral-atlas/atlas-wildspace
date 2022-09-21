@@ -66,6 +66,7 @@
 .catalogue {
   width: 100%;
   overflow-y: auto;
+  background-color: white;
 }
 
 .catalogue > menu {
@@ -85,16 +86,17 @@
 
 .catalogueOption {
   margin: 0rem;
-  padding: 1rem 1rem 1rem 3rem;
+  padding: 1rem 1rem 1rem 1rem;
 
   border-radius: 8px;
 
   border: 0;
+  opacity: 0.75;
 
-  background-color: white;
-  color: black;
+  background-color: var(--accentColor, red);
+  color: white;
 
-  transition: color 0.2s, background-color 0.2s;
+  transition: color 0.2s, background-color 0.2s, opacity 0.2s;
 
   width: 100%;
   height: 100%;
@@ -104,16 +106,15 @@
   font-family: inherit;
   font-size: inherit;
 
-  text-decoration: underline;
   cursor: pointer;
 }
 .catalogueOption:hover {
-  background-color: var(--accentColor, red);
-  color: white;
+  opacity: 1;
 }
 .catalogueOption.selected {
-  background-color: var(--accentColor, red);
-  color: white;
+  opacity: 1;
+  text-decoration: underline;
+  font-weight: bold;
 }
 
 .library {
@@ -169,6 +170,7 @@
 
 .floorHeader {
   border-bottom: 1px solid black;
+  background-color: white;
 
   position: sticky;
   top: 0px;

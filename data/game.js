@@ -11,7 +11,7 @@ import type {
   LocationID, Location,
   NonPlayerCharacterID, NonPlayerCharacter,
   Scene, SceneID,
-  MiniTheater, MiniTheaterID, MiniTheaterEvent,
+  MiniTheater, MiniTheaterID, MiniTheaterAction, MiniTheaterEvent,
   MagicItem, MagicItemID,
 
   MonsterActor,

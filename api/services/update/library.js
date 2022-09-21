@@ -70,7 +70,6 @@ export const createServerLibraryChannel = (
     send({ type: 'library-event', event })
   }
   const onGameDataEvent = async (eventKey) => {
-    console.log('Sending RELOAD event')
     const event = { type: 'reload', data: await pages.library.getLibraryData(game.id) };
     send({ type: 'library-event', event })
   }

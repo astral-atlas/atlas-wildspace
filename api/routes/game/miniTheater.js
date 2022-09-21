@@ -4,7 +4,7 @@ import type { RoutesConstructor } from "../../routes";
 */
 import { createMetaRoutes, createCRUDConstructors } from "../meta.js";
 import { createTerrainRoutes } from "./miniTheater/terrain.js";
-import { createMiniTheaterEventFromAction, gameAPI, isMiniTheaterActionAuthorized, reduceMiniTheaterAction } from "@astral-atlas/wildspace-models";
+import { gameAPI, isPermissableAction } from "@astral-atlas/wildspace-models";
 import { HTTP_STATUS } from "@lukekaalim/net-description";
 import { v4 as uuid } from "uuid";
 
@@ -24,6 +24,8 @@ export const createMiniTheaterRoutes/*: RoutesConstructor*/ = (services) => {
 
         baseArea: { position: { x: 0, y: 0, z: 0}, size: { x: 10, y: 10, z: 1 } },
         pieces: [],
+        layers: [],
+        terrain: []
       };
       await services.data.gameData.miniTheaters.set(game.id, miniTheater.id, miniTheater);
       return miniTheater;
@@ -44,7 +46,7 @@ export const createMiniTheaterRoutes/*: RoutesConstructor*/ = (services) => {
         };
         return next;
       }, 3);
-      services.data.gameData.miniTheaterEvents.publish(miniTheaterId, { type: 'update', miniTheater: next });
+      services.data.gameData.miniTheaterEvents.publish(miniTheaterId, { type: 'update', next });
       return next;
     },
     async destroy({ game, query: { miniTheaterId } }) {
@@ -73,20 +75,9 @@ export const createMiniTheaterRoutes/*: RoutesConstructor*/ = (services) => {
         if (!userId)
           return { status: HTTP_STATUS.unauthorized };
 
-        const { result: charactersInGame } = await services.data.characters.query(game.id);
+        const isGM = game.gameMasterId === userId;
+        const next = await services.game.miniTheater.applyAction(game.id, miniTheaterId, action, isGM);
 
-        const { next } = await services.data.gameData.miniTheaters.transaction(game.id, miniTheaterId, (prev) => {
-          const authorized = isMiniTheaterActionAuthorized(action, prev, game, charactersInGame, userId)
-          if (!authorized)  
-            throw new Error();
-          const next = reduceMiniTheaterAction(prev, action);
-          return {
-            ...next,
-            version: uuid()
-          };
-        }, 5);
-        services.data.gameUpdates.publish(game.id, { type: 'mini-theater' })
-        services.data.gameData.miniTheaterEvents.publish(next.id, createMiniTheaterEventFromAction(action, next));
         return { status: HTTP_STATUS.ok, body: { miniTheater: next, type: 'updated' }};
       }
     }

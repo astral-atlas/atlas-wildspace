@@ -69,7 +69,7 @@ export const GameMasterPrepLibraryDemo/*: Component<>*/ = () => {
   )
 
   return [
-    h(ScaledLayoutDemo, {}, [
+    h(ScaledLayoutDemo, { height: `${512+128}px` }, [
       h(GameMasterPrepLibrary, { assets, client, data, game, userId }),
     ]),
   ]

@@ -24,7 +24,7 @@ import { castExposition } from "./exposition.js";
 import { castLocation } from "./location.js";
 import {
   castMiniTheater,
-} from "./miniTheater.js";
+} from "./miniTheater/index.js";
 import { castTerrainProp } from "./miniTheater/terrain.js";
 import { castModelResource } from "./resources.js";
 import { castScene } from "./scene.js";

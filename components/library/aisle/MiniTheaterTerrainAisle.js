@@ -35,6 +35,7 @@ import {
 } from "../../resources/useModelResourceAssetMap";
 import { useModelResourceAssetsIconURL } from "../../resources/useModelResourceAssetsIconURL";
 import { getObject3DForModelResourcePath } from "../../resources/modelResourceUtils";
+import { EditorLine } from "../../editor/line";
 
 /*::
 export type MiniTheaterTerrainAisleProps = {
@@ -71,7 +72,7 @@ export const MiniTheaterTerrainAisle/*: Component<MiniTheaterTerrainAisleProps>*
         }]
       })
       .filter(Boolean))
-  }, [library.terrainProps])
+  }, [library.terrainProps, modelAssets])
   const modelIconMap = useModelResourceAssetsIconURL(modelAssetPathMap);
 
   const terrainPropBooks = library.terrainProps.map(t => ({
@@ -91,8 +92,12 @@ export const MiniTheaterTerrainAisle/*: Component<MiniTheaterTerrainAisleProps>*
     })
   };
   const onDeleteTerrainProp = async (modelToDelete) => {
+    await client.game.miniTheater.terrainProps.destroy(game.id, modelToDelete.id);
   }
   const onUpdateTerrainProp = async (prevTerrainProp, { name, previewCameraPath }) => {
+    await client.game.miniTheater.terrainProps.update(game.id, prevTerrainProp.id, {
+      name: name || prevTerrainProp.name
+    });
   }
   const [showExplorer, setShowExplorer] = useState(false);
 
@@ -105,25 +110,42 @@ export const MiniTheaterTerrainAisle/*: Component<MiniTheaterTerrainAisleProps>*
   const modelAsset = selectedTerrainProp && modelAssets.get(selectedTerrainProp.modelResourceId);
 
   const floor = [
-    h(LibraryFloorHeader, { title: 'Terrain Pieces' }, [
+    h(LibraryFloorHeader, { title: 'Terrain Pieces' }),
+    h('div', { style: { width: '100%', overflow: 'auto' } }, [
       h(EditorForm, {}, [
-        h(EditorHorizontalSection, {}, [
-          h(SelectEditor, {
-            values: [
-              { value: '', title: 'None' },
-              ...library.modelResources.map(m => ({ title: m.name, value: m.id }))
-            ],
-            selected: stagingModelId || '',
-            onSelectedChange: (id) => setStagingModelId(id)
-          }),
-          h(EditorTextInput, { label: 'Name', onTextInput: t => setStagingName(t), text: stagingName }),
-          h(EditorTextInput, { label: 'Path to model (. seperated)', onTextInput: t => setStagingPath(t) }),
-          h(EditorTextInput, { label: 'Path to preview camera (. seperated)', onTextInput: t => setStagingCameraPath(t) }),
-          h(EditorButton, { label: 'Upload', onButtonClick: onAddTerrainPiece, disabled: !(stagingModelId && stagingName) }),
-        ])
-      ])
+        h(EditorVerticalSection, {}, [
+          h(EditorHorizontalSection, {}, [
+            h(SelectEditor, {
+              label: 'ResourceModel',
+              values: [
+                { value: '', title: 'None' },
+                ...library.modelResources.map(m => ({ title: m.name, value: m.id }))
+              ],
+              selected: stagingModelId || '',
+              onSelectedChange: (id) => setStagingModelId(id)
+            }),
+            h(EditorTextInput, { label: 'Name', onTextInput: t => setStagingName(t), text: stagingName }),
+          ]),
+          h(EditorHorizontalSection, {}, [
+            h(EditorTextInput, { label: 'Path to model (. seperated)', onTextInput: t => setStagingPath(t) }),
+            h(EditorTextInput, { label: 'Path to preview camera (. seperated)', onTextInput: t => setStagingCameraPath(t) }),
+          ]),
+          h(EditorHorizontalSection, {}, [
+            h(EditorButton, { label: 'Upload', onButtonClick: onAddTerrainPiece, disabled: !(stagingModelId && stagingName) }),
+          ]),
+        ]),
+      ]),
     ]),
-    h(LibraryShelf, { title: 'Terrain Props', selection, books: terrainPropBooks })
+    h(EditorLine),
+    library.modelResources.map(modelResource => {
+      const terrainProps = library.terrainProps.filter(t => t.modelResourceId === modelResource.id);
+      const books = terrainProps.map(t => ({
+        title: t.name,
+        id: t.id,
+        coverURL: modelIconMap.get(t.id)?.previewIconURL
+      }));
+      return h(LibraryShelf, { title: modelResource.name, selection, books })
+    }),
   ];
 
   const desk = [

@@ -12,6 +12,7 @@ import {
   castScene,
   castMonster,
   castMonsterActor,
+  castMiniTheaterAction,
   castMiniTheaterEvent,
   castTerrainProp,
   castModelResource

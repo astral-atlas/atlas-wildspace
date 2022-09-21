@@ -13,7 +13,7 @@ import { repeat } from "./random.js";
 
 export const createMockLibraryData = ()/*: LibraryData*/ => {
   const characters = repeat(createMockCharacter, randomIntRange(5, 2));
-  const monsters = repeat(createMockMonster, randomIntRange(5, 2));
+  const monsters = repeat(() => createMockMonster(), randomIntRange(5, 2));
 
   const monsterActors = repeat(
     () => createMockMonsterActor(randomElement(monsters)),
@@ -21,7 +21,7 @@ export const createMockLibraryData = ()/*: LibraryData*/ => {
   )
 
   const miniTheaters = [
-    ...repeat(createMockMiniTheater, randomIntRange(5, 2))
+    ...repeat(() => createMockMiniTheater(), randomIntRange(5, 2))
       .map(m => ({
         ...m,
         pieces: [
@@ -33,24 +33,40 @@ export const createMockLibraryData = ()/*: LibraryData*/ => {
   const scenes = [
 
   ];
-  const expositions = [
+  const modelResources = [
 
   ];
+  const playlists = [
+
+  ];
+  const tracks = [
+
+  ]
   const locations = [
 
   ];
+  const rooms = [
+
+  ]
+  const terrainProps = [
+
+  ]
+  const assets = [];
 
 
   return {
     characters,
     monsters,
-
+    modelResources,
+    playlists,
+    rooms,
     monsterActors,
-
+    terrainProps,
+    tracks,
     miniTheaters,
     scenes,
-    expositions,
     locations,
+    assets,
   }
 };
 

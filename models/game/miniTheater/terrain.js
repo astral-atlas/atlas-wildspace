@@ -2,15 +2,19 @@
 /*::
 import type { BoardArea } from "../../encounter/board";
 import type { BoardPosition } from "../../encounter/map";
+import type { EditingLayerID } from "./editingLayer.js";
 import type {
   ModelResourceID,
   ModelResourcePath,
   TextureResourceID,
 } from "../resources";
+import type { MiniQuaternion, MiniVector } from "./primitives";
 import type { Cast } from "@lukekaalim/cast";
 */
 
 import { castModelResourceId, castModelResourcePath } from "../resources.js";
+import { castEditingLayerID } from "./editingLayer.js";
+import { castMiniQuaternion, castMiniVector } from "./primitives.js";
 import { c } from "@lukekaalim/cast";
 
 /*::
@@ -33,6 +37,26 @@ export const castTerrainProp/*: Cast<TerrainProp>*/ = c.obj({
   modelPath: castModelResourcePath,
   iconPreviewCameraModelPath: c.maybe(castModelResourcePath),
 })
+
+
+/*::
+export type TerrainPlacementID = string;
+export type TerrainPlacement = {
+  id: TerrainPlacementID,
+  layer: EditingLayerID,
+  position: MiniVector,
+  quaternion: MiniQuaternion,
+  terrainPropId: TerrainPropID,
+}
+*/
+export const castTerrainPlacementId/*: Cast<TerrainPlacementID>*/ = c.str;
+export const castTerrainPlacement/*: Cast<TerrainPlacement>*/ = c.obj({
+  id: castTerrainPlacementId,
+  layer: castEditingLayerID,
+  position: castMiniVector,
+  quaternion: castMiniQuaternion,
+  terrainPropId: castTerrainPropId,
+});
 
 export const createFloorForTerrain = (
   terrainType/*: string*/,

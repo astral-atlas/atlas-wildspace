@@ -5,7 +5,6 @@ import type { ConnectionDescription } from "@lukekaalim/net-description/connecti
 import type { GameID } from "../../game/game";
 import type {
   MiniTheater,
-  MiniTheaterEvent,
   MiniTheaterID,
 } from "../../game/miniTheater";
 import type { Character } from "../../character";
@@ -26,9 +25,6 @@ import { createAuthorizedConnectionDescription } from "../meta.js";
 import {
   castGameConnectionId,
   castGameId,
-  castLibraryEvent,
-  castMiniTheaterEvent,
-  castMiniTheaterId,
 } from "../../game.js";
 import { miniTheaterChannel } from "./advancedUpdates/miniTheater.js";
 import { libraryChannel } from "./advancedUpdates/library.js";

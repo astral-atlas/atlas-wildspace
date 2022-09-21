@@ -3,7 +3,6 @@
 import { c } from "@lukekaalim/cast";
 import { castScene, castSceneContent } from "../game.js";
 import { castExposition, castExpositionSubject } from "../game/exposition.js";
-import { castMiniTheaterId } from "../game/miniTheater.js";
 
 /*::
 import type { SceneID, Scene, SceneContent } from "../game/scene";
