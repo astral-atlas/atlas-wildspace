@@ -3,8 +3,14 @@
 import type { Component } from '@lukekaalim/act';
 import type {  } from '@astral-atlas/wildspace-models';
 */
-import { MiniTheaterCanvas, ProseMirror, prosePlugins, SceneContainer, SceneContentBackgroundRenderer, SceneContentForegroundRenderer, SceneRenderer, useAnimatedKeyedList, useElementKeyboard, useKeyboardTrack, useMiniTheaterController, useProseMirrorEditorState, useProseMirrorProps, useProseMirrorView, useResourcesLoader } from '@astral-atlas/wildspace-components';
-import { h, useEffect, useRef, useState } from '@lukekaalim/act';
+import {
+  MiniTheaterCanvas, ProseMirror, prosePlugins,
+  SceneContentForegroundRenderer, SceneRenderer, SceneRenderer2,
+  useAnimatedKeyedList, useElementKeyboard, useKeyboardTrack,
+  createMiniTheaterController2,
+  SceneContentEditor
+} from '@astral-atlas/wildspace-components';
+import { h, useEffect, useMemo, useRef, useState } from '@lukekaalim/act';
 
 import cityImgURL from './city.jpg';
 import riceFieldURL from './rice_field.jpg';
@@ -86,11 +92,17 @@ export const ExpositionSceneDemo/*: Component<>*/ = () => {
     miniTheaterId: '0',
   };
   const [mode, setMode] = useState('mini-theater')
+  const [editingSceneContent, setEditingSceneContent] = useState(expositionImageContent);
+  const onContentUpdate = (content) => {
+    console.log(content);
+    setEditingSceneContent(content)
+  };
   const content = ({
     'mini-theater': miniTheaterContent,
     'exposition': expositionContent,
     'exposition-image': expositionImageContent,
     'exposition-theater': expositionTheaterContent,
+    'editable': editingSceneContent,
   })[mode] || miniTheaterContent
 
   const monsterIcon = createMockImageAsset();
@@ -99,7 +111,6 @@ export const ExpositionSceneDemo/*: Component<>*/ = () => {
   const monsterPiece = createMockMonsterPiece(monsterActor.id);
   const miniTheater = createMockMiniTheater([monsterPiece]);
 
-  const miniTheaterController = useMiniTheaterController();
   const miniTheaterResources = {
     assets: new Map([
       [monsterIcon.description.id, monsterIcon]
@@ -116,6 +127,14 @@ export const ExpositionSceneDemo/*: Component<>*/ = () => {
   const overrideCameraRef = useRef();
   const emitter = useElementKeyboard(overrideCanvasRef);
   const keys = useKeyboardTrack(emitter);
+  const miniTheaterController = useMemo(() => {
+    return createMiniTheaterController2(miniTheaterResources, miniTheater, () => console.log, true)
+  }, [])
+  const assets = useMemo(() => {
+    return new Map([
+      [image.description.id, image]
+    ])
+  }, [])
 
   return [
     h('menu', {}, [
@@ -123,22 +142,12 @@ export const ExpositionSceneDemo/*: Component<>*/ = () => {
       h('button', { onClick: () => setMode('exposition') }, 'Color Exposition'),
       h('button', { onClick: () => setMode('exposition-theater') }, 'Theater Exposition'),
       h('button', { onClick: () => setMode('exposition-image') }, 'Theater Image'),
+      h('button', { onClick: () => setMode('editable') }, 'Editable'),
     ]),
     h(LayoutDemo, { }, [
-      h(SceneContainer, {}, [
-        h(SceneContentBackgroundRenderer, {
-          content,
-          freeCam: true,
-          assets: new Map([image].map(a => [a.description.id, a])),
-          miniTheater,
-          miniTheaterController,
-          miniTheaterResources
-        }),
-        h(SceneContentForegroundRenderer, {
-          content,
-        }),
-      ]),
+      h(SceneRenderer2, { content, miniTheaterController, assets })
     ]),
+    h(SceneContentEditor, { content: editingSceneContent, onContentUpdate }),
     h('menu', {}, [
       h('button', { onClick: () => {
         const { current: camera } = overrideCameraRef;

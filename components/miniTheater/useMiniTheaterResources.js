@@ -9,13 +9,14 @@ import type {
   MiniTheater,
   Character, CharacterID,
 } from "@astral-atlas/wildspace-models";
-import type { Mesh, Texture } from "three";
+import type { Material, Mesh, Texture } from "three";
 
 export type MiniTheaterRenderResources = {
   characters: Map<CharacterID, Character>,
   monsterMasks: Map<MonsterActorID, MonsterActorMask>,
 
   textureMap: Map<AssetID, Texture>,
+  materialMap: Map<AssetID, Material>,
   meshMap: Map<AssetID, Mesh>,
 
   assets: AssetDownloadURLMap,

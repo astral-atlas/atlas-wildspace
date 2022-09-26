@@ -45,7 +45,7 @@ label.editorRoot span {
   overflow-x: auto;
   display: flex;
   flex-direction: row;
-  margin: 0 auto 0 auto;
+  margin: 0 auto 0 0;
 }
 .editorVerticalSection {
   overflow-y: auto;

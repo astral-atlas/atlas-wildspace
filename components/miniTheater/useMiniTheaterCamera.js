@@ -12,6 +12,7 @@ import type {
 import type { KeyboardDiff } from "../keyboard/track";
 import type { BasicTransform } from "../animation/transform";
 import type { MiniTheaterController } from "./useMiniTheaterController";
+import type { MiniTheaterController2 } from "./useMiniTheaterController2";
 */
 import { Vector2, Vector3 } from "three";
 
@@ -109,7 +110,7 @@ export const useMiniTheaterCamera = (
   surface/*: Ref<?HTMLElement>*/,
   cameraRef/*: Ref<?PerspectiveCamera>*/,
   loop/*: LoopController*/,
-  controller/*: MiniTheaterController*/
+  controller/*: MiniTheaterController2*/
 ) => {
   const mode = useMemo(() => ({
     type: 'full-control',

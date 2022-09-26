@@ -1,6 +1,6 @@
 // @flow strict
 
-import { h, useRef } from "@lukekaalim/act";
+import { h, useEffect, useMemo, useRef, useState } from "@lukekaalim/act";
 import { MiniTheaterCanvas } from "../miniTheater";
 import { Quaternion, Vector3 } from "three";
 import { hydrateBasicTransformFromMini } from "../utils/transform";
@@ -17,6 +17,11 @@ import type { MiniTheaterController } from "../miniTheater/useMiniTheaterControl
 import type { KeyboardStateEmitter } from "../keyboard/changes";
 import type { MiniTheaterRenderResources } from "../miniTheater/useMiniTheaterResources";
 import type { AssetDownloadURLMap } from "../asset/map";
+import type {
+  MiniTheaterController2,
+  MiniTheaterLocalState,
+} from "../miniTheater/useMiniTheaterController2";
+import type { MiniTheaterMode } from "../miniTheater/useMiniTheaterMode";
 
 export type SceneContentBackgroundRendererProps = {
   content: SceneContent,
@@ -24,28 +29,54 @@ export type SceneContentBackgroundRendererProps = {
   freeCam?: boolean,
 
   assets?: AssetDownloadURLMap,
-  miniTheater?: ?MiniTheater,
-  miniTheaterResources?: ?MiniTheaterRenderResources,
-  miniTheaterController?: ?MiniTheaterController,
+  miniTheaterController?: ?MiniTheaterController2,
+  miniTheaterState?: ?MiniTheaterLocalState,
 };
 */
+
+const useMode = (content, keys, controller)/*: ?MiniTheaterMode*/ => {
+  return useMemo(() => {
+    switch (content.type) {
+      case 'mini-theater':
+        if (!controller)
+          return null;
+        return {
+          type: 'full-control',
+          controller,
+          keys
+        }
+      case 'exposition':
+        const { background } = content.exposition;
+        switch (background.type) {
+          case 'mini-theater':
+            return {
+              type: 'fixed',
+              transform: hydrateBasicTransformFromMini(background.position, background.rotation)
+            };
+            
+        }
+      default:
+        return null;
+    }
+  }, [content, keys, controller])
+};
 
 export const SceneContentBackgroundRenderer/*: Component<SceneContentBackgroundRendererProps>*/ = ({
   content,
   isInteractive = true,
   freeCam = false,
-  miniTheater,
+  miniTheaterController = null,
+  miniTheaterState = null,
   assets,
-  miniTheaterResources,
-  miniTheaterController,
 }) => {
   const overrideCanvasRef = useRef();
   const emitter = useElementKeyboard(overrideCanvasRef, [], [
     content.type,
-    miniTheater,
-    miniTheaterController
+    !!miniTheaterController,
+    !!miniTheaterState,
   ]);
   const keys = useKeyboardTrack(emitter);
+  const mode = useMode(content, keys, miniTheaterController);
 
   switch (content.type) {
     case 'exposition':
@@ -53,16 +84,12 @@ export const SceneContentBackgroundRenderer/*: Component<SceneContentBackgroundR
       
       switch (background.type) {
         case 'mini-theater':
-          if (!miniTheater || !miniTheaterResources)
+          if (!miniTheaterState || !mode)
             return null;
-          const mode = {
-            type: 'fixed',
-            transform: hydrateBasicTransformFromMini(background.position, background.rotation)
-          };
           return h(MiniTheaterCanvas, {
             mode,
-            miniTheater,
-            resources: miniTheaterResources,
+            miniTheater: miniTheaterState.miniTheater,
+            resources: miniTheaterState.resources,
             overrideCanvasRef,
           });
         case 'image':
@@ -75,20 +102,13 @@ export const SceneContentBackgroundRenderer/*: Component<SceneContentBackgroundR
           return null;
       }
     case 'mini-theater':
-      if (!miniTheater || !miniTheaterController || !miniTheaterResources)
+      if (!miniTheaterState || !mode)
         return null;
-      const mode = isInteractive ? {
-        type: 'full-control',
-        keys,
-        controller: miniTheaterController,
-      } : {
-        type: 'stalled-control',
-        controller: miniTheaterController,
-      };
+      
       return h(MiniTheaterCanvas, {
         mode,
-        miniTheater,
-        resources: miniTheaterResources,
+        miniTheater: miniTheaterState.miniTheater,
+        resources: miniTheaterState.resources,
         overrideCanvasRef,
       });
     case 'none':

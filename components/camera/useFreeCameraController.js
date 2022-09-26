@@ -1,20 +1,30 @@
 // @flow strict
 
 import { useEffect, useState } from "@lukekaalim/act";
-import { Quaternion, Vector2, Vector3 } from "three";
+import { Euler, Quaternion, Vector2, Vector3 } from "three";
 import { getVector2ForKeyboardState } from "../keyboard/axis";
+import { useElementKeyboard } from "../keyboard/changes";
+import { useKeyboardState } from "../keyboard/state";
+import { useKeyboardTrack } from "../keyboard/track";
 
 /*::
-import type { BasicTransform } from "../animation/transform";
 import type { Object3D } from "three";
+import type { Ref } from "@lukekaalim/act";
+
+import type { BasicTransform } from "../animation/transform";
 import type { RenderSetup } from "../three/useRenderSetup";
 import type { KeyboardState } from "../keyboard/state";
+import type { LoopController } from "../three/useLoopController";
+import type { KeyboardTrack } from "../keyboard/track";
 
 
 export type FreeCameraController = {
   update: () => void,
   setVelocity: (velocity: Vector3) => void,
   moveCursor: (movementX: number, movementY: number) => void,
+
+  rotation: Quaternion,
+  position: Vector3,
 
   getControllerTransform(): BasicTransform,
   setObjectTransform(object: Object3D): void
@@ -23,25 +33,41 @@ export type FreeCameraController = {
 
 const X_AXIS = new Vector3(0, 1, 0);
 const Y_AXIS = new Vector3(1, 0, 0);
+const Z_AXIS = new Vector3(0, 0, 1);
 
-export const createFreeCameraController = ()/*: FreeCameraController*/ => {
-  const position = new Vector3(-20, 20, -20);
-  const mouseRotation = new Vector2(-4, 0.4);
-  const rotation = new Quaternion(0, 0, 0, 0);
-  const velocity = new Vector3(0, 0, 0);
+const polarRotationToQuaternion = (polar/*: Vector2*/, quaternion/*: Quaternion*/) => {
+  const euler = new Euler();
+  euler.order = "YZX";
+  euler.set(polar.x, polar.y, 0)
   
-  rotation.setFromAxisAngle(X_AXIS, -mouseRotation.x)
-      .multiply(new Quaternion().setFromAxisAngle(Y_AXIS, -mouseRotation.y))
+  quaternion.setFromEuler(euler);
+};
+const quaternionToPolarRotation = (quaternion/*: Quaternion*/, polar/*: Vector2*/) => {
+  const euler = new Euler();
+  euler.order = "YZX";
+  
+  euler.setFromQuaternion(quaternion);
+  polar.set(euler.x, euler.y);
+}
 
-  const setRotation = (x, y) => {
-    mouseRotation.x += x / 1000;
-    mouseRotation.y += y / 1000;
 
-    rotation
-      .setFromAxisAngle(X_AXIS, -mouseRotation.x)
-      .multiply(new Quaternion().setFromAxisAngle(Y_AXIS, -mouseRotation.y));
+export const createFreeCameraController = (
+  initialPosition/*: ?Vector3*/ = null,
+  initialRotation/*: ?Quaternion*/ = null,
+)/*: FreeCameraController*/ => {
+  const position = new Vector3(-20, 20, -20);
+  if (initialPosition)
+    position.copy(initialPosition)
+  const mouseRotation = new Vector2(-4, 0.4);
+  if (initialRotation) {
+    quaternionToPolarRotation(initialRotation, mouseRotation);
   }
 
+  const rotation = new Quaternion(0, 0, 0, 0);
+  polarRotationToQuaternion(mouseRotation, rotation);
+
+  const velocity = new Vector3(0, 0, 0);
+  
   const getControllerTransform = () => {
     return {
       position,
@@ -56,7 +82,8 @@ export const createFreeCameraController = ()/*: FreeCameraController*/ => {
     velocity.set(0, 0, 0);
   }
   const moveCursor = (x, y) => {
-    setRotation(x, y);
+    mouseRotation.set(mouseRotation.x + (-y / 1000), mouseRotation.y + (-x / 1000));
+    polarRotationToQuaternion(mouseRotation, rotation);
   }
   const setObjectTransform = (object) => {
     object.position.copy(position);
@@ -68,6 +95,8 @@ export const createFreeCameraController = ()/*: FreeCameraController*/ => {
     update,
     setVelocity,
     setObjectTransform,
+    rotation,
+    position,
   }
 };
 
@@ -87,7 +116,6 @@ export const useFreeCameraController = (render/*: RenderSetup*/)/*: FreeCameraCo
   const [controller] = useState/*:: <FreeCameraController>*/(() => createFreeCameraController());
 
   useEffect(() => {
-    const { current: camera } = render.cameraRef;
     const { current: canvas } = render.canvasRef;
     if (!canvas)
       return;
@@ -127,3 +155,95 @@ export const useFreeCameraController = (render/*: RenderSetup*/)/*: FreeCameraCo
 
   return controller;
 }
+
+export const subscribeFreeCameraUpdates = (
+  controller/*: FreeCameraController*/,
+  surface/*: HTMLElement*/,
+  loop/*: LoopController*/,
+  track/*: KeyboardTrack*/,
+  onFocusChange/*: (isFocused: boolean) => void*/ = () => {},
+)/*: { unsubscribe: () => void }*/ => {
+  const onMouseMove = (event/*: MouseEvent*/) => {
+    if (document.pointerLockElement === surface)
+      controller.moveCursor(event.movementX, event.movementY);
+  }
+  const onClick = () => {
+    if (document.pointerLockElement === surface) {
+      document.exitPointerLock();
+    }
+    else {
+      surface.requestPointerLock();
+    }
+  }
+  const onPointerLockChange = () => {
+    onFocusChange(document.pointerLockElement === surface);
+  }
+
+  surface.addEventListener('mousemove', onMouseMove)
+  surface.addEventListener('click', onClick)
+  document.addEventListener('pointerlockchange', onPointerLockChange)
+  
+  const unsubscribeInput = loop.subscribeInput((c, v) => {
+    if (document.pointerLockElement !== surface)
+      return;
+    const { next: keys } = track.readDiff();
+    const velocity = getFreecamVelocity(keys.value);
+    controller.setVelocity(velocity);
+  });
+  const unsubscribeSim = loop.subscribeSimulate((c, v) => {
+    controller.update();
+  });
+
+  const unsubscribe = () => {
+    unsubscribeInput();
+    unsubscribeSim();
+    surface.removeEventListener('mousemove', onMouseMove)
+    surface.removeEventListener('click', onClick)
+  };
+  return { unsubscribe };
+}
+
+export const useFreeCameraSubscription = (
+  surfaceRef/*: Ref<?HTMLElement>*/,
+  controller/*: ?FreeCameraController*/,
+  loop/*: LoopController*/,
+  track/*: KeyboardTrack*/,
+) => {
+  useEffect(() => {
+    const { current: surface } = surfaceRef;
+    if (!surface || !controller)
+      return;
+
+    const onMouseMove = (event/*: MouseEvent*/) => {
+      if (document.pointerLockElement === surface)
+        controller.moveCursor(event.movementX, event.movementY);
+    }
+    const onClick = () => {
+      if (document.pointerLockElement === surface)
+        document.exitPointerLock();
+      else
+        surface.requestPointerLock();
+    }
+
+    surface.addEventListener('mousemove', onMouseMove)
+    surface.addEventListener('click', onClick)
+    
+    const unsubscribeInput = loop.subscribeInput((c, v) => {
+      if (document.pointerLockElement !== surface)
+        return;
+      const { next: keys } = track.readDiff();
+      const velocity = getFreecamVelocity(keys.value);
+      controller.setVelocity(velocity);
+    });
+    const unsubscribeSim = loop.subscribeSimulate((c, v) => {
+      controller.update();
+    });
+
+    return () => {
+      unsubscribeInput();
+      unsubscribeSim();
+      surface.removeEventListener('mousemove', onMouseMove)
+      surface.removeEventListener('click', onClick)
+    }
+  }, [track, loop]);
+};

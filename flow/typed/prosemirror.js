@@ -44,6 +44,7 @@ declare module "prosemirror-state" {
     setMeta: <M>(key: Plugin<any, M> | PluginKey<M>, value: M) => void;
     getMeta: <M>(key: Plugin<any, M> | PluginKey<M>) => M;
     time: number;
+    docChanged: boolean;
   }
 }
 

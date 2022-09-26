@@ -32,7 +32,7 @@ type RaycastEvents = {
 
 export type RaycastManager = {
   lastIntersectionRef: Ref<?IntersectionObject>,
-  subscribe: (object: Object3D, events: RaycastEvents, isHit?: IntersectionObject => boolean) => () => void,
+  subscribe: (object: Object3D, events: RaycastEvents, isHit?: ?(IntersectionObject => boolean)) => () => void,
   onUpdate: (camera: Camera) => void,
   onMouseEnter: (event: MouseEvent) => void,
   onMouseLeave: (event: MouseEvent) => void,
@@ -143,7 +143,7 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
       emitClick(focused, intersection);
   }
 
-  const subscribe = (object, events, isHit) => {
+  const subscribe = (object, events, isHit = null) => {
     focusTargets.add(object);
     const unsubEnter = subscribeEnter(object, events.enter);
     const unsubExit = subscribeExit(object, events.exit);
@@ -196,7 +196,8 @@ export const useRaycast2 = /*:: <T: Object>*/(
   manager/*: ?RaycastManager*/,
   objectRef/*: Ref<T>*/,
   events/*: RaycastEvents*/,
-  deps/*: mixed[]*/ = []
+  deps/*: mixed[]*/ = [],
+  isHit/*: ?(IntersectionObject => boolean)*/ = null
 ) => {
   useEffect(() => {
     if (!manager)
@@ -205,7 +206,7 @@ export const useRaycast2 = /*:: <T: Object>*/(
     if (!object)
       return;
 
-    const unsubscribe = manager.subscribe(object, events);
+    const unsubscribe = manager.subscribe(object, events, isHit);
     return () => {
       unsubscribe();
     }

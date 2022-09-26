@@ -13,12 +13,15 @@ export const createMockMiniTheater = (pieces/*: Piece[]*/ = [])/*: MiniTheater*/
   
   baseArea: { position: { x: 0, y: 0, z: 0}, size: { x: 10, y: 10, z: 1 } },
   pieces,
+  layers: [],
+  terrain: [],
 });
 
 export const createMockMonsterPiece = (monsterActorId/*: MonsterActorID*/)/*: Piece*/ => ({
   id: uuid(),
   visible: true,
   position: createMockPosition(),
+  layer: uuid(),
   represents: {
     type: 'monster',
     monsterActorId,
@@ -28,6 +31,7 @@ export const createMockCharacterPiece = (characterId/*: CharacterID*/)/*: Piece*
   id: uuid(),
   visible: true,
   position: createMockPosition(),
+  layer: uuid(),
   represents: {
     type: 'character',
     characterId,

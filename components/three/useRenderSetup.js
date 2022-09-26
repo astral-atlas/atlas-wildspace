@@ -7,7 +7,7 @@ import type { PerspectiveCamera, Scene } from "three";
 import type { KeyboardStateEmitter } from "../keyboard/changes";
 import type { KeyboardTrack } from "../keyboard/track";
 */
-import { useEffect, useRef } from "@lukekaalim/act";
+import { useEffect, useMemo, useRef } from "@lukekaalim/act";
 import { useDisposable, useWebGLRenderer } from "@lukekaalim/act-three";
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer';
 
@@ -121,7 +121,7 @@ export const useRenderSetup = (
     }
   }, deps)
 
-  return {
+  return useMemo(() => ({
     canvasRef,
     cameraRef,
     sceneRef,
@@ -129,6 +129,6 @@ export const useRenderSetup = (
     rootRef,
 
     loop,
-  };
+  }), []);
 };
 

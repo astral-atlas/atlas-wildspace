@@ -119,7 +119,7 @@ const LibraryDemo = () => {
     .map(a => a.shelves.map(s => s.books).flat(1))
     .flat(1)
     .find(b => selection.selected.has(b.id))
-
+  const [focus, setFocus] = useState('floor');
   return [
     h(ScaledLayoutDemo, {}, [
       h(Library, {
@@ -127,6 +127,7 @@ const LibraryDemo = () => {
           h(LibraryCatalogue, { aisles, activeAisleId, onActivateAisle: id => setSctiveAisleId(id) }),
         ],
         aisle: h(LibraryAisle, {
+          focus,
           floor: !!activeAisle && activeAisle.shelves.map(shelf =>
             h(LibraryShelf, {
               selection,
@@ -134,8 +135,12 @@ const LibraryDemo = () => {
               books: shelf.books,
             })),
           desk: [!!selectedBook && h(EditorForm, {}, [
-            h(EditorTextInput, { label: 'Title', text: selectedBook.title })
-          ])]
+            h(EditorTextInput, { label: 'Title', text: selectedBook.title }),
+            h(EditorButton, { label: 'Toggle Focus', onButtonClick: () => setFocus(focus === 'floor' ? 'workstation' : 'floor') })
+          ])],
+          workstation: [
+            h('h1', {}, 'Hello!')
+          ],
         }),
       })
     ])

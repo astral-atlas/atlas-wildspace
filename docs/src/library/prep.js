@@ -63,6 +63,20 @@ export const GameMasterPrepLibraryDemo/*: Component<>*/ = () => {
       }
     }
   }
+  const updates = {
+    miniTheater: {
+      subscribe: (id, subscriber) => {
+        const miniTheater = data.miniTheaters.find(m => m.id === id);
+        console.log(id, miniTheater);
+        if (miniTheater)
+          subscriber(miniTheater);
+        return () => {};
+      },
+      act: (action) => {
+        console.log(action)
+      }
+    }
+  };
   const assets = useMemo(() =>
     new Map(createMockAssetsForLibrary(data).map(a => [a.description.id, a])),
     [data]
@@ -70,7 +84,7 @@ export const GameMasterPrepLibraryDemo/*: Component<>*/ = () => {
 
   return [
     h(ScaledLayoutDemo, { height: `${512+128}px` }, [
-      h(GameMasterPrepLibrary, { assets, client, data, game, userId }),
+      h(GameMasterPrepLibrary, { assets, client, data, game, userId, updates }),
     ]),
   ]
 }

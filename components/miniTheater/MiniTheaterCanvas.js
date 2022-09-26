@@ -51,8 +51,6 @@ export const MiniTheaterCanvas/*: Component<MiniTheaterCanvasProps>*/ = ({
     renderer.shadowMap.type = PCFSoftShadowMap;
   }, [showOverlay, overrideCanvasRef]);
 
-  window.lad = render;
-
   return [
     showOverlay && h('div', { ref: render.rootRef, className: classes.miniTheaterOverlay }),
     h('canvas', { ref: render.canvasRef, tabIndex: 0, className: classes.miniTheaterCanvas }),

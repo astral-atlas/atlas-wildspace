@@ -8,8 +8,11 @@ import classes from './Library.module.css';
 
 /*::
 export type LibraryAisleProps = {
+  focus?: 'workstation' | 'floor',
+
   floor?: ElementNode,
   desk?: ?ElementNode,
+  workstation?: ?ElementNode,
   wideDesk?: boolean
 };
 */
@@ -17,10 +20,17 @@ export type LibraryAisleProps = {
 export const LibraryAisle/*: Component<LibraryAisleProps>*/ = ({
   floor,
   desk,
+  focus = 'floor',
+  workstation,
   wideDesk = false
 }) => {
-  return [
-    h('div', { class: classes.floor }, floor),
-    !!desk && h('div', { classList: [classes.desk, wideDesk && classes.wide] }, desk),
-  ]
+  const offset = focus === 'floor' ? "0%" : "calc(-100% + var(--deskWidth,16rem))"
+
+  return h('div', { class: classes.aisleViewport }, [
+    h('div', { class: classes.aisle, style: { transform: `translate(${offset})` } }, [
+      h('div', { class: classes.floorViewport }, floor),
+      !!desk && h('div', { classList: [classes.deskViewport] }, desk),
+      !! workstation && h('div', { class: classes.workstationViewport }, workstation),
+    ])
+  ]);
 };

@@ -61,3 +61,5 @@ export const createMockWildspaceClient = ()/*: WildspaceClient*/ => {
     self,
   }
 };
+
+export * from './client/webAssetMock.js';

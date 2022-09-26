@@ -24,10 +24,11 @@ import type {
   BasicTransform,
   BasicTransformAnimation,
 } from "../animation/transform";
+import type { MiniTheaterController2 } from "./useMiniTheaterController2";
 
 export type MiniTheaterMode =
-  | { type: 'full-control', controller: MiniTheaterController, keys: KeyboardTrack }
-  | { type: 'stalled-control', controller: MiniTheaterController }
+  | { type: 'full-control', controller: MiniTheaterController2, keys: KeyboardTrack }
+  | { type: 'stalled-control', controller: MiniTheaterController2 }
   | { type: 'free-cam', keys: KeyboardTrack }
   | { type: 'fixed', transform: BasicTransform }
 */
@@ -122,7 +123,7 @@ export const useMiniTheaterMode = (
       const stopInput = loop.subscribeInput((c, v) => {
         const keysDiff = mode.keys.readDiff();
         const velocity = getVector2ForKeyboardState(keysDiff.next.value);
-        freeCamController.setVelocity(velocity);
+        freeCamController.setVelocity(new Vector3(velocity.x, 0, velocity.y));
       });
       surface.addEventListener('click', onClick);
       surface.addEventListener('mousemove', onMouseMove);

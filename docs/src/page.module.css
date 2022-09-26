@@ -1,11 +1,12 @@
 .wideDocument {
-  max-width: 80em;
+  max-width: 80rem;
+  margin: 0 2rem 0 2rem;
 }
 
 
 .wideDocument p,
 .wideDocument h1,
 .wideDocument h2 {
-  max-width: 40em;
+  max-width: 40rem;
   margin: 18px auto 18px auto;
 }

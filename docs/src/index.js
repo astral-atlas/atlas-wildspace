@@ -2,7 +2,7 @@
 /*:: import type { NavigationLink } from "@lukekaalim/act-rehersal"; */
 /*:: import type { ElementNode } from "@lukekaalim/act"; */
 import { Boundary, h, useState } from '@lukekaalim/act'; 
-import { render } from '@lukekaalim/act-three';
+import { render } from '@astral-atlas/wildspace-components';
 import { Document, Markdown, Rehersal } from '@lukekaalim/act-rehersal';
 import { useRootNavigation, navigationContext } from '@lukekaalim/act-navigation';
 
@@ -19,7 +19,6 @@ import { editorsPages, editorsPage } from './editors';
 import { gmPage, gmPages } from "./gm";
 import { paperPage, paperPages } from "./paper";
 import { libraryPage, libraryPages } from "./library";
-import { encounterPage, encounterPages } from "./encounter";
 import { particlePage, particlePages } from "./particle";
 import { initiativePage, initiativePages } from "./initiative";
 import { toolbarPage, toolbarPages } from "./toolbar";
@@ -50,7 +49,6 @@ const rootPage = {
       gmPage.link,
       paperPage.link,
       libraryPage.link,
-      encounterPage.link,
       particlePage.link,
       initiativePage.link,
       toolbarPage.link,
@@ -71,7 +69,6 @@ const pages = [
   ...gmPages,
   ...paperPages,
   ...libraryPages,
-  ...encounterPages,
   ...particlePages,
   ...initiativePages,
   ...toolbarPages,

@@ -2,3 +2,4 @@
 
 export * from './MiniTheaterCanvas.js';
 export * from './useMiniTheaterController.js';
+export * from './useMiniTheaterController2.js';

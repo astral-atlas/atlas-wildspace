@@ -51,7 +51,14 @@ export const createMockLibraryData = ()/*: LibraryData*/ => {
   const terrainProps = [
 
   ]
-  const assets = [];
+  const assets = [
+    ...monsters
+      .map(m => m.initiativeIconAssetId && createMockImageAsset(m.initiativeIconAssetId))
+      .filter(Boolean),
+    ...characters
+      .map(c => c.initiativeIconAssetId && createMockImageAsset(c.initiativeIconAssetId))
+      .filter(Boolean)
+  ];
 
 
   return {

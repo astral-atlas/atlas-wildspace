@@ -32,6 +32,7 @@ export type GameMasterPrepLibraryProps = {
   game: Game,
   userId: UserID,
 
+  updates: UpdatesConnection,
   data: LibraryData,
 };
 */
@@ -42,6 +43,7 @@ export const GameMasterPrepLibrary/*: Component<GameMasterPrepLibraryProps>*/ = 
   game,
   userId,
 
+  updates,
   data,
 }) => {
 
@@ -65,6 +67,7 @@ export const GameMasterPrepLibrary/*: Component<GameMasterPrepLibraryProps>*/ = 
         monsters: data.monsters,
         monsterActors: data.monsterActors,
         assets,
+        updates,
         client, game, userId
       })
     },

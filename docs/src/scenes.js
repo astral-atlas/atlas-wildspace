@@ -14,6 +14,8 @@ import styles from './scenes.module.css';
 import { useState } from "@lukekaalim/act/hooks";
 import { ExpositionSceneDemo } from "./scenes/sceneDemo";
 import { EncounterSceneDemo } from "./scenes/encounterDemo";
+import { sceneEditorPage } from "./scenes/sceneEditor";
+import { expositionEditorPage } from "./scenes/expositionEditor";
 
 const demoLocationText = `
 # The Mysterious City
@@ -80,9 +82,15 @@ const directives = {
 
 export const scenesPage/*: Page*/ = {
   content: h(Document, {}, h(Markdown, { text: sceneText, directives })),
-  link: { href: '/scenes', children: [], name: 'Scenes' }
+  link: {
+    href: '/scenes',
+    children: [sceneEditorPage.link, expositionEditorPage.link],
+    name: 'Scenes'
+  }
 }
 
 export const scenesPages = [
-  scenesPage
+  scenesPage,
+  sceneEditorPage,
+  expositionEditorPage,
 ];

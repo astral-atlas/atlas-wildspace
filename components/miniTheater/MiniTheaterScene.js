@@ -88,15 +88,14 @@ export const MiniTheaterScene/*: Component<MiniTheaterSceneProps>*/ = ({
     (render.canvasRef/*: any*/),
     [render]
   );
-  
-  
+
   const onCursorOver = (position) => {
     if (mode.type === "full-control" || mode.type === "stalled-control")
-      mode.controller.moveCursor(position);
+      mode.controller.act({ type: 'move-cursor', cursor: position });
   };
   const onCursorLeave = () => {
     if (mode.type === "full-control" || mode.type === "stalled-control")
-      mode.controller.clearCursor()
+      mode.controller.act({ type: 'move-cursor', cursor: null });
   }
   // Trash
   const sky = useSky(220, 0);
@@ -105,23 +104,9 @@ export const MiniTheaterScene/*: Component<MiniTheaterSceneProps>*/ = ({
 
   const groupRef = useRef/*:: <?Group>*/()
 
-  const floors = useMemo(() => [
-    { type: 'box', box: miniTheater.baseArea },
-    ...miniTheater.pieces
-      .map(piece => {
-        const { represents } = piece;
-        if (represents.type !== 'terrain')
-          return [];
+  const floors = [];
 
-        return createFloorForTerrain(represents.terrainType, piece.position, piece.visible)
-      })
-      .flat(1)
-  ], [miniTheater]);
-
-  const board = {
-    ...HARDCODED_BOARD,
-    floors,
-  }
+  const board = HARDCODED_BOARD;
 
   const controller = (
     (mode.type === "full-control" || mode.type === "stalled-control")
@@ -133,10 +118,10 @@ export const MiniTheaterScene/*: Component<MiniTheaterSceneProps>*/ = ({
     h(group, { ref: groupRef }),
     h(perspectiveCamera, { ref: render.cameraRef }),
     h(BoardRenderer, { board, raycaster: sceneController.raycaster, onCursorOver, onCursorLeave }, [
-      controller &&
-        h(MiniTheaterCursorRenderer, { resources, controller, resources }),
-      miniTheater.pieces.map(piece =>
-        h(MiniTheaterPieceRenderer, { key: piece.id, controller, piece, resources}))
+      //controller &&
+        //h(MiniTheaterCursorRenderer, { resources, controller, resources }),
+      //miniTheater.pieces.map(piece =>
+        //h(MiniTheaterPieceRenderer, { key: piece.id, controller, piece, resources}))
     ]),
   ]
 }
