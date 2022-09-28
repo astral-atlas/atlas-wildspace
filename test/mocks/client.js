@@ -1,8 +1,10 @@
 // @flow strict
 /*::
-import type { WildspaceClient, GameCRUDClient } from "@astral-atlas/wildspace-client2";
+import type { LibraryData } from "../../models/game/library";
+import type { WildspaceClient, GameCRUDClient, UpdatesConnection } from "@astral-atlas/wildspace-client2";
 */
 
+import { createMockUpdateConnection } from "./client/connection";
 import { randomHumanName } from "./random";
 
 export const createMockGameCRUDClient = ()/*: GameCRUDClient<any>*/ => {
@@ -27,7 +29,10 @@ export const createMockGameCRUDClient = ()/*: GameCRUDClient<any>*/ => {
   };
 }
 
-export const createMockWildspaceClient = ()/*: WildspaceClient*/ => {
+export const createMockWildspaceClient = (
+  getLibrary/*: () => LibraryData*/ = () => { throw new Error() },
+  onLibraryChange/*: LibraryData => mixed*/ = _ => {},
+)/*: WildspaceClient*/ => {
   const game/*: any*/ = {
     miniTheater: {
       ...createMockGameCRUDClient(),
@@ -45,9 +50,13 @@ export const createMockWildspaceClient = ()/*: WildspaceClient*/ => {
   const room/*: any*/ = {
 
   };
-  const updates/*: any*/ = {
+  const page/*: any*/ = {
 
   };
+  const updates/*: UpdatesConnection*/ = createMockUpdateConnection(
+    getLibrary,
+    onLibraryChange,
+  );
   const self = async () => {
     return { name: randomHumanName() }
   }
@@ -57,7 +66,8 @@ export const createMockWildspaceClient = ()/*: WildspaceClient*/ => {
     audio,
     game,
     room,
-    updates,
+    updates: { create: async () => updates },
+    page,
     self,
   }
 };

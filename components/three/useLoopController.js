@@ -4,7 +4,7 @@ import type { Context } from "@lukekaalim/act/context";
 import type { Camera, WebGLRenderer, Scene } from "three";
 */
 
-import { createContext, useMemo, useState } from "@lukekaalim/act";
+import { createContext, useEffect, useMemo, useState } from "@lukekaalim/act";
 
 
 /*::
@@ -75,3 +75,18 @@ export const useLoopController = ()/*: [OnLoop, LoopController]*/ => {
     return [runLoop, loopController];
   }, []);
 };
+
+
+export const useSimulateLoop = (
+  loop/*: LoopController*/,
+  setup/*: () => ?((c: RenderLoopConstants, v: RenderLoopVariables) => void)*/,
+  deps/*: mixed[]*/ = [],
+) => {
+  useEffect(() => {
+    const loopFunc = setup();
+    if (!loopFunc)
+      return;
+    const cancelLoop = loop.subscribeSimulate(loopFunc);
+    return cancelLoop;
+  }, [loop, ...deps])
+}

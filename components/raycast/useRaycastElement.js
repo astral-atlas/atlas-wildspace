@@ -7,7 +7,11 @@ import type { RaycastManager } from "./manager";
 
 import { useEffect } from "@lukekaalim/act"
 
-export const useRaycastElement = /*:: <T: HTMLElement>*/(raycast/*: RaycastManager*/, elementRef/*: Ref<?T>*/) => {
+export const useRaycastElement = /*:: <T: HTMLElement>*/(
+  raycast/*: RaycastManager*/,
+  elementRef/*: Ref<?T>*/,
+  deps/*: mixed[]*/ = []
+) => {
   useEffect(() => {
     const { current: element } = elementRef;
     if (!element)
@@ -23,5 +27,5 @@ export const useRaycastElement = /*:: <T: HTMLElement>*/(raycast/*: RaycastManag
       element.removeEventListener('pointerleave', raycast.onMouseLeave);
       element.removeEventListener('pointermove', raycast.onMouseMove);
     };
-  }, [raycast]);
+  }, [raycast, ...deps]);
 }

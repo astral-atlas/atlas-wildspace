@@ -199,6 +199,7 @@ export const subscribeFreeCameraUpdates = (
     unsubscribeSim();
     surface.removeEventListener('mousemove', onMouseMove)
     surface.removeEventListener('click', onClick)
+    document.removeEventListener('pointerlockchange', onPointerLockChange)
   };
   return { unsubscribe };
 }

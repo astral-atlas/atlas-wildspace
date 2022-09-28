@@ -43,7 +43,7 @@ const defaultMiniTheaterBackground = {
   position: { x: 0, y: 0, z: 0 },
   rotation: { x: defaultQuaternion.x, y: defaultQuaternion.y, z: defaultQuaternion.z, w: defaultQuaternion.w }
 }
-const getDefaultBackgroundForType = (backgroundType) => {
+const getDefaultBackgroundForType = (backgroundType, defaultMiniTheater) => {
   switch (backgroundType) {
     case 'color':
     default:
@@ -51,7 +51,10 @@ const getDefaultBackgroundForType = (backgroundType) => {
     case 'image':
       return defaultImageBackground;
     case 'mini-theater':
-      return defaultMiniTheaterBackground;
+      return {
+        ...defaultMiniTheaterBackground,
+        miniTheaterId: defaultMiniTheater,
+      };
   }
 }
 
@@ -72,7 +75,7 @@ export const ExpositionBackgroundEditor/*: Component<ExpositionBackgroundEditorP
     ({ title: m.name, value: m.id }));
 
   const onBackgroundTypeChange = (backgroundType) => {
-    onBackgroundChange(getDefaultBackgroundForType(backgroundType))
+    onBackgroundChange(getDefaultBackgroundForType(backgroundType, miniTheaters[0].id))
   }
   const onColorChange = async (nextColor) => {
     onBackgroundChange({ type: 'color', color: nextColor });
@@ -127,41 +130,39 @@ export const ExpositionBackgroundEditor/*: Component<ExpositionBackgroundEditorP
   };
 
   return [
-    h(EditorHorizontalSection, {}, [
+    h(SelectEditor, {
+      label: 'Background Type',
+      values: backgroundTypeValues,
+      selected: background.type,
+      onSelectedChange: onBackgroundTypeChange
+    }),
+    background.type === 'color' && h(ColorEditor, {
+      key: 'color',
+      label: 'Background Color',
+      color: background.color,
+      onColorChange
+    }),
+    background.type === 'image' && h(FilesEditor, {
+      key: 'image',
+      value: background.assetId,
+      label: 'Background Image',
+      accept: 'image/*',
+      onFilesChange: files => onImageChange(files[0]),
+    }),
+    background.type === 'mini-theater' && [
       h(SelectEditor, {
-        label: 'Background Type',
-        values: backgroundTypeValues,
-        selected: background.type,
-        onSelectedChange: onBackgroundTypeChange
+        key: 'theater-id',
+        label: 'Mini Theater',
+        values: miniTheaterValues,
+        selected: background.miniTheaterId,
+        onSelectedChange: miniTheaterId => onMiniTheaterChange({ miniTheaterId })
       }),
-      background.type === 'color' && h(ColorEditor, {
-        key: 'color',
-        label: 'Background Color',
-        color: background.color,
-        onColorChange
-      }),
-      background.type === 'image' && h(FilesEditor, {
-        key: 'image',
-        value: background.assetId,
-        label: 'Background Image',
-        accept: 'image/*',
-        onFilesChange: files => onImageChange(files[0]),
-      }),
-      background.type === 'mini-theater' && [
-        h(SelectEditor, {
-          key: 'theater-id',
-          label: 'Mini Theater',
-          values: miniTheaterValues,
-          selected: background.miniTheaterId,
-          onSelectedChange: miniTheaterId => onMiniTheaterChange({ miniTheaterId })
-        }),
-        miniTheaterCamera && h(EditorButton, {
-          key: 'theater-camera',
-          label: 'Change Camera Position',
-          onClick: onMiniTheaterCameraMouseClick,
-          onMouseMove: onMiniTheaterCameraMouseMove,
-        })
-      ],
-    ])
+      miniTheaterCamera && h(EditorButton, {
+        key: 'theater-camera',
+        label: 'Change Camera Position',
+        onClick: onMiniTheaterCameraMouseClick,
+        onMouseMove: onMiniTheaterCameraMouseMove,
+      })
+    ],
   ];
 }

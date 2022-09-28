@@ -8,23 +8,25 @@ import {
   subscribeFreeCameraUpdates,
   useFreeCameraController,
 } from "./useFreeCameraController";
+import { Vector3, Quaternion } from "three";
+
 
 /*::
 import type { Component } from "@lukekaalim/act";
-import type { PerspectiveCamera, Quaternion, Vector3 } from "three";
+import type { PerspectiveCamera } from "three";
 
 export type FreeCameraProps = {
   onFreeCameraUpdate?: (camera: PerspectiveCamera) => void,
   onFreeCameraChange?: (camera: PerspectiveCamera) => void,
-  position: Vector3,
-  quaternion: Quaternion,
+  position?: Vector3,
+  quaternion?: Quaternion,
 };
 */
 export const FreeCamera/*: Component<FreeCameraProps>*/ = ({
   onFreeCameraUpdate = _ => {},
   onFreeCameraChange = _ => {},
-  position,
-  quaternion,
+  position = new Vector3(),
+  quaternion = new Quaternion().identity(),
 }) => {
   const render = useContext(renderCanvasContext);
 

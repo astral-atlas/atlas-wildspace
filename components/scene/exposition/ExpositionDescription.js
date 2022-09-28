@@ -13,7 +13,7 @@ import type { Component } from "@lukekaalim/act";
 import type { JSONNode } from "prosemirror-model";
 
 export type ExpositionDescriptionProps = {
-  rootNode: JSONNode,
+  description: JSONNode,
   version: number,
   editable?: boolean,
   onDescriptionUpdate?: (node: JSONNode, version: number) => mixed,
@@ -21,7 +21,7 @@ export type ExpositionDescriptionProps = {
 */
 
 export const ExpositionDescription/*: Component<ExpositionDescriptionProps>*/ = ({
-  rootNode,
+  description,
   version,
   editable = false,
   onDescriptionUpdate = (_, __) => {},
@@ -31,9 +31,9 @@ export const ExpositionDescription/*: Component<ExpositionDescriptionProps>*/ = 
   const state = useMemo(() =>
     EditorState.create({
       schema: proseSchema,
-      doc: proseNodeJSONSerializer.deserialize(rootNode),
+      doc: proseNodeJSONSerializer.deserialize(description),
       plugins: editable ? prosePlugins : []
-    }), [rootNode])
+    }), [description])
 
   const view = useProseMirrorView(ref, state, {
     editable: () => editable,

@@ -9,18 +9,15 @@ import type { Component } from "@lukekaalim/act";
 
 /*::
 export type ExpositionImageProps = {
-  assets: AssetDownloadURLMap,
-  imageAssetId: AssetID
+  imageURL: string
 };
 */
 
 export const ExpositionImage/*: Component<ExpositionImageProps>*/ = ({
-  assets,
-  imageAssetId
+  imageURL
 }) => {
-  const asset = assets.get(imageAssetId);
-  if (!asset)
-    return null;
-  
-  return h('div', { style: { backgroundImage: `url(${asset.downloadURL})` }, class: styles.expositionImage });
+  return h('div', {
+    style: {backgroundImage: `url(${imageURL})` },
+    class: styles.expositionImage
+  });
 }

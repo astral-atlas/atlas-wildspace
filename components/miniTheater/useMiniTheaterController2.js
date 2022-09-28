@@ -1,6 +1,6 @@
 // @flow strict
 
-import { useEffect, useState } from "@lukekaalim/act";
+import { useEffect, useMemo, useState } from "@lukekaalim/act";
 import { v4 } from "uuid";
 import { hasLayerPermission, isBoardPositionEqual } from "@astral-atlas/wildspace-models";
 
@@ -61,6 +61,7 @@ export type MiniTheaterController2 = {
     subscriber: (state: MiniTheaterLocalState) => mixed
   ) => { unsubscribe: () => void },
 
+  getState: () => MiniTheaterLocalState,
   act: (action: MiniTheaterLocalAction) => void,
 };
 */
@@ -120,7 +121,6 @@ export const reduceLocalState = (
 export const createMiniTheaterController2 = (
   resources/*: MiniTheaterRenderResources*/,
   miniTheater/*: MiniTheater*/,
-  onRemoteAction/*: (MiniTheaterAction) => mixed*/,
   isGM/*: boolean*/ = false,
 )/*: MiniTheaterController2*/ => {
   const subscribers = new Map();
@@ -143,38 +143,39 @@ export const createMiniTheaterController2 = (
     return { unsubscribe };
   };
   const act = (action) => {
-    if (action.type === 'remote-action') {
-      onRemoteAction(action.remoteAction);
-    }
     const prevState = localState;
     localState = reduceLocalState(prevState, action);
     if (prevState !== localState)
       for (const subscriber of subscribers.values())
         subscriber(localState)
   };
+  const getState = () => {
+    return localState;
+  }
 
   return {
     subscribe,
+    getState,
     act,
   }
 }
 
 export const useMiniTheaterController2 = (
-  miniTheaterId/*: MiniTheaterID*/,
+  miniTheaterId/*: ?MiniTheaterID*/ = null,
   resources/*: MiniTheaterRenderResources*/,
-  connection/*: UpdatesConnection*/,
+  connection/*: ?UpdatesConnection*/ = null,
   isGM/*: boolean*/ = false,
 )/*: ?MiniTheaterController2*/ => {
   const [controller, setController] = useState/*:: <?MiniTheaterController2>*/(null);
 
   useEffect(() => {
-    const onRemoteAction = (action) => {
-      connection.miniTheater.act(miniTheaterId, action);
-    }
+    if (!miniTheaterId || !connection)
+      return;
+    
     const unsubscribe = connection.miniTheater.subscribe(miniTheaterId, miniTheater => {
       setController(controller => {
-        if (!controller)
-          return createMiniTheaterController2(resources, miniTheater, onRemoteAction, isGM);
+        if (!controller || controller.getState().miniTheater.id !== miniTheaterId)
+          return createMiniTheaterController2(resources, miniTheater, isGM);
         controller.act({ type: 'update', update: { type: 'mini-theater', miniTheater } });
         return controller;
       })
@@ -182,7 +183,29 @@ export const useMiniTheaterController2 = (
     return () => {
       unsubscribe();
     }
-  }, [resources, connection, miniTheaterId]);
+  }, [connection, miniTheaterId]);
 
-  return controller;
+  useEffect(() => {
+    setController(controller => {
+      if (!controller)
+        return null;
+      controller.act({ type: 'update', update: { type: 'resources', resources } });
+      return controller;
+    })
+  }, [resources])
+
+  return useMemo(() => {
+    if (!miniTheaterId || !connection || !controller)
+      return null;
+
+    const act = (action) => {
+      if (action.type === 'remote-action')
+        connection.miniTheater.act(miniTheaterId, action.remoteAction);
+      controller.act(action);
+    }
+    return {
+      ...controller,
+      act
+    }
+  }, [controller, connection, miniTheaterId])
 };

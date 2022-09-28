@@ -9,6 +9,7 @@ import { useKeyboardTrack } from "../keyboard/track";
 import { ExpositionImage } from "./exposition/ExpositionImage";
 import { ExpositionColor } from "./exposition/ExpositionColor";
 import { GridHelperGroup } from "../../docs/src/controls/helpers"; 
+import { SceneMiniTheaterRenderer } from "./miniTheater/SceneMiniTheater";
 
 /*::
 import type { SceneContent, MiniTheater } from "@astral-atlas/wildspace-models";
@@ -22,6 +23,7 @@ import type {
   MiniTheaterLocalState,
 } from "../miniTheater/useMiniTheaterController2";
 import type { MiniTheaterMode } from "../miniTheater/useMiniTheaterMode";
+import type { SceneContentBackgroundRenderData } from "./SceneRenderer2";
 
 export type SceneContentBackgroundRendererProps = {
   content: SceneContent,
@@ -61,57 +63,38 @@ const useMode = (content, keys, controller)/*: ?MiniTheaterMode*/ => {
   }, [content, keys, controller])
 };
 
-export const SceneContentBackgroundRenderer/*: Component<SceneContentBackgroundRendererProps>*/ = ({
-  content,
-  isInteractive = true,
-  freeCam = false,
-  miniTheaterController = null,
-  miniTheaterState = null,
-  assets,
-}) => {
-  const overrideCanvasRef = useRef();
-  const emitter = useElementKeyboard(overrideCanvasRef, [], [
-    content.type,
-    !!miniTheaterController,
-    !!miniTheaterState,
-  ]);
-  const keys = useKeyboardTrack(emitter);
-  const mode = useMode(content, keys, miniTheaterController);
+/*::
+export type SceneBackgroundRenderData =
+  | { type: 'color', color: string }
+  | { type: 'image', imageURL: string }
+  | {
+      type: 'mini-theater',
+      mode:
+        | { type: 'fixed', miniTheater: MiniTheater, resources: MiniTheaterRenderResources, position: Vector3, quaternion: Quaternion }
+        | { type: 'interactive', controller: MiniTheaterController2 }
+    }
 
-  switch (content.type) {
-    case 'exposition':
-      const { background } = content.exposition;
-      
-      switch (background.type) {
-        case 'mini-theater':
-          if (!miniTheaterState || !mode)
-            return null;
-          return h(MiniTheaterCanvas, {
-            mode,
-            miniTheater: miniTheaterState.miniTheater,
-            resources: miniTheaterState.resources,
-            overrideCanvasRef,
-          });
-        case 'image':
-          if (!assets)
-            return null;
-          return h(ExpositionImage, { assets, imageAssetId: background.assetId });
-        case 'color':
-          return h(ExpositionColor, { color: background.color });
-        default:
-          return null;
-      }
+export type SceneContentBackgroundRenderer2Props = {
+  backgroundRenderData: SceneContentBackgroundRenderData,
+  focused?: boolean
+}
+*/
+
+export const SceneContentBackgroundRenderer2/*: Component<SceneContentBackgroundRenderer2Props>*/ = ({
+  backgroundRenderData,
+  focused = false,
+}) => {
+  switch (backgroundRenderData.type) {
+    case 'color':
+      return h(ExpositionColor, { color: backgroundRenderData.color });
+    case 'image':
+      return h(ExpositionImage, { imageURL: backgroundRenderData.imageURL });
     case 'mini-theater':
-      if (!miniTheaterState || !mode)
-        return null;
-      
-      return h(MiniTheaterCanvas, {
-        mode,
-        miniTheater: miniTheaterState.miniTheater,
-        resources: miniTheaterState.resources,
-        overrideCanvasRef,
-      });
-    case 'none':
+      return h(SceneMiniTheaterRenderer, {
+        state: backgroundRenderData.state,
+        controller: backgroundRenderData.controller, 
+        cameraMode: backgroundRenderData.cameraMode,
+      })
     default:
       return null;
   }

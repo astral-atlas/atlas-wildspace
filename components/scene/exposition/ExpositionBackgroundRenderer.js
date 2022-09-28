@@ -3,7 +3,6 @@ import { h } from "@lukekaalim/act";
 import { ExpositionColor } from "./ExpositionColor";
 import { ExpositionImage } from "./ExpositionImage";
 import { MiniTheaterCanvas } from "../../miniTheater/MiniTheaterCanvas";
-import { ExpositionMiniTheater } from "./ExpositionMiniTheater";
 
 /*::
 import type { AssetDownloadURLMap } from "@astral-atlas/wildspace-components";
@@ -25,7 +24,11 @@ export const ExpositionBackgroundRenderer/*: Component<ExpositionBackgroundRende
     case 'color':
       return h(ExpositionColor, { color: background.color })
     case 'image':
-      return h(ExpositionImage, { imageAssetId: background.assetId, assets })
+      const info = assets.get(background.assetId);
+      if (!info)
+        return null;
+      const imageURL = info.downloadURL;
+      return h(ExpositionImage, { imageURL })
     case 'mini-theater':
     default:
       return null;

@@ -10,11 +10,13 @@ import type {
 } from "../resources";
 import type { MiniQuaternion, MiniVector } from "./primitives";
 import type { Cast } from "@lukekaalim/cast";
+import type { MiniTheaterShape } from "./shape";
 */
 
 import { castModelResourceId, castModelResourcePath } from "../resources.js";
 import { castEditingLayerID } from "./editingLayer.js";
 import { castMiniQuaternion, castMiniVector } from "./primitives.js";
+import { castMiniTheaterShape } from "./shape.js";
 import { c } from "@lukekaalim/cast";
 
 /*::
@@ -27,6 +29,8 @@ export type TerrainProp = {
   modelResourceId: ModelResourceID,
   modelPath: ModelResourcePath,
   iconPreviewCameraModelPath: ?ModelResourcePath,
+
+  floorShapes: $ReadOnlyArray<MiniTheaterShape>,
 };
 */
 export const castTerrainPropId/*: Cast<TerrainPropID>*/ = c.str;
@@ -36,6 +40,7 @@ export const castTerrainProp/*: Cast<TerrainProp>*/ = c.obj({
   modelResourceId: castModelResourceId,
   modelPath: castModelResourcePath,
   iconPreviewCameraModelPath: c.maybe(castModelResourcePath),
+  floorShapes: c.arr(castMiniTheaterShape),
 })
 
 

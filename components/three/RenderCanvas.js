@@ -10,19 +10,26 @@ import type { RenderSetup } from "./useRenderSetup";
 */
 /*::
 export type RenderCanvasProps = {
-  className?: string
+  className?: string,
+  canvasProps?: { [string]: mixed }
 }
 */
 
 export const RenderCanvas/*: Component<RenderCanvasProps>*/ = ({
   children,
   className,
+  canvasProps = {},
 }) => {
   const render = useRenderSetup()
 
   return [
     h('div', { ref: render.rootRef, style: { position: 'absolute' } }),
-    h('canvas', { ref: render.canvasRef, width: 600, height: 300, tabIndex: 0, className }),
+    h('canvas', {
+      ...canvasProps,
+      ref: render.canvasRef,
+      width: 600, height: 300, tabIndex: 0,
+      className,
+    }),
     h(scene, { ref: render.sceneRef },
       h(renderCanvasContext.Provider, { value: render },
         children)),

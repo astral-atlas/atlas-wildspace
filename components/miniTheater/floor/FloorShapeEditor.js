@@ -1,6 +1,7 @@
 // @flow strict
 /*::
 import type { Component } from "@lukekaalim/act";
+import type { MiniTheaterShape } from "@astral-atlas/wildspace-models";
 */
 import { h, useContext, useEffect, useMemo, useRef, useState } from "@lukekaalim/act";
 import { group, lineSegments, mesh, useDisposable } from "@lukekaalim/act-three";
@@ -22,14 +23,16 @@ import { TransformControls } from "three/addons/controls/TransformControls.js";
 import { renderCanvasContext } from "../../three/RenderCanvas";
 import { BoxHelperGroup } from "../../../docs/src/controls/helpers";
 import { useChildObject } from "../../three/useChildObject";
+import {
+  miniQuaternionToThreeQuaternion,
+  miniVectorToThreeVector,
+  vectorSetMini,
+} from "../../utils/miniVector";
 
 /*::
-export type FloorShape =
-  | { type: 'box', position: Vector3, quaternion: Quaternion, size: Vector3 }
-
 export type FloorShapeEditorProps = {
-  floor: FloorShape,
-  onFloorChange: FloorShape => mixed,
+  floor: MiniTheaterShape,
+  onFloorChange: MiniTheaterShape => mixed,
 }
 */
 
@@ -46,8 +49,6 @@ export const FloorShapeEditor/*: Component<FloorShapeEditorProps>*/ = ({
   const ref = useRef();
   const gizmoRef = useRef();
   const buttonRef = useRef()
-  const position = new Vector3();
-  const quaternion = new Quaternion();
 
   const [controls, setControls] = useState(null);
   useEffect(() => {
@@ -78,11 +79,19 @@ export const FloorShapeEditor/*: Component<FloorShapeEditorProps>*/ = ({
         return;
       onFloorChange({
         ...floor,
-        position: gizmo.position.clone(),
+        position: { x: gizmo.position.x, y: gizmo.position.y, z: gizmo.position.z },
         quaternion: gizmo.quaternion,
-        size: gizmo.scale,
+        size: { x: gizmo.scale.x, y: gizmo.scale.y, z: gizmo.scale.z },
       })
     };
+    const onChange = () => {
+      onFloorChange({
+        ...floor,
+        position: { x: gizmo.position.x, y: gizmo.position.y, z: gizmo.position.z },
+        quaternion: gizmo.quaternion,
+        size: { x: gizmo.scale.x, y: gizmo.scale.y, z: gizmo.scale.z },
+      })
+    }
     const onButtonClick = () => {
       const modes/*: ('translate' | 'rotate' | 'scale')[]*/ = [
         'translate',
@@ -96,9 +105,11 @@ export const FloorShapeEditor/*: Component<FloorShapeEditorProps>*/ = ({
     };
     button.addEventListener('click', onButtonClick);
     controls.addEventListener('dragging-changed', onControlsDraggingUpdate);
+    controls.addEventListener('change', onChange);
 
     return () => {
       controls.removeEventListener('dragging-changed', onControlsDraggingUpdate);
+      controls.removeEventListener('change', onChange);
       button.removeEventListener('click', onButtonClick);
     }
   }, [controls, floor]);
@@ -111,7 +122,10 @@ export const FloorShapeEditor/*: Component<FloorShapeEditorProps>*/ = ({
 
   const floorAABB = useMemo(() => {
     const matrix = new Matrix4()
-      .compose(floor.position, floor.quaternion, floor.size);
+      .compose(
+        miniVectorToThreeVector(floor.position),
+        miniQuaternionToThreeQuaternion(floor.rotation),
+        miniVectorToThreeVector(floor.size));
 
     const floorBoundingBox = new Box3(
       new Vector3(-0.5, -0.5, -0.5),
@@ -127,7 +141,7 @@ export const FloorShapeEditor/*: Component<FloorShapeEditorProps>*/ = ({
   }, [floorAABB])
   useChildObject(ref, () => {
     const a = new AxesHelper(0);
-    a.position.copy(floor.position);
+    vectorSetMini(a.position, floor.position);
     return a;
   }, [floor])
 
@@ -136,9 +150,9 @@ export const FloorShapeEditor/*: Component<FloorShapeEditorProps>*/ = ({
     h(group, { ref }, [
       h(lineSegments, {
         ref: gizmoRef,
-        position: floor.position,
-        quaternion: floor.quaternion,
-        scale: floor.size,
+        position: miniVectorToThreeVector(floor.position),
+        quaternion: miniQuaternionToThreeQuaternion(floor.rotation),
+        scale: miniVectorToThreeVector(floor.size),
         geometry: linesGeometry,
       }, [
         h(css2dObject, { position: new Vector3(0, 1, 0) }, [

@@ -24,7 +24,6 @@ export const ColorEditor/*: Component<ColorEditorProps>*/ = ({
     if (onColorChange)
       onColorChange(e.target.value)
   }
-  console.log([color])
   return h('label', { classList: [styles.editorRoot] }, [
     h('span', {}, label),
     h('input', { type: 'color', value: color, onChange, disabled })

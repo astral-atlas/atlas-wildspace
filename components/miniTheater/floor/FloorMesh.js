@@ -1,7 +1,7 @@
 // @flow strict
 
 import { h, useContext, useEffect, useMemo, useRef } from "@lukekaalim/act";
-import { group, mesh, points, useDisposable } from "@lukekaalim/act-three";
+import { group, lineSegments, mesh, points, useDisposable } from "@lukekaalim/act-three";
 import {
   Box3,
   Matrix4,
@@ -9,23 +9,30 @@ import {
   Box3Helper,
   BufferGeometry,
   BufferAttribute,
+  BoxGeometry,
+  EdgesGeometry,
 } from "three";
 import { useChildObject } from "../../three";
 import {
   raycastManagerContext,
   useRaycast2,
 } from "../../raycast/manager";
+import { miniVectorToThreeVector, miniQuaternionToThreeQuaternion } from "../../utils";
 
 /*::
-import type { FloorShape } from "./FloorShapeEditor";
 import type { Component, Ref } from "@lukekaalim/act";
 import type { Mesh } from "three";
+import type { MiniTheaterShape } from "@astral-atlas/wildspace-models";
 */
 
-const calculateFloorAABB = (floors/*: $ReadOnlyArray<FloorShape>*/)/*: Box3*/ => {
+const calculateFloorAABB = (floors/*: $ReadOnlyArray<MiniTheaterShape>*/)/*: Box3*/ => {
   const floorAABB = floors.reduce((acc, curr) => {
     const matrix = new Matrix4()
-      .compose(curr.position, curr.quaternion, curr.size);
+      .compose(
+        miniVectorToThreeVector(curr.position),
+        miniQuaternionToThreeQuaternion(curr.rotation),
+        miniVectorToThreeVector(curr.size),
+      );
 
     const floorBoundingBox = new Box3(
       new Vector3(-0.5, -0.5, -0.5),
@@ -81,7 +88,11 @@ const calcuateFloorCells = (floors, floorAABB) => {
     new Vector3(0.5, 0.5, 0.5)
   )
   const floorMatricies = floors.map(f => new Matrix4()
-    .compose(f.position, f.quaternion, f.size)
+    .compose(
+      miniVectorToThreeVector(f.position),
+      miniQuaternionToThreeQuaternion(f.rotation),
+      miniVectorToThreeVector(f.size)
+    )
     .invert());
   
   mapPotentialCells(floorAABB, (i, x, y, z) => {
@@ -117,7 +128,7 @@ const write3dQuadVertices = (array, index, point) => {
 
 /*::
 export type FloorMeshProps = {
-  floors: $ReadOnlyArray<FloorShape>,
+  floors: $ReadOnlyArray<MiniTheaterShape>,
   ref?: ?Ref<?Mesh>,
 };
 */
@@ -160,7 +171,7 @@ export const FloorMesh/*: Component<FloorMeshProps>*/ = ({
     for (let i = 0; i < floorCells.length; i++) {
       const point = floorCells[i];
       const v = i * 3 * 6;
-      write3dQuadVertices(positionArray, v, point);
+      write3dQuadVertices(positionArray, v, point.clone().add(new Vector3(0, -4, 0)));
     }
 
     const geometry = new BufferGeometry();
@@ -174,5 +185,24 @@ export const FloorMesh/*: Component<FloorMeshProps>*/ = ({
   return h(group, { ref }, [
     h(points, { geometry: pointGeometry }),
     h(mesh, { geometry: floorGeometry, ref: meshRef }),
+    floors.map(floor => h(FloorDebug, { floor })),
   ]);
 }
+
+const FloorDebug = ({ floor }) => {
+  const ref = useRef();
+
+  const linesGeometry = useDisposable(() => {
+    const box = new BoxGeometry(1, 1, 1);
+    const lines = new EdgesGeometry(box);
+    return lines;
+  }, [floor])
+
+  return h(lineSegments, {
+    ref,
+    position: miniVectorToThreeVector(floor.position),
+    quaternion: miniQuaternionToThreeQuaternion(floor.rotation),
+    scale: miniVectorToThreeVector(floor.size),
+    geometry: linesGeometry,
+  });
+} 

@@ -8,14 +8,15 @@ import { calculateKeyVelocity, getVector2ForKeyboardState } from "../keyboard";
 
 
 /*::
-import type { Component } from "@lukekaalim/act";
+import type { Component, Ref } from "@lukekaalim/act";
+import type { PerspectiveCamera } from "three";
 export type MiniTheaterCameraProps = {
-
+  ref?: ?Ref<?PerspectiveCamera>
 }
 */
 
 export const MiniTheaterCamera/*: Component<MiniTheaterCameraProps>*/ = ({
-
+  ref = null,
 }) => {
   const render = useContext(renderCanvasContext);
   if (!render)
@@ -23,7 +24,7 @@ export const MiniTheaterCamera/*: Component<MiniTheaterCameraProps>*/ = ({
 
   useEffect(() => {
     const { cameraRef, loop, keyboard, canvasRef } = render;
-    const { current: camera } = cameraRef;
+    const { current: camera } = ref || cameraRef;
     const { current: canvas } = canvasRef;
     if (!camera || !canvas)
       return;
@@ -55,7 +56,7 @@ export const MiniTheaterCamera/*: Component<MiniTheaterCameraProps>*/ = ({
       stopSim();
       canvas.removeEventListener('wheel', onMouseWheel)
     }
-  }, [render])
+  }, [render, ref])
 
-  return h(perspectiveCamera, { ref: render.cameraRef })
+  return h(perspectiveCamera, { ref: ref || render.cameraRef })
 }

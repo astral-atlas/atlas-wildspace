@@ -5,6 +5,7 @@ import { castLocation } from "../game/location.js";
 import { castNonPlayerCharacter } from "../game/character.js";
 import { castAudioTrack, castAudioPlaylist } from "../audio.js";
 import { castAssetInfo } from "../asset.js";
+import { castTerrainProp } from "../game/miniTheater/terrain.js";
 
 /*::
 import type { Cast } from "@lukekaalim/cast";
@@ -13,10 +14,12 @@ import type { NonPlayerCharacter } from "../game/character";
 import type { Location } from "../game/location";
 import type { AudioPlaylist, AudioTrack } from "../audio";
 import type { AssetID, AssetInfo } from "../asset";
+import type { TerrainProp } from "../game/miniTheater/terrain";
 
 export type RoomResources = {
   locations:      $ReadOnlyArray<Location>,
   npcs:           $ReadOnlyArray<NonPlayerCharacter>,
+  terrainProps:   $ReadOnlyArray<TerrainProp>,
   audioTracks:    $ReadOnlyArray<AudioTrack>,
   audioPlaylists: $ReadOnlyArray<AudioPlaylist>,
 };
@@ -25,6 +28,7 @@ export type RoomResources = {
 export const castRoomResources/*: Cast<RoomResources>*/ = c.obj({
   locations:      c.arr(castLocation),
   npcs:           c.arr(castNonPlayerCharacter),
+  terrainProps:   c.arr(castTerrainProp),
   audioTracks:    c.arr(castAudioTrack),
   audioPlaylists: c.arr(castAudioPlaylist),
 });

@@ -7,149 +7,125 @@ import type {
   MonsterActorMask,
   TerrainProp,
 } from "@astral-atlas/wildspace-models";
+import type { Vector3 } from "three";
 import type { Component } from "@lukekaalim/act";
 import type { AssetDownloadURLMap } from "../asset/map";
 import type { MiniTheaterRenderResources } from "./useMiniTheaterResources";
-import type { FloorShape } from "./floor/FloorShapeEditor";
 import type {
   MiniTheaterController2,
   MiniTheaterLocalState,
 } from "./useMiniTheaterController2";
 */
-import { h, useEffect, useMemo, useState } from "@lukekaalim/act";
+import { h, useContext, useEffect, useMemo, useRef, useState } from "@lukekaalim/act";
 import { MiniTheaterPiecesRenderer } from "./MiniTheaterPiecesRenderer";
-import { Quaternion, SpriteMaterial, TextureLoader, Vector3 } from "three";
-import { useAsync } from "../utils/async";
-import { MiniTheaterFloorMesh } from "./floor/MiniTheaterFloorMesh";
-import { FloorShapeEditor } from "./floor/FloorShapeEditor";
 import { FloorMesh } from "./floor/FloorMesh";
 import {
-  raycastManagerContext,
-  useRaycast2,
-  useRaycastManager,
-} from "../raycast/manager";
-import { useContext, useRef } from "@lukekaalim/act/hooks";
-import { renderCanvasContext } from "../three";
+  miniQuaternionToThreeQuaternion,
+  miniVectorToThreeVector,
+} from "../utils/miniVector";
+import { Quaternion } from "three";
+import { useRaycast2, useRaycastManager } from "../raycast/manager";
 import { useRaycastElement } from "../raycast/useRaycastElement";
+import { renderCanvasContext } from "../three/RenderCanvas";
+import { useSimulateLoop } from "../three/useLoopController";
+import { MiniTheaterCursorRenderer } from "./MiniTheaterCursorRenderer";
+
+
+const usePlacedTerrainFloors = (miniTheater, resources) => {
+  const floors = useMemo(() => {
+    return miniTheater.terrain
+      .map(terrainPlacement => {
+        const placementPosition = miniVectorToThreeVector(terrainPlacement.position);
+        const placementRotation = miniQuaternionToThreeQuaternion(terrainPlacement.quaternion);
+
+        const terrainProp = resources.terrainProps.get(terrainPlacement.terrainPropId);
+        if (!terrainProp)
+          return [];
+
+        return terrainProp.floorShapes.map(floorShape => {
+          const position = miniVectorToThreeVector(floorShape.position)
+            .add(placementPosition);
+          const rotation = miniQuaternionToThreeQuaternion(floorShape.rotation)
+            .multiply(placementRotation);
+          return {
+            ...floorShape,
+            position: { x: position.x, y: position.y, z: position.z },
+            rotation: { x: rotation.x, y: rotation.y, z: rotation.z, w: rotation.w, },
+          }
+        })
+      })
+      .flat(1);
+  }, [miniTheater.terrain, resources.terrainProps])
+
+  return floors;
+}
 
 /*::
 export type MiniTheaterScene2Props = {
-  miniTheater: MiniTheater,
-  assets: AssetDownloadURLMap,
-  characters?: $ReadOnlyArray<Character>,
-  monsterMasks?: $ReadOnlyArray<MonsterActorMask>,
-  terrains?: $ReadOnlyArray<TerrainProp>,
-  c?: MiniTheaterController2,
+  miniTheaterState: MiniTheaterLocalState,
+
+  onOverFloor?: (floorPoint: Vector3) => mixed,
+  onExitFloor?: () => mixed,
 }
 */
 
 export const MiniTheaterScene2/*: Component<MiniTheaterScene2Props>*/ = ({
-  miniTheater,
-  assets,
-  characters = [],
-  monsterMasks = [],
-  terrains = [],
-  c,
+  miniTheaterState,
+
+  onOverFloor = _ => {},
+  onExitFloor = () => {}
 }) => {
-  const [resources] = useAsync/*:: <MiniTheaterRenderResources>*/(async () => {
-    const textureLoader = new TextureLoader();
-    const texturesAssetInfo = [
-      characters
-        .map(c => c.initiativeIconAssetId),
-      monsterMasks
-        .map(m => m.initiativeIconAssetId)
-    ]
+  const placedFloors = usePlacedTerrainFloors(
+    miniTheaterState.miniTheater,
+    miniTheaterState.resources
+  )
+  const characterFloors = useMemo(() => {
+    return miniTheaterState.miniTheater.pieces
+      .map(p => [
+        {
+          type: 'box',
+          position: { x: p.position.x * 10, y: p.position.z * 10, z: p.position.y * 10 },
+          size: { x: 10, y: 10, z: 10 },
+          rotation: { x: 0, y: 0, z: 0, w: 1}
+        },
+      ])
       .flat(1)
-      .map(id => id && assets.get(id) || null)
-      .filter(Boolean);
-
-    const textureMap = new Map(
-      await Promise.all(
-        texturesAssetInfo
-          .map(async assetInfo => [
-            assetInfo.description.id,
-            await textureLoader.loadAsync(assetInfo.downloadURL)
-          ])
-      )
-    );
-
-    const materialMap = new Map([
-      [
-        ...characters.map(c => c.initiativeIconAssetId),
-        ...monsterMasks.map(m => m.initiativeIconAssetId),
-      ]
-        .filter(Boolean)
-        .map(assetId => [
-          assetId,
-          new SpriteMaterial({ map: textureMap.get(assetId) })
-        ])
-    ].flat(1));
-
-    return {
-      characters: new Map(characters.map(c => [c.id, c])),
-      assets,
-      materialMap,
-      textureMap,
-      meshMap: new Map(),
-      monsterMasks: new Map(monsterMasks.map(m => [m.id, m])),
-    };
-  }, [])
-
-  const [floor, setFloor] = useState/*:: <FloorShape>*/(() => {
-    const size = new Vector3(10, 10, 10);
-    const quaternion = new Quaternion().identity();
-    const position = new Vector3(0, 0, 0);
-    return { type: 'box', position, quaternion, size }
-  });
-  const onFloorChange = (nextFloor) => {
-    setFloor(nextFloor);
-  };
-  
+  }, [miniTheaterState.miniTheater.pieces])
   const floors = useMemo(() => {
-    return [floor];
-  }, [floor])
+    return [...placedFloors, ...characterFloors];
+  }, [placedFloors, characterFloors])
 
+  const floorRef = useRef();
   const raycast = useRaycastManager();
+  useRaycast2(raycast, floorRef, {
+    over(intersection) {
+      const roundedPoint = intersection.point.clone()
+        .multiplyScalar(1/10)
+        .round()
+        .multiplyScalar(10);
+      onOverFloor(roundedPoint);
+    },
+    exit() {
+      onExitFloor();
+    }
+  }, [floors, onOverFloor, onExitFloor])
   const render = useContext(renderCanvasContext);
   if (!render)
     return null;
+
   useRaycastElement(raycast, render.canvasRef);
-
-  useEffect(() => {
-    return render.loop.subscribeSimulate((c, v) => {
+  useSimulateLoop(render.loop, () => {
+    return (c, v) => {
       raycast.onUpdate(c.camera);
-    })
-  }, [render, raycast])
-
-  const floorRef = useRef();
-  useRaycast2(raycast, floorRef, {
-    click() {
-      console.log('CLICK')
-    },
-    over(e) {
-      if (!c)
-        return;
-
-      const p = e.point.clone().multiplyScalar(0.1).round();
-      c.act({ type: 'move-cursor', cursor: { x: p.x, y: p.y, z: p.z } })
     }
-  });
-  useEffect(() => {
-    if (!c)
-      return;
-    const { unsubscribe } =  c.subscribe(console.log)
-    return () => unsubscribe();
-  }, [c])
+  })
 
   return [
-    h(raycastManagerContext.Provider, { value: raycast }, [
-      //h(MiniTheaterFloorMesh, { miniTheater }),
-      h(FloorShapeEditor, { floor, onFloorChange }),
-      //h(FloorShapeEditor, { floor: floorB, onFloorChange: onFloorBChange }),
-      h(FloorMesh, { floors, ref: floorRef }),
-      // Terrain
-      h(MiniTheaterPiecesRenderer, { miniTheater, resources })
-      // Cursor
-    ])
+    // Cursor
+    h(MiniTheaterCursorRenderer, { miniTheaterState }),
+    // Floor
+    h(FloorMesh, { floors, ref: floorRef }),
+    // Terrain
+    h(MiniTheaterPiecesRenderer, { miniTheaterState })
   ];
 };
