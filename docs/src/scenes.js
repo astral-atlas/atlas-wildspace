@@ -16,6 +16,7 @@ import { ExpositionSceneDemo } from "./scenes/sceneDemo";
 import { EncounterSceneDemo } from "./scenes/encounterDemo";
 import { sceneEditorPage } from "./scenes/sceneEditor";
 import { expositionEditorPage } from "./scenes/expositionEditor";
+import { miniTheaterScenePage } from "./scenes/miniTheater";
 
 const demoLocationText = `
 # The Mysterious City
@@ -84,7 +85,7 @@ export const scenesPage/*: Page*/ = {
   content: h(Document, {}, h(Markdown, { text: sceneText, directives })),
   link: {
     href: '/scenes',
-    children: [sceneEditorPage.link, expositionEditorPage.link],
+    children: [sceneEditorPage.link, expositionEditorPage.link, miniTheaterScenePage.link],
     name: 'Scenes'
   }
 }
@@ -93,4 +94,5 @@ export const scenesPages = [
   scenesPage,
   sceneEditorPage,
   expositionEditorPage,
+  miniTheaterScenePage,
 ];

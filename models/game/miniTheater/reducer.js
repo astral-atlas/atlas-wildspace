@@ -41,8 +41,13 @@ export const reduceMiniTheaterAction = (
       return {
         ...miniTheater,
         pieces: miniTheater.pieces.filter(p =>
-          p.id === action.removedPiece),
+          p.id !== action.removedPiece),
       };
+    case 'set-terrain':
+      return {
+        ...miniTheater,
+        terrain: action.terrain,
+      }
     default:
       return miniTheater;
   }

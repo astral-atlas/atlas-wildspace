@@ -8,7 +8,6 @@ import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 
 export const getObject3DForModelResourcePath = (root/*: Object3D*/, path/*: ModelResourcePath*/)/*: ?Object3D*/ => {
-  console.log(root, path);
   if (path.length === 0)
     return root;
 

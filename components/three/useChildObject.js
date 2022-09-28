@@ -8,15 +8,18 @@ import { useEffect, useState } from "@lukekaalim/act";
 
 export const useChildObject = /*:: <T: Object3D>*/(
   parentRef/*: Ref<?Object3D>*/,
-  createChild/*: () => T*/,
+  createChild/*: (parent: Object3D) => ?T*/,
   deps/*: mixed[]*/ = []
 )/*: ?T*/ => {
   const [child, setChild] = useState();
   useEffect(() => {
     const { current: parent } = parentRef;
     if (!parent)
-      return null;
-    const child = createChild();
+      return;
+    const child = createChild(parent);
+    if (!child)
+      return;
+
     parent.add(child);
     setChild(child)
     return () => {

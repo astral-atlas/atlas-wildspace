@@ -39,12 +39,16 @@ export type MiniTheaterLocalState = {
   miniTheater: MiniTheater,
   layer: ?EditingLayerID,
   cursor: ?BoardPosition,
-  selection: MiniTheaterSelection
+  terrainCursor: ?TerrainPlacementID,
+  selection: MiniTheaterSelection,
+
+  targetMode: 'pieces' | 'terrain',
 };
 
 export type MiniTheaterLocalAction =
   | { type: 'select', selection: MiniTheaterSelection }
   | { type: 'move-cursor', cursor: ?BoardPosition }
+  | { type: 'move-terrain-cursor', terrainCursor: ?TerrainPlacementID }
   | { type: 'set-layer', layerId: ?EditingLayerID }
   | {
       type: 'update',
@@ -53,6 +57,7 @@ export type MiniTheaterLocalAction =
         | { type: 'mini-theater', miniTheater: MiniTheater }
     }
   | { type: 'remote-action', remoteAction: MiniTheaterAction }
+  | { type: 'set-target-mode', targetMode: 'pieces' | 'terrain' }
 */
 
 /*::
@@ -96,6 +101,7 @@ export const reduceLocalState = (
       case 'remote-action':
         switch (action.remoteAction.type) {
           case 'move-piece':
+          case 'set-terrain':
             return state;
           default:
             return {
@@ -112,6 +118,20 @@ export const reduceLocalState = (
         return {
           ...state,
           layer: action.layerId,
+        }
+      case 'set-target-mode':
+        if (state.targetMode === action.targetMode)
+          return state;
+        return {
+          ...state,
+          targetMode: action.targetMode,
+        }
+      case 'move-terrain-cursor':
+        if (state.terrainCursor === action.terrainCursor)
+          return state;
+        return {
+          ...state,
+          terrainCursor: action.terrainCursor,
         }
       default:
         return state;
@@ -130,6 +150,8 @@ export const createMiniTheaterController2 = (
     miniTheater,
     layer: miniTheater.layers.find(l => hasLayerPermission(l))?.id,
     cursor: null,
+    terrainCursor: null,
+    targetMode: 'pieces',
     selection: { type: 'none' }
   };
   

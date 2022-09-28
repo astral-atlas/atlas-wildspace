@@ -66,24 +66,45 @@ export const SceneMiniTheaterRenderer/*: Component<SceneMiniTheaterRendererProps
             remoteAction: { type: 'move-piece', movedPiece: selection.pieceId, position: cursor }
           })
           return;
+        case 'placement':
+          switch (selection.placement.type) {
+            case 'piece':
+              act({ type: 'remote-action', remoteAction: {
+                type: 'place-piece',
+                position: cursor,
+                layer: 'no-layer',
+                pieceRepresents: selection.placement.represents,
+              } })
+            default:
+              return;
+          }
       }
     },
     onClick() {
-      const { cursor, miniTheater } = state;
+      const { cursor, terrainCursor, miniTheater, selection } = state;
       const selectedPiece = cursor && miniTheater
         .pieces
         .find(p => isBoardPositionEqual(p.position, cursor));
-      if (!selectedPiece) {
-        act({ type: 'select', selection: { type: 'none' } });
-        return;
-      }
+      const selectedTerrain = terrainCursor && miniTheater
+        .terrain
+        .find(t => t.id === terrainCursor) || null;
 
-      act({ type: 'select', selection: { type: 'piece', pieceId: selectedPiece.id } })
+      if (selectedPiece) {
+        act({ type: 'select', selection: { type: 'piece', pieceId: selectedPiece.id } })
+      }
+      else if (selectedTerrain) {
+        act({ type: 'select', selection: { type: 'terrain-prop', terrainId: selectedTerrain.id } })
+      }
+      else {
+        if (selection.type === 'terrain-prop')
+          return;
+        act({ type: 'select', selection: { type: 'none' } });
+      }
     }
   } || {};
  
   return h(RenderCanvas, { className: styles.miniTheater, canvasProps }, [
-    h(MiniTheaterScene2, { miniTheaterState: state, onOverFloor, onExitFloor }),
+    h(MiniTheaterScene2, { miniTheaterState: state, onOverFloor, onExitFloor, controller }),
     h(SceneMiniTheaterCamera, { cameraMode }),
   ]);
 }

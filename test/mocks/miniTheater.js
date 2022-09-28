@@ -1,7 +1,10 @@
 // @flow strict
 /*::
 import type { EditingLayerID } from "../../models/game/miniTheater/editingLayer";
-import type { MiniQuaternion } from "../../models/game/miniTheater/primitives";
+import type {
+  MiniQuaternion,
+  MiniVector,
+} from "../../models/game/miniTheater/primitives";
 import type { MiniTheaterShape } from "../../models/game/miniTheater/shape";
 import type {
   TerrainPlacement,
@@ -52,14 +55,16 @@ export const createMockCharacterPiece = (characterId/*: CharacterID*/)/*: Piece*
 })
 export const createMockTerrainPlacement = (
   terrainPropId/*: TerrainPropID*/ = uuid(),
-  layer/*: EditingLayerID*/ = uuid(),
+  layer/*: ?EditingLayerID*/ = null,
+  position/*: ?MiniVector*/ = null,
+  quaternion/*: ?MiniQuaternion*/ = null,
 )/*: TerrainPlacement*/ => ({
   id: uuid(),
   visible: true,
-  position: { x: randomIntRange(40, -40), y: randomIntRange(0, 0), z: randomIntRange(40, -40) },
-  quaternion: createMockMiniQuaternion(),
+  position: position || { x: randomIntRange(40, -40), y: randomIntRange(0, 0), z: randomIntRange(40, -40) },
+  quaternion: quaternion || createMockMiniQuaternion(),
   terrainPropId,
-  layer
+  layer: layer || uuid()
 })
 export const createMockMiniQuaternion = ()/*: MiniQuaternion*/ => {
   const q = new Quaternion().random();
@@ -67,13 +72,16 @@ export const createMockMiniQuaternion = ()/*: MiniQuaternion*/ => {
 }
 export const createMockTerrainProp = (
   modelResourceId/*: ModelResourceID*/ = uuid(),
+  modelPath/*: string[]*/ = [],
+  floorShapes/*: ?MiniTheaterShape[]*/ = null,
+  name/*: ?string*/ = null,
 )/*: TerrainProp*/ => ({
   id: uuid(),
   iconPreviewCameraModelPath: [],
-  modelPath: [],
+  modelPath,
   modelResourceId,
-  name: 'Test Terrain',
-  floorShapes: repeat(() => createMockShape(), 2)
+  name: name || 'Test Terrain',
+  floorShapes: floorShapes || repeat(() => createMockShape(), 2),
 })
 export const createMockShape = ()/*: MiniTheaterShape*/ => ({
   type: 'box',

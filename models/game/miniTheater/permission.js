@@ -21,6 +21,8 @@ export const isPermissableAction = (
   miniTheater/*: MiniTheater*/,
 )/*: boolean*/ => {
   switch (action.type) {
+    case 'set-terrain':
+      return false;
     case 'remove-piece':
     case 'move-piece': {
       const pieceId = getActionPieceId(action);

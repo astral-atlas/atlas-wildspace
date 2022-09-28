@@ -11,3 +11,4 @@ export * from './SceneContainer.js';
 export * from './SceneContentEditor.js';
 
 export * from './exposition/ExpositionEditor.js';
+export * from './content/index.js';

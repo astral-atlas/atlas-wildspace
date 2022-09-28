@@ -32,23 +32,17 @@ const scale = new Vector3(10, 10, 10)
 export const MiniTheaterPiecesRenderer/*: Component<MiniTheaterPiecesRendererProps>*/ = ({
   miniTheaterState,
 }) => {
-  const { resources } = miniTheaterState;
   const { pieces } = miniTheaterState.miniTheater;
 
-  if (resources.loadingAssets)
-    return null;
-
-  return useMemo(() => {
-    return pieces.map(piece => {
-      return h(PieceRenderer, { key: piece.id, piece, miniTheaterState });
-    })
-  }, [pieces, resources, miniTheaterState.cursor, miniTheaterState.selection])
+  return pieces.map(piece => {
+    return h(PieceRenderer, { key: piece.id, piece, miniTheaterState });
+  })
 
 };
 
 const PieceRenderer = ({ piece, miniTheaterState }) => {
-
   const { resources, cursor, selection } = miniTheaterState;
+
   // State Values
   const selected = selection.type === 'piece' && selection.pieceId === piece.id;
   const hovering = cursor && isBoardPositionEqual(cursor, piece.position);
@@ -93,11 +87,12 @@ const PieceRenderer = ({ piece, miniTheaterState }) => {
     sprite.position.copy(positionPoint.position)
       .add(new Vector3(0, (hover.position + select.position) * 5, 0))
     material.opacity = 1 - (unfocus.position / 2);
-  }, [unfocusAnim, selectAnim, hoverAnim, positionAnim]);
+  }, [unfocusAnim, selectAnim, hoverAnim, positionAnim, material]);
 
   return h(sprite, {
     ref: spriteRef,
     material,
-    center, scale
+    center,
+    scale
   });
 }

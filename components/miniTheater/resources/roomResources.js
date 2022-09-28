@@ -18,13 +18,15 @@ export const useRoomPageMiniTheaterResources = (
     const characters = new Map(game.characters.map(c => [c.id, c]));
     const monsterMasks = new Map(game.monsterMasks.map(m => [m.id, m]));
     const terrainProps = new Map(room.resources.terrainProps.map(t => [t.id, t]));
+    const modelResources = new Map();
 
-    return { assets, characters, monsterMasks, terrainProps }
+    return { assets, characters, monsterMasks, terrainProps, modelResources }
   }, [game.assets, game.characters, game.monsterMasks, game]);
 
   const [threeMaps, setThreeMaps] = useState({
     meshMap: new Map(),
     textureMap: new Map(),
+    objectMap: new Map(),
     materialMap: new Map(),
   });
 
@@ -49,6 +51,7 @@ export const useRoomPageMiniTheaterResources = (
         meshMap: new Map(),
         textureMap,
         materialMap: new Map(),
+        objectMap: new Map(),
       })
 
       setLoadingAssets(false);

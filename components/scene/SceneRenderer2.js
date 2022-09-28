@@ -32,7 +32,7 @@ export type SceneContentBackgroundRenderData =
   | { type: 'color', color: string }
 export type SceneContentForegroundRenderData =
   | { type: 'none' }
-  | { type: 'mini-theater-controls' }
+  | { type: 'mini-theater-controls', state: MiniTheaterLocalState, controller: MiniTheaterController2 }
   | { type: 'exposition', description: JSONNode }
 
 export type SceneContentRenderData = {

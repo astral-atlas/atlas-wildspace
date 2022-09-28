@@ -3,11 +3,13 @@
 import type { BoardPosition } from "../../encounter/map";
 import type { EditingLayerID } from "./editingLayer";
 import type { PieceID, PieceRepresents } from "./piece";
+import type { TerrainPlacement } from "./terrain";
 import type { Cast } from "@lukekaalim/cast";
 */
 import { castBoardPosition } from "../../encounter/map.js";
 import { castEditingLayerID } from "./editingLayer.js";
 import { castPieceId, castPieceRepresents } from "./piece.js";
+import { castTerrainPlacement } from "./terrain";
 import { c } from "@lukekaalim/cast";
 
 /*::
@@ -51,14 +53,27 @@ export const castRemovePieceAction/*: Cast<RemovePieceAction>*/ = c.obj({
 });
 
 /*::
+export type SetTerrainAction = {
+  type: 'set-terrain',
+  terrain: $ReadOnlyArray<TerrainPlacement>,
+}
+*/
+export const castSetTerrainAction/*: Cast<SetTerrainAction>*/ = c.obj({
+  type: c.lit('set-terrain'),
+  terrain: c.arr(castTerrainPlacement)
+});
+
+/*::
 export type MiniTheaterAction =
   | MovePieceAction
   | PlacePieceAction
   | RemovePieceAction
+  | SetTerrainAction
 */
 
 export const castMiniTheaterAction/*: Cast<MiniTheaterAction>*/ = c.or('type', {
   'move-piece': castMovePieceAction,
   'place-piece': castPlacePieceAction,
   'remove-piece': castRemovePieceAction,
+  'set-terrain': castSetTerrainAction,
 });

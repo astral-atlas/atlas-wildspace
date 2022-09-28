@@ -2,7 +2,7 @@
 /*::
 import type { Component } from "@lukekaalim/act";
 import type { Ref } from "@lukekaalim/act";
-import type { Object3D } from "three";
+import type { Object3D, Quaternion } from "three";
 */
 import { h, useEffect, useRef } from "@lukekaalim/act";
 import { orthographicCamera, perspectiveCamera } from "@lukekaalim/act-three";
@@ -13,6 +13,7 @@ import {
   PerspectiveCamera,
   CameraHelper,
   Scene,
+  Vector3,
 } from "three";
 
 /*::
@@ -23,6 +24,9 @@ export type ModelResourceObjectProps = {
   ref?: ?Ref<?Object3D>,
   parentRef?: ?Ref<?Object3D>,
   showHiddenObjects?: boolean,
+  position?: ?Vector3,
+  quaternion?: ?Quaternion,
+  scale?: ?Vector3,
 };
 */
 
@@ -31,6 +35,9 @@ export const ModelResourceObject/*: Component<ModelResourceObjectProps>*/ = ({
   object,
   parentRef = null, 
   showHiddenObjects = false,
+  position,
+  quaternion,
+  scale,
 }) => {
   const internalRef = useRef();
   const ref = externalRef || internalRef;
@@ -40,8 +47,9 @@ export const ModelResourceObject/*: Component<ModelResourceObjectProps>*/ = ({
 
   const objectProps = {
     ref,
-    position: object.position,
-    quaternion: object.quaternion,
+    position: position || object.position,
+    quaternion: quaternion || object.quaternion,
+    scale: scale || new Vector3(1, 1, 1),
   }
 
   if (object instanceof Mesh) {

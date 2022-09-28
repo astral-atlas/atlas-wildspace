@@ -29,6 +29,7 @@ import { useRaycastElement } from "../raycast/useRaycastElement";
 import { renderCanvasContext } from "../three/RenderCanvas";
 import { useSimulateLoop } from "../three/useLoopController";
 import { MiniTheaterCursorRenderer } from "./MiniTheaterCursorRenderer";
+import { MiniTheaterTerrainRenderer } from "./terrain/MiniTheaterTerrainRenderer";
 
 
 const usePlacedTerrainFloors = (miniTheater, resources) => {
@@ -47,6 +48,7 @@ const usePlacedTerrainFloors = (miniTheater, resources) => {
             .add(placementPosition);
           const rotation = miniQuaternionToThreeQuaternion(floorShape.rotation)
             .multiply(placementRotation);
+            
           return {
             ...floorShape,
             position: { x: position.x, y: position.y, z: position.z },
@@ -63,6 +65,7 @@ const usePlacedTerrainFloors = (miniTheater, resources) => {
 /*::
 export type MiniTheaterScene2Props = {
   miniTheaterState: MiniTheaterLocalState,
+  controller: ?MiniTheaterController2,
 
   onOverFloor?: (floorPoint: Vector3) => mixed,
   onExitFloor?: () => mixed,
@@ -71,9 +74,10 @@ export type MiniTheaterScene2Props = {
 
 export const MiniTheaterScene2/*: Component<MiniTheaterScene2Props>*/ = ({
   miniTheaterState,
+  controller,
 
   onOverFloor = _ => {},
-  onExitFloor = () => {}
+  onExitFloor = () => {},
 }) => {
   const placedFloors = usePlacedTerrainFloors(
     miniTheaterState.miniTheater,
@@ -97,7 +101,9 @@ export const MiniTheaterScene2/*: Component<MiniTheaterScene2Props>*/ = ({
 
   const floorRef = useRef();
   const raycast = useRaycastManager();
-  useRaycast2(raycast, floorRef, {
+
+  const includeRaycast = miniTheaterState.targetMode === 'pieces';
+  useRaycast2(includeRaycast ? raycast : null, floorRef, {
     over(intersection) {
       const roundedPoint = intersection.point.clone()
         .multiplyScalar(1/10)
@@ -108,7 +114,7 @@ export const MiniTheaterScene2/*: Component<MiniTheaterScene2Props>*/ = ({
     exit() {
       onExitFloor();
     }
-  }, [floors, onOverFloor, onExitFloor])
+  }, [floors, onOverFloor, onExitFloor, includeRaycast])
   const render = useContext(renderCanvasContext);
   if (!render)
     return null;
@@ -126,6 +132,7 @@ export const MiniTheaterScene2/*: Component<MiniTheaterScene2Props>*/ = ({
     // Floor
     h(FloorMesh, { floors, ref: floorRef }),
     // Terrain
+    h(MiniTheaterTerrainRenderer, { miniTheaterState, controller, raycast }),
     h(MiniTheaterPiecesRenderer, { miniTheaterState })
   ];
 };
