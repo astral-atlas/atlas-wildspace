@@ -23,6 +23,7 @@ import { particlePage, particlePages } from "./particle";
 import { initiativePage, initiativePages } from "./initiative";
 import { toolbarPage, toolbarPages } from "./toolbar";
 import { mainMenuPage, mainMenuPages } from "./mainMenu";
+import { miniTheaterPage, miniTheaterPages } from './miniTheater/miniTheater';
 
 /*::
 export type Page = {
@@ -52,7 +53,8 @@ const rootPage = {
       particlePage.link,
       initiativePage.link,
       toolbarPage.link,
-      mainMenuPage.link
+      mainMenuPage.link,
+      miniTheaterPage.link
     ],
     href: '/',
   }
@@ -72,7 +74,8 @@ const pages = [
   ...particlePages,
   ...initiativePages,
   ...toolbarPages,
-  ...mainMenuPages
+  ...mainMenuPages,
+  ...miniTheaterPages,
 ];
 
 const normalizeURLPathname = pathname =>

@@ -12,12 +12,15 @@ import { Vector3, Quaternion } from "three";
 
 
 /*::
-import type { Component } from "@lukekaalim/act";
+import type { Component, Ref } from "@lukekaalim/act";
 import type { PerspectiveCamera } from "three";
+import type { KeyboardTrack } from "../keyboard/track";
 
 export type FreeCameraProps = {
   onFreeCameraUpdate?: (camera: PerspectiveCamera) => void,
   onFreeCameraChange?: (camera: PerspectiveCamera) => void,
+  surfaceRef?: ?Ref<?HTMLElement>,
+  keys?: ?KeyboardTrack,
   position?: Vector3,
   quaternion?: Quaternion,
 };
@@ -25,6 +28,8 @@ export type FreeCameraProps = {
 export const FreeCamera/*: Component<FreeCameraProps>*/ = ({
   onFreeCameraUpdate = _ => {},
   onFreeCameraChange = _ => {},
+  surfaceRef,
+  keys,
   position = new Vector3(),
   quaternion = new Quaternion().identity(),
 }) => {
@@ -34,14 +39,20 @@ export const FreeCamera/*: Component<FreeCameraProps>*/ = ({
     return null;
 
   useEffect(() => {
-    const { current: canvas } = render.canvasRef;
+    console.log('useing effect');
+    const { current: surface } = surfaceRef || render.canvasRef;
     const { current: camera } = render.cameraRef;
-    if (!canvas || !camera)
+    if (!surface || !camera)
       return;
     const controller = createFreeCameraController(position, quaternion);
-    const updates = subscribeFreeCameraUpdates(controller, canvas, render.loop, render.keyboard, () => {
-      onFreeCameraChange(camera)
-    });
+    const updates = subscribeFreeCameraUpdates(
+      controller,
+      surface,
+      render.loop,
+      keys || render.keyboard,
+      () => {
+        onFreeCameraChange(camera)
+      });
     const unsubscribeCameraUpdate = render.loop.subscribeSimulate(() => {
       const controllerChanged = (
         !camera.position.equals(controller.position) ||
@@ -58,7 +69,7 @@ export const FreeCamera/*: Component<FreeCameraProps>*/ = ({
       updates.unsubscribe();
       unsubscribeCameraUpdate();
     }
-  }, [onFreeCameraUpdate, onFreeCameraChange, position, quaternion])
+  }, [surfaceRef, keys])
 
-  return h(perspectiveCamera, { ref: render.cameraRef, position, quaternion })
+  return h(perspectiveCamera, { ref: render.cameraRef })
 }

@@ -6,12 +6,13 @@ import { scene } from "@lukekaalim/act-three";
 
 /*::
 import type { Component, Context } from "@lukekaalim/act";
-import type { RenderSetup } from "./useRenderSetup";
+import type { RenderSetup, RenderSetupOverrides } from "./useRenderSetup";
 */
 /*::
 export type RenderCanvasProps = {
   className?: string,
-  canvasProps?: { [string]: mixed }
+  canvasProps?: { [string]: mixed },
+  renderSetupOverrides?: RenderSetupOverrides,
 }
 */
 
@@ -19,8 +20,9 @@ export const RenderCanvas/*: Component<RenderCanvasProps>*/ = ({
   children,
   className,
   canvasProps = {},
+  renderSetupOverrides = {}
 }) => {
-  const render = useRenderSetup()
+  const render = useRenderSetup(renderSetupOverrides)
 
   return [
     h('div', { ref: render.rootRef, style: { position: 'absolute' } }),

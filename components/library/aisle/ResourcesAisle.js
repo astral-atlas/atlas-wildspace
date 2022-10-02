@@ -27,7 +27,6 @@ import { useSelection } from "../../editor/selection";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { Camera, PerspectiveCamera, WebGLRenderer } from "three";
 import { useRenderSetup } from "../../three/useRenderSetup";
-import { useLoopController } from "../../three/useLoopController";
 import { PopupOverlay } from "../../layout/PopupOverlay";
 import { ModelResourceExplorerCanvas } from "../../resources/ModelResourceExplorerCanvas";
 import {

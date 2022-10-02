@@ -181,8 +181,6 @@ export const MiniTheaterPieceRenderer/*: Component<MiniTheaterPieceRendererProps
     case 'character':
     case 'monster':
       return h(MiniPieceRenderer, { controller, resources, piece });
-    case 'terrain':
-      return h(TerrainPieceRenderer, { represents, piece, controller, resources });
     default:
       return null;
   }

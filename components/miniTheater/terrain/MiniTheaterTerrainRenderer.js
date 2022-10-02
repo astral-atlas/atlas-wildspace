@@ -3,7 +3,7 @@
 import { h, useEffect, useRef } from "@lukekaalim/act";
 import { group } from "@lukekaalim/act-three";
 import { Object3DDuplicate, useChildObject } from "../../three";
-import { miniQuaternionToThreeQuaternion, miniVectorToThreeVector } from "../../utils";
+import { miniQuaternionToThreeQuaternion, miniVectorToThreeVector, quaternionToMiniQuaternion, vectorToMiniVector } from "../../utils";
 import { ModelResourceObject } from "../../resources/ModelResourceObject";
 import { getObject3DForModelResourcePath } from "../../resources/modelResourceUtils";
 import { Box3Helper, Mesh, Vector3, BoxHelper, Color } from "three";
@@ -55,14 +55,14 @@ export const MiniTheaterTerrainRenderer/*: Component<MiniTheaterTerrainRendererP
       remoteAction: { type: 'set-terrain', terrain: terrain.map(t => {
         if (t.id !== terrainId)
           return t;
-        const worldPosition = gizmo.getWorldPosition(new Vector3());
+        const position = vectorToMiniVector(gizmo.position);
+        const size = vectorToMiniVector(gizmo.scale);
+        const quaternion = quaternionToMiniQuaternion(gizmo.quaternion);
         return {
           ...t,
-          position: {
-            x: worldPosition.x,
-            y: worldPosition.z,
-            z: worldPosition.y
-          },
+          quaternion,
+          position,
+          size,
         }
       }) }
     })
@@ -131,7 +131,8 @@ const TerrainPlacementRenderer = ({
   return [
     h(ModelResourceObject, {
       ref,
-      object, showHiddenObjects: true,
+      object,
+      showHiddenObjects: true,
       position: miniVectorToThreeVector(terrain.position), 
       quaternion: miniQuaternionToThreeQuaternion(terrain.quaternion),
       scale: new Vector3(1, 1, 1)

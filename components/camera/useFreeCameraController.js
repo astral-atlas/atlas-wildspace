@@ -163,20 +163,25 @@ export const subscribeFreeCameraUpdates = (
   track/*: KeyboardTrack*/,
   onFocusChange/*: (isFocused: boolean) => void*/ = () => {},
 )/*: { unsubscribe: () => void }*/ => {
+  let moveCam = false;
   const onMouseMove = (event/*: MouseEvent*/) => {
-    if (document.pointerLockElement === surface)
+    if (moveCam)
       controller.moveCursor(event.movementX, event.movementY);
   }
   const onClick = () => {
-    if (document.pointerLockElement === surface) {
-      document.exitPointerLock();
-    }
-    else {
+    if (!moveCam) {
       surface.requestPointerLock();
+      moveCam = true;
+      onFocusChange(true);
+    } else {
+      document.exitPointerLock()
     }
   }
   const onPointerLockChange = () => {
-    onFocusChange(document.pointerLockElement === surface);
+    if (!document.pointerLockElement) {
+      moveCam = false;
+      onFocusChange(false);
+    }
   }
 
   surface.addEventListener('mousemove', onMouseMove)
@@ -184,7 +189,7 @@ export const subscribeFreeCameraUpdates = (
   document.addEventListener('pointerlockchange', onPointerLockChange)
   
   const unsubscribeInput = loop.subscribeInput((c, v) => {
-    if (document.pointerLockElement !== surface)
+    if (!moveCam)
       return;
     const { next: keys } = track.readDiff();
     const velocity = getFreecamVelocity(keys.value);

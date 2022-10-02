@@ -25,15 +25,18 @@ export type RenderSetup = {
   loop: LoopController,
   keyboard: KeyboardTrack
 };
+
+export type RenderSetupOverrides = {|
+  canvasRef?:  ?Ref<?HTMLCanvasElement>,
+  cameraRef?: ?Ref<?PerspectiveCamera>,
+  rootRef?: ?Ref<?HTMLElement>,
+  loop?: ?LoopController,
+  keyboardEmitter?: ?KeyboardStateEmitter,
+|};
 */
 
 export const useRenderSetup = (
-  overrides/*: {
-    canvasRef?:  ?Ref<?HTMLCanvasElement>,
-    cameraRef?: ?Ref<?PerspectiveCamera>,
-    rootRef?: ?Ref<?HTMLElement>,
-    keyboardEmitter?: ?KeyboardStateEmitter,
-  }*/ = {},
+  overrides/*: RenderSetupOverrides*/ = Object.freeze({}),
   onRendererInit/*: RenderLoopConstants => mixed*/ = _ => {},
   deps/*: mixed[]*/ = []
 )/*: RenderSetup*/ => {
@@ -52,7 +55,8 @@ export const useRenderSetup = (
 
   const keyboard = useKeyboardTrack(emitter);
 
-  const [runLoop, loop] = useLoopController();
+  const internalLoop = useLoopController();
+  const loop = overrides.loop || internalLoop;
 
   useEffect(() => {
     const { current: canvas } = canvasRef;
@@ -84,7 +88,7 @@ export const useRenderSetup = (
         now,
         delta
       };
-      runLoop(rendererConstants, rendererVariables);
+      loop.runLoop(rendererConstants, rendererVariables);
       frameId = requestAnimationFrame(onFrame);
     };
     const onCanvasResize = (entries) => {

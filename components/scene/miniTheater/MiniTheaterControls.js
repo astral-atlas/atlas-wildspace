@@ -3,6 +3,7 @@
 import { h } from "@lukekaalim/act"
 import styles from './miniTheater.module.css';
 import { EditorForm, SelectEditor } from "../../editor/form";
+import { v4 } from "uuid";``
 
 /*::
 import type {
@@ -10,7 +11,6 @@ import type {
   MiniTheaterLocalState,
 } from "../../miniTheater/useMiniTheaterController2";
 import type { Component } from "@lukekaalim/act/component";
-import { v4 } from "uuid";
 
 export type MiniTheaterControlsProps = {
   controller: MiniTheaterController2,

@@ -2,7 +2,7 @@
 
 import { h, useRef } from "@lukekaalim/act"
 import { group } from "@lukekaalim/act-three"
-import { useTransformControls } from "../controls/useTransformControls"
+import { useTransformControls } from "../../gizmos/useTransformControls";
 
 /*::
 import type { Component, Ref } from "@lukekaalim/act";
@@ -19,13 +19,12 @@ export const TerrainPlacementEditor/*: Component<TerrainPlacementEditorProps>*/ 
   parentRef,
   onMoveTerrain = _ => {},
 }) => {
-  const gizmoRef = useRef();
-
-  useTransformControls(parentRef, gizmoRef, {
-    onChange(object) {
+  useTransformControls(parentRef, 'rotate', {
+    change(object) {
+      //console.log('change')
       onMoveTerrain(object);
     }
   }, [onMoveTerrain])
 
-  return h(group, { ref: gizmoRef });
+  return null;
 }

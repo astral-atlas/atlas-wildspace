@@ -28,6 +28,8 @@ type RaycastEvents = {
   enter?: IntersectionObject => mixed,
   exit?: () => mixed,
   over?: IntersectionObject => mixed,
+
+  pointerDown?: IntersectionObject => mixed,
 }
 
 export type RaycastManager = {
@@ -120,6 +122,7 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
     const prevFocused = lastIntersectionRef.current && lastIntersectionRef.current.object;
 
     lastIntersectionRef.current = focusIntersection;
+    //console.log(lastIntersectionRef.current?.object.name)
 
     if (prevFocused !== nextFocused) {
       if (prevFocused)
