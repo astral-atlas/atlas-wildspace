@@ -11,6 +11,8 @@ import {
   BufferAttribute,
   BoxGeometry,
   EdgesGeometry,
+  MeshBasicMaterial,
+  Color,
 } from "three";
 import { useChildObject } from "../../three";
 import {
@@ -133,6 +135,8 @@ export type FloorMeshProps = {
 };
 */
 
+const material = new MeshBasicMaterial({ transparent: true, opacity: 0.5, color: new Color('green') })
+
 export const FloorMesh/*: Component<FloorMeshProps>*/ = ({
   floors,
   ref: externalRef = null
@@ -155,9 +159,9 @@ export const FloorMesh/*: Component<FloorMeshProps>*/ = ({
 
     mapPotentialCells(floorAABB, (i, x, y, z) => {
       const v = i * 3;
-      positionArray[v + 0] = x;
-      positionArray[v + 1] = y;
-      positionArray[v + 2] = z;
+      positionArray[v + 0] = x + (((Math.random() * 2) - 1) * 0.01);
+      positionArray[v + 1] = y + (((Math.random() * 2) - 1) * 0.01);
+      positionArray[v + 2] = z + (((Math.random() * 2) - 1) * 0.01);
     });
     
     const geometry = new BufferGeometry();
@@ -184,8 +188,8 @@ export const FloorMesh/*: Component<FloorMeshProps>*/ = ({
 
   return h(group, { ref }, [
     h(points, { geometry: pointGeometry }),
-    h(mesh, { geometry: floorGeometry, ref: meshRef }),
-    floors.map(floor => h(FloorDebug, { floor })),
+    h(mesh, { geometry: floorGeometry, ref: meshRef, material }),
+    //floors.map(floor => h(FloorDebug, { floor })),
   ]);
 }
 

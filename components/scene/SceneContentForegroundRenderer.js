@@ -3,6 +3,7 @@
 import { h } from "@lukekaalim/act"
 import { ExpositionDescription } from "./exposition/ExpositionDescription";
 import { MiniTheaterControls } from "./miniTheater/MiniTheaterControls";
+import { MiniTheaterSnackbarControl } from "../snackbar/MiniTheaterSnackbarControl";
 
 /*::
 import type { Component } from "@lukekaalim/act";
@@ -22,7 +23,8 @@ export const SceneContentForegroundRenderer/*: Component<SceneContentForegroundR
       return h(ExpositionDescription, { description, version: 0 })
     case 'mini-theater-controls':
       const { controller, state } = foregroundRenderData;
-      return h(MiniTheaterControls, { state, controller })
+      return h(MiniTheaterSnackbarControl, { state, controller });
+      //return h(MiniTheaterControls, { state, controller })
     case 'none':
     default:
       return null;

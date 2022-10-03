@@ -12,6 +12,7 @@ import { isBoardPositionEqual } from "@astral-atlas/wildspace-models";
 import { perspectiveCamera } from "@lukekaalim/act-three";
 import { getBasicTransformationPoint, interpolateBasicTransformAnimation } from "../../animation";
 import { createInitialBasicTransformAnimation } from "../../animation/transform";
+import { v4 } from "uuid";
 
 /*::
 import type {
@@ -47,8 +48,16 @@ export const SceneMiniTheaterRenderer/*: Component<SceneMiniTheaterRendererProps
     controller.act(action);
   }
 
-  const onOverFloor = (e) => {
-    act({ type: 'move-cursor', cursor: { x: e.x / 10, y: e.z / 10, z: e.y / 10 } })
+  const onOverFloor = (point) => {
+    const roundedPoint = point.clone()
+      .multiplyScalar(1/10)
+      .round()
+      .multiplyScalar(10);
+    act({ type: 'move-cursor', cursor: {
+      x: roundedPoint.x / 10,
+      y: roundedPoint.z / 10,
+      z: roundedPoint.y / 10
+    } })
   };
   const onExitFloor = () => {
     act({ type: 'move-cursor', cursor: null })
@@ -56,10 +65,23 @@ export const SceneMiniTheaterRenderer/*: Component<SceneMiniTheaterRendererProps
   const canvasProps = controller && {
     onContextMenu(e) {
       e.preventDefault();
-      const { cursor, selection } = state;
+      const { cursor, selection, layer, tool } = state;
       if (!cursor)
         return;
       switch (selection.type) {
+        case 'terrain-prop':
+          if (tool.type !== 'place')
+            return;
+          const { terrainId } = selection;
+          act({
+            type: 'remote-action', remoteAction: {
+              type: 'set-terrain',
+              terrain: state.miniTheater.terrain.map(t => t.id === terrainId
+                ? { ...t, position: { x: cursor.x * 10, y: cursor.z * 10, z: cursor.y * 10 } }
+                : t)
+            }
+          })
+          return;
         case 'piece':
           act({
             type: 'remote-action',
@@ -67,14 +89,35 @@ export const SceneMiniTheaterRenderer/*: Component<SceneMiniTheaterRendererProps
           })
           return;
         case 'placement':
+          if (!layer)
+            return;
           switch (selection.placement.type) {
             case 'piece':
               act({ type: 'remote-action', remoteAction: {
                 type: 'place-piece',
                 position: cursor,
-                layer: 'no-layer',
+                layer,
                 pieceRepresents: selection.placement.represents,
               } })
+              return;
+            case 'terrain':
+              const terrainPropId = selection.placement.terrain;
+              act({
+                type: 'remote-action', remoteAction: {
+                  type: 'set-terrain',
+                  terrain: [
+                    ...state.miniTheater.terrain,
+                    {
+                      terrainPropId,
+                      id: v4(),
+                      layer,
+                      position: { x: cursor.x * 10, y: cursor.z * 10, z: cursor.y * 10 },
+                      quaternion: { x: 0, y: 0, z: 0, w: 1 },
+                    }
+                  ]
+                }
+              })
+              return;
             default:
               return;
           }
@@ -84,7 +127,7 @@ export const SceneMiniTheaterRenderer/*: Component<SceneMiniTheaterRendererProps
       const { cursor, terrainCursor, miniTheater, selection } = state;
       const selectedPiece = cursor && miniTheater
         .pieces
-        .find(p => isBoardPositionEqual(p.position, cursor));
+        .find(p => isBoardPositionEqual(p.position, cursor) && p.layer === state.layer);
       const selectedTerrain = terrainCursor && miniTheater
         .terrain
         .find(t => t.id === terrainCursor) || null;

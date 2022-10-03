@@ -6,7 +6,7 @@ import {
   useLibraryMiniTheaterResources,
   useAsync
 } from "@astral-atlas/wildspace-components";
-import { createMockLibraryData, createMockTerrainPlacement, createMockTerrainProp, createMockWildspaceClient, randomElement, randomIntRange, repeat } from "@astral-atlas/wildspace-test";
+import { createMockEditingLayer, createMockLibraryData, createMockTerrainPlacement, createMockTerrainProp, createMockWildspaceClient, randomElement, randomIntRange, repeat } from "@astral-atlas/wildspace-test";
 import { h, useEffect, useMemo, useState } from "@lukekaalim/act";
 import { WidePage } from "../page";
 import { ScaledLayoutDemo } from "../demo";
@@ -54,10 +54,15 @@ const quaternionToMini = q => ({
   z: q.z,
   w: q.w,
 })
+const layer = {
+  ...createMockEditingLayer(),
+  name: 'Custom Terrain',
+  includes: [{ type: 'any-terrain' }]
+};
 const terrain = repeat(() =>
   createMockTerrainPlacement(
     randomElement(terrainProps).id,
-    null, null,
+    layer.id, null,
     quaternionToMini(new Quaternion().random()),
   ), randomIntRange(10, 2))
 
@@ -76,7 +81,8 @@ const initialLib = {
   miniTheaters: [
     {
       ...originalTheater,
-      terrain
+      terrain,
+      layers: [...originalTheater.layers, layer]
     }
   ]
 }

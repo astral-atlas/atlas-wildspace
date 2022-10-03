@@ -18,12 +18,13 @@ export type TransformControlEvents<T> = {
 export const useTransformControls = /*:: <T: Object3D>*/(
   targetRef/*: Ref<?T>*/,
   mode/*: 'translate' | 'rotate' | 'scale'*/,
+  enabled/*: boolean*/ = true,
   events/*: TransformControlEvents<T>*/ = {},
   deps/*: mixed[]*/ = []
-) => {
+)/*: ?TransformControls*/ => {
   const render = useContext(renderCanvasContext);
-  const controls = useChildObject(render?.sceneRef, parent => {
-    if (!render)
+  const controls = useChildObject(render?.sceneRef, () => {
+    if (!render || !enabled)
       return null;
     const { current: camera } = render.cameraRef;
     const { current: canvas } = render.canvasRef;
@@ -32,9 +33,11 @@ export const useTransformControls = /*:: <T: Object3D>*/(
       return null;
 
     const controls = new TransformControls(camera, canvas);
+    controls.setMode(mode);
+    controls.setRotationSnap(Math.PI / 4)
     controls.attach(target)
     return controls;
-  }, [render]);
+  }, [render, enabled]);
 
   useEffect(() => {
     const { current: target } = targetRef;
@@ -53,6 +56,8 @@ export const useTransformControls = /*:: <T: Object3D>*/(
   useEffect(() => {
     if (!controls)
       return;
-    controls.mode = mode;
+    controls.setMode(mode);
   }, [controls, mode])
+
+  return controls;
 }

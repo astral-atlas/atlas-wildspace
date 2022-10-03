@@ -59,3 +59,5 @@ export * from './root/index.js';
 export * from './volume/index.js';
 export * from './renderer/index.js';
 export * from './gizmos/index.js';
+export * from './snackbar/index.js';
+export * from './terrain/index.js';

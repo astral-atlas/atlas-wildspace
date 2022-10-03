@@ -186,7 +186,7 @@ export const ScaledLayoutDemo/*: Component<{ style?: {}, height?: string }>*/ = 
   return [
     h(LayoutDemo, { style, height }, [
       h('div', { ref, style: {
-        backgroundColor: 'white',
+        ...style,
         transformOrigin: '0 0',
         transform: `scale(${scale})`,
         width: `${100/scale}%`,

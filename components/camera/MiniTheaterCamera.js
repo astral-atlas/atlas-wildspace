@@ -15,6 +15,18 @@ export type MiniTheaterCameraProps = {
 }
 */
 
+const getDeltaMultiplier = (event) => {
+  switch (event.deltaMode) {
+    default:
+    case WheelEvent.DOM_DELTA_PIXEL:
+      return 1;
+    case WheelEvent.DOM_DELTA_PAGE:
+      return 0.01;
+    case WheelEvent.DOM_DELTA_LINE:
+      return 1;
+  }
+}
+
 export const MiniTheaterCamera/*: Component<MiniTheaterCameraProps>*/ = ({
   ref = null,
 }) => {
@@ -47,7 +59,8 @@ export const MiniTheaterCamera/*: Component<MiniTheaterCameraProps>*/ = ({
     });
     const onMouseWheel = (event/*: WheelEvent*/) => {
       event.preventDefault();
-      controller.moveZoom(event.deltaY)
+      const deltaMultiplier = getDeltaMultiplier(event);
+      controller.moveZoom(event.deltaY * deltaMultiplier)
     };
     canvas.addEventListener('wheel', onMouseWheel)
 

@@ -32,6 +32,12 @@ type MiniTheaterSelection =
     }
   | { type: 'piece', pieceId: PieceID }
   | { type: 'terrain-prop', terrainId: TerrainPlacementID }
+export type MiniTheaterTool =
+  | { type: 'none' }
+  | { type: 'place' }
+  | { type: 'translate' }
+  | { type: 'rotate' }
+  | { type: 'scale' }
 
 export type MiniTheaterLocalState = {
   isGM: boolean,
@@ -41,6 +47,7 @@ export type MiniTheaterLocalState = {
   cursor: ?BoardPosition,
   terrainCursor: ?TerrainPlacementID,
   selection: MiniTheaterSelection,
+  tool: MiniTheaterTool,
 
   targetMode: 'pieces' | 'terrain',
 };
@@ -56,6 +63,7 @@ export type MiniTheaterLocalAction =
         | { type: 'resources', resources: MiniTheaterRenderResources }
         | { type: 'mini-theater', miniTheater: MiniTheater }
     }
+  | { type: 'set-tool', tool: MiniTheaterTool }
   | { type: 'remote-action', remoteAction: MiniTheaterAction }
   | { type: 'set-target-mode', targetMode: 'pieces' | 'terrain' }
 */
@@ -126,6 +134,11 @@ export const reduceLocalState = (
           ...state,
           targetMode: action.targetMode,
         }
+      case 'set-tool':
+        return {
+          ...state,
+          tool: action.tool,
+        };
       case 'move-terrain-cursor':
         if (state.terrainCursor === action.terrainCursor)
           return state;
@@ -152,6 +165,7 @@ export const createMiniTheaterController2 = (
     cursor: null,
     terrainCursor: null,
     targetMode: 'pieces',
+    tool: { type: 'place' },
     selection: { type: 'none' }
   };
   
@@ -221,6 +235,7 @@ export const useMiniTheaterController2 = (
       return null;
 
     const act = (action) => {
+      console.log(`ACTION`, action);
       if (action.type === 'remote-action')
         connection.miniTheater.act(miniTheaterId, action.remoteAction);
       controller.act(action);

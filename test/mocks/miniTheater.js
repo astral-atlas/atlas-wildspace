@@ -1,6 +1,9 @@
 // @flow strict
 /*::
-import type { EditingLayerID } from "../../models/game/miniTheater/editingLayer";
+import type {
+  EditingLayer,
+  EditingLayerID,
+} from "../../models/game/miniTheater/editingLayer";
 import type {
   MiniQuaternion,
   MiniVector,
@@ -14,7 +17,7 @@ import type {
 import type { ModelResourceID } from "../../models/game/resources";
 import type { CharacterID, Character, Monster, MiniTheater, MonsterActorID, Piece, BoardPosition } from "@astral-atlas/wildspace-models";
 */
-import { randomGameName, repeat } from "./random";
+import { randomGameName, randomObjectName, repeat } from "./random";
 import { randomIntRange } from "./random.js";
 import { Quaternion } from "three";
 import { v4 as uuid } from 'uuid';
@@ -22,6 +25,7 @@ import { v4 as uuid } from 'uuid';
 export const createMockMiniTheater = (
   pieces/*: Piece[]*/ = [],
   terrain/*: TerrainPlacement[]*/ = [],
+  layers/*: EditingLayer[]*/ = [],
 )/*: MiniTheater*/ => ({
   id: uuid(),
   name: randomGameName(),
@@ -29,25 +33,41 @@ export const createMockMiniTheater = (
   
   baseArea: { position: { x: 0, y: 0, z: 0}, size: { x: 10, y: 10, z: 1 } },
   pieces,
-  layers: [],
+  layers: layers || [createMockEditingLayer()],
   terrain,
 });
+export const createMockEditingLayer = (
+  includes/*: ?EditingLayer["includes"]*/ = null,
+)/*: EditingLayer*/ => ({
+  id: uuid(),
+  includes: includes || [],
+  name: randomObjectName(),
+  permissions: { type: 'gm-in-game' },
+  placementRules: [],
+  visible: true,
+})
 
-export const createMockMonsterPiece = (monsterActorId/*: MonsterActorID*/)/*: Piece*/ => ({
+export const createMockMonsterPiece = (
+  monsterActorId/*: MonsterActorID*/,
+  layer/*: ?EditingLayerID*/ = null,
+)/*: Piece*/ => ({
   id: uuid(),
   visible: true,
   position: createMockPosition(),
-  layer: uuid(),
+  layer: layer || uuid(),
   represents: {
     type: 'monster',
     monsterActorId,
   },
 })
-export const createMockCharacterPiece = (characterId/*: CharacterID*/)/*: Piece*/ => ({
+export const createMockCharacterPiece = (
+  characterId/*: CharacterID*/,
+  layer/*: ?EditingLayerID*/ = null,
+  )/*: Piece*/ => ({
   id: uuid(),
   visible: true,
   position: createMockPosition(),
-  layer: uuid(),
+  layer: layer || uuid(),
   represents: {
     type: 'character',
     characterId,
@@ -80,7 +100,7 @@ export const createMockTerrainProp = (
   iconPreviewCameraModelPath: [],
   modelPath,
   modelResourceId,
-  name: name || 'Test Terrain',
+  name: name || randomObjectName(),
   floorShapes: floorShapes || repeat(() => createMockShape(), 2),
 })
 export const createMockShape = ()/*: MiniTheaterShape*/ => ({

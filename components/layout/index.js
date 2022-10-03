@@ -5,5 +5,5 @@ export * from './CompassLayout.js';
 export * from './CornersLayout.js';
 export * from './PopupOverlay.js';
 export * from './SideOverlay.js';
-
+export * from './FloatingOverlay.js';
 

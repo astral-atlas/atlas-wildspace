@@ -22,6 +22,7 @@ export const isPermissableAction = (
 )/*: boolean*/ => {
   switch (action.type) {
     case 'set-terrain':
+    default:
       return false;
     case 'remove-piece':
     case 'move-piece': {

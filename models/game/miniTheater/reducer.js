@@ -48,6 +48,11 @@ export const reduceMiniTheaterAction = (
         ...miniTheater,
         terrain: action.terrain,
       }
+    case 'set-layers':
+      return {
+        ...miniTheater,
+        layers: action.layers,
+      }
     default:
       return miniTheater;
   }

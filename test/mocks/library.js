@@ -7,6 +7,7 @@ import { createMockImageAsset } from "./asset";
 import { createMockMonster, createMockMonsterActor } from "./game";
 import { createMockCharacter } from "./game.js";
 import {
+  createMockEditingLayer,
   createMockMiniTheater,
   createMockMonsterPiece,
   createMockTerrainPlacement,
@@ -26,12 +27,21 @@ export const createMockLibraryData = ()/*: LibraryData*/ => {
   )
   const terrainProps = repeat(() => createMockTerrainProp(), 10);
 
-  const miniTheaters = repeat(() => createMockMiniTheater([
-    ...repeat(() => createMockMonsterPiece(randomElement(monsterActors).id), randomIntRange(5, 2)),
-    ...repeat(() => createMockCharacterPiece(randomElement(characters).id), randomIntRange(5, 2)),
-  ], [
-    ...repeat(() => createMockTerrainPlacement(randomElement(terrainProps).id), randomIntRange(5, 2))
-  ]), randomIntRange(5, 2));
+  const miniTheaters = repeat(() => {
+    const monsterLayer = createMockEditingLayer([{ type: 'any-monsters' }]);
+    const characterLayer = createMockEditingLayer([{ type: 'characters', characters: [] }]);
+    const terrainLayer = createMockEditingLayer([{ type: 'any-terrain' }]);
+    return createMockMiniTheater([
+      ...repeat(() => createMockMonsterPiece(randomElement(monsterActors).id, monsterLayer.id,), randomIntRange(5, 2)),
+      ...repeat(() => createMockCharacterPiece(randomElement(characters).id, characterLayer.id), randomIntRange(5, 2)),
+    ], [
+      ...repeat(() => createMockTerrainPlacement(randomElement(terrainProps).id, terrainLayer.id), randomIntRange(5, 2))
+    ], [
+      monsterLayer,
+      characterLayer,
+      terrainLayer,
+    ])
+  }, randomIntRange(5, 2));
   const scenes = [
 
   ];

@@ -1,0 +1,10 @@
+.snackbarTerrainControlEdge {
+  display: flex;
+  flex-direction: column;
+}
+
+.gizmoControl {
+  display: flex;
+  flex-direction: row;
+  margin: auto;
+}

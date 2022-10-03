@@ -112,7 +112,7 @@ export const FloorShapeEditor/*: Component<FloorShapeEditorProps>*/ = ({
       controls.removeEventListener('change', onChange);
       button.removeEventListener('click', onButtonClick);
     }
-  }, [controls, floor]);
+  }, [controls, floor, onFloorChange]);
 
   const linesGeometry = useDisposable(() => {
     const box = new BoxGeometry(1, 1, 1);

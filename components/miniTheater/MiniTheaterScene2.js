@@ -105,11 +105,7 @@ export const MiniTheaterScene2/*: Component<MiniTheaterScene2Props>*/ = ({
   const includeRaycast = miniTheaterState.targetMode === 'pieces';
   useRaycast2(includeRaycast ? raycast : null, floorRef, {
     over(intersection) {
-      const roundedPoint = intersection.point.clone()
-        .multiplyScalar(1/10)
-        .round()
-        .multiplyScalar(10);
-      onOverFloor(roundedPoint);
+      onOverFloor(intersection.point);
     },
     exit() {
       onExitFloor();

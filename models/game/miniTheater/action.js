@@ -1,15 +1,16 @@
 // @flow strict
 /*::
 import type { BoardPosition } from "../../encounter/map";
-import type { EditingLayerID } from "./editingLayer";
+import type { EditingLayer, EditingLayerID } from "./editingLayer";
 import type { PieceID, PieceRepresents } from "./piece";
 import type { TerrainPlacement } from "./terrain";
 import type { Cast } from "@lukekaalim/cast";
 */
 import { castBoardPosition } from "../../encounter/map.js";
+import { castEditingLayer } from "./editingLayer.js";
 import { castEditingLayerID } from "./editingLayer.js";
 import { castPieceId, castPieceRepresents } from "./piece.js";
-import { castTerrainPlacement } from "./terrain";
+import { castTerrainPlacement } from "./terrain.js";
 import { c } from "@lukekaalim/cast";
 
 /*::
@@ -57,10 +58,18 @@ export type SetTerrainAction = {
   type: 'set-terrain',
   terrain: $ReadOnlyArray<TerrainPlacement>,
 }
+export type SetLayersAction = {
+  type: 'set-layers',
+  layers: $ReadOnlyArray<EditingLayer>,
+}
 */
 export const castSetTerrainAction/*: Cast<SetTerrainAction>*/ = c.obj({
   type: c.lit('set-terrain'),
   terrain: c.arr(castTerrainPlacement)
+});
+export const castSetLayersAction/*: Cast<SetLayersAction>*/ = c.obj({
+  type: c.lit('set-layers'),
+  layers: c.arr(castEditingLayer)
 });
 
 /*::
@@ -69,6 +78,7 @@ export type MiniTheaterAction =
   | PlacePieceAction
   | RemovePieceAction
   | SetTerrainAction
+  | SetLayersAction
 */
 
 export const castMiniTheaterAction/*: Cast<MiniTheaterAction>*/ = c.or('type', {
@@ -76,4 +86,5 @@ export const castMiniTheaterAction/*: Cast<MiniTheaterAction>*/ = c.or('type', {
   'place-piece': castPlacePieceAction,
   'remove-piece': castRemovePieceAction,
   'set-terrain': castSetTerrainAction,
+  'set-layers': castSetLayersAction
 });

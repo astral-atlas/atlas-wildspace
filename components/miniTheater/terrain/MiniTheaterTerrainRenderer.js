@@ -35,7 +35,6 @@ export const MiniTheaterTerrainRenderer/*: Component<MiniTheaterTerrainRendererP
   const { miniTheater, resources, selection, targetMode, terrainCursor } = miniTheaterState;
   const { terrain } = miniTheater;
 
-  const includeRaycast = targetMode === 'terrain';
 
   const onTerrainEnter = (terrainId) => () => {
     if (!controller)
@@ -69,7 +68,13 @@ export const MiniTheaterTerrainRenderer/*: Component<MiniTheaterTerrainRendererP
   }
 
   return miniTheater.terrain.map(terrain => {
+    const layer = miniTheater.layers.find(l => l.id === miniTheaterState.layer);
+    const includeRaycast = (
+      miniTheaterState.selection.type !== 'placement'
+      && layer && terrain.layer === layer.id
+    );
     return h(TerrainPlacementRenderer, {
+      miniTheaterState,
       key: terrain.id,
       terrain,
       resources,
@@ -84,11 +89,12 @@ export const MiniTheaterTerrainRenderer/*: Component<MiniTheaterTerrainRendererP
 }
 
 const TerrainPlacementRenderer = ({
+  miniTheaterState,
   terrain, resources, raycast,
   terrainCursor,
   selection,
   onEnter, onExit,
-  onMoveTerrain
+  onMoveTerrain,
  }) => {
   const terrainProp = resources.terrainProps.get(terrain.terrainPropId);
   const modelResource = terrainProp && resources.modelResources.get(terrainProp.modelResourceId)
@@ -138,6 +144,6 @@ const TerrainPlacementRenderer = ({
       scale: new Vector3(1, 1, 1)
     }),
     h(group, { ref: groupRef }),
-    selected && h(TerrainPlacementEditor, { parentRef: ref, onMoveTerrain })
+    selected && h(TerrainPlacementEditor, { parentRef: ref, onMoveTerrain, miniTheaterState, raycast })
   ];
 }

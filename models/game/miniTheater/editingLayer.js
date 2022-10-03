@@ -21,6 +21,8 @@ export type EditingLayer = {
   ,
   includes: $ReadOnlyArray<
     | { type: 'any' }
+    | { type: 'any-terrain' }
+    | { type: 'any-monsters' }
 //    | { type: 'terrain-props', terrainProps: $ReadOnlyArray<TerrainPropID> }
     | { type: 'characters', characters: $ReadOnlyArray<CharacterID> }
 //    | { type: 'monsters', monsterActors: $ReadOnlyArray<MonsterActorID> }
@@ -40,6 +42,8 @@ const castIncludeCharacter = c.obj({
 });
 const castIncludes/*: Cast<EditingLayer["includes"][number]>*/ = c.or('type', {
   'any': castIncludeAny,
+  'any-terrain': c.obj({ type: c.lit('any-terrain') }),
+  'any-monsters': c.obj({ type: c.lit('any-monsters') }),
   'characters': castIncludeCharacter
 })
 
