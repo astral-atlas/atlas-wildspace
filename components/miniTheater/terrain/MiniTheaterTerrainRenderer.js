@@ -89,10 +89,14 @@ export const MiniTheaterTerrainRenderer/*: Component<MiniTheaterTerrainRendererP
 
   return miniTheater.terrain.map(terrain => {
     const layer = miniTheater.layers.find(l => l.id === miniTheaterState.layer);
+    const terrainLayer = miniTheater.layers.find(l => l.id === terrain.layer);
     const includeRaycast = (
       miniTheaterState.selection.type !== 'placement'
       && layer && terrain.layer === layer.id
     );
+    if (terrainLayer && !terrainLayer.visible && terrainLayer.id !== miniTheaterState.layer)
+      return null;
+
     return h(TerrainPlacementRenderer, {
       miniTheaterState,
       key: terrain.id,

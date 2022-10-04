@@ -31,10 +31,14 @@ import { MiniTheaterCursorRenderer } from "./MiniTheaterCursorRenderer";
 import { MiniTheaterTerrainRenderer } from "./terrain/MiniTheaterTerrainRenderer";
 
 
-const usePlacedTerrainFloors = (miniTheater, resources) => {
+const usePlacedTerrainFloors = (miniTheater, resources, layer) => {
   const floors = useMemo(() => {
     return miniTheater.terrain
       .map(terrainPlacement => {
+        const placementLayer = miniTheater.layers.find(l => l.id === terrainPlacement.layer);
+        if (placementLayer && !placementLayer.visible && (!layer || (layer.id !== placementLayer.id)))
+          return [];
+
         const placementPosition = miniVectorToThreeVector(terrainPlacement.position);
         const placementRotation = miniQuaternionToThreeQuaternion(terrainPlacement.quaternion);
 
@@ -83,12 +87,13 @@ export const MiniTheaterScene2/*: Component<MiniTheaterScene2Props>*/ = ({
   onOverFloor = _ => {},
   onExitFloor = () => {},
 }) => {
-  const placedFloors = usePlacedTerrainFloors(
-    miniTheaterState.miniTheater,
-    miniTheaterState.resources
-  )
   const layer = miniTheaterState.miniTheater.layers.find(l => l.id === miniTheaterState.layer);
   const isTerrainLayer = layer && layer.includes.some(i => i.type === 'any-terrain');
+  const placedFloors = usePlacedTerrainFloors(
+    miniTheaterState.miniTheater,
+    miniTheaterState.resources,
+    layer,
+  )
 
   const characterFloors = useMemo(() => {
     return miniTheaterState.miniTheater.pieces

@@ -75,6 +75,15 @@ export const SnackbarLayerControlEdge/*: Component<SnackbarLayerControlEdgeProps
     }
     controller.act({ type: 'remote-action', remoteAction })
   }
+  const onVisibleChange = (selectedLayer) => (visible) => {
+    const remoteAction = {
+      type: 'set-layers',
+      layers: state.miniTheater.layers.map(layer => {
+        return layer.id === selectedLayer.id ? { ...layer, visible } : layer;
+      })
+    }
+    controller.act({ type: 'remote-action', remoteAction })
+  }
   return [
     h(EditorForm, {}, [
       h(SelectEditor, { values, selected: state.layer || '', onSelectedChange: onSelectedLayerChange }),
@@ -88,6 +97,7 @@ export const SnackbarLayerControlEdge/*: Component<SnackbarLayerControlEdgeProps
           text: selectedLayer.name,
           onTextChange: onLayerNameChange(selectedLayer)
         }),
+        h(EditorCheckboxInput, { label: 'Visible', checked: selectedLayer.visible, onCheckedChange: onVisibleChange(selectedLayer) }),
         h(EditorLayerIncludesInput, {
           includes: selectedLayer.includes,
           onIncludesChange: onIncludesChange(selectedLayer)

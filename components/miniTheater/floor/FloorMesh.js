@@ -27,6 +27,24 @@ import type { Mesh } from "three";
 import type { MiniTheaterShape } from "@astral-atlas/wildspace-models";
 */
 
+const calculateFloorAABBMap = (floors/*: $ReadOnlyArray<MiniTheaterShape>*/)/*: Map<MiniTheaterShape, Box3>*/ => {
+  const floorEntries = floors.map((floorShape) => {
+    const matrix = new Matrix4()
+      .compose(
+        miniVectorToThreeVector(floorShape.position),
+        miniQuaternionToThreeQuaternion(floorShape.rotation),
+        miniVectorToThreeVector(floorShape.size),
+      );
+
+    const box = new Box3(
+      new Vector3(-0.5, -0.5, -0.5),
+      new Vector3(0.5, 0.5, 0.5)
+    )
+      .applyMatrix4(matrix);
+    return [floorShape, box];
+  });
+  return new Map(floorEntries);
+}
 const calculateFloorAABB = (floors/*: $ReadOnlyArray<MiniTheaterShape>*/)/*: Box3*/ => {
   const floorAABB = floors.reduce((acc, curr) => {
     const matrix = new Matrix4()
@@ -57,6 +75,7 @@ const calculateCellCount = (floorAABB) => {
     .addScalar(1);
   return (size.x * size.y * size.z);
 }
+
 const mapPotentialCells = (floorAABB, mapCellFunc) => {
   const size = floorAABB.getSize(new Vector3())
     .multiplyScalar(0.1)
@@ -81,6 +100,16 @@ const mapPotentialCells = (floorAABB, mapCellFunc) => {
     );
   };
   return result;
+}
+
+const mapChunks = (chunkBounds, mapChunkFunc) => {
+  const size = chunkBounds.getSize(new Vector3())
+    .multiplyScalar(0.1)
+
+  const offset = chunkBounds.getCenter(new Vector3())
+    .add(size.clone().multiplyScalar(-5));
+
+    size.addScalar(1);
 }
 
 const calcuateFloorCells = (floors, floorAABB) => {
