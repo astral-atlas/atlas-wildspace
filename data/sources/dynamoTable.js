@@ -101,11 +101,15 @@ export const createLiveDynamoDBTable = /*:: <I>*/(
     const results = Items
       .map(item => readDynamoDBItem(item))
       .map(item => {
-        const sortKey = c.str(item[sortKeyName]);
-        const result = castItem(item[valueKeyName]);
-        const version = item[versionKeyName];
-        return { sortKey, result, version };
-      });
+        try {
+          const sortKey = c.str(item[sortKeyName]);
+          const result = castItem(item[valueKeyName]);
+          const version = item[versionKeyName];
+          return { sortKey, result, version };
+        } catch (error) {
+          return null;
+        }
+      }).filter(Boolean);
 
     return { results };
   }

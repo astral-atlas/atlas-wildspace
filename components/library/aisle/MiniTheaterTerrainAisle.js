@@ -35,6 +35,10 @@ import {
 import { useModelResourceAssetsIconURL } from "../../resources/useModelResourceAssetsIconURL";
 import { getObject3DForModelResourcePath } from "../../resources/modelResourceUtils";
 import { EditorLine } from "../../editor/line";
+import {
+  TerrainPropEditor,
+} from "../../terrain/TerrainPropEditor";
+import { useAisleFocus } from "../useAisleFocus";
 
 /*::
 export type MiniTheaterTerrainAisleProps = {
@@ -51,7 +55,11 @@ export const MiniTheaterTerrainAisle/*: Component<MiniTheaterTerrainAisleProps>*
   client,
   library
 }) => {
-  const selection = useLibrarySelection();
+
+  const [stagingTerrainProp, setStagingTerrainProp] = useState(null);
+  const selection = useLibrarySelection([], () => {
+    setStagingTerrainProp(null)
+  });
 
   const modelResourceIds = useMemo(() => [...new Set(library.terrainProps.map(tp => tp.modelResourceId))]
     .map(id => library.modelResources.find(r => r.id === id))
@@ -88,14 +96,19 @@ export const MiniTheaterTerrainAisle/*: Component<MiniTheaterTerrainAisleProps>*
       iconPreviewCameraModelPath: stagingCameraPath.split('.'),
       modelPath: stagingPath.split('.'),
       modelResourceId: stagingModelId,
+      floorShapes: [],
     })
   };
   const onDeleteTerrainProp = async (modelToDelete) => {
     await client.game.miniTheater.terrainProps.destroy(game.id, modelToDelete.id);
   }
-  const onUpdateTerrainProp = async (prevTerrainProp, { name, previewCameraPath }) => {
+  const onUpdateTerrainProp = async (prevTerrainProp, { name, iconPreviewCameraModelPath, modelPath, floorShapes }) => {
     await client.game.miniTheater.terrainProps.update(game.id, prevTerrainProp.id, {
-      name: name || prevTerrainProp.name
+      ...prevTerrainProp,
+      floorShapes: floorShapes || prevTerrainProp.floorShapes,
+      name: name || prevTerrainProp.name,
+      iconPreviewCameraModelPath: iconPreviewCameraModelPath || prevTerrainProp.iconPreviewCameraModelPath,
+      modelPath: modelPath || prevTerrainProp.modelPath,
     });
   }
   const [showExplorer, setShowExplorer] = useState(false);
@@ -107,6 +120,8 @@ export const MiniTheaterTerrainAisle/*: Component<MiniTheaterTerrainAisleProps>*
 
   const selectedTerrainProp = library.terrainProps.find(m => selection.selected.has(m.id))
   const modelAsset = selectedTerrainProp && modelAssets.get(selectedTerrainProp.modelResourceId);
+
+  const { focus, toggleFocus } = useAisleFocus()
 
   const floor = [
     h(LibraryFloorHeader, { title: 'Terrain Pieces' }),
@@ -147,6 +162,15 @@ export const MiniTheaterTerrainAisle/*: Component<MiniTheaterTerrainAisleProps>*
     }),
   ];
 
+  const childObjects = modelAsset && modelAsset.asset.scene.children;
+  const saveStaging = async () => {
+    if (!selectedTerrainProp || !stagingTerrainProp)
+      return;
+
+    await onUpdateTerrainProp(selectedTerrainProp, stagingTerrainProp);
+    setStagingTerrainProp(null)
+  }
+
   const desk = [
     !!selectedTerrainProp && [
       h(EditorTextInput, { disabled: true, label: 'Terrain ID', text: selectedTerrainProp.id }),
@@ -160,26 +184,42 @@ export const MiniTheaterTerrainAisle/*: Component<MiniTheaterTerrainAisleProps>*
       h(EditorTextInput, {
         label: 'Preview Camera Path',
         text: (selectedTerrainProp.iconPreviewCameraModelPath || []).join('.'),
-        onTextChange: previewCameraPath => onUpdateTerrainProp(selectedTerrainProp, { previewCameraPath }) 
-      }),h(EditorTextInput, {
+        onTextChange: iconPreviewCameraModelPath => onUpdateTerrainProp(selectedTerrainProp, { iconPreviewCameraModelPath: iconPreviewCameraModelPath.split('.') }) 
+      }),
+      h(EditorTextInput, {
         label: 'Model Path',
         text: (selectedTerrainProp.modelPath || []).join('.'),
-        onTextChange: previewCameraPath => onUpdateTerrainProp(selectedTerrainProp, { previewCameraPath }) 
+        onTextChange: modelPath => onUpdateTerrainProp(selectedTerrainProp, { modelPath: modelPath.split('.') }) 
       }),
+      h('ol', {}, [
+        !!childObjects && childObjects.map(o => {
+          return h('li', {}, o.name)
+        })
+      ]),
       h(EditorButton, { label: 'Delete', onButtonClick: () => onDeleteTerrainProp(selectedTerrainProp)}),
       h(EditorButton, {
         label: 'Open Model Exporer',
-        onButtonClick: () => setShowExplorer(true),
+        onButtonClick: () => toggleFocus(),
         disabled: !modelAsset
+      }),
+      h(EditorButton, {
+        label: 'Save Changes',
+        onButtonClick: () => saveStaging(),
       })
     ],
   ]
 
   const modelRoot = modelAsset && selectedTerrainProp &&
     getObject3DForModelResourcePath(modelAsset.asset.scene, selectedTerrainProp.modelPath)
+    
+  const workstation = !!modelRoot && !!selectedTerrainProp && h(TerrainPropEditor, {
+    modelResourceObject: modelRoot,
+    terrainProp: stagingTerrainProp || selectedTerrainProp,
+    onTerrainPropChange: setStagingTerrainProp,
+  })
 
   return [
-    h(LibraryAisle, { floor, desk, wideDesk: true }),
+    h(LibraryAisle, { floor, desk, wideDesk: true, workstation, focus }),
     
     !!modelRoot && !!selectedTerrainProp && h(ModelResourceExplorerPopup, {
       key: selectedTerrainProp.id,

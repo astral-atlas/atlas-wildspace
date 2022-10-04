@@ -43,16 +43,24 @@ export const createServerMiniTheaterChannel = (
     }
   }
   const onMiniTheaterAction = async (id, action) => {
-    const { game, userId } = updates;
-    const isGM = game.gameMasterId === userId;
-    await gameService.miniTheater.applyAction(updates.game.id, id, action, isGM);
+    try {
+      const { game, userId } = updates;
+      const isGM = game.gameMasterId === userId;
+      await gameService.miniTheater.applyAction(updates.game.id, id, action, isGM);
+    } catch (error) {
+      console.error(error);
+    }
   }
   const update = (event) => {
-    switch (event.type) {
-      case 'mini-theater-action':
-        return void onMiniTheaterAction(event.miniTheaterId, event.miniTheaterAction);
-      case 'mini-theater-subscribe':
-        return void setSubscription(event.miniTheaterIds);
+    try {
+      switch (event.type) {
+        case 'mini-theater-action':
+          return void onMiniTheaterAction(event.miniTheaterId, event.miniTheaterAction);
+        case 'mini-theater-subscribe':
+          return void setSubscription(event.miniTheaterIds);
+      }
+    } catch (error) {
+      console.error(error);
     }
   }
 

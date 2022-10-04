@@ -62,6 +62,7 @@ export const GameMasterPrepLibrary/*: Component<GameMasterPrepLibraryProps>*/ = 
       key: 'THEATERS',
       title: 'Mini Theaters',
       component: h(MiniTheaterAisle, {
+        library: data,
         miniTheaters: data.miniTheaters,
         characters: data.characters,
         monsters: data.monsters,

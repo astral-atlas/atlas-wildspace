@@ -43,7 +43,7 @@ const initialTerrainEditorState = {
   tool: 'translate',
 }
 
-export const TerrainEditor/*: Component<TerrainEditorProps>*/ = ({
+export const TerrainPropEditor/*: Component<TerrainEditorProps>*/ = ({
   terrainProp,
   onTerrainPropChange,
   modelResourceObject
@@ -83,7 +83,7 @@ export const TerrainEditor/*: Component<TerrainEditorProps>*/ = ({
       setTerrainEditorState({ ...terrainEditorState, selectedShapeIndex: 0 })
   }
 
-  return [
+  return h('div', {}, [
     h(RenderCanvas, {
       renderSetupOverrides: { keyboardEmitter: emitter, canvasRef, loop },
       className: styles.terrainEditorCanvas,
@@ -94,7 +94,7 @@ export const TerrainEditor/*: Component<TerrainEditorProps>*/ = ({
         position: new Vector3(0, 0, 0),
         quaternion: new Quaternion().identity()
       }),
-      h(FloorMesh, { floors: floorShapes }),
+      h(FloorMesh, { floors: floorShapes, showDebug: true }),
       h(FreeCamera, { surfaceRef: cameraButtonRef, keys }),
       floorShapes.map((shape, index) => {
         const selected = index === terrainEditorState.selectedShapeIndex;
@@ -113,7 +113,7 @@ export const TerrainEditor/*: Component<TerrainEditorProps>*/ = ({
       onTerrainPropChange,
       onEditorStateChange: setTerrainEditorState
     }),
-  ];
+  ]);
 }
 
 const ShapeEditor = ({ shape, selected, raycast, onSelect, onShapeChange, tool }) => {

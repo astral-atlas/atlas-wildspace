@@ -50,13 +50,33 @@ export const MiniTheaterTerrainRenderer/*: Component<MiniTheaterTerrainRendererP
     if (!controller)
       return;
     controller.act({
-      type: 'remote-action',
-      remoteAction: { type: 'set-terrain', terrain: terrain.map(t => {
+      type: 'local-action',
+      localAction: { type: 'set-terrain', terrain: terrain.map(t => {
         if (t.id !== terrainId)
           return t;
         const position = vectorToMiniVector(gizmo.position);
         const size = vectorToMiniVector(gizmo.scale);
         const quaternion = quaternionToMiniQuaternion(gizmo.quaternion);
+        return {
+          ...t,
+          quaternion,
+          position,
+          size,
+        }
+      }) }
+    })
+  }
+  const onMoveTerrainFinish = (terrainId) => (terrainObject) => {
+    if (!controller)
+      return;
+    controller.act({
+      type: 'remote-action',
+      remoteAction: { type: 'set-terrain', terrain: terrain.map(t => {
+        if (t.id !== terrainId)
+          return t;
+        const position = vectorToMiniVector(terrainObject.position);
+        const size = vectorToMiniVector(terrainObject.scale);
+        const quaternion = quaternionToMiniQuaternion(terrainObject.quaternion);
         return {
           ...t,
           quaternion,
@@ -83,6 +103,7 @@ export const MiniTheaterTerrainRenderer/*: Component<MiniTheaterTerrainRendererP
       onEnter: onTerrainEnter(terrain.id),
       onExit: onTerrainExit,
       onMoveTerrain: onMoveTerrain(terrain.id),
+      onMoveTerrainFinish: onMoveTerrainFinish(terrain.id),
       raycast: includeRaycast ? raycast : null
     })
   });
@@ -95,6 +116,7 @@ const TerrainPlacementRenderer = ({
   selection,
   onEnter, onExit,
   onMoveTerrain,
+  onMoveTerrainFinish,
  }) => {
   const terrainProp = resources.terrainProps.get(terrain.terrainPropId);
   const modelResource = terrainProp && resources.modelResources.get(terrainProp.modelResourceId)
@@ -144,6 +166,11 @@ const TerrainPlacementRenderer = ({
       scale: new Vector3(1, 1, 1)
     }),
     h(group, { ref: groupRef }),
-    selected && h(TerrainPlacementEditor, { parentRef: ref, onMoveTerrain, miniTheaterState, raycast })
+    selected && h(TerrainPlacementEditor, {
+      parentRef: ref,
+      onMoveTerrain,
+      onMoveTerrainFinish,
+      miniTheaterState, raycast
+    })
   ];
 }

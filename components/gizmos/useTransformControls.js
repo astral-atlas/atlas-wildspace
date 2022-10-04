@@ -12,6 +12,7 @@ import { useContext, useEffect } from "@lukekaalim/act";
 /*::
 export type TransformControlEvents<T> = {
   change?: (object: T) => void,
+  changeFinish?: (object: T) => void,
 }
 */
 
@@ -41,15 +42,23 @@ export const useTransformControls = /*:: <T: Object3D>*/(
 
   useEffect(() => {
     const { current: target } = targetRef;
-    const { change } = events;
-    if (!controls || !change || !target)
+    const { change, changeFinish } = events;
+    if (!controls || !target)
       return;
     const onChange = () => {
-      change(target);
+      if (change)
+        change(target);
+    }
+    const onDragging = (e) => {
+      console.log(e.value);
+      if (!e.value && changeFinish)
+        changeFinish(target)
     }
     controls.addEventListener('change', onChange)
+    controls.addEventListener('dragging-changed', onDragging)
     return () => {
       controls.removeEventListener('change', onChange)
+      controls.removeEventListener('dragging-changed', onDragging)
     }
   }, [controls, ...deps]);
 

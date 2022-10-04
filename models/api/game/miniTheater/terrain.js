@@ -1,11 +1,11 @@
 // @flow strict
 
 import { c } from "@lukekaalim/cast";
-import { castTerrainProp, castModelResourcePath, castModelResourceId } from "../../../game.js";
+import { castTerrainProp, castModelResourcePath, castModelResourceId, castMiniTheaterShape } from "../../../game.js";
 import { createAdvancedCRUDGameAPI } from "../meta.js";
 
 /*::
-import type { TerrainProp, TerrainPropID, ModelResourceID, ModelResourcePath } from "../../../game";
+import type { TerrainProp, TerrainPropID, ModelResourceID, ModelResourcePath, MiniTheaterShape } from "../../../game";
 import type { AdvancedGameCRUDAPI } from "../meta";
 import type { ResourceDescription } from "@lukekaalim/net-description";
 
@@ -22,9 +22,14 @@ export type TerrainAPI = {|
       modelResourceId: ModelResourceID,
       modelPath: ModelResourcePath,
       iconPreviewCameraModelPath: ?ModelResourcePath,
+      floorShapes: $ReadOnlyArray<MiniTheaterShape>
     },
     resourcePutInput: {
       name: string,
+      modelResourceId: ModelResourceID,
+      modelPath: ModelResourcePath,
+      iconPreviewCameraModelPath: ?ModelResourcePath,
+      floorShapes: $ReadOnlyArray<MiniTheaterShape>
     },
   }>,
 |};
@@ -41,9 +46,14 @@ export const terrainAPI = {
       modelResourceId: castModelResourceId,
       modelPath: castModelResourcePath,
       iconPreviewCameraModelPath: c.maybe(castModelResourcePath),
+      floorShapes: c.arr(castMiniTheaterShape),
     }),
     castPutResource: c.obj({
       name: c.str,
+      modelResourceId: castModelResourceId,
+      modelPath: castModelResourcePath,
+      iconPreviewCameraModelPath: c.maybe(castModelResourcePath),
+      floorShapes: c.arr(castMiniTheaterShape),
     }),
   })/*: ResourceDescription<TerrainAPI["/games/mini-theater/terrain-prop"]>*/)
 };

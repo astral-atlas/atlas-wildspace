@@ -3,7 +3,7 @@
 import type { Page } from "..";
 */
 
-import { TerrainEditor } from '@astral-atlas/wildspace-components';
+import { TerrainPropEditor } from '@astral-atlas/wildspace-components';
 import { h, useState } from '@lukekaalim/act';
 import { Document, Markdown } from "@lukekaalim/act-rehersal";
 import { useDisposable } from '@lukekaalim/act-three';
@@ -21,8 +21,8 @@ const TerrainEditorDemo = () => {
   const [terrainProp, setTerrainProp] = useState(createMockTerrainProp())
   const modelResourceObject = exampleCube;
  
-  return h(ScaledLayoutDemo, { style: { display: 'flex' }}, [
-    h(TerrainEditor, { modelResourceObject, terrainProp, onTerrainPropChange: setTerrainProp })
+  return h(ScaledLayoutDemo, {}, [
+    h(TerrainPropEditor, { modelResourceObject, terrainProp, onTerrainPropChange: setTerrainProp })
   ])
 };
 

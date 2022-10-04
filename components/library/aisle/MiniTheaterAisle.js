@@ -7,6 +7,7 @@ import type {
   Game, Character,
   MiniTheater, MiniTheaterAction,
   Monster, MonsterActor,
+  LibraryData,
 } from '@astral-atlas/wildspace-models';
 import type { UserID } from "@astral-atlas/sesame-models";
 
@@ -45,6 +46,8 @@ import {
 import { useTrackedKeys } from "../../utils/trackedKeys";
 import { SceneRenderer2 } from "../../scene";
 import { useMiniTheaterController2 } from "../../miniTheater/useMiniTheaterController2";
+import { useLibraryMiniTheaterResources } from "../../miniTheater/resources/libraryResources";
+import { useMiniTheaterState } from "../../miniTheater";
 
 /*::
 export type MiniTheaterAisleProps = {
@@ -59,12 +62,14 @@ export type MiniTheaterAisleProps = {
   monsterActors: $ReadOnlyArray<MonsterActor>,
 
   assets: AssetDownloadURLMap,
+  library: LibraryData,
 
   client: WildspaceClient
 }
 */
 
 export const MiniTheaterAisle/*: Component<MiniTheaterAisleProps>*/ = ({
+  library,
   game,
   userId,
   updates,
@@ -141,6 +146,7 @@ export const MiniTheaterAisle/*: Component<MiniTheaterAisleProps>*/ = ({
 
   const workstation = [!!selectedMiniTheater &&
     h(MiniTheaterPreview, {
+      library,
       updates,
       selectedMiniTheater,
       assets,
@@ -258,34 +264,27 @@ const MiniTheaterEditor = ({
 
 const MiniTheaterPreview = ({
   selectedMiniTheater,
+  library,
   monsters, monsterActors, characters,
   updateSelectedTheater,
   applyAction,
   updates,
   assets
 }) => {
-  const resources = useMemo(() => {
-    return {
-      assets: new Map(),
-      characters: new Map(),
-      monsterMasks: new Map(),
-      meshMap: new Map(),
-      textureMap: new Map(),
-    };
-  }, [])
+  const resources = useLibraryMiniTheaterResources(library)
+
   const controller = useMiniTheaterController2(
     selectedMiniTheater.id,
     resources,
     updates,
     true,
   );
-  const content = useMemo(() => ({
-    type: 'mini-theater',
-    miniTheaterId: selectedMiniTheater.id,
-  }), [selectedMiniTheater.id]);
+  const state = useMiniTheaterState(controller);
 
-  return h(SceneRenderer2, {
-    content,
-    miniTheaterController: controller,
+  return !!controller && !!state && h(SceneRenderer2, {
+    sceneContentRenderData: {
+      foreground: { type: 'mini-theater-controls', controller, state },
+      background: { type: 'mini-theater', state, controller, cameraMode: { type: 'interactive', bounds: null } }
+    }
   });
 }

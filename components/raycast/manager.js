@@ -15,6 +15,7 @@ import type { Subscriber, SubscriptionFunction } from "../subscription";
 import { Vector2, Raycaster } from 'three';
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "@lukekaalim/act";
+import { useSubscriptionList } from "../subscription";
 
 /*::
 export type OnClickRaySubscriber = (
@@ -31,10 +32,18 @@ type RaycastEvents = {
 
   pointerDown?: IntersectionObject => mixed,
 }
+type RaycastMissEvents = {
+  click?: Ray => mixed,
+  enter?: Ray => mixed,
+  exit?: () => mixed,
+  over?: Ray => mixed,
+}
 
 export type RaycastManager = {
   lastIntersectionRef: Ref<?IntersectionObject>,
   subscribe: (object: Object3D, events: RaycastEvents, isHit?: ?(IntersectionObject => boolean)) => () => void,
+  subscribeMiss: (events: RaycastMissEvents) => () => void,
+
   onUpdate: (camera: Camera) => void,
   onMouseEnter: (event: MouseEvent) => void,
   onMouseLeave: (event: MouseEvent) => void,
@@ -91,21 +100,33 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
 
   const { current: raycaster } = useRef(new Raycaster());
   const { current: focusTargets } = useRef(new Set());
+  const { current: recursiveFocusTargets } = useRef(new Set());
   const { current: isHitFuncs } = useRef(new Map()); 
 
   const [subscribeEnter, emitEnter] = useTargetedEmitter();
   const [subscribeExit, emitExit] = useTargetedEmitter();
   const [subscribeOver, emitOver] = useTargetedEmitter();
 
+  const [subscribeMissExit,, emitMissExit] = useSubscriptionList();
+  const [subscribeMissEnter,, emitMissEnter] = useSubscriptionList();
+  const [subscribeMissOver,, emitMissOver] = useSubscriptionList();
+  const [subscribeMissClick,, emitMissClick] = useSubscriptionList();
+
   const lastIntersectionRef = useRef();
+  const lastRayRef = useRef()
 
   const onUpdate = (camera) => {
     if (!mouseEnteredRef.current) {
       const prevFocused = lastIntersectionRef.current && lastIntersectionRef.current.object;
-      if (!prevFocused)
-        return;
-      emitExit(prevFocused, null)
-      lastIntersectionRef.current = null;
+      const prevRay = lastRayRef.current;
+      if (prevRay) {
+        emitMissExit()
+        lastRayRef.current = null;
+      }
+      if (prevFocused) {
+        emitExit(prevFocused, null)
+        lastIntersectionRef.current = null;
+      }
       return;
     }
       
@@ -122,17 +143,25 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
     const prevFocused = lastIntersectionRef.current && lastIntersectionRef.current.object;
 
     lastIntersectionRef.current = focusIntersection;
-    //console.log(lastIntersectionRef.current?.object.name)
+    lastRayRef.current = raycaster.ray;
 
     if (prevFocused !== nextFocused) {
       if (prevFocused)
-        emitExit(prevFocused, null)
+        emitExit(prevFocused, raycaster.ray)
       
       if (nextFocused && focusIntersection)
         emitEnter(nextFocused, focusIntersection);
     }
+
+    if (prevFocused && !nextFocused)
+      emitMissEnter(raycaster.ray);
+    if (!prevFocused && nextFocused)
+      emitMissExit();
+
     if (nextFocused && focusIntersection)
       emitOver(nextFocused, focusIntersection);
+    else
+      emitMissOver(raycaster.ray)
   }
 
   const [subscribeClick, emitClick] = useTargetedEmitter();
@@ -162,6 +191,19 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
       unsubClick();
     };
   };
+  const subscribeMiss = (events) => {
+    const unsubscribeMissEnter = events.enter && subscribeMissEnter(events.enter);
+    const unsubscribeMissClick = events.click && subscribeMissClick(events.click);
+    const unsubscribeMissOver = events.over && subscribeMissOver(events.over);
+    const unsubscribeMissExit = events.exit && subscribeMissExit(events.exit);
+
+    return () => {
+      unsubscribeMissEnter && unsubscribeMissEnter();
+      unsubscribeMissClick && unsubscribeMissClick();
+      unsubscribeMissOver && unsubscribeMissOver();
+      unsubscribeMissExit && unsubscribeMissExit();
+    }
+  }
   
   const manager = useMemo(() => ({
     onClick,
@@ -170,7 +212,8 @@ export const useRaycastManager = ()/*: RaycastManager*/ => {
     onMouseEnter,
     onMouseLeave,
     onUpdate,
-    subscribe
+    subscribe,
+    subscribeMiss,
   }));
 
   return manager;

@@ -131,6 +131,7 @@ const write3dQuadVertices = (array, index, point) => {
 /*::
 export type FloorMeshProps = {
   floors: $ReadOnlyArray<MiniTheaterShape>,
+  showDebug?: boolean,
   ref?: ?Ref<?Mesh>,
 };
 */
@@ -139,6 +140,7 @@ const material = new MeshBasicMaterial({ transparent: true, opacity: 0.5, color:
 
 export const FloorMesh/*: Component<FloorMeshProps>*/ = ({
   floors,
+  showDebug = false,
   ref: externalRef = null
 }) => {
   const floorAABB = useMemo(() =>
@@ -187,8 +189,8 @@ export const FloorMesh/*: Component<FloorMeshProps>*/ = ({
   const meshRef = externalRef || localRef;
 
   return h(group, { ref }, [
-    h(points, { geometry: pointGeometry }),
-    h(mesh, { geometry: floorGeometry, ref: meshRef, material }),
+    h(points, { geometry: pointGeometry, visible: showDebug }),
+    h(mesh, { geometry: floorGeometry, ref: meshRef, material, visible: showDebug }),
     //floors.map(floor => h(FloorDebug, { floor })),
   ]);
 }

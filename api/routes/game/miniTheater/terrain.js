@@ -15,7 +15,7 @@ export const createTerrainRoutes/*: RoutesConstructor*/ = (services) => {
     idName: 'terrainPropId',
     gameDataKey: 'mini-theater/terrain-prop',
     readScope: { type: 'game-master-in-game' },
-    async create({ game, body: { terrainProp: { iconPreviewCameraModelPath, modelPath, modelResourceId, name } } }) {
+    async create({ game, body: { terrainProp: { iconPreviewCameraModelPath, modelPath, modelResourceId, name, floorShapes } } }) {
       const terrainPropId = uuid();
       const terrainProp = {
         id: terrainPropId,
@@ -23,6 +23,7 @@ export const createTerrainRoutes/*: RoutesConstructor*/ = (services) => {
         name,
         modelPath,
         iconPreviewCameraModelPath,
+        floorShapes,
       };
       await services.data.gameData.miniTheater.terrainProps.set({ partition: game.id, sort: terrainPropId }, null, null, null, terrainProp);
       return terrainProp;
@@ -31,13 +32,19 @@ export const createTerrainRoutes/*: RoutesConstructor*/ = (services) => {
       const { results: models } = await services.data.gameData.miniTheater.terrainProps.query(game.id);
       return models.map(m => m.result);
     },
-    async update({ game, query: { terrainPropId }, body: { terrainProp: { name } } }) {
+    async update({ game, query: { terrainPropId }, body: { terrainProp: {
+      name, iconPreviewCameraModelPath, modelPath, modelResourceId, floorShapes
+    } } }) {
       const { result: terrainProp } = await services.data.gameData.miniTheater.terrainProps.get({ partition: game.id, sort: terrainPropId });
       if (!terrainProp)
         throw new Error();
       const nextTerrainProp = {
         ...terrainProp,
         name,
+        iconPreviewCameraModelPath, 
+        modelPath,
+        modelResourceId,
+        floorShapes
       }
 
       await services.data.gameData.miniTheater.terrainProps.set({ partition: game.id, sort: terrainPropId }, null, null, null, nextTerrainProp);

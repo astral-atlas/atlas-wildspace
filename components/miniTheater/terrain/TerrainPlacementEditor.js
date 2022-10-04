@@ -14,6 +14,7 @@ export type TerrainPlacementEditorProps = {
   parentRef: Ref<?Object3D>,
   miniTheaterState: MiniTheaterLocalState,
   onMoveTerrain?: Object3D => mixed,
+  onMoveTerrainFinish?: Object3D => mixed,
   raycast?: ?RaycastManager,
 };
 */
@@ -24,6 +25,7 @@ export const TerrainPlacementEditor/*: Component<TerrainPlacementEditorProps>*/ 
   miniTheaterState,
   raycast,
   onMoveTerrain = _ => {},
+  onMoveTerrainFinish = _ => {}
 }) => {
 
   const getTransformControlForTool = () => {
@@ -41,6 +43,9 @@ export const TerrainPlacementEditor/*: Component<TerrainPlacementEditorProps>*/ 
   const controls = useTransformControls(parentRef, control || 'translate', !!control, {
     change(object) {
       onMoveTerrain(object);
+    },
+    changeFinish(object) {
+      onMoveTerrainFinish(object)
     }
   }, [onMoveTerrain, miniTheaterState.tool])
   useEffect(() => {

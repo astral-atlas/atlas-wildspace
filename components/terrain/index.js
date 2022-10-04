@@ -1,3 +1,3 @@
 // @flow strict
 
-export * from './TerrainEditor.js';
+export * from './TerrainPropEditor.js';

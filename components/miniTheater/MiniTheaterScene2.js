@@ -7,7 +7,6 @@ import type {
   MonsterActorMask,
   TerrainProp,
 } from "@astral-atlas/wildspace-models";
-import type { Vector3 } from "three";
 import type { Component } from "@lukekaalim/act";
 import type { AssetDownloadURLMap } from "../asset/map";
 import type { MiniTheaterRenderResources } from "./useMiniTheaterResources";
@@ -23,7 +22,7 @@ import {
   miniQuaternionToThreeQuaternion,
   miniVectorToThreeVector,
 } from "../utils/miniVector";
-import { Quaternion } from "three";
+import { Matrix4, Quaternion, Vector3 } from "three";
 import { useRaycast2, useRaycastManager } from "../raycast/manager";
 import { useRaycastElement } from "../raycast/useRaycastElement";
 import { renderCanvasContext } from "../three/RenderCanvas";
@@ -39,15 +38,19 @@ const usePlacedTerrainFloors = (miniTheater, resources) => {
         const placementPosition = miniVectorToThreeVector(terrainPlacement.position);
         const placementRotation = miniQuaternionToThreeQuaternion(terrainPlacement.quaternion);
 
+        const placementMatrix = new Matrix4().compose(placementPosition, placementRotation, new Vector3(1, 1, 1))
+
         const terrainProp = resources.terrainProps.get(terrainPlacement.terrainPropId);
         if (!terrainProp)
           return [];
 
         return terrainProp.floorShapes.map(floorShape => {
           const position = miniVectorToThreeVector(floorShape.position)
-            .add(placementPosition);
+            .applyMatrix4(placementMatrix);
           const rotation = miniQuaternionToThreeQuaternion(floorShape.rotation)
-            .multiply(placementRotation);
+            .multiply(placementRotation)
+
+          
             
           return {
             ...floorShape,
@@ -67,6 +70,7 @@ export type MiniTheaterScene2Props = {
   miniTheaterState: MiniTheaterLocalState,
   controller: ?MiniTheaterController2,
 
+  
   onOverFloor?: (floorPoint: Vector3) => mixed,
   onExitFloor?: () => mixed,
 }
@@ -83,6 +87,9 @@ export const MiniTheaterScene2/*: Component<MiniTheaterScene2Props>*/ = ({
     miniTheaterState.miniTheater,
     miniTheaterState.resources
   )
+  const layer = miniTheaterState.miniTheater.layers.find(l => l.id === miniTheaterState.layer);
+  const isTerrainLayer = layer && layer.includes.some(i => i.type === 'any-terrain');
+
   const characterFloors = useMemo(() => {
     return miniTheaterState.miniTheater.pieces
       .map(p => [
@@ -96,8 +103,17 @@ export const MiniTheaterScene2/*: Component<MiniTheaterScene2Props>*/ = ({
       .flat(1)
   }, [miniTheaterState.miniTheater.pieces])
   const floors = useMemo(() => {
-    return [...placedFloors, ...characterFloors];
-  }, [placedFloors, characterFloors])
+    return [
+      ...placedFloors,
+      ...characterFloors,
+      isTerrainLayer ? {
+        type: 'box',
+        position: { x: 0, y: 0, z: 0 },
+        rotation: { x: 0, y: 0, z: 0, w: 1 },
+        size: { x: 50, y: 10, z: 50 }
+      } : null,
+    ].filter(Boolean);
+  }, [placedFloors, characterFloors, isTerrainLayer])
 
   const floorRef = useRef();
   const raycast = useRaycastManager();
@@ -126,7 +142,7 @@ export const MiniTheaterScene2/*: Component<MiniTheaterScene2Props>*/ = ({
     // Cursor
     h(MiniTheaterCursorRenderer, { miniTheaterState }),
     // Floor
-    h(FloorMesh, { floors, ref: floorRef }),
+    h(FloorMesh, { floors, ref: floorRef, showDebug: isTerrainLayer }),
     // Terrain
     h(MiniTheaterTerrainRenderer, { miniTheaterState, controller, raycast }),
     h(MiniTheaterPiecesRenderer, { miniTheaterState })

@@ -130,7 +130,12 @@ export const ResourcesAisle/*: Component<ResourcesAisleProps>*/ = ({
             label: 'Open Model Exporer',
             onButtonClick: () => setShowExplorer(true),
             disabled: !explorerModelAsset
-          })
+          }),
+          !!explorerModelAsset && h('ol', {}, [
+            explorerModelAsset.asset.scene.children.map(child => {
+              return h('li', {}, child.name)
+            })
+          ])
         ],
       ]
     }),

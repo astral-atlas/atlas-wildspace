@@ -67,6 +67,7 @@ export const createDynamoDBTrasactable = /*:: <V: {}>*/(
     } catch (error) {
       if (retries < 1)
         throw error;
+      console.warn('Retrying transaction')
       return transaction(partitionKey, sortKey, updater, retries - 1, defaultValue);
     }
   }

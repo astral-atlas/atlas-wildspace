@@ -24,6 +24,16 @@ import { isPermissableAction, reduceMiniTheaterAction } from "@astral-atlas/wild
 export const createMiniTheaterService = (
   data/*: WildspaceData*/
 )/*: MiniTheaterService*/ => {
+  const getEventForAction = (action, miniTheater) => {
+    switch (action.type) {
+      case 'set-layers':
+      case 'set-terrain':
+        return { type: 'update', next: miniTheater }
+      default:
+        return { type: 'update-pieces', pieces: miniTheater.pieces, version: miniTheater.version };
+    }
+  }
+
   const applyAction = async (gameId, miniTheaterId, action, isGM) => {
     const { next } = await data.gameData.miniTheaters.transaction(gameId, miniTheaterId, prev => {
       if (isPermissableAction(action, prev) && !isGM)
@@ -33,8 +43,10 @@ export const createMiniTheaterService = (
         ...reduceMiniTheaterAction(action, prev),
         version: v4(),
       }
-    });
-    data.gameData.miniTheaterEvents.publish(miniTheaterId, { type: 'update-pieces', pieces: next.pieces, version: next.version })
+    }, 5);
+    const event = getEventForAction(action, next);
+    data.gameData.miniTheaterEvents.publish(miniTheaterId, event)
+
     return next;
   };
   const subscribeEvents = (miniTheaterId, subscriber) => {

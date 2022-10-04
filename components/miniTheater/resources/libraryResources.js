@@ -24,8 +24,10 @@ export const useLibraryMiniTheaterResources = (
         return null;
       return [actor.id, createMaskForMonsterActor(monster, actor)]
     }).filter(Boolean));
-    const terrainProps = new Map(library.terrainProps.map(t => [t.id, t]));
-    const modelResources = new Map(library.modelResources.map(m => [m.id, m]))
+    const modelResources = new Map(library.modelResources.map(m => [m.id, m]));
+    const terrainProps = new Map(library.terrainProps
+      .filter(t => modelResources.has(t.modelResourceId))
+      .map(t => [t.id, t]));
 
     return { assets, characters, monsterMasks, terrainProps, modelResources }
   }, [

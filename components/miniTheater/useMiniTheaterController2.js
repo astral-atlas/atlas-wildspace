@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "@lukekaalim/act";
 import { v4 } from "uuid";
-import { hasLayerPermission, isBoardPositionEqual } from "@astral-atlas/wildspace-models";
+import { hasLayerPermission, isBoardPositionEqual, reduceMiniTheaterAction } from "@astral-atlas/wildspace-models";
 
 /*::
 import type {
@@ -65,6 +65,7 @@ export type MiniTheaterLocalAction =
     }
   | { type: 'set-tool', tool: MiniTheaterTool }
   | { type: 'remote-action', remoteAction: MiniTheaterAction }
+  | { type: 'local-action', localAction: MiniTheaterAction }
   | { type: 'set-target-mode', targetMode: 'pieces' | 'terrain' }
 */
 
@@ -106,15 +107,12 @@ export const reduceLocalState = (
           default:
             return state;
         }
-      case 'remote-action':
-        switch (action.remoteAction.type) {
-          case 'move-piece':
-          case 'set-terrain':
-            return state;
+      case 'local-action':
+        switch (action.localAction.type) {
           default:
             return {
               ...state,
-              selection: { type: 'none' }
+              miniTheater: reduceMiniTheaterAction(action.localAction, state.miniTheater)
             }
         }
       case 'select':
@@ -235,7 +233,6 @@ export const useMiniTheaterController2 = (
       return null;
 
     const act = (action) => {
-      console.log(`ACTION`, action);
       if (action.type === 'remote-action')
         connection.miniTheater.act(miniTheaterId, action.remoteAction);
       controller.act(action);
