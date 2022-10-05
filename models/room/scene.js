@@ -24,6 +24,8 @@ export const reduceSceneState = (state/*: RoomSceneState*/, action/*: RoomStateA
   switch (action.type) {
     case 'load-scene':
       return { ...state, content: action.scene.content };
+    case 'change-scene-content':
+      return { ...state, content: action.content }
     default:
       return state;
   }

@@ -6,6 +6,7 @@ import { castNonPlayerCharacter } from "../game/character.js";
 import { castAudioTrack, castAudioPlaylist } from "../audio.js";
 import { castAssetInfo } from "../asset.js";
 import { castTerrainProp } from "../game/miniTheater/terrain.js";
+import { castModelResource } from "../game/resources.js";
 
 /*::
 import type { Cast } from "@lukekaalim/cast";
@@ -15,11 +16,13 @@ import type { Location } from "../game/location";
 import type { AudioPlaylist, AudioTrack } from "../audio";
 import type { AssetID, AssetInfo } from "../asset";
 import type { TerrainProp } from "../game/miniTheater/terrain";
+import type { ModelResource } from "../game/resources";
 
 export type RoomResources = {
   locations:      $ReadOnlyArray<Location>,
   npcs:           $ReadOnlyArray<NonPlayerCharacter>,
   terrainProps:   $ReadOnlyArray<TerrainProp>,
+  modelResources: $ReadOnlyArray<ModelResource>,
   audioTracks:    $ReadOnlyArray<AudioTrack>,
   audioPlaylists: $ReadOnlyArray<AudioPlaylist>,
 };
@@ -29,6 +32,7 @@ export const castRoomResources/*: Cast<RoomResources>*/ = c.obj({
   locations:      c.arr(castLocation),
   npcs:           c.arr(castNonPlayerCharacter),
   terrainProps:   c.arr(castTerrainProp),
+  modelResources: c.arr(castModelResource),
   audioTracks:    c.arr(castAudioTrack),
   audioPlaylists: c.arr(castAudioPlaylist),
 });
@@ -50,6 +54,8 @@ export const mergeRoomResources = (a/*: RoomResources*/, b/*: RoomResources*/)/*
   npcs:           merge(a.npcs,           b.npcs,           n => n.id),
   audioTracks:    merge(a.audioTracks,    b.audioTracks,    t => t.id),
   audioPlaylists: merge(a.audioPlaylists, b.audioPlaylists, p => p.id),
+  terrainProps:   merge(a.terrainProps,   b.terrainProps,   t => t.id),
+  modelResources: merge(a.modelResources, b.modelResources, m => m.id),
 })
 
 export const emptyRoomResources/*: RoomResources*/ = {
@@ -57,6 +63,8 @@ export const emptyRoomResources/*: RoomResources*/ = {
   npcs:           [],
   audioTracks:    [],
   audioPlaylists: [],
+  terrainProps:   [],
+  modelResources: [],
 };
 
 export const getRoomResourcesAssetIds = (resources/*: RoomResources*/)/*: AssetID[]*/ => {
@@ -83,5 +91,8 @@ export const getRoomResourcesAssetIds = (resources/*: RoomResources*/)/*: AssetI
           return null;
       }
     }),
+    ...resources.modelResources.map(m => {
+      return m.assetId;
+    })
   ].filter(Boolean)
 }

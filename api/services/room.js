@@ -1,7 +1,10 @@
 // @flow strict
 /*::
 import type { UserID } from "@astral-atlas/sesame-models";
-import type { RoomID, GameID, RoomPage, GameConnectionID, RoomResources, RoomState } from '@astral-atlas/wildspace-models';
+import type {
+  RoomID, GameID, RoomPage, GameConnectionID,
+  RoomResources, RoomState, RoomStateAction
+} from '@astral-atlas/wildspace-models';
 import type { WildspaceData } from '@astral-atlas/wildspace-data';
 
 import type { AssetService } from "./asset";
@@ -11,14 +14,22 @@ import type { RoomConnectionService } from "./room/connection";
 
 import { v4 as uuid } from 'uuid';
 import { 
+  createDefaultRoomState,
   emptyRoomResources,
   mergeRoomResources,
+  reduceRoomState,
 } from "@astral-atlas/wildspace-models";
 import { createRoomConnectionService } from './room/connection.js';
 
 /*::
 export type RoomService = {
   connection: RoomConnectionService,
+  subscribeRoomStateUpdate: (
+    gameId: GameID,
+    roomId: RoomID,
+    onStateUpdate: () => mixed,
+  ) => { unsubscribe: () => void },
+  submitAction: (gameId: GameID, roomId: RoomID, action: RoomStateAction) => Promise<void>,
   getResources: (gameId: GameID, roomId: RoomID, roomState: RoomState) => Promise<RoomResources>,
   getState: (gameId: GameID, roomId: RoomID) => Promise<RoomState>,
 };
@@ -29,15 +40,6 @@ export const createRoomService = (
   asset/*: AssetService*/,
   game/*: GameService*/,
 )/*: RoomService*/ => {
-  const createDefaultRoomState = (gameId, roomId) => {
-    return {
-      version: uuid(),
-      roomId,
-    
-      audio: { volume: 0, playback: { type: 'none' } },
-      scene: { content: { type: 'none' } },
-    }
-  }
   const mergeResourcePromises = async (resourcePromises/*: Array<Promise<?RoomResources>>*/) => {
     const allResources = await Promise.all(resourcePromises)
     return allResources
@@ -82,12 +84,31 @@ export const createRoomService = (
         return null;
     }
   }
+  const getExpositionBackgroundResources = async (gameId, background) => {
+    switch (background.type) {
+      case 'mini-theater':
+        return getMiniTheaterResources(gameId, background.miniTheaterId);
+      default:
+        return null;
+    }
+  }
+  const getMiniTheaterResources = async (gameId, miniTheaterId) => {
+    const { results: modelResourceResults } = await data.gameData.resources.models.query(gameId);
+    const { results: terrainPropsResults } = await data.gameData.miniTheater.terrainProps.query(gameId);
+    const modelResources = modelResourceResults.map(r => r.result)
+    const terrainProps = terrainPropsResults.map(r => r.result)
+    return { ...emptyRoomResources, modelResources, terrainProps }
+  }
   const getSceneResources = async (gameId, roomId, sceneState) => {
     const { content } = sceneState;
     switch (content.type) {
       case 'exposition':
-        return getExpositionSubjectResources(gameId, content.exposition.subject);
+        return await mergeResourcePromises([
+          getExpositionSubjectResources(gameId, content.exposition.subject),
+          getExpositionBackgroundResources(gameId, content.exposition.background),
+        ]);
       case 'mini-theater':
+        return await getMiniTheaterResources(gameId, content.miniTheaterId)
       case 'none':
       default:
         return null;
@@ -96,17 +117,48 @@ export const createRoomService = (
   const getResources = async (gameId, roomId, state) => {
     return mergeResourcePromises([
       getAudioResources(gameId, roomId, state.audio),
-      getSceneResources(gameId, roomId, state.scene)
+      getSceneResources(gameId, roomId, state.scene),
     ]);
   }
   const getState = async (gameId, roomId) => {
     const { result } = await data.roomData.roomStates.table.get(gameId, roomId);
-    return result || createDefaultRoomState(gameId, roomId);
+    return result || createDefaultRoomState(roomId);
+  }
+  const submitAction = async (gameId, roomId, action) => {
+    try {
+      const { result: state } = await data.roomData.roomStates.table.get(gameId, roomId)
+      if (!state) {
+        const defaultState = createDefaultRoomState(roomId);
+        const nextRoomState = reduceRoomState(defaultState, action)
+        await data.roomData.roomStates.table.set(gameId, roomId, nextRoomState);
+        data.roomData.roomStateUpdates.publish(roomId, {});
+        data.gameData.gameDataEvent.publish(gameId, 'room-state')
+      } else {
+        const { next } = await data.roomData.roomStates.transactable
+          .transaction(gameId, roomId, prevState => {
+            return reduceRoomState(prevState, action)
+          }, 5);
+        console.log(next.scene.content.type);
+        data.roomData.roomStateUpdates.publish(roomId, {});
+        data.gameData.gameDataEvent.publish(gameId, 'room-state')
+      }
+
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  const subscribeRoomStateUpdate = (gameId, roomId, onUpdate) => {
+    const { unsubscribe } = data.roomData.roomStateUpdates.subscribe(roomId,  () => {
+      onUpdate()
+    })
+    return { unsubscribe }
   }
 
   return {
     connection: createRoomConnectionService(data),
+    subscribeRoomStateUpdate,
     getResources,
     getState,
+    submitAction,
   }
 }

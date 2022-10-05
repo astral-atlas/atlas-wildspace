@@ -17,6 +17,7 @@ export const createLibraryPageService = (
 
     const [
       { result: rooms },
+      { result: roomStates },
       { result: characters },
       { result: monsters },
       { result: monsterActors },
@@ -28,7 +29,8 @@ export const createLibraryPageService = (
       { results: terrainProps },
       { results: modelResources },
     ] = await Promise.all([
-      data.room.query(gameId),
+      data.roomData.rooms.query(gameId),
+      data.roomData.roomStates.table.query(gameId),
       data.characters.query(gameId),
       data.monsters.query(gameId),
       data.gameData.monsterActors.query(gameId),
@@ -49,6 +51,7 @@ export const createLibraryPageService = (
     ])
     const libraryData = {
       rooms,
+      roomStates,
       modelResources: modelResources.map(r => r.result),
       characters,
       monsters,

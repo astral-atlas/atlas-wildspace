@@ -38,6 +38,7 @@ export type WildspaceRoomData = {
     versions: DynamoDBTable<GameID, [RoomID, RoomStateVersion], RoomState>,
     transactable: Transactable<GameID, RoomID, RoomState>
   },
+  roomStateUpdates: Channel<RoomID, {}>,
   roomConnections: DynamoDBTable<GameID, [RoomID, GameConnectionID], RoomConnectionState>,
   roomConnectionUpdates: Channel<GameID, {
     connections: $ReadOnlyArray<RoomConnectionState>,
@@ -61,6 +62,7 @@ export const createTableWildspaceRoomData = (sources/*: WildspaceDataSources*/)/
     ),
     transactable: sources.createTransactable('roomStates', m.castRoomState, 'version')
   }
+  const roomStateUpdates = sources.createChannel('roomStatesUpdates', c.obj({}))
   const roomConnections = createNamespacedDynamoDBTable(
     sources.createDynamoDBTable('roomConnections', m.castRoomConnectionState),
     pk => pk,
@@ -80,5 +82,6 @@ export const createTableWildspaceRoomData = (sources/*: WildspaceDataSources*/)/
     roomStates,
     roomConnections,
     roomConnectionUpdates,
+    roomStateUpdates,
   }
 }

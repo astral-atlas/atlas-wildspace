@@ -1,6 +1,6 @@
 // @flow strict
 
-import { h, useContext, useEffect, useMemo, useRef } from "@lukekaalim/act";
+import { h, useContext, useEffect, useMemo, useRef, useState } from "@lukekaalim/act";
 import { group, lineSegments, mesh, points, useDisposable } from "@lukekaalim/act-three";
 import {
   Box3,
@@ -76,7 +76,10 @@ const calculateCellCount = (floorAABB) => {
   return (size.x * size.y * size.z);
 }
 
-const mapPotentialCells = (floorAABB, mapCellFunc) => {
+const mapPotentialCells = /*:: <T>*/(
+  floorAABB,
+  mapCellFunc/*: (i: number, x: number, y: number, z: number) => T*/
+)/*: T[]*/ => {
   const size = floorAABB.getSize(new Vector3())
     .multiplyScalar(0.1)
 
@@ -102,14 +105,24 @@ const mapPotentialCells = (floorAABB, mapCellFunc) => {
   return result;
 }
 
-const mapChunks = (chunkBounds, mapChunkFunc) => {
-  const size = chunkBounds.getSize(new Vector3())
-    .multiplyScalar(0.1)
+const defaultChunkSize = new Vector3(25, 25, 25)
+const createChunks = (boundsBox, chunkSize = defaultChunkSize) => {
+  const size = boundsBox.getSize(new Vector3())
 
-  const offset = chunkBounds.getCenter(new Vector3())
-    .add(size.clone().multiplyScalar(-5));
+  const chunkAABBs = [];
 
-    size.addScalar(1);
+  for (let x = 0; x < size.x; x += chunkSize.x) {
+    for (let y = 0; y < size.y; y += chunkSize.y) {
+      for (let z = 0; z < size.z; z += chunkSize.z) {
+        const min = new Vector3(x, y, z);
+        const max = min.clone().add(chunkSize)
+        const box = new Box3(min, max);
+        box.translate(boundsBox.min)
+        chunkAABBs.push(box);
+      }
+    }
+  }
+  return chunkAABBs;
 }
 
 const calcuateFloorCells = (floors, floorAABB) => {
@@ -118,27 +131,128 @@ const calcuateFloorCells = (floors, floorAABB) => {
     new Vector3(-0.5, -0.5, -0.5),
     new Vector3(0.5, 0.5, 0.5)
   )
-  const floorMatricies = floors.map(f => new Matrix4()
+  const floorMatrixMap = new Map(floors.map(f => [f, new Matrix4()
     .compose(
       miniVectorToThreeVector(f.position),
       miniQuaternionToThreeQuaternion(f.rotation),
       miniVectorToThreeVector(f.size)
     )
-    .invert());
-  
-  mapPotentialCells(floorAABB, (i, x, y, z) => {
-    const point = new Vector3(x, y, z);
+    .invert()]));
 
-    const intersectsFloor = floorMatricies.some(m =>
-      box.containsPoint(point.clone().applyMatrix4(m)));
-    
-    if (intersectsFloor) {
-      cells.push(point)
-    }
+  const floorBoundsMap = calculateFloorAABBMap(floors);
+  const chunks = createChunks(floorAABB, new Vector3(50, 50, 50));
+
+  chunks.map(chunkAABB => {
+    const floorsInChunk = floors.filter(f => {
+      const floorBounds = floorBoundsMap.get(f);
+      if (!floorBounds)
+        return false;
+      return chunkAABB.intersectsBox(floorBounds);
+    })
+    if (floorsInChunk.length < 1)
+      return;
+
+    mapPotentialCells(chunkAABB, (i, x, y, z) => {
+      const point = new Vector3(x, y, z);
+
+      const intersectsFloor = floorsInChunk.some(f => {
+        const matrix = floorMatrixMap.get(f);
+        if (!matrix)
+          return false;
+
+        return box.containsPoint(point.clone().applyMatrix4(matrix))
+      })
+  
+      if (intersectsFloor) {
+        cells.push(point)
+      }
+    });
   });
+  
 
   return cells;
 };
+
+const useFloorCells = (floors) => {
+  return useMemo(() => {
+    const startTime = performance.now();
+    const floorAABB = calculateFloorAABB(floors);
+    const floorBoundsMap = calculateFloorAABBMap(floors);
+    const floorMatrixMap = new Map(floors.map(f => [f, new Matrix4()
+      .compose(
+        miniVectorToThreeVector(f.position),
+        miniQuaternionToThreeQuaternion(f.rotation),
+        miniVectorToThreeVector(f.size)
+      )
+      .invert()]));
+    const floorCellBounds = new Box3(
+      new Vector3(-0.5, -0.5, -0.5),
+      new Vector3(0.5, 0.5, 0.5)
+    )
+
+    const chunks = createChunks(floorAABB, new Vector3(100, 100, 100));
+
+    const chunkFloors = chunks
+      .map(chunk =>
+        floors.filter(floor => {
+          const bounds = floorBoundsMap.get(floor);
+          return bounds && bounds.intersectsBox(chunk);
+        })
+      );
+
+    const cells = []
+    const candidates = [];
+
+    const subChunks = chunks.map((chunk, index) => {
+      const floors = chunkFloors[index];
+      if (floors.length < 1)
+        return [];
+      return createChunks(chunk, new Vector3(50, 50, 50))
+        .map(subChunk => {
+          const subFloors = floors.filter(floor => {
+            const bounds = floorBoundsMap.get(floor);
+            return bounds && bounds.intersectsBox(subChunk);
+          });
+          if (subFloors.length < 1)
+            return;
+          
+          const subCells = [];
+          mapPotentialCells(subChunk, (_, x, y, z) => {
+            const point = new Vector3(x, y, z);
+            candidates.push(point);
+      
+            const intersectsFloor = subFloors.some(f => {
+              const matrix = floorMatrixMap.get(f);
+              if (!matrix)
+                return false;
+      
+              return floorCellBounds.containsPoint(point.clone().applyMatrix4(matrix))
+            })
+        
+            if (intersectsFloor) {
+              cells.push(point)
+              subCells.push(point);
+            }
+          });
+          return { subChunk, subFloors, subCells };
+        }).filter(Boolean)
+    }).flat(1)
+
+    const endTime = performance.now();
+    console.info(`Floor Mesh Gen Ms`, endTime - startTime)
+    return {
+      floorAABB,
+      floorBoundsMap,
+
+      subChunks,
+      chunks,
+      chunkFloors,
+
+      cells,
+      candidates,
+    }
+  }, [floors]);
+}
 
 const write3dPositionVertex = (array, index, x, y, z) => {
   array[index + 0] = x;
@@ -172,47 +286,41 @@ export const FloorMesh/*: Component<FloorMeshProps>*/ = ({
   showDebug = false,
   ref: externalRef = null
 }) => {
-  const floorAABB = useMemo(() =>
-    calculateFloorAABB(floors), [floors]);
-
+  const pointGeometry = useDisposable(() => new BufferGeometry());
+  const floorGeometry = useDisposable(() => new BufferGeometry());
   const ref = useRef()
+
+  const { floorAABB, cells, chunkFloors, chunks, subChunks, candidates } = useFloorCells(floors);
 
   useChildObject(ref, () => {
     return new Box3Helper(floorAABB);
   }, [floorAABB])
 
-  const floorCells = useMemo(() => {
-    return calcuateFloorCells(floors, floorAABB);
-  }, [floors, floorAABB]);
-
-  const pointGeometry = useDisposable(() => {
-    const positionArray = new Float32Array(calculateCellCount(floorAABB) * 3);
-
-    mapPotentialCells(floorAABB, (i, x, y, z) => {
-      const v = i * 3;
-      positionArray[v + 0] = x + (((Math.random() * 2) - 1) * 0.01);
-      positionArray[v + 1] = y + (((Math.random() * 2) - 1) * 0.01);
-      positionArray[v + 2] = z + (((Math.random() * 2) - 1) * 0.01);
-    });
+  useEffect(() => {
+    if (!showDebug)
+      return;
+    const startTime = performance.now();
     
-    const geometry = new BufferGeometry();
-    geometry.setAttribute('position', new BufferAttribute(positionArray, 3));
-    return geometry;
-  }, [floorCells])
+    const positionArray = new Float32Array(candidates.map(c => [c.x, c.y, c.z]).flat(1));
+    pointGeometry.setAttribute('position', new BufferAttribute(positionArray, 3));
+    const endTime = performance.now();
+    console.info(`Floor Points Write Ms`, endTime - startTime)
+  }, [pointGeometry, chunks, chunkFloors, showDebug])
 
-  const floorGeometry = useDisposable(() => {
-    const positionArray = new Float32Array(floorCells.length * 3 * 6);
+  useEffect(() => {
+    const startTime = performance.now();
+    const positionArray = new Float32Array(cells.length * 3 * 6);
 
-    for (let i = 0; i < floorCells.length; i++) {
-      const point = floorCells[i];
+    for (let i = 0; i < cells.length; i++) {
+      const point = cells[i];
       const v = i * 3 * 6;
       write3dQuadVertices(positionArray, v, point.clone().add(new Vector3(0, -4, 0)));
     }
 
-    const geometry = new BufferGeometry();
-    geometry.setAttribute('position', new BufferAttribute(positionArray, 3));
-    return geometry;
-  }, [floorCells])
+    floorGeometry.setAttribute('position', new BufferAttribute(positionArray, 3));
+    const endTime = performance.now();
+    console.info(`Floor Geometry Write Ms`, endTime - startTime)
+  }, [floorGeometry, cells])
 
   const localRef = useRef();
   const meshRef = externalRef || localRef;
@@ -220,8 +328,22 @@ export const FloorMesh/*: Component<FloorMeshProps>*/ = ({
   return h(group, { ref }, [
     h(points, { geometry: pointGeometry, visible: showDebug }),
     h(mesh, { geometry: floorGeometry, ref: meshRef, material, visible: showDebug }),
-    //floors.map(floor => h(FloorDebug, { floor })),
+    showDebug && subChunks.map(({ subChunk }) => h(ChunkDebug, { ref, chunk: subChunk })),
+    showDebug && chunks.map((chunk) => h(ChunkDebug, { ref, chunk, color: new Color('white') })),
+    showDebug && floors.map(floor => h(FloorDebug, { floor })),
   ]);
+}
+
+const FloorMeshChunk = ({ chunk, chunkFloors }) => {
+
+};
+
+const ChunkDebug = ({ ref, chunk, color = new Color('yellow') }) => {
+  const helper = useChildObject(ref, () => {
+    return new Box3Helper(chunk, color)
+  }, [chunk, color]);
+
+  return null;
 }
 
 const FloorDebug = ({ floor }) => {

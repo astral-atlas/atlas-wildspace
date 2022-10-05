@@ -108,7 +108,10 @@ const ExpositionMiniTheaterEditor = ({
     layer: null,
     miniTheater,
     resources,
-    selection: { type: 'none' }
+    selection: { type: 'none' },
+    terrainCursor: null,
+    tool: { type: 'place' },
+    targetMode: 'pieces',
   };
 
   const onFreeCameraChange = (camera) => {
@@ -125,6 +128,7 @@ const ExpositionMiniTheaterEditor = ({
   return h(RenderCanvas, { className: styles.miniTheaterBackground }, [
     h(MiniTheaterScene2, {
       miniTheaterState,
+      controller: null,
     }),
     h(GridHelperGroup),
     h(FreeCamera, {

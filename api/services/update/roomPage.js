@@ -8,6 +8,7 @@ import type { RoomService } from "../room";
 import type { GameService } from "../game";
 import type { PageService } from "../page";
 */
+import { createDefaultRoomState, reduceRoomState } from '@astral-atlas/wildspace-models';
 import { v4 as uuid } from 'uuid';
 
 /*::
@@ -35,7 +36,7 @@ export const createServerRoomPageChannel = (
     const event = { type: 'next-page', page };
     send({ type: 'room-page-event', roomId, event })
   }
-  const onRoomUpdate = (roomId) => async (roomUpdate) => {
+  const onRoomUpdate = (roomId) => async () => {
     const page = await pageService.getRoomPage(game.id, roomId);
     if (!page)
       return;
@@ -53,19 +54,31 @@ export const createServerRoomPageChannel = (
       // Subscriptions
       const gameUpdateSubscription = data.gameUpdates.subscribe(game.id, onGameUpdate(roomId));
       const connectionSubscription = roomService.connection.subscribeConnectionChange(game.id, onConnectionUpdate(roomId));
+      const roomSubscription       = roomService.subscribeRoomStateUpdate(game.id, roomId, onRoomUpdate(roomId));
 
       subscriptions.set(roomId, async () => {
         gameUpdateSubscription.unsubscribe();
         connectionSubscription.unsubscribe();
+        roomSubscription.unsubscribe();
         await roomService.connection.disconnect(game.id, roomId, connectionId);
       })
     }
   };
+  const onAction = async (roomId, action) => {
+    try {
+      console.log(JSON.stringify(action))
+      await roomService.submitAction(game.id, roomId, action);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   const update = (message) => {
     switch (message.type) {
       case "room-page-subscribe":
         return void onSubscribe(message.roomIds);
+      case 'room-page-action':
+        return void onAction(message.roomId, message.action)
     }
   };
 

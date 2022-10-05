@@ -81,6 +81,7 @@ export const createUpdateService = (
     };
 
     const update = (message) => {
+      console.debug(message.type)
       miniTheater.update(message);
       wikiDoc.update(message);
       library.update(message);

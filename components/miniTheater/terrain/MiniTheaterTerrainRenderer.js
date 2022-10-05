@@ -125,6 +125,11 @@ const TerrainPlacementRenderer = ({
   const terrainProp = resources.terrainProps.get(terrain.terrainPropId);
   const modelResource = terrainProp && resources.modelResources.get(terrainProp.modelResourceId)
   const rootObject = modelResource && resources.objectMap.get(modelResource.assetId);
+  
+
+  if (!resources.loadingAssets && !rootObject) {
+    console.warn(modelResource, terrainProp, rootObject, resources);
+  }
 
 
   if (!rootObject || !modelResource || !terrainProp)

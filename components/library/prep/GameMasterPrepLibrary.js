@@ -125,6 +125,9 @@ export const GameMasterPrepLibrary/*: Component<GameMasterPrepLibraryProps>*/ = 
       title: 'Room',
       component: h(RoomAisle, {
         assets,
+        library: data,
+        assets,
+        updates,
         rooms: data.rooms,
         client, game, userId
       })

@@ -55,3 +55,13 @@ export const updateRoomVersion = (state/*: RoomState*/)/*: RoomState*/ => {
     version: uuid(),
   }
 }
+
+export const createDefaultRoomState = (roomId/*: RoomID*/)/*: RoomState*/ => {
+  return {
+    version: uuid(),
+    roomId,
+  
+    audio: { volume: 0, playback: { type: 'none' } },
+    scene: { content: { type: 'none' } },
+  }
+}

@@ -4,7 +4,8 @@ import type { GameUpdatesConnection } from "../updates";
 import type { GameUpdateChannel } from "./meta";
 import type {
   GameID,
-  RoomID, RoomPage
+  RoomID, RoomPage,
+  RoomStateAction
 } from "@astral-atlas/wildspace-models";
 import type { PageClient } from "../page";
 */
@@ -13,7 +14,10 @@ import { reduceRoomPageEvent, roomPageChannel } from "@astral-atlas/wildspace-mo
 import { createUpdateChannel } from "./meta";
 
 /*::
-export type RoomPageConnection = GameUpdateChannel<RoomID, RoomPage>;
+export type RoomPageConnection = {
+  ...GameUpdateChannel<RoomID, RoomPage>,
+  submitAction: (roomId: RoomID, actioN: RoomStateAction) => void,
+};
 */
 
 export const createRoomPageConnection = (
@@ -40,5 +44,8 @@ export const createRoomPageConnection = (
       return await pageClient.getRoomPage(gameId, roomId);
     }
   }, updates);
-  return channel; 
+  const submitAction = (roomId, action) => {
+    updates.send({ type: 'room-page-action', roomId, action })
+  }
+  return { ...channel, submitAction }; 
 }

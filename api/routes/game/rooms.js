@@ -13,6 +13,7 @@ export const createGameRoomsRoutes/*: RoutesConstructor*/ = (services) => {
   const gameRoomRoutes = createGameCRUDRoutes(gameAPI["/games/rooms"], {
     name: 'room',
     idName: 'roomId',
+    gameDataKey: 'room',
     async create({ game, body: { room: { hidden, title } } }) {
       const roomId = uuid();
       const room = {

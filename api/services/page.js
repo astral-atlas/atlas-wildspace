@@ -45,7 +45,7 @@ export const createPageService = (
       data.gameData.monsterActors.query(gameId),
       data.gameData.magicItems.query(gameId),
       data.wiki.documents.query(gameId),
-      data.room.query(gameId),
+      data.roomData.rooms.query(gameId),
       roomService.connection.listAll(gameId),
     ]);
     if (!game)

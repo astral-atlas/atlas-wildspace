@@ -4,7 +4,8 @@ import type { AssetInfo } from "../asset";
 import type { AudioPlaylist, AudioTrack } from "../audio";
 import type { Character, Monster } from "../character";
 import type { MonsterActor } from "../monster/monsterActor";
-import type { Room } from "../room/room";
+import type { Room, RoomID } from "../room/room";
+import type { RoomState } from "../room/state";
 import type { Exposition } from "./exposition";
 import type { Location } from "./location";
 import type { MiniTheater } from "./miniTheater";
@@ -19,7 +20,8 @@ import { castAudioPlaylist, castAudioTrack } from "../audio.js";
 import { castMonster } from "../character.js";
 import { castCharacter } from "../character.js";
 import { castMonsterActor } from "../monster/monsterActor.js";
-import { castRoom } from "../room/room.js";
+import { castRoom, castRoomId } from "../room/room.js";
+import { castRoomState } from "../room/state.js";
 import { castExposition } from "./exposition.js";
 import { castLocation } from "./location.js";
 import {
@@ -33,6 +35,7 @@ import { c } from "@lukekaalim/cast";
 /*::
 export type LibraryData = {|
   rooms: $ReadOnlyArray<Room>,
+  roomStates: $ReadOnlyArray<RoomState>,
   modelResources: $ReadOnlyArray<ModelResource>,
 
   characters: $ReadOnlyArray<Character>,
@@ -54,6 +57,7 @@ export type LibraryData = {|
 */
 export const castLibraryData/*: Cast<LibraryData>*/ = c.obj({
   rooms: c.arr(castRoom),
+  roomStates: c.arr(castRoomState),
   modelResources: c.arr(castModelResource),
   characters: c.arr(castCharacter),
   monsters: c.arr(castMonster),
