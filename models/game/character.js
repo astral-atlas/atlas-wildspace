@@ -16,13 +16,12 @@ export type NonPlayerCharacter = {
     | { type: 'plaintext', plaintext: string },
   dialoguePortrait:
     | { type: 'image', imageAssetId: AssetID }
-    | { type: 'color', color: string }
     | { type: 'none' },
 
   tags: $ReadOnlyArray<string>,
 }
-
 */
+
 export const castNonPlayerCharacterID/*: Cast<NonPlayerCharacterID>*/ = c.str;
 export const castNonPlayerCharacter/*: Cast<NonPlayerCharacter>*/ = c.obj({
   id: castNonPlayerCharacterID,
@@ -33,7 +32,6 @@ export const castNonPlayerCharacter/*: Cast<NonPlayerCharacter>*/ = c.obj({
   }),
   dialoguePortrait: c.or('type', {
     'image': c.obj({ type: (c.lit('image')/*: Cast<'image'>*/), imageAssetId: castAssetID }),
-    'color': c.obj({ type: (c.lit('color')/*: Cast<'color'>*/), color: c.str }),
     'none': c.obj({ type: (c.lit('none')/*: Cast<'none'>*/) }),
   }),
 

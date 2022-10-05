@@ -42,10 +42,10 @@ export const GameMenu/*: Component<GameMenuProps>*/ = ({
       h(MenuGameBreak),
       h(MenuGameDescriptor, {}, `Rooms`),
       gameController.gamePage.rooms.map(room => {
-        const lobby = gameController.gamePage.roomLobbies.find(([roomId]) => roomId === room.id);
+        const connections = gameController.gamePage.roomConnectionCounts.find(([roomId]) => roomId === room.id);
 
         return h(MenuGameRoomButton, {
-          connections: lobby ? lobby[1].playersConnected.length : 0,
+          connections: connections ? connections.count : 0,
           roomName: room.title,
           onClick: () => gameController.router.setRoute({
             page: 'room',

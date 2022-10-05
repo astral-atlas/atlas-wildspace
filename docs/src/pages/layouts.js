@@ -24,6 +24,7 @@ import {
 } from '@astral-atlas/wildspace-components';
 import { Vector2 } from "three";
 import { SideOverlayDemo } from './SideOverlayDemo';
+import { FloatingOverlayDemo } from "./demos";
 
 /*::
 export type GridMenuProps = {
@@ -302,29 +303,6 @@ const demoScreens = [
   },
 ]
 
-const Compass2Demo = () => {
-  const ref = useRef();
-  const emitter = useElementKeyboard(ref);
-  const track = useKeyboardTrack(emitter);
-  const trackEmitter = useKeyboardTrackEmitter(track);
-
-  const [direction, setDirection] = useCompassKeysDirection(trackEmitter, demoScreens)
-
-  return h('div', { ref }, [
-    h(CompassLayoutMinimap, {
-      direction,
-      screens: demoScreens,
-      onScreenClick: screen => setDirection(screen.position)
-    }),
-    h(LayoutDemo, {}, [
-      h(CompassLayout, {
-        direction,
-        screens: demoScreens,
-      }),
-    ])
-  ]);
-}
-
 const PopupDemo = () => {
   const [visible, setVisible] = useState(true);
 
@@ -354,12 +332,12 @@ const Demo = ({ node }) => {
       return h(Components);
     case 'corners':
       return h(CornersDemo);
-    case 'compass2':
-      return h(Compass2Demo)
     case 'popup':
       return h(PopupDemo);
     case 'side':
       return h(SideOverlayDemo)
+    case 'floating-overlay':
+      return h(FloatingOverlayDemo);
     default:
       throw new Error();
   }

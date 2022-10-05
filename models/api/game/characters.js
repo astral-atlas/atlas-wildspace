@@ -17,7 +17,7 @@ import { castGameId, castGame } from '../../game.js';
 import { castCharacter, castCharacterId } from '../../character.js';
 import { castUserId } from '@astral-atlas/sesame-models';
 import { castGameMaster, castPlayer } from "../../game.js";
-import { castAssetID, castAssetDescription } from '../../asset.js';
+import { castAssetInfoDatabase } from '../../asset.js';
 
 /*::
 export type CharactersAPI = {|
@@ -54,10 +54,7 @@ export const gameCharactersResourceDescription/*: ResourceDescription<Characters
     toResponseBody: obj({
       type: lit('found'),
       characters: c.arr(castCharacter),
-      relatedAssets: c.arr(c.tup([
-        castAssetID,
-        c.maybe(c.obj({ description: castAssetDescription, downloadURL: c.str }))
-      ]))
+      relatedAssets: castAssetInfoDatabase,
     }),
   },
   POST: {

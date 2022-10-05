@@ -7,14 +7,15 @@ import type {
   Game, Character,
   MiniTheater, MiniTheaterAction,
   Monster, MonsterActor,
+  LibraryData,
 } from '@astral-atlas/wildspace-models';
 import type { UserID } from "@astral-atlas/sesame-models";
 
 import type { AssetDownloadURLMap } from "../../asset/map";
-import type { WildspaceClient } from '@astral-atlas/wildspace-client2';
+import type { WildspaceClient, UpdatesConnection } from '@astral-atlas/wildspace-client2';
 */
 
-import { h, useEffect, useRef, useState } from "@lukekaalim/act"
+import { h, useEffect, useMemo, useRef, useState } from "@lukekaalim/act"
 import { useLibrarySelection } from "../librarySelection";
 import { LibraryAisle } from "../LibraryAisle";
 import { LibraryShelf } from "../LibraryShelf";
@@ -36,11 +37,23 @@ import { useResourcesLoader } from "../../encounter";
 import { TextInput } from "../../preview/inputs";
 import { useElementKeyboard } from "../../keyboard/changes";
 import { MiniTheaterOverlay } from "../../miniTheater/MiniTheaterOverlay";
+import { useAisleFocus } from "../useAisleFocus";
+import { LibraryDesk } from "../LibraryDesk";
+import {
+  useKeyboardTrack,
+  useKeyboardTrackEmitter,
+} from "../../keyboard/track";
+import { useTrackedKeys } from "../../utils/trackedKeys";
+import { SceneRenderer2 } from "../../scene";
+import { useMiniTheaterController2 } from "../../miniTheater/useMiniTheaterController2";
+import { useLibraryMiniTheaterResources } from "../../miniTheater/resources/libraryResources";
+import { useMiniTheaterState } from "../../miniTheater";
 
 /*::
 export type MiniTheaterAisleProps = {
   game: Game,
   userId: UserID,
+  updates: UpdatesConnection,
 
   miniTheaters: $ReadOnlyArray<MiniTheater>,
 
@@ -49,14 +62,17 @@ export type MiniTheaterAisleProps = {
   monsterActors: $ReadOnlyArray<MonsterActor>,
 
   assets: AssetDownloadURLMap,
+  library: LibraryData,
 
   client: WildspaceClient
 }
 */
 
 export const MiniTheaterAisle/*: Component<MiniTheaterAisleProps>*/ = ({
+  library,
   game,
   userId,
+  updates,
   miniTheaters,
 
   characters,
@@ -90,52 +106,65 @@ export const MiniTheaterAisle/*: Component<MiniTheaterAisleProps>*/ = ({
     await client.game.miniTheater.act(game.id, selectedMiniTheater.id, action)
   }
 
+  const { focus, toggleFocus } = useAisleFocus();
+
   const [showPreview, setShowPreview] = useState(false);
+
+  const floor = h(LibraryFloor, {}, [
+    h(LibraryFloorHeader, {
+      title: 'Mini Theaters',
+      filter: { text: filter, onFilterInput: f => setFilter(f) }
+    }, [
+      h('hr'),
+      h(EditorForm, {}, [
+        h(EditorHorizontalSection, {}, [
+          h(EditorVerticalSection, {}, [
+            h(EditorTextInput, { label: 'Mini Theater Name', text: stagingName, onTextInput: setStagingName }),
+            h(EditorButton, { label: "Create new Mini Theater", onButtonClick: createNewTheater })
+          ]),
+        ]),
+      ]),
+    ]),
+    h(LibraryShelf, { title: 'All Theaters', selection, books: miniTheaters.map(m => ({
+      id: `mini-theater:${m.id}`,
+      title: m.name,
+    })) }),
+  ])
+
+  const desk = h(LibraryDesk, {}, !!selectedMiniTheater && [
+    h(MiniTheaterEditor, {
+      selectedMiniTheater,
+      characters,
+      monsters,
+      monsterActors,
+      updateSelectedTheater,
+      deleteTheater,
+      setShowPreview,
+    }),
+    h(EditorButton, { label: 'Workstation', onButtonClick: toggleFocus })
+  ]);
+
+  const workstation = [!!selectedMiniTheater &&
+    h(MiniTheaterPreview, {
+      library,
+      updates,
+      selectedMiniTheater,
+      assets,
+      characters,
+      monsters,
+      monsterActors,
+      updateSelectedTheater,
+      applyAction,
+    })
+  ];
 
   return [
     h(LibraryAisle, {
-      floor: h(LibraryFloor, {}, [
-        h(LibraryFloorHeader, {
-          title: 'Mini Theaters',
-          filter: { text: filter, onFilterInput: f => setFilter(f) }
-        }, [
-          h('hr'),
-          h(EditorForm, {}, [
-            h(EditorHorizontalSection, {}, [
-              h(EditorVerticalSection, {}, [
-                h(EditorTextInput, { label: 'Mini Theater Name', text: stagingName, onTextInput: setStagingName }),
-                h(EditorButton, { label: "Create new Mini Theater", onButtonClick: createNewTheater })
-              ]),
-            ]),
-          ]),
-        ]),
-        h(LibraryShelf, { title: 'All Theaters', selection, books: miniTheaters.map(m => ({
-          id: `mini-theater:${m.id}`,
-          title: m.name,
-        })) }),
-      ]),
-      desk: [
-        !!selectedMiniTheater && h(MiniTheaterEditor, {
-          selectedMiniTheater,
-          characters,
-          monsters,
-          monsterActors,
-          updateSelectedTheater,
-          deleteTheater,
-          setShowPreview,
-        })
-      ]
-    }),
-    h(PopupOverlay, { visible: showPreview && !!selectedMiniTheater, onBackgroundClick: () => setShowPreview(false) },
-      selectedMiniTheater && h(MiniTheaterPreview, {
-        selectedMiniTheater,
-        assets,
-        characters,
-        monsters,
-        monsterActors,
-        updateSelectedTheater,
-        applyAction,
-      }))
+      focus,
+      floor,
+      desk,
+      workstation,
+    })
   ];
 };
 
@@ -235,75 +264,27 @@ const MiniTheaterEditor = ({
 
 const MiniTheaterPreview = ({
   selectedMiniTheater,
+  library,
   monsters, monsterActors, characters,
   updateSelectedTheater,
   applyAction,
+  updates,
   assets
 }) => {
-  const controller = useMiniTheaterController();
-  const resources = useResourcesLoader()
-  const rootRef = useRef();
+  const resources = useLibraryMiniTheaterResources(library)
 
-  useEffect(() => {
-    const spm = controller.subscribePieceMove(event => {
-      console.log(selectedMiniTheater.id, { event })
-      applyAction({ type: 'move', movedPiece: event.pieceRef, position: event.position })
-    })
-    const spp = controller.subscribePieceAdd(event => {
-      console.log(selectedMiniTheater.id, { event })
-      applyAction({ type: 'place', placement: { ...event.placement, visible: true, position: event.position } })
-    })
-    return () => {
-      spm();
-      spp();
+  const controller = useMiniTheaterController2(
+    selectedMiniTheater.id,
+    resources,
+    updates,
+    true,
+  );
+  const state = useMiniTheaterState(controller);
+
+  return !!controller && !!state && h(SceneRenderer2, {
+    sceneContentRenderData: {
+      foreground: { type: 'mini-theater-controls', controller, state },
+      background: { type: 'mini-theater', state, controller, cameraMode: { type: 'interactive', bounds: null } }
     }
-  }, [selectedMiniTheater])
-
-  const monsterMasks = monsterActors.map(ma => {
-    const monster = monsters.find(mo => ma.monsterId == mo.id);
-    if (!monster)
-      return null;
-    return {
-      id: ma.id,
-      name: ma.name || monster.name,
-      conditions: ma.conditions,
-      healthDescriptionText: 'Healthy',
-      initiativeIconAssetId: monster.initiativeIconAssetId,
-    }
-  }).filter(Boolean)
-  const [selectedId, setSelectedId] = useState();
-  useEffect(() => {
-    return controller.subscribeSelection(e => setSelectedId(e))
-  }, [])
-  const [placement, setPlacement] = useState();
-  useEffect(() => {
-    return controller.subscribePlacement(e => setPlacement(e))
-  }, [])
-
-  const emitter = useElementKeyboard(rootRef);
-
-  return h('div', { ref: rootRef, tabIndex: 0, style: { width: '100%', height: '100%', position: 'relative' } }, [
-    /*
-    h(EditorForm, {}, [
-      h(EditorHorizontalSection, {}, [
-        monsterActors.map(ma =>
-          h(EditorButton, {
-            label: `${ma.name || ma.id}`,
-            onButtonClick: () => controller.pickPlacement({ type: 'monster', monsterActorId: ma.id })
-          }))
-      ]),
-      h(EditorButton, { label: 'Place Monster', text: selectedId ? selectedId.pieceRef : 'None' }),
-      h(EditorTextInput, { diabled: true, label: 'Placement', text: placement ? placement.placement.type : 'None' }),
-    ]),*/
-    h(MiniTheaterOverlay, { characters, monsterActors, controller, assets }),
-    h(MiniTheaterCanvas, {
-      assets,
-      controller,
-      characters,
-      miniTheater: selectedMiniTheater,
-      monsterMasks,
-      emitter,
-      resources
-    })
-  ])
+  });
 }

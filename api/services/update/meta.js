@@ -9,6 +9,7 @@ import type {
 */
 /*::
 export type ServerUpdateChannel<TDesc> = {
+  heartbeat?: () => void,
   update: (event: UpdateChannelClientMessage) => void,
 
   close: () => Promise<void>,

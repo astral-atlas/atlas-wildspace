@@ -1,152 +1,166 @@
 // @flow strict
 /*::
 import type { Component } from '@lukekaalim/act';
-import type {  } from '@astral-atlas/wildspace-models';
+import type { SceneContent } from '@astral-atlas/wildspace-models';
+import type { SceneContentRenderData, SceneContentBackgroundRenderData } from '@astral-atlas/wildspace-components';
 */
-import { SceneBackgroundRenderer, SceneRenderer, useAnimatedKeyedList, useMiniTheaterController, useResourcesLoader } from '@astral-atlas/wildspace-components';
-import { h, useEffect, useRef, useState } from '@lukekaalim/act';
+import {
+  MiniTheaterCanvas, ProseMirror, prosePlugins,
+  SceneContentForegroundRenderer, SceneRenderer, SceneRenderer2,
+  useAnimatedKeyedList, useElementKeyboard, useKeyboardTrack,
+  createMiniTheaterController2,
+  SceneContentEditor,
+  createAssetDownloadURLMap,
+  useMiniTheaterController2,
+  useAsync,
+  miniVectorToThreeVector,
+  miniQuaternionToThreeQuaternion,
+  getContentRenderData
+} from '@astral-atlas/wildspace-components';
+import { h, useEffect, useMemo, useRef, useState } from '@lukekaalim/act';
 
 import cityImgURL from './city.jpg';
 import riceFieldURL from './rice_field.jpg';
 import { useAnimationFrame } from "@lukekaalim/act-three/hooks";
 import { useAnimation } from '@lukekaalim/act-curve';
-import { LayoutDemo } from '../demo';
-import { createMockWildspaceClient } from "@astral-atlas/wildspace-test";
+import { LayoutDemo, ScaledLayoutDemo } from "../demo";
+import { createMockImageAsset, createMockLibraryData, createMockMiniTheater, createMockMonster, createMockMonsterActor, createMockMonsterPiece, createMockWildspaceClient } from "@astral-atlas/wildspace-test";
+import { v4 } from "uuid";
+import { createMaskForMonsterActor, emptyRootNode, proseNodeJSONSerializer, proseSchema } from '@astral-atlas/wildspace-models';
+import { EditorState } from "prosemirror-state";
+import { EditorView } from "prosemirror-view";
+import { Node } from "prosemirror-model";
+import { useLibraryMiniTheaterResources } from '@astral-atlas/wildspace-components/miniTheater/resources/libraryResources';
+
+const initialState = EditorState.create({
+  schema: proseSchema,
+  plugins: [...prosePlugins],
+  doc: proseSchema.node("doc", {}, proseSchema.node("paragraph", {}, proseSchema.text("Hello!")))
+});
+
+const exampleNode = proseSchema.node("doc", {},
+  proseSchema.node("paragraph", {},
+    proseSchema.text("Hello!")))
+
+const loudNode = proseSchema.node("doc", {},
+  proseSchema.node("paragraph", {},
+    proseSchema.text("Hello World!")))
+
+const image = createMockImageAsset();
 
 export const ExpositionSceneDemo/*: Component<>*/ = () => {
-  const sceneA = {
-    id: 'a',
-    tags: [],
-    description: { type: 'inherit' },
-    subject: { type: 'location', location: '0' },
-    title: 'demo scene A'
-  };
-  const sceneB = {
-    id: 'b',
-    tags: [],
-    description: { type: 'inherit' },
-    subject: { type: 'location', location: '1' },
-    title: 'demo scene B'
-  };
-  const sceneC = {
-    id: 'c',
-    tags: [],
-    description: { type: 'inherit' },
-    subject: { type: 'location', location: '2' },
-    title: 'demo scene C'
-  };
-  const sceneD = {
-    id: 'd',
-    tags: [],
-    description: { type: 'inherit' },
-    subject: { type: 'location', location: '3' },
-    title: 'green'
-  };
-  const sceneE = {
-    id: 'e',
-    encounterId: 'ENCOUNTER_A'
-  }
-  const [activeScene, setActiveScene] = useState({ type: 'exposition', ref: sceneA.id });
+  const [library, setLibrary] = useState(createMockLibraryData())
 
-  const gameData = {
-    locations: [
-      {
-        id: '0',
-        background: { type: 'image', imageAssetId: 'city' },
-        title: 'city',
-        description: { type: 'plaintext', plaintext: 'Hello!' },
-        tags: [],
-      },
-      {
-        id: '1',
-        background: { type: 'image', imageAssetId: 'city' },
-        title: 'inner city',
-        description: { type: 'plaintext', plaintext: 'The Inner City!' },
-        tags: [],
-      },
-      {
-        id: '2',
-        background: { type: 'image', imageAssetId: 'rice_field' },
-        title: 'rice field',
-        description: { type: 'plaintext', plaintext: 'motherfucker' },
-        tags: [],
-      },
-      {
-        id: '3',
-        background: { type: 'color', color: 'green' },
-        title: 'algae',
-        description: { type: 'plaintext', plaintext: 'fields of green' },
-        tags: [],
-      },
-    ],
-    scenes: {
-      exposition: [sceneA, sceneB, sceneC, sceneD],
-      encounter: [sceneE]
-    },
-    game: {
-      id: 'GAME_0',
-    },
-    characters: [],
-    players: [],
-    playlists: [],
-    tracks: [],
-    assets: new Map([
-      ['city', { downloadURL: cityImgURL }],
-      ['rice_field', { downloadURL: riceFieldURL }],
-    ]),
-  }
-  const onExpositionSceneClick = (id) => () => {
-    setActiveScene({ type: 'exposition', ref: id })
-  }
-  const onEncounterSceneClick = (id) => () => {
-    setActiveScene({ type: 'mini-theater', miniTheaterSceneId: id })
-  }
-  const scene = gameData.scenes.exposition.find(s => s.id === activeScene);
-
-  const [arr, setArr] = useState([{ key: Math.random(), value: 'Original!' }]);
-  const reducers = {
-    enter(v, i, t) {
-      return { enter: t, exit: -1, key: v.key, value: v.value };
-    },
-    move(v, pi, ni, t) {
-      return v;
-    },
-    exit(v, t) {
-      return { enter: v.enter, exit: t, key: v.key, value: v.value};
+  const miniTheater = library.miniTheaters[0];
+  
+  const expositionContent = {
+    type: 'exposition',
+    exposition: {
+      background: { type: 'color', color: 'red' },
+      subject: { type: 'none' },
+      description: {
+        version: 0,
+        rootNode: exampleNode.toJSON()
+      }
     }
-  }
-  const client = createMockWildspaceClient()
-  const encounterState = {
-    minis: [],
   };
-  const roomState/*: any*/ = {
-    encounter: encounterState,
-  };
-
-  const resources = useResourcesLoader();
-  const miniTheaterController = useMiniTheaterController();
-  const miniTheaterView = {
-    characterPieces: [],
-    monsterPieces: [],
-    miniTheater: {
-      id: 'THEATER_ID',
-      characterPieceIds: [],
-      monsterPieceIds: [],
-      name: ''
+  const expositionImageContent = {
+    type: 'exposition',
+    exposition: {
+      background: { type: 'image', assetId: image.description.id },
+      subject: { type: 'none' },
+      description: {
+        version: 0,
+        rootNode: exampleNode.toJSON()
+      }
     }
-  }
+  };
+  const expositionTheaterContent = {
+    type: 'exposition',
+    exposition: {
+      background: {
+        type: 'mini-theater', miniTheaterId: miniTheater.id,
+        position: { x: 63.065798892507026, y: 32, z: 18.74563945239002 },
+        rotation: { x: -0.35355339059327373, y: 0.35355339059327373, z: 0.1464466094067262, w: 0.8535533905932737 }
+      },
+      subject: { type: 'none' },
+      description: { version: 0, rootNode: exampleNode.toJSON() }
+    }
+  };
+  const miniTheaterContent = {
+    type: 'mini-theater',
+    miniTheaterId: miniTheater.id,
+  };
+  const [mode, setMode] = useState('mini-theater')
+  const [editableContent, setEditableContent] = useState(expositionContent);
+
+  const content/*: SceneContent*/ = ({
+    'mini-theater': miniTheaterContent,
+    'exposition': expositionContent,
+    'exposition-image': expositionImageContent,
+    'exposition-theater': expositionTheaterContent,
+    'editable': editableContent
+  })[mode] || miniTheaterContent;
+
+  const assets = createAssetDownloadURLMap(library.assets)
+
+  const client = useMemo(() => createMockWildspaceClient(() => library, l => setLibrary(l)), [library]);
+  const resources = useLibraryMiniTheaterResources(library)
+  const [updates] = useAsync(async () => client.updates.create('gameId'), [client]);
+
+  const miniTheaterId = (
+    (content.type === 'mini-theater' && content.miniTheaterId)
+    || (content.type === 'exposition' && content.exposition.background.type === 'mini-theater' &&
+        content.exposition.background.miniTheaterId)
+    || null
+  )
+
+  const controller = useMiniTheaterController2(
+    miniTheaterId,
+    resources,
+    updates,
+    true,
+  )
+  const [miniTheaterState, setMiniTheaterState] = useState(null);
+  useEffect(() => {
+    if (!controller)
+      return;
+    const { unsubscribe } = controller.subscribe(setMiniTheaterState);
+    return () => unsubscribe();
+  }, [controller])
+
+  const sceneContentRenderData = getContentRenderData(
+    content,
+    miniTheaterState,
+    controller,
+    assets,
+  );
 
   return [
-    h('div', { style: { display: 'flex' } }, [
-      gameData.scenes.exposition.map(scene =>
-        h('button', { onClick: onExpositionSceneClick(scene.id) }, scene.title)),
-      gameData.scenes.encounter.map(scene =>
-        h('button', { onClick: onEncounterSceneClick(scene.id) }, scene.id)),
+    h('menu', {}, [
+      h('button', { onClick: () => setMode('mini-theater') }, 'Mini Theater'),
+      h('button', { onClick: () => setMode('exposition') }, 'Color Exposition'),
+      h('button', { onClick: () => setMode('exposition-theater') }, 'Theater Exposition'),
+      h('button', { onClick: () => setMode('exposition-image') }, 'Theater Image'),
+      h('button', { onClick: () => setMode('editable') }, 'Editable'),
     ]),
-    h(LayoutDemo, {}, [
-      h(SceneBackgroundRenderer, { scene: activeScene, gameData, client, roomState, resources, miniTheaterController, miniTheaterView }),
-      h(SceneRenderer, { scene: activeScene, gameData }),
-    ]),
+    sceneContentRenderData ?
+      h(ScaledLayoutDemo, { }, [
+        h(SceneRenderer2, { sceneContentRenderData })
+      ])
+      :
+      h('pre', {}, JSON.stringify(content)),
+  
+    h(ScaledLayoutDemo, {}, [
+      h(SceneContentEditor, {
+        assets,
+        client,
+        content: editableContent,
+        library,
+        connection: updates,
+        onContentUpdate: c => setEditableContent(c)
+      })
+    ])
   ]
 }
 

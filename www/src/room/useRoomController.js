@@ -41,17 +41,17 @@ import { useEffect, useMemo, useRef, useState } from "@lukekaalim/act";
 
 export const playerScreens/*: { [string]: Vector2 }*/ = {
   'scene':      new Vector2(0, 0),
-  'initiative': new Vector2(-1, 0),
-  'wiki':       new Vector2(1, 0),
-  'lobby':      new Vector2(0, 1),
-  'toolbox':    new Vector2(0, -1),
+  //'initiative': new Vector2(-1, 0),
+  //'wiki':       new Vector2(1, 0),
+  //'lobby':      new Vector2(0, 1),
+  //'toolbox':    new Vector2(0, -1),
 }
 export const allScreens/*: { [string]: Vector2 }*/ = {
   ...playerScreens,
-  'room':       new Vector2(-1, -1),
-  'game':       new Vector2(-1, 1),
-  'status':     new Vector2(1, 1),
-  'something':  new Vector2(1, 1),
+  //'room':       new Vector2(-1, -1),
+  //'game':       new Vector2(-1, 1),
+  //'status':     new Vector2(1, 1),
+  //'something':  new Vector2(1, 1),
 }
 
 export const useRoomController = (

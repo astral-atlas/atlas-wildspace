@@ -48,13 +48,15 @@ export const createMockCharacter = ()/*: Character*/ => ({
   speed: randomIntRange(40, 20),
 });
 
-export const createMockMonster = ()/*: Monster*/ => ({
+export const createMockMonster = ({
+  iconURL = '', initiativeIconAssetId = uuid()
+}/*: { iconURL?: string, initiativeIconAssetId?: string }*/ = {})/*: Monster*/ => ({
   id: uuid(),
   gameId: uuid(),
 
   name: randomMonsterName(),
-  iconURL: '',
-  initiativeIconAssetId: uuid(),
+  iconURL,
+  initiativeIconAssetId,
 
   shortDescription: `Friend of ${randomMonsterName()}`,
 

@@ -2,6 +2,7 @@
 /*::
 import type { GameUpdatesConnection } from "../updates";
 import type { GameUpdateChannel, SingletonUpdateChannel } from "./meta";
+import type { PageClient } from "../page";
 import type {
   GameID, GamePage
 } from "@astral-atlas/wildspace-models";
@@ -17,6 +18,7 @@ export type GamePageConnection = SingletonUpdateChannel<GamePage>;
 
 export const createGamePageConnection = (
   game/*: GameClient*/,
+  page/*: PageClient*/,
   updates/*: GameUpdatesConnection*/,
 )/*: GamePageConnection*/ => {
   const channel = createSingletonUpdateChannel({
@@ -30,7 +32,7 @@ export const createGamePageConnection = (
       }
     },
     async getResource() {
-      return await game.getGamePage(updates.gameId);
+      return await page.getGamePage(updates.gameId);
     },
     createSubscribeMessage() {
       return { type: 'game-page-subscribe' };

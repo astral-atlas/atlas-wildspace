@@ -21,6 +21,8 @@ export const isKeyboardStateEqual = (a/*: KeyboardState*/, b/*: KeyboardState*/)
 
 const whitelist = new Set([
   'ShiftLeft',
+  'Space',
+  'ControlLeft',
   'ShiftRight',
   'KeyW',
   'KeyA',

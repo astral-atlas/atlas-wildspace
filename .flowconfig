@@ -5,6 +5,7 @@
 
 [libs]
 flow/typed
+flow-typed
 [lints]
 
 [options]

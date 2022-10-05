@@ -23,7 +23,7 @@ export type WildspaceSceneProps = {
 
 export const WildspaceScene/*: Component<WildspaceSceneProps>*/ = ({ roomController, attachementRef }) => {
   const { gamePage, roomPage } = roomController
-  const { scene } = roomPage;
+  const { state } = roomPage;
 
   const content = scene && scene.content || { type: 'none' };
   const anims = useFadeTransition({ roomPage, content }, ({ content }) => content.type, [content, roomPage]);

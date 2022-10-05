@@ -11,11 +11,9 @@ import type { AdvancedUpdateChannelDescription } from "./meta";
 
 import { c } from "@lukekaalim/cast";
 import {
-  castMiniTheaterEvent,
-  castMiniTheaterId,
-} from "../../../game/miniTheater.js";
-import { reduceMiniTheaterEvent } from "../../../game/miniTheater.js";
-import { castMiniTheaterAction } from "../../../game/miniTheater.js";
+  castMiniTheaterAction, reduceMiniTheaterEvent,
+  castMiniTheaterId, castMiniTheaterEvent
+} from "../../../game/miniTheater/index.js";
 
 /*::
 export type MiniTheaterChannel = {
@@ -36,6 +34,6 @@ export const miniTheaterChannel/*: AdvancedUpdateChannelDescription<MiniTheaterC
 
   castServerEvent: c.obj({ type: c.lit('mini-theater-event'), miniTheaterId: castMiniTheaterId, miniTheaterEvent: castMiniTheaterEvent }),
   reduceResource(miniTheater, { miniTheaterEvent }) {
-    return reduceMiniTheaterEvent(miniTheater, miniTheaterEvent);
+    return reduceMiniTheaterEvent(miniTheaterEvent, miniTheater);
   }
 }

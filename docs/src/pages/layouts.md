@@ -18,3 +18,6 @@
 
 ## SideOverlay
 ::demo{name=side}
+
+## Floating Overlay
+::demo{name=floating-overlay}

@@ -8,11 +8,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@astral-atlas/sesame-models": "^11.6.0",
+    "@astral-atlas/sesame-models": "^11.7.0",
     "@lukekaalim/cast": "^4.1.1",
     "@lukekaalim/net-description": "^1.3.0",
-    "prosemirror-model": "^1.16.1",
-    "prosemirror-schema-basic": "^1.1.2",
-    "prosemirror-schema-list": "^1.1.6"
+    "prosemirror-model": "^1.18.1",
+    "prosemirror-schema-basic": "^1.2.0",
+    "prosemirror-schema-list": "^1.2.2"
   }
 }

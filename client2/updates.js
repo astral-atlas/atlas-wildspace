@@ -11,7 +11,6 @@ import type {
   UpdateChannelClientMessage,
 } from "@astral-atlas/wildspace-models";
 
-import type { RoomClient } from "./room";
 import type { GameClient } from "./game";
 
 import type { MiniTheaterConnection } from "./updates/miniTheater";
@@ -19,6 +18,7 @@ import type { LibraryConnection } from "./updates/library";
 import type { WikiDocConnection } from "./updates/wikiDoc";
 import type { RoomPageConnection } from "./updates/roomPage";
 import type { GamePageConnection } from "./updates/gamePage";
+import type { PageClient } from "./page";
 */
 
 import { gameAPI } from "@astral-atlas/wildspace-models";
@@ -55,7 +55,7 @@ export const createUpdatesClient = (
   http/*: HTTPServiceClient*/,
   ws/*: WSServiceClient*/,
   gameClient/*: GameClient*/,
-  roomClient/*: RoomClient*/,
+  pageClient/*: PageClient*/,
 )/*: UpdatesConnectionClient*/ => {
   const connection = ws.createAuthorizedConnection(gameAPI["/games/updates-advanced"]);
 
@@ -67,6 +67,7 @@ export const createUpdatesClient = (
     }
 
     const recieve = (event) => {
+      console.log(event);
       for (const subscriber of subscribers)
         subscriber(event);
     }
@@ -96,8 +97,8 @@ export const createUpdatesClient = (
       miniTheater: createMiniTheaterConnection(gameClient.miniTheater, updates),
       wikiDoc: createWikiDocConnection(gameClient.wiki, updates),
       library: createLibraryConnection(gameClient.library, updates),
-      roomPage: createRoomPageConnection(roomClient, updates),
-      gamePage: createGamePageConnection(gameClient, updates),
+      roomPage: createRoomPageConnection(updates, pageClient),
+      gamePage: createGamePageConnection(gameClient, pageClient, updates),
     }
   };
 

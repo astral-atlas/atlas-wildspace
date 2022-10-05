@@ -12,7 +12,10 @@ import {
   castScene,
   castMonster,
   castMonsterActor,
-  castMiniTheaterEvent
+  castMiniTheaterAction,
+  castMiniTheaterEvent,
+  castTerrainProp,
+  castModelResource
 } from "@astral-atlas/wildspace-models";
 
 /*::
@@ -21,40 +24,38 @@ import type {
   LocationID, Location,
   NonPlayerCharacterID, NonPlayerCharacter,
   Scene, SceneID,
-  Exposition, ExpositionID,
   MiniTheater, MiniTheaterID,
   MagicItem, MagicItemID,
 } from "@astral-atlas/wildspace-models";
 
-import type { TableDataConstructors } from './index.js';
 import type { Transactable } from "../../sources/table2";
 import type { WildspaceGameData } from "../../game";
+import type { WildspaceDataSources } from "../../sources";
 */
 
+export const createTableWildspaceGameData = (sources/*: WildspaceDataSources*/)/*: WildspaceGameData*/ => {
+  const locations = sources.createCompositeTable('locations', castLocation);
+  const npcs = sources.createCompositeTable('npcs', c.obj({ npc: castNonPlayerCharacter }));
+  const magicItems = sources.createCompositeTable('magicItems', castMagicItem);
+  const monsterActors = sources.createCompositeTable('monsterActors', castMonsterActor);
 
-export const createTableWildspaceGameData = ({
-  createChannel,
-  createCompositeTable,
-  createTransactable
-}/*: TableDataConstructors*/)/*: WildspaceGameData*/ => {
+  const connections = sources.createDynamoDBTable('game_connections', castGameConnectionState);
 
-  const locations = createCompositeTable('locations', castLocation);
-  const npcs = createCompositeTable('npcs', c.obj({ npc: castNonPlayerCharacter }));
-  const magicItems = createCompositeTable('magicItems', castMagicItem);
-  const monsterActors = createCompositeTable('monsterActors', castMonsterActor);
-
-  const connections = createCompositeTable('game_connections', castGameConnectionState);
-
-  const scenes = createCompositeTable('scenes', castScene)
-  const expositions = createCompositeTable('expositions', castExposition)
+  const scenes = sources.createCompositeTable('scenes', castScene)
+  const expositions = sources.createCompositeTable('expositions', castExposition)
   const miniTheaters = {
-    ...createCompositeTable('mini_theater', castMiniTheater),
-    ...createTransactable('mini_theater', castMiniTheater, item => ({
-      key: 'version',
-      value: item.version,
-    }))
+    ...sources.createCompositeTable('mini_theater', castMiniTheater),
+    ...sources.createTransactable('mini_theater', castMiniTheater, 'version')
   };
-  const miniTheaterEvents = createChannel('mini_theater', castMiniTheaterEvent);
+  const miniTheaterEvents = sources.createChannel('mini_theater', castMiniTheaterEvent);
+
+  const resources = {
+    models: sources.createDynamoDBTable('resources_models', castModelResource),
+  };
+  const miniTheater = {
+    terrainProps: sources.createDynamoDBTable('mini_theater_terrain_props', castTerrainProp),
+  }
+  const gameDataEvent = sources.createChannel('game_data', c.str);
 
   return {
     locations,
@@ -66,5 +67,8 @@ export const createTableWildspaceGameData = ({
     expositions,
     miniTheaters,
     miniTheaterEvents,
+    resources,
+    miniTheater,
+    gameDataEvent,
   }
 }

@@ -1,7 +1,7 @@
 // @flow strict
 /*::
 import type { VersionedTable } from "./meta";
-import type { CompositeTable } from "./table";
+import type { CompositeTable, CompositeKey } from "./table";
 import type { DynamoDB, DynamoDBValueType } from "@aws-sdk/client-dynamodb";
 import type { Cast } from "@lukekaalim/cast";
 */
@@ -13,7 +13,7 @@ import {
 } from "./table.js";
 
 /*::
-export type Transactable<PK, SK, V> = {|
+export type Transactable<PK, SK, V: {}> = {|
   transaction(
     partitionKey: PK,
     sorkKey: SK,
@@ -24,15 +24,14 @@ export type Transactable<PK, SK, V> = {|
 |}
 */
 
-export const createDynamoDBTrasactable = /*:: <PK: string, SK: string, V: {}>*/(
+export const createDynamoDBTrasactable = /*:: <V: {}>*/(
   db/*: DynamoDB*/,
   tableName/*: string*/,
   castValue/*: Cast<V>*/,
-  createKeyAttributes/*: (PK, SK) => { +[string]: DynamoDBValueType }*/,
-  createVersionAttributes/*: (V) => { key: string, value: mixed }*/,
-)/*: Transactable<PK, SK, V>*/ => {
+  createKeyAttributes/*: (partitionKey: string, sortKey: string) => { +[string]: DynamoDBValueType }*/,
+  versionKey/*: string*/,
+)/*: Transactable<string, string, V>*/ => {
   const getValueOrDefault = async (Key, defaultValue) => {
-    console.log('GET', Key, defaultValue)
     try {
       const output =  await db.getItem({ TableName: tableName, Key });
       const prevValue = castValue(readValueTypes({ M: output.Item }));
@@ -47,7 +46,7 @@ export const createDynamoDBTrasactable = /*:: <PK: string, SK: string, V: {}>*/(
   const transaction = async (partitionKey, sortKey, updater, retries = 0, defaultValue = null) => {
     const Key = createKeyAttributes(partitionKey, sortKey);
     const prevValue = await getValueOrDefault(Key, defaultValue);
-    const version = createVersionAttributes(prevValue);
+    const prevVersion = prevValue[versionKey]
     try {
       const nextValue = await updater(prevValue);
       const nextItem = {
@@ -58,15 +57,17 @@ export const createDynamoDBTrasactable = /*:: <PK: string, SK: string, V: {}>*/(
         Item: nextItem,
         TableName: tableName,
         ...(defaultValue !== prevValue ? {
+          // Ensure that the we are only allowed to overwrite the "previous version"
           ConditionExpression:  '#v = :v',
-          ExpressionAttributeNames: { '#v': version.key },
-          ExpressionAttributeValues: { ':v': writeValueTypes(version.value) }
+          ExpressionAttributeNames: { '#v': versionKey },
+          ExpressionAttributeValues: { ':v': writeValueTypes(prevVersion) }
         } : {}),
       });
       return { prev: prevValue, next: nextValue };
     } catch (error) {
       if (retries < 1)
         throw error;
+      console.warn('Retrying transaction')
       return transaction(partitionKey, sortKey, updater, retries - 1, defaultValue);
     }
   }
@@ -75,44 +76,54 @@ export const createDynamoDBTrasactable = /*:: <PK: string, SK: string, V: {}>*/(
   };
 };
 
-export const createFakeTransactable = /*:: <V>*/(
-  buffer/*: CompositeTable<string, string, V>*/,
+export const createFakeTransactable = /*:: <V: {}>*/(
+  table/*: CompositeTable<string, string, V>*/,
 )/*: Transactable<string, string , V>*/ => {
   const transaction = async (pk, sk, updater, retries, defaultValue) => {
-    const { result: prev } = await buffer.get(pk, sk);
+    const { result: prev } = await table.get(pk, sk);
     const defaultOrPrev = prev || defaultValue;
     if (!defaultOrPrev)
       throw new Error();
     const next = await updater(defaultOrPrev);
-    await buffer.set(pk, sk, next);
+    await table.set(pk, sk, next);
     return { prev: defaultOrPrev, next };
   };
   return {
     transaction,
   }
 }
-export const enhanceWithFakeTransactable = /*:: <V>*/(
-  table/*: CompositeTable<string, string, V>*/,
-)/*: VersionedTable<string, string, V>*/ => {
-  const transactable = createFakeTransactable(table);
-  return {
-    ...table,
-    ...transactable,
+
+/*::
+export type Optional<T> = $ObjMap<T, <P>(prop: P) => void | P>;
+
+export type Updatable<PK, SK, V: {}> = {
+  updateSet: (key: CompositeKey<PK, SK>, value: Optional<V>) => Promise<void>,
+}
+*/
+
+export const createFakeUpdatable = /*:: <PK, SK, V: {}>*/(
+  table/*: CompositeTable<PK, SK, V>*/,
+  handleUpdate/*: (prev: V, next: Optional<V>) => V*/,
+)/*: Updatable<PK, SK, V>*/ => {
+  const updateSet = async (key, value) => {
+    const { result } = await table.get(key.partition, key.sort);
+    if (result === null)
+      throw new Error();
+    await table.set(key.partition, key.sort, handleUpdate(result, value));
   };
+  return { updateSet };
 }
 
-/*::
-export type Updateable<PK, SK, V> = {
-  update(
-    partitionKey: PK,
-    sorkKey: SK,
-    updater: (input: V) => V,
-  ): Promise<{ input: V, output: V }>,
+export const createDynamoDBUpdatable = /*:: <V: {}>*/(
+  db/*: DynamoDB*/,
+  tableName/*: string*/,
+  castValue/*: Cast<V>*/,
+  paritionKey/*: string*/,
+  sortKey/*: string*/,
+  versionKey/*: string*/,
+)/*: Updatable<string, string, V>*/ => {
+  const updateSet = async (key, value) => {
+    
+  };
+  return { updateSet };
 }
-*/
-
-/*::
-export type Conditional<PK, SK, V> = {
-
-}
-*/

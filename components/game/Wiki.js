@@ -50,7 +50,7 @@ export const Wiki/*: Component<WikiProps>*/ = ({
   const [refreshTime, setRefreshTime] = useState/*:: <number>*/(() => Date.now());
 
   const ref = useRef();
-  const view = useProseMirrorView(ref, defaultEditorState, [activeDoc]);
+  const view = useProseMirrorView(ref, defaultEditorState, null, [activeDoc]);
   const connections = useWikiDocCollab(view, wiki, connectionId, activeDoc, [refreshTime]);
 
   return h('div', { className: styles.wiki }, [

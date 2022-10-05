@@ -19,6 +19,7 @@ export type MiniTheaterClient = {|
   ...GameCRUDClient<DeriveGameCRUDDescription<MiniTheaterAPI["/mini-theater"]>>,
   readById: (gameId: GameID, miniTheaterId: MiniTheaterID) => Promise<MiniTheater>,
   act: (gameId: GameID, miniTheaterId: MiniTheaterID, action: MiniTheaterAction) => Promise<void>,
+  terrainProps: GameCRUDClient<DeriveGameCRUDDescription<MiniTheaterAPI["/games/mini-theater/terrain-prop"]>>
 |};
 */
 
@@ -38,8 +39,14 @@ export const createMiniTheaterClient = (http/*: HTTPServiceClient*/)/*: MiniThea
     await actionResource.POST({ query: { gameId, miniTheaterId }, body: { action }})
   }
 
+  const terrainProps = createGameCRUDClient(http, gameAPI['/games/mini-theater/terrain-prop'], {
+    name: 'terrainProp',
+    idName: 'terrainPropId'
+  })
+
   return {
     ...miniTheaterClient,
+    terrainProps,
     readById,
     act,
   }

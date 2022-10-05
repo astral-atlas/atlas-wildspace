@@ -1,44 +1,66 @@
 // @flow strict
 
 import { c } from "@lukekaalim/cast";
-import { castNonPlayerCharacterID } from "./character.js";
-import { castCharacterId } from "../character.js";
-import { castLocationId } from "./location.js";
+import { castRichText } from "./wiki/richText.js";
+import {
+  castLocationResourceReference,
+  castMiniTheaterResourceReference,
+  castNPCResourceReference,
+} from "./references.js";
+import { castAssetID } from "../asset.js";
+import { castMiniTheaterId } from "./miniTheater/miniTheater.js";
+import { castMiniQuaternion, castMiniVector } from "./miniTheater/primitives.js";
 
 /*::
 import type { Cast } from "@lukekaalim/cast";
 import type { CharacterID } from "../character";
 import type { NonPlayerCharacterID } from "./character";
 import type { LocationID } from "./location";
+import type { RichText } from "./wiki/richText";
+import type { AssetID } from "../asset";
+import type {
+  LocationResourceReference,
+  MiniTheaterResourceReference,
+  NPCResourceReference,
+} from "./references";
+import type { MiniTheaterID } from "./miniTheater";
+import type { MiniQuaternion, MiniVector } from "./miniTheater/primitives";
 
-export type ExpositionID = string;
+export type ExpositionSubject = 
+  | LocationResourceReference
+  | NPCResourceReference
+  | { type: 'none' }
+
+export type ExpositionBackground =
+  | { type: 'mini-theater', miniTheaterId: MiniTheaterID, position: MiniVector, rotation: MiniQuaternion }
+  | { type: 'image', assetId: AssetID }
+  | { type: 'color', color: string }
+
 export type Exposition = {
-  id: ExpositionID,
-  name: string,
-
-  subject:
-    | { type: 'npc', npcId: NonPlayerCharacterID }
-    | { type: 'character', characterId: CharacterID }
-    | { type: 'location', locationId: LocationID }
-    | { type: 'none' }
-  ,
-
-  // TODO: find a nice rich text format
-  overrideText: ?string,
+  background: ExpositionBackground,
+  subject: ExpositionSubject,
+  description: RichText,
 };
 */
 
-export const castExpositionId/*: Cast<ExpositionID>*/ = c.str;
-export const castExposition/*: Cast<Exposition>*/ = c.obj({
-  id: castExpositionId,
-  name: c.str,
-
-  subject: c.or('type', {
-    'npc':        c.obj({ type: (c.lit('npc')/*: Cast<'npc'>*/), npcId: castNonPlayerCharacterID }),
-    'character':  c.obj({ type: (c.lit('character')/*: Cast<'character'>*/), characterId: castCharacterId }),
-    'location':   c.obj({ type: (c.lit('location')/*: Cast<'location'>*/), locationId: castLocationId }),
-    'none':       c.obj({ type: (c.lit('none')/*: Cast<'none'>*/) }),
-  }),
-
-  overrideText: c.maybe(c.str)
+export const castExpositionSubject/*: Cast<ExpositionSubject>*/ = c.or('type', {
+  'npc': castNPCResourceReference,
+  'location': castLocationResourceReference,
+  'none': c.obj({ type: c.lit('none') })
 })
+export const castExpositionBackground/*: Cast<ExpositionBackground>*/ = c.or('type', {
+  'mini-theater': c.obj({
+    type: c.lit('mini-theater'),
+    miniTheaterId: castMiniTheaterId,
+    position: castMiniVector,
+    rotation: castMiniQuaternion
+  }),
+  'image': c.obj({ type: c.lit('image'), assetId: castAssetID }),
+  'color': c.obj({ type: c.lit('color'), color: c.str }),
+})
+
+export const castExposition/*: Cast<Exposition>*/ = c.obj({
+  background: castExpositionBackground,
+  subject: castExpositionSubject,
+  description: castRichText,
+});

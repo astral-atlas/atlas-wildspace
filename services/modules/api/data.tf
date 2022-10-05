@@ -35,4 +35,9 @@ resource "aws_dynamodb_table" "api_data" {
     name = "Sort"
     type = "S"
   }
+
+  ttl {
+    attribute_name = "ExpiresBy"
+    enabled        = false
+  }
 }

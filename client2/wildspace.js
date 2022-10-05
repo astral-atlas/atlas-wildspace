@@ -7,10 +7,10 @@
 
 /*:: import type { AssetClient } from "./asset.js"; */
 /*:: import type { AudioClient } from "./audio.js"; */
-/*:: import type { RoomClient } from "./room"; */
 /*:: import type { GameClient } from "./game"; */
 /*::
 import type { UpdatesConnectionClient } from "./updates";
+import type { PageClient } from "./page";
 */
 
 import { createAuthorizedClient, createJSONResourceClient, createWebClient } from "@lukekaalim/http-client";
@@ -18,8 +18,8 @@ import { createJSONConnectionClient } from "@lukekaalim/ws-client";
 import { audioAPI, selfAPI } from '@astral-atlas/wildspace-models';
 import { createAssetClient } from "./asset.js";
 import { createAudioClient } from "./audio.js";
-import { createRoomClient } from "./room.js";
 import { createGameClient } from "./game.js";
+import { createPageClient } from "./page.js";
 import { createUpdatesClient } from "./updates.js";
 import { encodeProofToken } from "@astral-atlas/sesame-models";
 
@@ -78,7 +78,7 @@ export type WildspaceClient = {
   asset: AssetClient,
   audio: AudioClient,
   game: GameClient,
-  room: RoomClient,
+  page: PageClient,
   updates: UpdatesConnectionClient,
   self: () => Promise<{ name: string }>,
 };
@@ -94,9 +94,9 @@ export const createWildspaceClient = (proof/*: ?LinkProof*/, httpOrigin/*: strin
 
   const asset = createAssetClient(httpService, httpClient);
   const audio = createAudioClient(authorizedClient, asset, httpOrigin, wsOrigin);
-  const room = createRoomClient(httpService, wsService);
+  const page = createPageClient(httpService, wsService);
   const game = createGameClient(httpService, wsService);
-  const updates = createUpdatesClient(httpService, wsService, game, room);
+  const updates = createUpdatesClient(httpService, wsService, game, page);
 
   const selfResource = httpService.createResource(selfAPI['/self']);
   const self = async () => {
@@ -108,7 +108,7 @@ export const createWildspaceClient = (proof/*: ?LinkProof*/, httpOrigin/*: strin
     asset,
     game,
     audio,
-    room,
+    page,
     updates,
     self,
   }

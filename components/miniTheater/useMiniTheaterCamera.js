@@ -1,83 +1,122 @@
 // @flow strict
 /*::
 import type { Ref } from "@lukekaalim/act";
-import type { Box2, PerspectiveCamera } from "three";
+import type { Box2, Matrix4, PerspectiveCamera, Quaternion } from "three";
 
 import type { KeyboardTrack } from "../keyboard";
 import type { LoopController } from "../three";
+import type {
+  RenderLoopConstants,
+  RenderLoopVariables,
+} from "../three/useLoopController";
+import type { KeyboardDiff } from "../keyboard/track";
+import type { BasicTransform } from "../animation/transform";
+import type { MiniTheaterController } from "./useMiniTheaterController";
+import type { MiniTheaterController2 } from "./useMiniTheaterController2";
 */
 import { Vector2, Vector3 } from "three";
 
-import { useEffect, useRef, useState } from "@lukekaalim/act";
-import { calculateCubicBezierAnimationPoint, useAnimatedNumber } from "@lukekaalim/act-curve";
+import { useEffect, useMemo, useRef, useState } from "@lukekaalim/act";
+import { calculateCubicBezierAnimationPoint, createInitialCubicBezierAnimation, interpolateCubicBezierAnimation, useAnimatedNumber } from "@lukekaalim/act-curve";
 
 import { useParticle2dSimulation } from "../particle";
 import { calculateKeyVelocity, getVector2ForKeyboardState } from "../keyboard";
-import { setFocusTransform2 } from "../utils/vector";
+import { lookAt, setFocusTransform2 } from "../utils/vector";
+import { simulateParticle2D } from "../particle/particle2d";
+import { useMiniTheaterMode } from "./useMiniTheaterMode";
+
+/*::
+export type MiniTheaterCameraController = {
+  rotate(now: number, direction: number): void,
+  setAcceleration(now: number, directionalAcceleration: Vector2): void,
+  moveZoom(distanceDelta: number): void,
+  simulateCamera(timeDeltaMs: number): void,
+
+  getControllerTransform(now: number): BasicTransform
+};
+*/
+const up = new Vector3(0, 1, 0);
+
+export const createMiniTheaterCameraController = (
+  initialPosition/*: Vector2*/ = new Vector2(0, 0),
+  initialVelocity/*: Vector2*/ = new Vector2(0, 0),
+  initialRotation/*: number*/ = 0.125,
+  initialZoom/*: number*/ = 32 ,
+  cameraBounds/*: ?Box2*/ = null,
+)/*: MiniTheaterCameraController*/ => {
+  const settings = {
+    bounds: cameraBounds,
+    dragCoefficent: 0.005,
+    velocityMagnitudeMax: 0.05,
+  };
+  let cameraParticle = {
+    position: initialPosition,
+    velocityPerMs: initialVelocity
+  };
+  let rotationTarget = initialRotation;
+  let rotationAnim = createInitialCubicBezierAnimation(initialRotation);
+  let zoom = initialZoom;
+  let acceleration = new Vector2(0, 0);
+
+  const rotate = (now, rotationDelta) => {
+    rotationTarget += rotationDelta;
+    rotationAnim = interpolateCubicBezierAnimation(rotationAnim, rotationTarget, 400, (0.125 * 3), now);
+  }
+  const moveZoom = (distanceDelta) => {
+    zoom = Math.min(1000, Math.max(10, zoom + distanceDelta));
+  }
+  const setAcceleration = (now, directionalAcceleration) => {
+    const rotationPoint = calculateCubicBezierAnimationPoint(rotationAnim, now);
+
+    const rotationRadians = rotationPoint.position * 2 * Math.PI;
+    acceleration.copy(directionalAcceleration)
+      .multiplyScalar(0.0015)
+      .rotateAround(new Vector2(0, 0), rotationRadians);
+  }
+
+  const simulateCamera = (timeDeltaMs) => {
+    simulateParticle2D(cameraParticle, settings, acceleration, timeDeltaMs);
+    acceleration.set(0, 0);
+  };
+
+  const getControllerTransform = (now) => {
+    const rotationPoint = calculateCubicBezierAnimationPoint(rotationAnim, now);
+    const target = new Vector3(cameraParticle.position.x, 0, -cameraParticle.position.y);
+    const cameraRotation = 0.25 + rotationPoint.position;
+    const offset = new Vector2(-zoom, zoom);
+
+    const position = new Vector3(offset.x, offset.y, 0)
+      .applyAxisAngle(up, cameraRotation * Math.PI * 2)
+      .add(target);
+    const rotation = lookAt(position, target, up);
+
+    return {
+      position,
+      rotation,
+    }
+  }
+
+  return {
+    rotate,
+    moveZoom,
+    setAcceleration,
+    simulateCamera,
+    getControllerTransform,
+  }
+}
 
 export const useMiniTheaterCamera = (
-  keyboard/*: KeyboardTrack*/,
-  controlSurfaceElementRef/*: Ref<?HTMLElement>*/,
+  keys/*: KeyboardTrack*/,
+  surface/*: Ref<?HTMLElement>*/,
   cameraRef/*: Ref<?PerspectiveCamera>*/,
   loop/*: LoopController*/,
-  cameraBounds/*: ?Box2*/,
+  controller/*: MiniTheaterController2*/
 ) => {
-  const [cameraParticle, simulate] = useParticle2dSimulation(
-    cameraBounds,
-    0.005,
-    0.05,
-    cameraBounds && cameraBounds.getCenter(new Vector2(0, 0))
-  );
-  const [rotation, setRotation] = useState/*:: <number>*/(0.125);
-  const [rotationAnim] = useAnimatedNumber(rotation, rotation, { duration: 400, impulse: (0.125 * 3) });
+  const mode = useMemo(() => ({
+    type: 'full-control',
+    keys,
+    controller
+  }), [keys, controller])
 
-  const zoomRef = useRef(32);
-  const [zoom, setZoom] = useState/*:: <number>*/(32);
-  const [] = useAnimatedNumber(zoom, zoom, { duration: 400, impulse: 3 });
-
-  useEffect(() => {
-    const { current: camera } = cameraRef;
-    const { current: controlSurfaceElement } = controlSurfaceElementRef;
-    if (!camera || !controlSurfaceElement)
-      return;
-
-    const onWheel = (event/*: WheelEvent*/) => {
-      if ((!controlSurfaceElement.contains(document.activeElement) && controlSurfaceElement !== document.activeElement))
-        return;
-      event.preventDefault();
-      zoomRef.current = Math.min(1000, Math.max(10, zoomRef.current + (event.deltaY / 10)));
-    }
-    const onSimulate = (c, v) => {
-      const keys = keyboard.readDiff();
-      const keysVelocity = calculateKeyVelocity(keys.prev.value, keys.next.value);
-      if (keysVelocity.get('KeyQ') === -1)
-        setRotation(r => r - 0.125)
-      if (keysVelocity.get('KeyE') === -1)
-        setRotation(r => r + 0.125)
-  
-      const rotationPoint = calculateCubicBezierAnimationPoint(rotationAnim, v.now);
-
-      const rotationRadians = rotationPoint.position * 2 * Math.PI;
-      const acceleration = getVector2ForKeyboardState(keys.next.value)
-        .multiplyScalar(0.0015)
-        .rotateAround(new Vector2(0, 0), rotationRadians);
-  
-      simulate(acceleration, v.delta);
-  
-      setFocusTransform2(
-        new Vector3(cameraParticle.position.x, 0, -cameraParticle.position.y),
-        0.25 + rotationPoint.position,
-        new Vector2(-zoomRef.current, zoomRef.current),
-        camera,
-      );
-    }
-
-    controlSurfaceElement.addEventListener('wheel', onWheel);
-    const unsubscribeSim = loop.subscribeSimulate(onSimulate);
-
-    return () => {
-      unsubscribeSim();
-      controlSurfaceElement.removeEventListener('wheel', onWheel);
-    }
-  }, [rotationAnim])
+  useMiniTheaterMode(mode, loop, cameraRef, surface, []);
 };

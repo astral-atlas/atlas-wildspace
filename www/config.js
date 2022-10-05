@@ -5,5 +5,10 @@ import { castWWWConfig } from '@astral-atlas/wildspace-models'
 export const loadConfigFromURL = async (path/*: string*/ = '/config.json')/*: Promise<WWWConfig>*/ => {
   const request = await fetch(path)
   const body = await request.json();
-  return castWWWConfig(body);
+  try {
+    return castWWWConfig(body);
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 }

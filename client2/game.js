@@ -19,8 +19,9 @@ import { createMagicItemClient } from "./game/magicItem.js";
 import { createWikiDocClient } from "./game/wiki.js";
 import { createMiniTheaterClient } from "./game/miniTheater.js";
 import { createLibraryClient } from "./game/library";
-import { createExpositionClient } from "./game/exposition.js";
 import { createMonsterClient } from "./game/monsters.js";
+import { createRoomClient } from "./game/roomClient.js";
+import { createGameResourcesClient } from "./game/resources.js";
 
 /*::
 import type { WikiDocID, WikiDocEvent, WikiDocAction, GameConnectionID, GamePage } from '@astral-atlas/wildspace-models';
@@ -30,10 +31,9 @@ import type { MagicItemClient } from "./game/magicItem";
 import type { WikiDocClient } from "./game/wiki";
 import type { MiniTheaterClient } from "./game/miniTheater";
 import type { LibraryClient } from "./game/library";
-import type { ExpositionClient } from "./game/exposition";
 import type { MonsterClient } from "./game/monsters";
-import type { RoomClient } from "./room";
-import type {  } from "../models/game/page";
+import type { RoomClient } from "./game/roomClient";
+import type { GameResourceClient } from "./game/resources";
 
 export type GameClient = {
   read: (gameId: GameID) => Promise<Game>,
@@ -42,19 +42,18 @@ export type GameClient = {
 
   update: (gameId: GameID, updatedGame: { name?: string }) => Promise<void>,
 
-  getGamePage: (gameId: GameID) => Promise<GamePage>,
-
   character: CharacterClient,
   players: PlayersClient,
   encounter: EncounterClient,
-  exposition: ExpositionClient,
   scene: SceneClient,
   location: LocationClient,
   magicItem: MagicItemClient,
   wiki: WikiDocClient,
   miniTheater: MiniTheaterClient,
   library: LibraryClient,
-  monster: MonsterClient
+  monster: MonsterClient,
+  rooms: RoomClient,
+  resources: GameResourceClient,
 };
 
 export * from './game/wiki';
@@ -67,7 +66,6 @@ export const createGameClient = (
   const gameResource = http.createResource(gameAPI['/games']);
   const allGamesResource = http.createResource(gameAPI['/games/all']);
   const updates = ws.createAuthorizedConnection(gameAPI['/games/updates']);
-  const gamePageResource = http.createResource(gameAPI['/games/page']);
 
   const read = async (gameId) => {
     const { body: { game } } = await gameResource.GET({ query: { gameId }});
@@ -84,10 +82,6 @@ export const createGameClient = (
   const update = async (gameId, { name = null, }) => {
     await gameResource.PUT({ query: { gameId },  body: { name }});
   }
-  const getGamePage = async (gameId) => {
-    const { body: { gamePage }} = await gamePageResource.GET({ query: { gameId }})
-    return gamePage;
-  }
 
   const library = createLibraryClient(http);
   const miniTheater = createMiniTheaterClient(http);
@@ -98,19 +92,19 @@ export const createGameClient = (
     list,
     create,
     update,
-    getGamePage,
     
     character: createCharacterClient(http),
     players: createPlayersClient(http),
     encounter: createEncounterClient(http),
     scene: createSceneClient(http),
-    exposition: createExpositionClient(http),
     location: createLocationClient(http),
     magicItem: createMagicItemClient(http),
     wiki,
     monster: createMonsterClient(http),
+    rooms: createRoomClient(http),
     miniTheater,
     library,
+    resources: createGameResourcesClient(http),
   };
 }
 

@@ -12,7 +12,7 @@ import type {
   Game, GameID, GameUpdate,
   AudioPlaylist, AudioPlaylistID, AudioPlaylistState,
   AudioTrack, AudioTrackID,
-  Room, RoomID, RoomState, RoomUpdate,
+  Room, RoomID, RoomState,
   CharacterID, Character,
   EncounterID, Encounter, EncounterState,
   RoomAudioState,
@@ -28,23 +28,11 @@ import type { Transactable } from "./sources/table2";
 import type { DynamoDBValueType } from "@aws-sdk/client-dynamodb";
 import type { Cast } from "@lukekaalim/cast";
 */
-import { join, resolve } from 'path';
-import { S3 } from "@aws-sdk/client-s3";
 
-import {
-  createMemoryBufferStore, createMemoryBufferDB,
-  createFileBufferStore, createFileStreamBufferDB,
-  createAWSS3BufferDB,
-  createS3BufferStore
-} from "./sources/buffer.js";
-
-import { createBufferWildspaceData } from "./data.js";
 import { createTableWildspaceData } from './wildspace/index.js';
-import { createMemoryChannel } from "./sources/channel.js";
-import { createDynamoDBCompositeTable } from './sources/table.js';
-import { createDynamoDBSimpleTable } from "./sources/table.js";
 import { DynamoDB } from "@aws-sdk/client-dynamodb";
-import { createDynamoDBTrasactable } from './sources/table2.js';
+import { createAWSSources } from './sources.js';
+import { createMemorySources } from "./sources.js";
 
 /*::
 export type WildspaceData = {
@@ -71,80 +59,36 @@ export type WildspaceData = {
   room: CompositeTable<GameID, RoomID, Room>,
   roomAudio: CompositeTable<GameID, RoomID, RoomAudioState>,
   roomEncounter: CompositeTable<GameID, RoomID, EncounterState>,
-  roomUpdates: Channel<RoomID, RoomUpdate>,
 
   playlists: CompositeTable<GameID, AudioPlaylistID, AudioPlaylist>,
   tracks: CompositeTable<GameID, AudioTrackID, AudioTrack>,
 };
 */
 
-export const createData = (config/*: APIConfig*/)/*: { data: WildspaceData }*/ => {
+export const createData = (config/*: APIConfig*/)/*: WildspaceData*/ => {
   const dataConfig = config.data;
   switch (dataConfig.type) {
     case 'memory':
       return createMemoryData();
     case 'file':
-      return createFileData(dataConfig.directory);
     case 'awsS3':
-      const s3 = new S3({ region: dataConfig.region })
-      return createAWSS3Data(s3, dataConfig.bucket, dataConfig.keyPrefix);
+    default:
+      throw new Error(`Unimplemented`);
     case 'dynamodb':
       const db = new DynamoDB({ region: dataConfig.region });
-      return { data: createDynamoDBData(db, dataConfig.tableName) };
+      return createDynamoDBData(db, dataConfig.tableName);
   }
 }
 
-export const createMemoryData = ()/*: { data: WildspaceData }*/ => {
-  const { data } = createBufferWildspaceData({
-    createBufferDB: () => createMemoryBufferDB(),
-    createBufferStore: () => createMemoryBufferStore(),
-  });
-  return { data };
-};
-
-export const createFileData = (dataDir/*: string*/)/*: { data: WildspaceData, dirs: string[] }*/ => {
-  const dirs = [dataDir];
-  const { data } = createBufferWildspaceData({
-    createBufferDB: (name) => (dirs.push(resolve(dataDir, name)), createFileStreamBufferDB(resolve(dataDir, name))),
-    createBufferStore: (name) => createFileBufferStore(resolve(dataDir, `${name}.json`)),
-  });
-  return { data, dirs };
-};
-
-export const createAWSS3Data = (s3/*: S3*/, bucket/*: string*/, keyPrefix/*: string*/)/*: { data: WildspaceData }*/ => {
-  const prefixes = [];
-
-  const { data } = createBufferWildspaceData({
-    createBufferDB: (name) => createAWSS3BufferDB(s3, bucket, join(keyPrefix, name)),
-    createBufferStore: (name) => createS3BufferStore(s3, bucket, resolve(keyPrefix, name, `${name}.json`)),
-  });
-  return { data };
+export const createMemoryData = ()/*: WildspaceData*/ => {
+  return createTableWildspaceData(createMemorySources());
 };
 
 export const createDynamoDBData = (
   dynamodb/*: DynamoDB*/,
   tableName/*: string*/,
 )/*: WildspaceData*/ => {
-  const createTransactable = /*:: <PK: string, SK: string, V: {}>*/(
-    namespace,
-    cast/*: Cast<V>*/,
-    createVersion/*: V => { key: string, value: mixed }*/
-  )/*: Transactable<PK, SK, V>*/ => {
-    return createDynamoDBTrasactable(
-      dynamodb,
-      tableName,
-      cast,
-      (pk, sk) => ({ ['Partition']: { S: `${namespace}:${pk}` }, ['Sort']: { S: sk } }),
-      createVersion,
-    );
-  };
-  const constructors = {
-    createTransactable,
-    createChannel: createMemoryChannel,
-    createTable: /*:: <K: string, V>*/(key, cast)/*: Table<K, V>*/ => createDynamoDBSimpleTable(tableName, 'Partition', 'Sort', pk => `${key}:${pk}`, cast, dynamodb),
-    createCompositeTable: /*:: <PK: string, SK: string, V>*/(key, cast)/*: CompositeTable<PK, SK, V>*/ => createDynamoDBCompositeTable(tableName, 'Partition', 'Sort', pk => `${key}:${pk}`, sk => sk, cast, dynamodb),
-  }
-  return createTableWildspaceData(constructors)
+  return createTableWildspaceData(createAWSSources(dynamodb, tableName));
 }
 
 export * from './wildspace/index.js';

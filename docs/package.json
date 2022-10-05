@@ -30,7 +30,7 @@
     "@lukekaalim/act-markdown": "^1.4.0",
     "@lukekaalim/act-navigation": "^1.1.0",
     "@lukekaalim/act-rehersal": "^2.0.2",
-    "@lukekaalim/act-three": "^5.6.4",
+    "@lukekaalim/act-three": "^5.7.0",
     "@lukekaalim/act-web": "^2.0.1",
     "lodash.throttle": "^4.1.1",
     "upgrade": "^1.1.0"

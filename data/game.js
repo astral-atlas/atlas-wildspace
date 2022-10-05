@@ -3,21 +3,6 @@
 /*:: import type { BufferStore, BufferDB } from './sources/buffer.js'; */
 /*:: import type { Channel } from './sources/channel.js'; */
 
-import { c } from "@lukekaalim/cast"
-import { createBufferCompositeTable } from "./sources/table.js"
-import {
-  castGameConnectionState,
-  castLocation,
-  castMagicItem,
-  castMiniTheater,
-  castNonPlayerCharacter,
-  castExposition,
-  castScene,
-  castMonsterActor
-} from "@astral-atlas/wildspace-models";
-import { createFakeTransactable } from "./sources/table2.js";
-import { createMemoryChannel } from "./sources/channel.js";
-
 /*::
 import type { Table, CompositeTable } from './sources/table.js';
 
@@ -26,16 +11,20 @@ import type {
   LocationID, Location,
   NonPlayerCharacterID, NonPlayerCharacter,
   Scene, SceneID,
-  Exposition, ExpositionID,
-  MiniTheater, MiniTheaterID, MiniTheaterEvent,
+  MiniTheater, MiniTheaterID, MiniTheaterAction, MiniTheaterEvent,
   MagicItem, MagicItemID,
 
   MonsterActor,
   MonsterActorID,
+
+  TerrainProp,
+  TerrainPropID,
 } from "@astral-atlas/wildspace-models";
 
-import type { TableDataConstructors } from "./wildspace/table";
 import type { Transactable } from "./sources/table2";
+import type { ExpirableCompositeTable } from "./sources/expiry";
+import type { DynamoDBTable } from "./sources/dynamoTable";
+import type { ModelResource, ModelResourceID } from "../models/game/resources";
 */
 
 /*::
@@ -46,49 +35,22 @@ export type WildspaceGameData = {
 
   monsterActors: CompositeTable<GameID, MonsterActorID, MonsterActor>,
 
-  connections:  CompositeTable<GameID, GameConnectionID, GameConnectionState>,
+  connections:  DynamoDBTable<GameID, GameConnectionID, GameConnectionState>,
 
   scenes:       CompositeTable<GameID, SceneID, Scene>,
-  expositions:  CompositeTable<GameID, ExpositionID, Exposition>,
   miniTheaters: {|
     ...CompositeTable<GameID, MiniTheaterID, MiniTheater>,
     ...Transactable<GameID, MiniTheaterID, MiniTheater>,
   |},
-  miniTheaterEvents: Channel<MiniTheaterID, MiniTheaterEvent>
+  miniTheaterEvents: Channel<MiniTheaterID, MiniTheaterEvent>,
+
+  resources: {
+    models: DynamoDBTable<GameID, ModelResourceID, ModelResource>,
+  },
+  miniTheater: {
+    terrainProps: DynamoDBTable<GameID, TerrainPropID, TerrainProp>,
+  },
+
+  gameDataEvent: Channel<GameID, string>,
 };
-
-type DataConstructors = {
-  createBufferStore: (name: string) => BufferStore,
-}
 */
-
-export const createBufferWildspaceGameData = ({ createBufferStore,  }/*: DataConstructors*/)/*: WildspaceGameData*/ => {
-
-  const locations = createBufferCompositeTable(createBufferStore('locations'), castLocation);
-  const npcs = createBufferCompositeTable(createBufferStore('npcs'), c.obj({ npc: castNonPlayerCharacter }));
-  const magicItems = createBufferCompositeTable(createBufferStore('magicItems'), castMagicItem);
-  const monsterActors = createBufferCompositeTable(createBufferStore('monsterActors'), castMonsterActor);
-
-  const connections = createBufferCompositeTable(createBufferStore('game_connections'), castGameConnectionState);
-
-  const scenes = createBufferCompositeTable(createBufferStore('scenes'), castScene);
-  const expositions = createBufferCompositeTable(createBufferStore('expositions'), castExposition);
-  const miniTheaterTable = createBufferCompositeTable(createBufferStore('mini_theaters'), castMiniTheater);
-  const miniTheaters = {
-    ...miniTheaterTable,
-    ...createFakeTransactable/*:: <MiniTheater>*/(miniTheaterTable),
-  };
-  const miniTheaterEvents = createMemoryChannel();
-
-  return {
-    locations,
-    npcs,
-    scenes,
-    magicItems,
-    monsterActors,
-    connections,
-    expositions,
-    miniTheaters,
-    miniTheaterEvents,
-  }
-}

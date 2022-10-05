@@ -7,59 +7,83 @@ import type { KeyboardTrack } from "../keyboard/track";
 import type { RaycastManager } from "../raycast/manager";
 import type { MiniTheaterController } from "./useMiniTheaterController";
 import type { LoopController } from "../three/useLoopController";
+import type {
+  MiniTheaterController2,
+  MiniTheaterLocalState,
+} from "./useMiniTheaterController2";
 */
 
 import { useElementKeyboard } from "../keyboard/changes";
 import { useKeyboardTrack } from "../keyboard/track";
 import { useRaycastManager } from "../raycast/manager";
 import { useRaycastElement } from "../raycast/useRaycastElement";
-import { useEffect } from "@lukekaalim/act";
+import { useEffect, useState } from "@lukekaalim/act";
 import { isBoardPositionEqual } from "@astral-atlas/wildspace-models";
 
 /*::
 export type MiniTheaterSceneController = {
   raycaster: RaycastManager,
-  keyboardTrack: KeyboardTrack
 }
 */
 
 export const useMiniTheaterSceneController = (
   miniTheater/*: MiniTheater*/,
   controlSurfaceElementRef/*: Ref<?HTMLElement>*/,
-  miniTheaterController/*: MiniTheaterController*/,
+  miniTheaterController/*: ?MiniTheaterController2*/,
   loop/*: LoopController*/,
-  overrideKeyboardEmitter/*: ?KeyboardStateEmitter*/ = null,
   deps/*: mixed[]*/ = [],
 )/*: MiniTheaterSceneController*/ => {
+  const [localTheaterState, setLocalTheaterState] = useState/*:: <?MiniTheaterLocalState>*/(null)
+  useEffect(() => {
+    if (!miniTheaterController)
+      return;
+   const { unsubscribe } = miniTheaterController.subscribe(setLocalTheaterState)
+   return () => {
+    unsubscribe();
+   }
+  }, [miniTheaterController]);
+
   const raycaster = useRaycastManager();
   useRaycastElement(raycaster, controlSurfaceElementRef);
   useEffect(() => {
     return loop.subscribeSimulate((c, v) => raycaster.onUpdate(c.camera))
   }, [])
 
-  const localKeyboardEmitter = useElementKeyboard(controlSurfaceElementRef);
-  const keyboardEmitter = overrideKeyboardEmitter || localKeyboardEmitter;
-
-  const keyboardTrack = useKeyboardTrack(keyboardEmitter);
-
   useEffect(() => {
     const { current: controlSurfaceElement } = controlSurfaceElementRef;
-    if (!controlSurfaceElement)
+    if (!controlSurfaceElement || !miniTheaterController || !localTheaterState)
       return;
     const onContextMenu = (e/*: MouseEvent*/) => {
       if (e.target !== controlSurfaceElement)
         return;
       e.preventDefault();
       controlSurfaceElement.focus();
-      const selected = miniTheaterController.selectionRef.current;
-      const placement = miniTheaterController.placementRef.current;
-      const cursor = miniTheaterController.cursorRef.current;
-      if (!cursor)
+      const { cursor, selection, layer } = localTheaterState;
+      if (!cursor || !layer)
         return;
-      if (selected) {
-        miniTheaterController.movePiece(selected.pieceRef, cursor.position)
-      } else if (placement) {
-        miniTheaterController.addPiece(placement.placement, cursor.position)
+      switch (selection.type) {
+        case 'none':
+          return;
+        case 'piece':
+          return miniTheaterController.act({ type: 'remote-action', remoteAction: {
+            type: 'move-piece',
+            movedPiece: selection.pieceId,
+            position: cursor
+          } });
+        case 'placement':
+          switch (selection.placement.type) {
+            case 'piece':
+              return miniTheaterController.act({ type: 'remote-action', remoteAction: {
+                type: 'place-piece',
+                layer,
+                pieceRepresents: selection.placement.represents,
+                position: cursor
+              } });
+            default:
+              return;
+          }
+        case 'terrain-prop':
+          return;
       }
     };
     const onClick = (e/*: MouseEvent*/) => {
@@ -67,19 +91,17 @@ export const useMiniTheaterSceneController = (
         return;
       e.preventDefault();
       controlSurfaceElement.focus();
-
-      const cursor = miniTheaterController.cursorRef.current;
-      const placement = miniTheaterController.placementRef.current;
-      if (placement)
-        return miniTheaterController.clearPlacement();
-      if (!cursor)
-        return miniTheaterController.deselectPiece();
-      
-      const selectedPiece = miniTheater.pieces.find(p => isBoardPositionEqual(p.position, cursor.position));
-      if (selectedPiece)
-        return miniTheaterController.selectPiece(selectedPiece.id)
-      
-      return miniTheaterController.deselectPiece();
+      const { cursor, selection, layer } = localTheaterState;
+      if (!layer)
+        return;
+      if (!cursor || selection.type === 'placement')
+        return miniTheaterController.act({ type: 'select', selection: { type: 'none' } });
+            
+      const selectedPiece = miniTheater.pieces.find(p => isBoardPositionEqual(p.position, cursor));
+      if (!selectedPiece)
+        return miniTheaterController.act({ type: 'select', selection: { type: 'none' } });
+        
+      return miniTheaterController.act({ type: 'select', selection: { type: 'piece', pieceId: selectedPiece.id }})
     }
     controlSurfaceElement.addEventListener('contextmenu', onContextMenu);
     controlSurfaceElement.addEventListener('click', onClick);
@@ -88,10 +110,9 @@ export const useMiniTheaterSceneController = (
       controlSurfaceElement.removeEventListener('contextmenu', onContextMenu);
       controlSurfaceElement.removeEventListener('click', onClick);
     };
-  }, [miniTheaterController, miniTheater.pieces, ...deps]);
+  }, [miniTheaterController, localTheaterState, miniTheater.pieces, ...deps]);
 
   return {
     raycaster,
-    keyboardTrack
   }
 }

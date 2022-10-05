@@ -19,6 +19,7 @@ import type {
 } from "@astral-atlas/wildspace-models";
 import type { AssetService } from "./asset";
 import type { Identity } from "./auth";
+import type { PageService } from "./page";
 */
 
 import { createServerMiniTheaterChannel } from "./update/miniTheater.js";
@@ -38,6 +39,7 @@ export type UpdateService = {
     gamePage: ServerGamePageChannel,
 
     update: UpdateChannelClientMessage => void,
+    heartbeat: () => void,
     close: () => Promise<void>,
   }
 };
@@ -54,6 +56,7 @@ export type ServerGameUpdateChannel = {
 
 export const createUpdateService = (
   data/*: WildspaceData*/,
+  pageService/*: PageService*/,
   roomService/*: RoomService*/,
   gameService/*: GameService*/,
   asset/*: AssetService*/,
@@ -61,11 +64,11 @@ export const createUpdateService = (
 
   const create = (game, userId, connectionId, send, identity) => {
     const gameUpdateChannel = { game, userId, connectionId, send, identity }
-    const miniTheater = createServerMiniTheaterChannel(data, gameUpdateChannel);
+    const miniTheater = createServerMiniTheaterChannel(data, gameService, gameUpdateChannel);
     const wikiDoc = createServerWikiDocChannel(data, gameUpdateChannel);
-    const library = createServerLibraryChannel(data, asset, gameUpdateChannel);
-    const roomPage = createServerRoomPageChannel(data, roomService, gameUpdateChannel);
-    const gamePage = createServerGamePageChannel(data, gameService, gameUpdateChannel);
+    const library = createServerLibraryChannel(data, asset, pageService, gameUpdateChannel);
+    const roomPage = createServerRoomPageChannel(data, gameService, roomService, pageService, gameUpdateChannel);
+    const gamePage = createServerGamePageChannel(data, pageService, roomService, gameUpdateChannel);
 
     const close = async () => {
       await Promise.all([
@@ -78,6 +81,7 @@ export const createUpdateService = (
     };
 
     const update = (message) => {
+      console.debug(message.type)
       miniTheater.update(message);
       wikiDoc.update(message);
       library.update(message);
@@ -85,9 +89,16 @@ export const createUpdateService = (
       gamePage.update(message);
     }
 
+    const heartbeat = () => {
+      // TODO: this is known at typetime
+      if (roomPage.heartbeat)
+        roomPage.heartbeat()
+    }
+
     return {
       close,
       update,
+      heartbeat,
       game: gameUpdateChannel,
       miniTheater,
       wikiDoc,

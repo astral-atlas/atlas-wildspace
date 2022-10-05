@@ -1,0 +1,51 @@
+.expositionColor {
+  display: flex;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.expositionDescription {
+  position: absolute;
+  background-color: #fff2e1;
+  padding: 0 1em 0 1em;
+  border-radius: 8px;
+  border: outset 4px #cdb89e;
+
+  color: black;
+
+  bottom: 5%;
+  top: 70%;
+  left: 20%;
+  right: 20%;
+  
+  overflow: auto;
+}
+
+.expositionImage {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+
+  background-position: center center;
+  background-size: cover;
+}
+
+
+.miniTheaterBackground {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.editorForm {
+  background: white;
+}
+
+.desciptionEditor {
+  position: absolute;
+  bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+}

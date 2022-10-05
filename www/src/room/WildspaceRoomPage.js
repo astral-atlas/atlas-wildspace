@@ -6,7 +6,7 @@ import type { CubicBezierAnimation } from "@lukekaalim/act-curve";
 import type { UserID } from "@astral-atlas/sesame-models";
 */
 
-import { CompassLayout, CompassLayoutMinimap, GameOverlay, PlaylistPlayer, RoomOverlay } from "@astral-atlas/wildspace-components";
+import { CompassLayout, CompassLayoutMinimap, GameOverlay, getContentRenderData, PlaylistPlayer, RoomOverlay, SceneRenderer2, useMiniTheaterController2, useMiniTheaterState, useRoomPageMiniTheaterResources } from "@astral-atlas/wildspace-components";
 import { h, useEffect, useRef, useState } from "@lukekaalim/act";
 import { allScreens, useRoomController } from "./useRoomController";
 import { RoomControlScreen } from "./screens/RoomControlScreen";
@@ -43,18 +43,18 @@ export const WildspaceRoomPage/*: Component<WildspaceRoomPageProps>*/ = ({
 
   const playerScreens = [
     { content: h(RoomSceneScreen, { roomController }), position: new Vector2(0, 0) },
-    { content: 'Initiative', position: new Vector2(-1, 0) },
-    { content: 'Wiki', position: new Vector2(1, 0) },
-    { content: h(RoomLobbyScreen, { roomController }), position: new Vector2(0, 1) },
-    { content: 'Toolbox', position: new Vector2(0, -1) },
+    //{ content: 'Initiative', position: new Vector2(-1, 0) },
+    //{ content: 'Wiki', position: new Vector2(1, 0) },
+    //{ content: h(RoomLobbyScreen, { roomController }), position: new Vector2(0, 1) },
+    //{ content: 'Toolbox', position: new Vector2(0, -1) },
   ]
   const gmScreens = [
     ...playerScreens,
     ...[
-      { content: h(RoomControlScreen, { roomController }), position: new Vector2(-1, -1) },
+      //{ content: h(RoomControlScreen, { roomController }), position: new Vector2(-1, -1) },
       { content: h(RoomLibraryScreen, { roomController }), position: new Vector2(-1, 1) },
-      { content: 'Something', position: new Vector2(1, -1) },
-      { content: 'Something', position: new Vector2(1, 1) },
+      //{ content: 'Something', position: new Vector2(1, -1) },
+      //{ content: 'Something', position: new Vector2(1, 1) },
     ]
   ]
   const screens = roomController.isGM ? gmScreens : playerScreens;
@@ -69,17 +69,35 @@ export const WildspaceRoomPage/*: Component<WildspaceRoomPageProps>*/ = ({
   }, [loadingAnim, roomLoadAnim])
   const player = roomController.gamePage.players.find(p => p.userId === roomController.userId);
 
-  const { playlist, tracks, state } = roomController.roomPage;
+  const { state, resources: { audioPlaylists, audioTracks } } = roomController.roomPage;
   const assets = roomController.assets;
+  const { scene: { content } } = state 
 
-  roomController.updates.updates.socket
+  const resources = useRoomPageMiniTheaterResources(roomController.gamePage, roomController.roomPage);
+
+  const miniTheaterId = (
+    (content.type === 'mini-theater' && content.miniTheaterId)
+    || (content.type === 'exposition' && content.exposition.background.type === 'mini-theater' &&
+        content.exposition.background.miniTheaterId)
+    || null
+  )
+  
+  const controller = useMiniTheaterController2(miniTheaterId, resources, roomController.updates, true);
+  const miniTheaterState = useMiniTheaterState(controller);
+
+  const sceneContentRenderData = getContentRenderData(
+    content,
+    miniTheaterState,
+    controller,
+    assets,
+  );
 
   return [
     h('div', { className: styles.room, ref }, [
       h('div', { className: styles.backgroundScene, ref: roomController.roomBackgroundRef }),
-      !!roomController && !!screens && h(CompassLayout, { screens, direction: roomController.screenPosition }),
-      !!playlist && state.audio.playback.type === 'playlist' &&
-        h(PlaylistPlayer, { playlists: [playlist], assets, state: state.audio.playback.playlist, tracks, volume: roomController.volume.music }),
+      !!sceneContentRenderData && h(SceneRenderer2, { sceneContentRenderData }),
+      //!!playlist && state.audio.playback.type === 'playlist' &&
+      //  h(PlaylistPlayer, { playlists: [playlist], assets, state: state.audio.playback.playlist, tracks, volume: roomController.volume.music }),
       h(RoomOverlay, {
         name: player && player.name,
         sesameURL: new URL(wildspace.config.www.sesame.httpOrigin),

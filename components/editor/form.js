@@ -1,5 +1,7 @@
 // @flow strict
-/*:: import type { Component } from '@lukekaalim/act'; */
+/*::
+import type { Component, Ref } from '@lukekaalim/act';
+*/
 
 import { h, useRef } from "@lukekaalim/act";
 import styles from './index.module.css';
@@ -132,25 +134,34 @@ export const FilesEditor/*: Component<SingleFileEditorProps>*/ = ({
 export type SelectEditorProps = {
   label?: string,
   selected?: ?string,
+  ref?: ?Ref<?HTMLSelectElement>,
+  groups?: { title: string, values: { title?: string, value: string }[] }[],
   values?: { title?: string, value: string }[],
-  onSelectedChange?: string => mixed,
+  onSelectedChange?: (string, Event) => mixed,
   [string]: mixed,
 };
 */
 export const SelectEditor/*: Component<SelectEditorProps>*/ = ({
   label,
+  ref,
   selected,
   values = [],
+  groups = [],
   onSelectedChange,
   ...props
 }) => {
   const onChange = (event) => {
-    onSelectedChange && onSelectedChange(event.target.value);
+    onSelectedChange && onSelectedChange(event.target.value, event);
   }
   return h('label', { ...props, classList: [styles.editorRoot] }, [
     h('span', {}, label),
-    h('select', { onChange }, values.map(({ title, value }) =>
-      h('option', { key: value, value, selected: value === selected }, title || value)))
+    h('select', { ref, onChange }, [
+      values.map(({ title, value }) =>
+        h('option', { key: value, value, selected: value === selected }, title || value)),
+      groups.map(({ title, values}) =>
+        h('optgroup', { key: title, label: title }, values.map(({ title, value }) =>
+          h('option', { key: value, value, selected: value === selected }, title || value)))),
+    ])
   ]);
 }
 

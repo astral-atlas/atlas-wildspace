@@ -25,6 +25,7 @@ export const useProseMirrorEditorState = (
 
   const dispatchTransaction = useMemo(() => (transaction) => {
     setState(prevState => {
+      console.log(`Applying state}`);
       return prevState.apply(transaction)
     });
   }, [])
@@ -35,6 +36,7 @@ export const useProseMirrorEditorState = (
 export const useProseMirrorView = (
   ref/*: Ref<?HTMLElement>*/,
   initialState/*: EditorState<any, any>*/,
+  editorOptions/*: ?{ editable?: () => boolean }*/ = {},
   deps/*: mixed[]*/ = [],
 )/*: ?EditorView*/ => {
   const [view, setView] = useState/*:: <?EditorView>*/()
@@ -42,7 +44,7 @@ export const useProseMirrorView = (
     const { current: container } = ref;
     if (!container)
       return;
-    const view = new EditorView(container, { state: initialState });
+    const view = new EditorView(container, { ...editorOptions, state: initialState });
     setView(view);
     return () => view.destroy();
   }, deps)

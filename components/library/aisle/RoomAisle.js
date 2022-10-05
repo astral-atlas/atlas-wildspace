@@ -1,8 +1,9 @@
 // @flow strict
 /*::
 import type { Component } from "@lukekaalim/act";
-import type { WildspaceClient } from "@astral-atlas/wildspace-client2";
+import type { WildspaceClient, UpdatesConnection } from "@astral-atlas/wildspace-client2";
 import type { LibraryData, Monster, Room, Game } from "@astral-atlas/wildspace-models";
+import type { AssetDownloadURLMap } from "../../asset/map";
 */
 
 import { h, useState } from "@lukekaalim/act";
@@ -22,12 +23,25 @@ import {
   FilesButtonEditor,
   SelectEditor,
 } from "../../editor/form";
+import { useAisleFocus } from "../useAisleFocus";
+import { useRoomPageMiniTheaterResources } from "../../miniTheater/resources/roomResources";
+import { useLibraryMiniTheaterResources } from "../../miniTheater/resources/libraryResources";
+import { createDefaultRoomState, reduceRoomState } from "@astral-atlas/wildspace-models";
+import { useMiniTheaterController2 } from "../../miniTheater/useMiniTheaterController2";
+import { useMiniTheaterState } from "../../miniTheater/useMiniTheaterState";
+import { getContentRenderData } from "../../scene/content/sceneContentRenderData";
+import { SceneContentEditor } from "../../scene/SceneContentEditor";
+import { v4 } from "uuid";
 
 /*::
 export type RoomAisleProps = {
   game: Game,
   client: WildspaceClient,
   rooms: $ReadOnlyArray<Room>,
+
+  library: LibraryData,
+  assets: AssetDownloadURLMap,
+  updates: UpdatesConnection,
 }
 */
 
@@ -35,21 +49,59 @@ export const RoomAisle/*: Component<RoomAisleProps>*/ = ({
   game,
   client,
   rooms,
+
+  library,
+  assets,
+  updates,
 }) => {
   const selection = useLibrarySelection();
   const selectedRoom = rooms.find(r => selection.selected.has(r.id));
+  const selectedRoomState = selectedRoom && (
+    library.roomStates.find((state) =>
+      state.roomId === selectedRoom.id)
+    || createDefaultRoomState(selectedRoom.id)
+    );
+
+  const { focus, toggleFocus } = useAisleFocus();
+  
 
   const onCreateRoom = async () => {
-    await client.room.create(game.id, 'Untitled Room')
+    await client.game.rooms.create(game.id, { title: 'Untitled Room', hidden: true })
   }
   const onUpdateRoom = async (room, roomProps) => {
-    await client.room.update(game.id, room.id, { ...room, ...roomProps })
+    await client.game.rooms.update(game.id, room.id, { ...room, ...roomProps });
   }
   const onDeleteRoom = async (room) => {
-    await client.room.destroy(game.id, room.id)
+    await client.game.rooms.destroy(game.id, room.id)
   }
+  const [stagingContent, setStatingContent] = useState(null)
+  const onContentUpdate = (nextContent) => {
+    setStatingContent(nextContent)
+  };
+  const onStagingSave = async () => {
+    if (!selectedRoom || !stagingContent)
+      return;
+    updates.roomPage.submitAction(selectedRoom.id, {
+      type: 'change-scene-content',
+      content: stagingContent,
+      id: v4(),
+      time: Date.now()
+    })
+    setStatingContent(null);
+  }
+  const workstation = selectedRoom && h(RoomWorkstation, {
+    library,
+    room: selectedRoom,
+    updates,
+    assets,
+    client,
+    stagingContent,
+    onContentUpdate,
+  });
 
   return h(LibraryAisle, {
+    focus,
+    workstation,
     floor: h(LibraryFloor, {
       header: [
         h(LibraryFloorHeader, { title: 'Rooms',  }, [
@@ -81,8 +133,43 @@ export const RoomAisle/*: Component<RoomAisleProps>*/ = ({
         }),
         h(EditorButton, {
           label: 'Delete Room', onButtonClick: () => onDeleteRoom(selectedRoom)
-        })
+        }),
+        h(EditorButton, {
+          label: 'Edit Room', onButtonClick: () => toggleFocus()
+        }),
+        h(EditorButton, {
+          label: 'Save Changes', onButtonClick: () => onStagingSave()
+        }),
       ]),
     ]
   })
+}
+
+const RoomWorkstation = ({ library, room, updates, assets, client, onContentUpdate, stagingContent }) => {
+  const resources = useLibraryMiniTheaterResources(library)
+  const roomState = library.roomStates.find((state) => state.roomId === room.id) || createDefaultRoomState(room.id);
+  const content = stagingContent || (roomState && roomState.scene.content);
+
+  const miniTheaterId = (
+    (content.type === 'mini-theater' && content.miniTheaterId)
+    || (content.type === 'exposition' && content.exposition.background.type === 'mini-theater' &&
+        content.exposition.background.miniTheaterId)
+    || null
+  )
+  
+  const controller = useMiniTheaterController2(miniTheaterId, resources, updates, true);
+  const miniTheaterState = useMiniTheaterState(controller);
+
+  const sceneContentRenderData = getContentRenderData(
+    content,
+    miniTheaterState,
+    controller,
+    assets,
+  );
+
+  return h(SceneContentEditor, {
+    assets, client, connection: updates,
+    content, library,
+    onContentUpdate
+  });
 }

@@ -15,10 +15,10 @@ import type { GameConnectionID } from "../game/connection";
 import type { InitiativeAPI } from "./game/initiative";
 import type { MiniTheaterAPI } from "./game/miniTheater";
 import type { AdvancedUpdatesAPI } from "./game/advancedUpdates";
-import type { ExpositionAPI } from "./game/exposition";
 import type { ScenesAPI } from "./game/scene";
 import type { LibraryAPI } from './game/library';
-import type { GamePageAPI } from "./game/page";
+import type { GameRoomsAPI } from "./game/rooms";
+import type { GameResourceAPI } from "./game/resource";
 */
 
 import {
@@ -42,9 +42,9 @@ import { castWikiDocAction, castWikiDocEvent } from "../game.js";
 import { wikiAPI } from './game/wiki.js';
 import { createAuthorizedConnectionDescription } from './meta.js';
 import { scenesAPI } from "./game/scene.js";
-import { expositionAPI } from './game/exposition.js';
 import { libraryAPI } from "./game/library.js";
-import { gamePageAPI } from "./game/page.js";
+import { gamesRoomsAPI } from './game/rooms.js';
+import { resourceAPI } from "./game/resource.js";
 
 /*::
 export type GameAPI = {
@@ -90,9 +90,9 @@ export type GameAPI = {
   ...InitiativeAPI,
   ...MiniTheaterAPI,
   ...AdvancedUpdatesAPI,
-  ...ExpositionAPI,
   ...LibraryAPI,
-  ...GamePageAPI,
+  ...GameRoomsAPI,
+  ...GameResourceAPI,
 };
 */
 
@@ -148,9 +148,9 @@ export const gameAPI = {
   ...scenesAPI,
   ...initiativeAPI,
   ...advancedUpdatesAPI,
-  ...expositionAPI,
   ...libraryAPI,
-  ...gamePageAPI,
+  ...gamesRoomsAPI,
+  ...resourceAPI,
   '/games': gameResourceDescription,
   '/games/all': allGamesResourceDescription,
   '/games/updates': gameStateConnectionDescription,

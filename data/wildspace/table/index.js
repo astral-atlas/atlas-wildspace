@@ -8,6 +8,7 @@
 import type { Cast } from "@lukekaalim/cast";
 import type { DynamoDBValueType } from "@aws-sdk/client-dynamodb";
 import type { Transactable } from "../../sources/table2";
+import type { WildspaceDataSources } from "../../sources";
 */
 
 import * as m from '@astral-atlas/wildspace-models';
@@ -17,63 +18,39 @@ import { c } from '@lukekaalim/cast';
 import { createBufferTable, createBufferCompositeTable, createFakeCompositeTable } from "../../sources/table.js";
 import { createMemoryChannel } from "../../sources/channel.js";
 import { createExpiryTable } from "../../sources/expiry.js";
-import { createBufferWildspaceGameData } from '../../game.js';
-import { createBufferWildspaceRoomData, createTableWildspaceRoomData } from "../../room.js";
+import { createTableWildspaceRoomData } from "../../room.js";
 import { createMemoryBufferStore } from '../../sources/buffer.js';
 import { createTableWildspaceGameData } from "./game.js";
 import { createTableWikiData } from './wiki.js';
 import { createTableAssetData } from "../../asset.js";
 
-/*::
-export type TableDataConstructors = {
-  createCompositeTable<PK: string, SK: string, Item>(
-    uniqueKey: string,
-    cast: Cast<Item>
-  ): CompositeTable<PK, SK, Item>,
-  createTransactable<PK: string, SK: string, Item: {}>(
-    uniqueKey: string,
-    cast: Cast<Item>,
-    createVersion: Item => { key: string, value: mixed }
-  ): Transactable<PK, SK, Item>,
-  createTable<K: string, Item>(
-    uniqueKey: string,
-    cast: Cast<Item>
-  ): Table<K, Item>,
-  createChannel<K: string, V>(
-    uniqueKey: string,
-    cast: Cast<V>
-  ): Channel<K, V>,
-}
-*/
-
-export const createTableWildspaceData = (constructors/*: TableDataConstructors*/)/*: WildspaceData*/ => {
-  const assets = constructors.createTable('assets', m.castAssetDescription);
+export const createTableWildspaceData = (sources/*: WildspaceDataSources*/)/*: WildspaceData*/ => {
+  const assets = sources.createTable('assets', m.castAssetDescription);
   const assetData = createFakeCompositeTable();
-  const assetsData = createTableAssetData(constructors);
+  const assetsData = createTableAssetData(sources);
   const assetLinkCache = createExpiryTable(createMemoryBufferStore(), c.obj({ downloadURL: c.str }));
   
 
-  const game =              constructors.createTable('game', c.obj({ id: m.castGameId, name: c.str, gameMasterId: sm.castUserId }));
-  const gameParticipation = constructors.createCompositeTable('gameParticipation', c.obj({ gameId: m.castGameId, joined: c.bool }));
-  const gamePlayers =       constructors.createCompositeTable('gamePlayers', c.obj({ userId: sm.castUserId, joined: c.bool }));
-  const gameUpdates =       constructors.createChannel('gameUpdates', m.castGameUpdate);
+  const game =              sources.createTable('game', c.obj({ id: m.castGameId, name: c.str, gameMasterId: sm.castUserId }));
+  const gameParticipation = sources.createCompositeTable('gameParticipation', c.obj({ gameId: m.castGameId, joined: c.bool }));
+  const gamePlayers =       sources.createCompositeTable('gamePlayers', c.obj({ userId: sm.castUserId, joined: c.bool }));
+  const gameUpdates =       sources.createChannel('gameUpdates', m.castGameUpdate);
 
 
-  const characters =  constructors.createCompositeTable('characters',  m.castCharacter);
-  const encounters =  constructors.createCompositeTable('encounters',  m.castEncounter);
-  const monsters =    constructors.createCompositeTable('monsters',  m.castMonster);
+  const characters =  sources.createCompositeTable('characters',  m.castCharacter);
+  const encounters =  sources.createCompositeTable('encounters',  m.castEncounter);
+  const monsters =    sources.createCompositeTable('monsters',  m.castMonster);
 
-  const gameData = createTableWildspaceGameData(constructors);
-  const roomData = createTableWildspaceRoomData(constructors);
-  const wiki =     createTableWikiData(constructors);
+  const gameData = createTableWildspaceGameData(sources);
+  const roomData = createTableWildspaceRoomData(sources);
+  const wiki =     createTableWikiData(sources);
 
-  const room =          constructors.createCompositeTable('room', m.castRoom);
-  const roomAudio =     constructors.createCompositeTable('roomAudio', m.castRoomAudioState);
-  const roomEncounter = constructors.createCompositeTable('roomEncounter', m.castEncounterState);
-  const roomUpdates =   constructors.createChannel('roomUpdates', m.castRoomUpdate);
+  const room =          sources.createCompositeTable('room', m.castRoom);
+  const roomAudio =     sources.createCompositeTable('roomAudio', m.castRoomAudioState);
+  const roomEncounter = sources.createCompositeTable('roomEncounter', m.castEncounterState);
 
-  const playlists = constructors.createCompositeTable('playlists', m.castAudioPlaylist);
-  const tracks =    constructors.createCompositeTable('tracks', m.castAudioTrack);
+  const playlists = sources.createCompositeTable('playlists', m.castAudioPlaylist);
+  const tracks =    sources.createCompositeTable('tracks', m.castAudioTrack);
 
   return {
     assets,
@@ -94,7 +71,6 @@ export const createTableWildspaceData = (constructors/*: TableDataConstructors*/
     roomData,
     room,
     roomAudio,
-    roomUpdates,
     roomEncounter,
 
     playlists,

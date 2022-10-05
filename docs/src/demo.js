@@ -15,6 +15,10 @@ import styles from './demo.module.css';
 import { Vector3 } from "three";
 import { raycastManagerContext, useRaycastManager } from "./controls/raycast";
 import { EditorForm, EditorRangeInput, rootStyles } from "@astral-atlas/wildspace-components";
+import {
+  EditorButton,
+  EditorHorizontalSection,
+} from "../../components/editor/form";
 
 const useAnimationContext = (canvasRef, sceneRef, cameraRef, webgl) => {
   const [onLoop, loopContext] = useRenderLoopManager()
@@ -153,9 +157,9 @@ export const DOMDemo/*: Component<DOMDemoProps>*/ = () => {
 }
 
 
-export const LayoutDemo/*: Component<{ style?: {} }>*/ = ({ children, style }) => {
+export const LayoutDemo/*: Component<{ style?: {}, height?: string }>*/ = ({ children, style, height = '512px' }) => {
   return h('div', {
-    style: { position: 'relative', width: '100%', height: '512px', overflow: 'auto' },
+    style: { position: 'relative', width: '100%', height, overflow: 'auto' },
     classList: [rootStyles.root]
   }, [
     h('div', {  style: {
@@ -171,23 +175,39 @@ export const LayoutDemo/*: Component<{ style?: {} }>*/ = ({ children, style }) =
   ])
 }
 
-export const ScaledLayoutDemo/*: Component<{ style?: {} }>*/ = ({ children, style }) => {
+export const ScaledLayoutDemo/*: Component<{ style?: {}, height?: string }>*/ = ({ children, style, height }) => {
   const [scale, setScale] = useState(1);
+  const ref = useRef();
+  const onSetFullscreen = () => {
+    const { current: element } = ref;
+    if (element instanceof HTMLElement)
+      element.requestFullscreen();
+  }
   return [
-    h(LayoutDemo, { style }, [
-      h('div', { style: {
+    h(LayoutDemo, { style, height }, [
+      h('div', { ref, style: {
+        ...style,
         transformOrigin: '0 0',
         transform: `scale(${scale})`,
         width: `${100/scale}%`,
         height: `${100/scale}%`,
       } }, children)
     ]),
-    h(EditorForm, {}, [
-      h(EditorRangeInput, {
-        label: 'Scale', min: 0.1,
-        step: 0.001,
-        max: 1, number: scale,
-        onNumberInput: scale => setScale(scale) })
+    h('div', { style: { backgroundColor: '#e8e8e8' } }, [
+      h(EditorForm, {}, [
+        h(EditorHorizontalSection, {}, [
+          h(EditorButton, { label: 'Fullscreen', onButtonClick: onSetFullscreen }),
+          h(EditorRangeInput, {
+            label: 'Scale', min: 0.1,
+            step: 0.001,
+            max: 1, number: scale,
+            onNumberInput: scale => setScale(scale) })
+        ]),
+      ])
     ])
   ]
+}
+
+export const FullSizeLayoutDemo/*: Component<>*/ = ({ children }) => {
+  return h(ScaledLayoutDemo, {}, children)
 }

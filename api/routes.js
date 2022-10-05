@@ -9,11 +9,11 @@ import { HTTP_STATUS } from "@lukekaalim/net-description";
 
 import { createAudioRoutes } from './routes/audio.js';
 import { createAssetRoutes } from './routes/asset.js';
-import { createRoomRoutes } from './routes/room.js';
 import { createGameRoutes } from './routes/game.js';
 import { selfAPI } from '@astral-atlas/wildspace-models';
 import { defaultOptions } from './routes/meta.js';
 import { createHomeRoutes } from "./routes/home.js";
+import { createPageRoutes } from "./routes/pages.js";
 
 /*::
 export type RoutesConstructor = (services: Services) => { ws: WebSocketRoute[], http: HTTPRoute[] };
@@ -22,8 +22,8 @@ export type RoutesConstructor = (services: Services) => { ws: WebSocketRoute[], 
 export const createRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute[], http: HTTPRoute[] }*/ => {
   const audioRoutes = createAudioRoutes(services);
   const assetRoutes = createAssetRoutes(services);
-  const roomRoutes = createRoomRoutes(services);
   const gameRoutes = createGameRoutes(services);
+  const pagesRoutes = createPageRoutes(services);
 
   const selfRoutes = createJSONResourceRoutes(selfAPI['/self'], {
     ...defaultOptions,
@@ -42,16 +42,15 @@ export const createRoutes = (services/*: Services*/)/*: { ws: WebSocketRoute[], 
   const ws = [
     ...audioRoutes.ws,
     ...assetRoutes.ws,
-    ...roomRoutes.ws,
     ...gameRoutes.ws,
   ];
   const http = [
     ...assetRoutes.http,
     ...audioRoutes.http,
-    ...roomRoutes.http,
     ...gameRoutes.http,
     ...selfRoutes,
     ...homeRoutes.http,
+    ...pagesRoutes.http,
   ];
   return { ws, http }
 };

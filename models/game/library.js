@@ -4,10 +4,13 @@ import type { AssetInfo } from "../asset";
 import type { AudioPlaylist, AudioTrack } from "../audio";
 import type { Character, Monster } from "../character";
 import type { MonsterActor } from "../monster/monsterActor";
-import type { Room } from "../room/room";
+import type { Room, RoomID } from "../room/room";
+import type { RoomState } from "../room/state";
 import type { Exposition } from "./exposition";
 import type { Location } from "./location";
 import type { MiniTheater } from "./miniTheater";
+import type { TerrainProp } from "./miniTheater/terrain";
+import type { ModelResource } from "./resources";
 import type { Scene } from "./scene";
 import type { Cast } from "@lukekaalim/cast/main";
 */
@@ -17,18 +20,23 @@ import { castAudioPlaylist, castAudioTrack } from "../audio.js";
 import { castMonster } from "../character.js";
 import { castCharacter } from "../character.js";
 import { castMonsterActor } from "../monster/monsterActor.js";
-import { castRoom } from "../room/room.js";
+import { castRoom, castRoomId } from "../room/room.js";
+import { castRoomState } from "../room/state.js";
 import { castExposition } from "./exposition.js";
 import { castLocation } from "./location.js";
 import {
   castMiniTheater,
-} from "./miniTheater.js";
+} from "./miniTheater/index.js";
+import { castTerrainProp } from "./miniTheater/terrain.js";
+import { castModelResource } from "./resources.js";
 import { castScene } from "./scene.js";
 import { c } from "@lukekaalim/cast";
 
 /*::
 export type LibraryData = {|
   rooms: $ReadOnlyArray<Room>,
+  roomStates: $ReadOnlyArray<RoomState>,
+  modelResources: $ReadOnlyArray<ModelResource>,
 
   characters: $ReadOnlyArray<Character>,
   monsters: $ReadOnlyArray<Monster>,
@@ -36,8 +44,8 @@ export type LibraryData = {|
   monsterActors: $ReadOnlyArray<MonsterActor>,
 
   miniTheaters: $ReadOnlyArray<MiniTheater>,
+  terrainProps: $ReadOnlyArray<TerrainProp>,
   scenes: $ReadOnlyArray<Scene>,
-  expositions: $ReadOnlyArray<Exposition>,
 
   locations: $ReadOnlyArray<Location>,
 
@@ -49,14 +57,16 @@ export type LibraryData = {|
 */
 export const castLibraryData/*: Cast<LibraryData>*/ = c.obj({
   rooms: c.arr(castRoom),
+  roomStates: c.arr(castRoomState),
+  modelResources: c.arr(castModelResource),
   characters: c.arr(castCharacter),
   monsters: c.arr(castMonster),
 
   monsterActors: c.arr(castMonsterActor),
 
   miniTheaters: c.arr(castMiniTheater),
+  terrainProps: c.arr(castTerrainProp),
   scenes: c.arr(castScene),
-  expositions: c.arr(castExposition),
   locations: c.arr(castLocation),
 
   tracks: c.arr(castAudioTrack),
@@ -67,6 +77,10 @@ export const castLibraryData/*: Cast<LibraryData>*/ = c.obj({
 
 /*::
 export type LibraryEvent =
+  | {
+      type: 'reload',
+      data: LibraryData
+    }
   | {
       type: 'rooms',
       rooms: $ReadOnlyArray<Room>,
@@ -119,6 +133,10 @@ export type LibraryEvent =
 */
 
 export const castLibraryEvent/*: Cast<LibraryEvent>*/ = c.or('type', {
+  'reload': c.obj({
+    type: c.lit('reload'),
+    data: castLibraryData,
+  }),
   'rooms': c.obj({
     type: c.lit('rooms'),
     rooms: c.arr(castRoom),
@@ -172,6 +190,8 @@ export const castLibraryEvent/*: Cast<LibraryEvent>*/ = c.or('type', {
 
 export const reduceLibraryEvent = (data/*: LibraryData*/, event/*: LibraryEvent*/)/*: LibraryData*/ => {
   switch (event.type) {
+    case 'reload':
+      return event.data;
     case 'rooms':
       return {
         ...data,
@@ -205,12 +225,6 @@ export const reduceLibraryEvent = (data/*: LibraryData*/, event/*: LibraryEvent*
       return {
         ...data,
         scenes: event.scenes,
-        assets: [...data.assets, ...event.assets],
-      };
-    case 'expositions':
-      return {
-        ...data,
-        expositions: event.expositions,
         assets: [...data.assets, ...event.assets],
       };
     case 'locations':

@@ -1,6 +1,9 @@
 // @flow strict
 /*:: import type { Cast } from '@lukekaalim/cast'; */
 /*:: import type { AudioPlaylist, AudioTrack, AudioPlaylistID } from '../audio.js'; */
+/*::
+import type { RoomStateAction } from "./actions";
+*/
 
 import { c } from "@lukekaalim/cast";
 import { castAudioPlaylistId } from "../audio.js";
@@ -86,3 +89,47 @@ export const calculatePlaylistCurrentTrack = (
 
   return { index, track, trackProgress, offsets };
 };
+
+const reduceRoomPlaylistPlaybackState = (state, action)/*: PlaylistPlaybackState*/ => {
+  switch (action.type) {
+    default:
+      return state;
+  }
+};
+
+const reduceRoomPlaybackState = (state, action) => {
+  switch (action.type) {
+    case 'load-scene':
+      const { time } = action;
+      const { playlist } = action.scene;
+      if (!playlist)
+        return { type: 'none' };
+      if (state.type === 'playlist' && state.playlist.id === playlist)
+        return state;
+
+      return {
+        type: 'playlist',
+        playlist: { id: playlist, mode: { type: 'playing', startTime: time } }
+      };
+  }
+  switch (state.type) {
+    case 'none':
+      return state;
+    case 'playlist':
+      return {
+        type: 'playlist',
+        playlist: reduceRoomPlaylistPlaybackState(state.playlist, action)
+      };
+    default:
+      return state;
+  }
+};
+
+export const reduceRoomAudioState = (state/*: RoomAudioState*/, action/*: RoomStateAction*/)/*: RoomAudioState*/ => {
+  const playback = reduceRoomPlaybackState(state.playback, action);
+  
+  return {
+    ...state,
+    playback
+  };
+}

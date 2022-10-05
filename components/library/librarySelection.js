@@ -10,21 +10,31 @@ export type LibrarySelection = {
 };
 */
 
-export const useLibrarySelection = (initialSelection/*: string[]*/ = [])/*: LibrarySelection*/ => {
+export const useLibrarySelection = (
+  initialSelection/*: string[]*/ = [],
+  onSelectionChange/*: Set<string> => mixed*/ = _ => {},
+  deps/*: mixed[]*/ = []
+)/*: LibrarySelection*/ => {
   const [selected, setSelected] = useState/*:: <Set<string>>*/(() => new Set(initialSelection));
 
   const replace = (ids) => {
+    const nextSelection = new Set(ids);
     setSelected(new Set(ids));
+    onSelectionChange(nextSelection)
   };
   const toggle = (id) => {
-    setSelected(selected => new Set(selected.has(id) ?
-      [...selected].filter(s => s !== id) :
-      [...selected, id]));
+    setSelected(selected => {
+      const nextSelection = new Set(selected.has(id) ?
+        [...selected].filter(s => s !== id) :
+        [...selected, id])
+      onSelectionChange(nextSelection)
+      return nextSelection;
+    });
   }
 
   return useMemo(() => ({
     replace,
     toggle,
     selected,
-  }), [selected])
+  }), [selected, ...deps])
 };

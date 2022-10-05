@@ -92,3 +92,40 @@ export const randomHumanName = ()/*: string*/ => [
     "Kaalim",
   ])
 ].join(' ')
+
+export const randomObjectName = ()/*: string*/ => [
+  randomElement([
+    "Long",
+    "Short",
+    "Tall",
+    "Wide",
+    "Expansive",
+    "Compressed",
+    "Mini",
+    "Dire",
+    ""
+  ]),
+  randomElement([
+    "Colorful",
+    "Dangerous",
+    "Magical",
+    "Corrupted",
+    "Sentient",
+    "Summoned",
+    "Destroyed",
+    "Evil",
+    "\"The Rock\"",
+    ""
+  ]),
+  randomElement([
+    "Rock",
+    "Boulder",
+    "Tree",
+    "Cover",
+    "Building",
+    "Stone",
+    "Foiliage",
+    "Tower",
+    "Signpost",
+  ]),
+].filter(Boolean).join(' ')

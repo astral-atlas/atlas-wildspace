@@ -4,17 +4,11 @@
 /*:: import type { Channel } from './sources/channel.js'; */
 
 import { createBufferCompositeTable } from "./sources/table.js"
-import {
-  castRoomId,
-  castRoomLobbyEvent,
-  castRoomLobbyState,
-  castRoomSceneState,
-  castRoomStateEvent,
-  castRoomUpdate
-} from "@astral-atlas/wildspace-models"
+import * as m from "@astral-atlas/wildspace-models"
 import { createMemoryChannel } from "./sources/channel.js";
-import { enhanceWithFakeTransactable } from "./sources/table2.js";
 import { c } from "@lukekaalim/cast";
+import { castGameConnectionId, castRoomConnectionState, castRoomId, castRoomStateVersion } from "@astral-atlas/wildspace-models";
+import { createNamespacedDynamoDBTable } from "./sources/dynamoTable.js";
 
 /*::
 import type { Table, CompositeTable } from './sources/table.js';
@@ -23,64 +17,71 @@ import type {
   GameID, RoomID,
   LocationID, Location,
   NonPlayerCharacterID, NonPlayerCharacter,
-  RoomLobbyState,
   RoomSceneState,
-  RoomStateEvent
+  RoomConnectionState,
+  Room,
 } from "@astral-atlas/wildspace-models";
-import type { TableDataConstructors } from "./wildspace/table";
 import type { GameConnectionID } from "../models/game/connection";
-import type { VersionedTable } from "./sources/meta";
 import type { Cast } from "@lukekaalim/cast";
+import type { RoomState, RoomStateVersion } from "../models/room/state";
+import type { WildspaceDataSources } from "./sources";
+import type { Transactable } from "./sources/table2";
+import type { ExpirableCompositeTable } from "./sources/expiry";
+import type { DynamoDBTable } from "./sources/dynamoTable";
 */
 
 /*::
-type LobbyData = { roomId: RoomID, state: RoomLobbyState, version: string };
-
 export type WildspaceRoomData = {
-  lobby:  VersionedTable<GameID, RoomID, LobbyData>,
-  lobbyUpdates: Channel<GameID, LobbyData>,
-  scene: CompositeTable<GameID, RoomID, RoomSceneState>,
-  updates: Channel<RoomID, RoomStateEvent>
+  rooms: CompositeTable<GameID, RoomID, Room>,
+  roomStates: {
+    table: CompositeTable<GameID, RoomID, RoomState>,
+    versions: DynamoDBTable<GameID, [RoomID, RoomStateVersion], RoomState>,
+    transactable: Transactable<GameID, RoomID, RoomState>
+  },
+  roomStateUpdates: Channel<RoomID, {}>,
+  roomConnections: DynamoDBTable<GameID, [RoomID, GameConnectionID], RoomConnectionState>,
+  roomConnectionUpdates: Channel<GameID, {
+    connections: $ReadOnlyArray<RoomConnectionState>,
+    counts: $ReadOnlyArray<{ roomId: RoomID, count: number }>
+  }>,
 };
-
-type DataConstructors = {
-  createBufferStore: (name: string) => BufferStore,
-}
 */
 
-const castLobbyData/*: Cast<LobbyData>*/ = c.obj({ roomId: castRoomId, state: castRoomLobbyState, version: c.str });
+const castConnectionSortPair/*: Cast<[RoomID, GameConnectionID]>*/ = c.tup([castRoomId, castGameConnectionId]);
+const castRoomStateVersionPair/*: Cast<[RoomID, RoomStateVersion]>*/ = c.tup([castRoomId, castRoomStateVersion]);
 
-export const createBufferWildspaceRoomData = ({ createBufferStore }/*: DataConstructors*/)/*: WildspaceRoomData*/ => {
-  const lobby = enhanceWithFakeTransactable(createBufferCompositeTable(
-    createBufferStore('room_lobby'),
-    castLobbyData
-  ));
-  const scene = createBufferCompositeTable(createBufferStore('room_scene'), castRoomSceneState);
-  const updates = createMemoryChannel();
-  const lobbyUpdates = createMemoryChannel();
-
-  return {
-    lobby,
-    lobbyUpdates,
-    scene,
-    updates
+export const createTableWildspaceRoomData = (sources/*: WildspaceDataSources*/)/*: WildspaceRoomData*/ => {
+  const rooms = sources.createCompositeTable('rooms', m.castRoom);
+  const roomStates = {
+    table: sources.createCompositeTable('roomStates', m.castRoomState),
+    versions: createNamespacedDynamoDBTable(
+      sources.createDynamoDBTable('roomStateVersions', m.castRoomState),
+      pk => pk,
+      sk => sk.join(':'),
+      sk => castRoomStateVersionPair(sk.split(':')),
+    ),
+    transactable: sources.createTransactable('roomStates', m.castRoomState, 'version')
   }
-}
-
-export const createTableWildspaceRoomData = ({ createChannel, createCompositeTable, createTransactable }/*: TableDataConstructors*/)/*: WildspaceRoomData*/ => {
-  const lobby = {
-    ...createCompositeTable('room_lobby', castLobbyData),
-    ...createTransactable('room_lobby', castLobbyData, item => ({ key: 'version', value: item.version }))
-  };
-  const lobbyUpdates = createChannel('lobby_updates', castLobbyData);
-
-  const scene = createCompositeTable('room_scene', castRoomSceneState);
-  const updates = createChannel('updates', castRoomStateEvent);
+  const roomStateUpdates = sources.createChannel('roomStatesUpdates', c.obj({}))
+  const roomConnections = createNamespacedDynamoDBTable(
+    sources.createDynamoDBTable('roomConnections', m.castRoomConnectionState),
+    pk => pk,
+    sk => sk.join(':'),
+    sk => castConnectionSortPair(sk.split(':')),
+  );
+  const roomConnectionUpdates = sources.createChannel('roomConnectionUpdates', c.obj({
+    connections: c.arr(m.castRoomConnectionState),
+    counts : c.arr(c.obj({
+      roomId: m.castRoomId,
+      count: c.num
+    }))
+  }));
 
   return {
-    lobby,
-    lobbyUpdates,
-    scene,
-    updates
+    rooms,
+    roomStates,
+    roomConnections,
+    roomConnectionUpdates,
+    roomStateUpdates,
   }
 }

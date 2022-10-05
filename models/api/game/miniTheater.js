@@ -13,6 +13,7 @@ import type {
 } from "../../game/miniTheater";
 import type { BoxBoardArea } from "../../encounter/board";
 import type { BoardPosition } from "../../encounter/map";
+import type { TerrainAPI } from "./miniTheater/terrain";
 */
 
 import { c } from "@lukekaalim/cast";
@@ -22,11 +23,11 @@ import {
   castMiniTheaterId,
   castMiniTheater,
   castMiniTheaterAction,
-} from "../../game/miniTheater.js";
+} from "../../game/miniTheater/index.js";
 import { castCharacterId, castMonsterId } from "../../character.js";
 import { castGameId } from "../../game/game.js";
-import { castPiece } from "../../game/miniTheater.js";
-import { castBoxBoardArea } from "../../game/miniTheater.js";
+import { castPiece ,castBoxBoardArea } from "../../game/index.js";
+import { terrainAPI } from "./miniTheater/terrain.js";
 
 /*::
 type MiniTheaterResource = AdvancedGameCRUDAPI<{|
@@ -57,6 +58,7 @@ export type MiniTheaterAPI = {|
   '/mini-theater': MiniTheaterResource,
   '/mini-theater/id': MiniTheaterByIDResource,
   '/mini-theater/action': MiniTheaterActionResource,
+  ...TerrainAPI,
 |}
 */
 
@@ -94,4 +96,5 @@ export const miniTheaterAPI = {
   '/mini-theater': miniTheater,
   '/mini-theater/id': miniTheaterById,
   '/mini-theater/action': miniTheaterAction,
+  ...terrainAPI,
 };

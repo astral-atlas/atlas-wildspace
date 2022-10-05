@@ -59,7 +59,7 @@ declare module '@aws-sdk/client-dynamodb' {
       TableName: string,
       KeyConditionExpression: string,
       ExpressionAttributeNames?: { [string]: string },
-      ExpressionAttributeValues?: { [string]: { S: string } | { N: string } | { B: string } },
+      ExpressionAttributeValues?: { [string]: DynamoDBValueType },
     },
     Output: {
       Items: { [string]: DynamoDBValueType }[]
@@ -96,12 +96,22 @@ declare module '@aws-sdk/client-dynamodb' {
 
     }
   }
+  declare export type UpdateItemCommand = {
+    Input: {
+      TableName: string,
+      Key: { [string]: DynamoDBValueType },
+    },
+    Output: {
+
+    }
+  }
 
   declare export class DynamoDB {
     constructor(config: DynamoDBClientConfig): DynamoDB,
 
     getItem(input: GetItemCommand["Input"]): Promise<GetItemCommand["Output"]>,
     putItem(input: PutItemCommand["Input"]): Promise<PutItemCommand["Output"]>,
+    updateItem(input: UpdateItemCommand["Input"]): Promise<UpdateItemCommand["Output"]>,
     deleteItem(input: DeleteItemCommand["Input"]): Promise<DeleteItemCommand["Output"]>,
     query(input: QueryItemCommand["Input"]): Promise<QueryItemCommand["Output"]>,
     scan(input: ScanCommand["Input"]): Promise<ScanCommand["Output"]>,

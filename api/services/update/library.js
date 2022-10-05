@@ -5,11 +5,17 @@ import type { ServerGameUpdateChannel } from "../update";
 import type { WildspaceData } from "@astral-atlas/wildspace-data";
 import type { GameID, GameUpdate, LibraryEvent, LibraryChannel } from "@astral-atlas/wildspace-models";
 import type { AssetService } from "../asset";
+import type { PageService } from "../page";
 
 export type ServerLibraryChannel = ServerUpdateChannel<LibraryChannel>;
 */
 
-export const createServerLibraryChannel = (data/*: WildspaceData*/, asset/*: AssetService*/, { game, send }/*: ServerGameUpdateChannel*/)/*: ServerLibraryChannel*/ => {
+export const createServerLibraryChannel = (
+  data/*: WildspaceData*/,
+  asset/*: AssetService*/,
+  pages/*: PageService*/,
+  { game, send }/*: ServerGameUpdateChannel*/,
+)/*: ServerLibraryChannel*/ => {
   let subscription = null;
 
   const createLibraryEvent = async (update) => {
@@ -38,11 +44,8 @@ export const createServerLibraryChannel = (data/*: WildspaceData*/, asset/*: Ass
         const locationAssets = await asset.batchPeek(locations
           .map(l => l.background.type === 'image' && l.background.imageAssetId || null));
         return { type: 'locations', locations, assets: locationAssets }
-      case 'exposition':
-        const { result: expositions } = await data.gameData.expositions.query(game.id);
-        return { type: 'expositions', expositions, assets: [] };
       case 'rooms':
-        const { result: rooms } = await data.room.query(game.id);
+        const { result: rooms } = await data.roomData.rooms.query(game.id);
         return { type: 'rooms', rooms };
       case 'tracks':
         const { result: tracks } = await data.tracks.query(game.id);
@@ -58,6 +61,7 @@ export const createServerLibraryChannel = (data/*: WildspaceData*/, asset/*: Ass
         return null;
     }
   }
+  let gameDataEventSubscription = null;
 
   const onGameUpdate = async (update) => {
     const event = await createLibraryEvent(update);
@@ -65,12 +69,19 @@ export const createServerLibraryChannel = (data/*: WildspaceData*/, asset/*: Ass
       return;
     send({ type: 'library-event', event })
   }
+  const onGameDataEvent = async (eventKey) => {
+    console.log(`UPDATE: ${eventKey}`)
+    const event = { type: 'reload', data: await pages.library.getLibraryData(game.id) };
+    send({ type: 'library-event', event })
+  }
 
   const onSubscribe = () => {
     subscription = data.gameUpdates.subscribe(game.id, onGameUpdate)
+    gameDataEventSubscription = data.gameData.gameDataEvent.subscribe(game.id, onGameDataEvent)
   };
   const onUnsubscribe = () => {
     subscription?.unsubscribe();
+    gameDataEventSubscription?.unsubscribe();
   }
 
   const update = (event) => {

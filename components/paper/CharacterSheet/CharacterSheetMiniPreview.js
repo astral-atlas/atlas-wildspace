@@ -82,7 +82,7 @@ export const CharacterSheetMiniPreview/*: Component<CharacterSheetMiniPreviewPro
   const controller = useEncounterController({
     ...renderSetup,
     boards,
-    pieces,
+    pieces: [],
     keyboard,
     cameraBounds
   })
@@ -104,8 +104,7 @@ export const CharacterSheetMiniPreview/*: Component<CharacterSheetMiniPreviewPro
     rootScene.add(sky);
     sky.scale.setScalar( 450000 );
     return () => rootScene.remove(sky);
-  }, [])
-
+  }, []);
 
   useEffect(() => {
     const { current: root } = renderSetup.sceneRef;
@@ -125,7 +124,7 @@ export const CharacterSheetMiniPreview/*: Component<CharacterSheetMiniPreviewPro
     return () => {
       root.remove(resources.floatingScene)
     }
-  }, [resources])
+  }, [resources]);
 
   useEffect(() => {
     const { current: camera } = renderSetup.cameraRef;

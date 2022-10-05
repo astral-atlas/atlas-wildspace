@@ -5,7 +5,12 @@ import type { CubicBezierAnimation } from "@lukekaalim/act-curve";
 
 import type { EncounterResources } from "../encounter/useResources";
 import type { MiniTheaterController } from "./useMiniTheaterController";
-import type { MiniTheaterData } from "./useMiniTheaterData";
+import type { MiniTheaterRenderResources } from "./useMiniTheaterResources";
+import type {
+  MiniTheaterController2,
+  MiniTheaterLocalState,
+} from "./useMiniTheaterController2";
+
 */
 
 import { h, useContext, useEffect, useRef, useState } from "@lukekaalim/act";
@@ -17,6 +22,8 @@ import {
   TextureLoader,
   Vector2,
   Vector3,
+  BoxGeometry,
+  Color,
 } from "three";
 
 import { useDisposable } from "@lukekaalim/act-three/hooks";
@@ -33,23 +40,27 @@ import { MiniTheaterSprite } from "./MiniTheaterSprite";
 
 /*::
 export type MiniTheaterCursorRendererProps = {
-  controller: MiniTheaterController,
-  data: MiniTheaterData,
-  
-  resources: EncounterResources
+  miniTheaterState: MiniTheaterLocalState,
 }
 */
 
+const cube = new BoxGeometry(10, 2, 10);
+const blue = new MeshBasicMaterial({ color: new Color('blue') })
+
 export const MiniTheaterCursorRenderer/*: Component<MiniTheaterCursorRendererProps>*/ = ({
-  controller,
-  resources,
-  data,
+  miniTheaterState,
 }) => {
-  
-  const { cursorGeometry: geometry, texture } = resources;
   const ref = useRef();
   const [visible, setVisible] = useState(false);
 
+  const { cursor } = miniTheaterState;
+
+  if (!cursor)
+    return null;
+
+  const position = new Vector3(cursor.x * 10, (cursor.z * 10) - 3, cursor.y * 10);
+
+  return h(mesh, { geometry: cube, position, material: blue });
   const material = useDisposable(() => {
     return new MeshBasicMaterial({
       map: texture,
@@ -92,18 +103,18 @@ export const MiniTheaterCursorRenderer/*: Component<MiniTheaterCursorRendererPro
 
   return [
     h(mesh, { geometry, material, ref, controller }, [
-      !!placement && h(PlacementIndicator, { placement, data })
+      !!placement && h(PlacementIndicator, { placement, resources })
     ]),
   ];
 }
 
-const PlacementIndicator = ({ data, placement }) => {
+const PlacementIndicator = ({ resources, placement }) => {
   const material = useDisposable(() => new SpriteMaterial(), []);
 
-  const assetId = getPieceAssetId(placement.placement, data.characters, data.monsterMasks);
+  const assetId = getPieceAssetId(placement.placement, resources);
 
   useEffect(() => {
-    const asset = !!assetId && data.assets.get(assetId);
+    const asset = !!assetId && resources.assets.get(assetId);
     if (!asset)
       return;
     const texture = new TextureLoader().load(asset.downloadURL);
@@ -111,7 +122,7 @@ const PlacementIndicator = ({ data, placement }) => {
     return () => {
       texture.dispose();
     }
-  }, [assetId, data.assets])
+  }, [assetId, resources.assets])
   
   return h(sprite, {
     material,

@@ -7,10 +7,12 @@ import type { AuthService, Identity } from "./auth.js";
 import type { GameConnectionService } from "./game/connection";
 import type { RoomService } from "./room";
 import type { AssetService } from "./asset";
+import type { MiniTheaterService } from "./game/miniTheater";
 */
 import { createMaskForMonsterActor } from '@astral-atlas/wildspace-models';
 import { v4 as uuid } from 'uuid';
 import { createGameConnectionService } from "./game/connection.js";
+import { createMiniTheaterService } from "./game/miniTheater.js";
 
 /*::
 export type GameService = {
@@ -25,9 +27,8 @@ export type GameService = {
   addPlayer: (gameId: GameID, playerId: UserID, authorizer: Identity) => Promise<void>,
   removePlayer: (gameId: GameID, playerId: UserID, authorizer: Identity) => Promise<void>,
 
-  getGamePage: (gameId: GameID, authorizer: Identity, isGM: boolean) => Promise<?GamePage>,
-
   connection: GameConnectionService,
+  miniTheater: MiniTheaterService,
 };
 
 export type GameIdentityScope =
@@ -152,79 +153,12 @@ export const createGameService = (
     await data.gameParticipation.set(playerId, game.id, { joined: false, gameId: game.id });
   }
 
-  const getGamePage = async (gameId, identity, isGM) => {
-    const [
-      { result: game },
-      players,
-      { result: monsters },
-      { result: characters },
-      { result: monsterActors },
-      { result: magicItems },
-      { result: wikiDocs },
-      { result: allRooms },
-      { result: roomLobbyData, },
-    ] = await Promise.all([
-      data.game.get(gameId),
-      listPlayers(gameId, identity),
-      data.monsters.query(gameId),
-      data.characters.query(gameId),
-      data.gameData.monsterActors.query(gameId),
-      data.gameData.magicItems.query(gameId),
-      data.wiki.documents.query(gameId),
-      data.room.query(gameId),
-      data.roomData.lobby.query(gameId),
-    ]);
-    if (!game)
-      return null;
-
-
-    const monsterMap = new Map(monsters.map(m => [m.id, m]));
-    const monsterMasks = monsterActors.map(actor => {
-      const monster = monsterMap.get(actor.monsterId);
-      return monster && createMaskForMonsterActor(monster, actor);
-    }).filter(Boolean);
-
-    const assets = [
-      ...(await Promise.all(characters
-        .map(character => character.initiativeIconAssetId)
-        .filter(Boolean)
-        .map(assetId => asset.peek(assetId))
-      )),
-      ...(await Promise.all(monsters
-        .map(monster => monster.initiativeIconAssetId)
-        .filter(Boolean)
-        .map(assetId => asset.peek(assetId))
-      )),
-    ].filter(Boolean);
-    const rooms = allRooms.filter(r => !r.hidden || isGM);
-
-    const roomLobbies = roomLobbyData
-      .filter(l => rooms.some(r => l.roomId === r.id))
-      .map((lobbyData) => [lobbyData.roomId, lobbyData.state])
-
-    const gamePage = {
-      game,
-
-      players,
-      characters,
-      monsterMasks,
-
-      magicItems,
-      wikiDocs,
-
-      rooms,
-      roomLobbies,
-
-      assets,
-    };
-    return gamePage;
-  }
-
   const connection = createGameConnectionService(data);
+  const miniTheater = createMiniTheaterService(data);
 
   return {
     create, update, get, all, createScopeAssertion, removePlayer, addPlayer, listPlayers,
-    getGamePage,
     connection,
+    miniTheater,
   };
 };

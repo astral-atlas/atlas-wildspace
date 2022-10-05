@@ -14,12 +14,10 @@ export const loadConfigFromChain = async (
   const config = castAPIConfigChain(JSON5.parse(configContent));
   console.log(config);
   switch (config.type) {
-    default:
-    case 'final':
-      return config;
     case 'aws-parameter-store':
       return await loadConfigFromParameterStore(config);
   }
+  return config;
 }
 
 export const loadConfigFromFile = async (

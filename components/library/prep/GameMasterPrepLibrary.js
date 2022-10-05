@@ -17,11 +17,12 @@ import { MonsterAsile } from "../aisle/MonsterAisle";
 import { Library } from "../Library";
 import { LibraryCatalogue } from "../LibraryCatalogue";
 import { SceneAisle } from "../aisle/ScenesAisle";
-import { ExpositionAisle } from "../aisle/ExpositionAisle";
 import { LocationAisle } from "../aisle/LocationAisle";
 import { RoomAisle } from "../aisle/RoomAisle";
 import { AudioTrackAisle } from "../aisle/AudioTrackAisle";
 import { AudioPlaylistAisle } from "../aisle/AudioPlaylistAisle";
+import { ResourcesAisle } from "../aisle/ResourcesAisle";
+import { MiniTheaterTerrainAisle } from "../aisle/MiniTheaterTerrainAisle";
 
 /*::
 export type GameMasterPrepLibraryProps = {
@@ -31,6 +32,7 @@ export type GameMasterPrepLibraryProps = {
   game: Game,
   userId: UserID,
 
+  updates: UpdatesConnection,
   data: LibraryData,
 };
 */
@@ -41,6 +43,7 @@ export const GameMasterPrepLibrary/*: Component<GameMasterPrepLibraryProps>*/ = 
   game,
   userId,
 
+  updates,
   data,
 }) => {
 
@@ -59,10 +62,30 @@ export const GameMasterPrepLibrary/*: Component<GameMasterPrepLibraryProps>*/ = 
       key: 'THEATERS',
       title: 'Mini Theaters',
       component: h(MiniTheaterAisle, {
+        library: data,
         miniTheaters: data.miniTheaters,
         characters: data.characters,
         monsters: data.monsters,
         monsterActors: data.monsterActors,
+        assets,
+        updates,
+        client, game, userId
+      })
+    },
+    {
+      key: 'THEATERS_TERRAIN',
+      title: 'Mini Theaters/Terrain',
+      component: h(MiniTheaterTerrainAisle, {
+        library: data,
+        assets,
+        client, game, userId
+      })
+    },
+    {
+      key: 'RESOURCES',
+      title: 'Resources',
+      component: h(ResourcesAisle, {
+        library: data,
         assets,
         client, game, userId
       })
@@ -84,18 +107,7 @@ export const GameMasterPrepLibrary/*: Component<GameMasterPrepLibraryProps>*/ = 
         assets,
         scenes: data.scenes,
         locations: data.locations,
-        expositions: data.expositions,
         miniTheaters: data.miniTheaters,
-        client, game, userId
-      })
-    },
-    {
-      key: 'EXPOSIT',
-      title: 'Exposition',
-      component: h(ExpositionAisle, {
-        assets,
-        locations: data.locations,
-        expositions: data.expositions,
         client, game, userId
       })
     },
@@ -113,6 +125,9 @@ export const GameMasterPrepLibrary/*: Component<GameMasterPrepLibraryProps>*/ = 
       title: 'Room',
       component: h(RoomAisle, {
         assets,
+        library: data,
+        assets,
+        updates,
         rooms: data.rooms,
         client, game, userId
       })

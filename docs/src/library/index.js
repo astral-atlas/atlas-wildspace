@@ -16,6 +16,7 @@ import { v4 as uuid } from 'uuid';
 import { LibraryAisle } from "@astral-atlas/wildspace-components/library/LibraryAisle";
 import { createMockCharacter, createMockImageAsset, createMockWildspaceClient } from "@astral-atlas/wildspace-test"
 import { GameMasterPrepLibraryDemo } from "./prep";
+import { WidePage } from "../page";
 
 const BookDemo = () => {
   const selection = useLibrarySelection()
@@ -118,7 +119,7 @@ const LibraryDemo = () => {
     .map(a => a.shelves.map(s => s.books).flat(1))
     .flat(1)
     .find(b => selection.selected.has(b.id))
-
+  const [focus, setFocus] = useState('floor');
   return [
     h(ScaledLayoutDemo, {}, [
       h(Library, {
@@ -126,6 +127,7 @@ const LibraryDemo = () => {
           h(LibraryCatalogue, { aisles, activeAisleId, onActivateAisle: id => setSctiveAisleId(id) }),
         ],
         aisle: h(LibraryAisle, {
+          focus,
           floor: !!activeAisle && activeAisle.shelves.map(shelf =>
             h(LibraryShelf, {
               selection,
@@ -133,8 +135,12 @@ const LibraryDemo = () => {
               books: shelf.books,
             })),
           desk: [!!selectedBook && h(EditorForm, {}, [
-            h(EditorTextInput, { label: 'Title', text: selectedBook.title })
-          ])]
+            h(EditorTextInput, { label: 'Title', text: selectedBook.title }),
+            h(EditorButton, { label: 'Toggle Focus', onButtonClick: () => setFocus(focus === 'floor' ? 'workstation' : 'floor') })
+          ])],
+          workstation: [
+            h('h1', {}, 'Hello!')
+          ],
         }),
       })
     ])
@@ -194,7 +200,7 @@ const directives = {
 }
 
 export const libraryPrepPage/*: Page*/ = {
-  content: h(Document, {}, h(Markdown, { text: libraryPrepText, directives })),
+  content: h(WidePage, {}, h(Markdown, { text: libraryPrepText, directives })),
   link: { children: [], name: 'Prep Library', href: '/library/prep' }
 }
 
