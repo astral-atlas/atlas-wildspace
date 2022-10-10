@@ -103,7 +103,7 @@ export const createPageService = (
     if (!room)
       return null;
     const resources = await roomService.getResources(gameId, roomId, state);
-    const assetIds = getRoomResourcesAssetIds(resources);
+    const assetIds = getRoomResourcesAssetIds(resources, state);
     const assets = await assetService.batchPeek(assetIds);
 
     const roomPage = {

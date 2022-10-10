@@ -47,7 +47,11 @@ export const createLibraryPageService = (
       ...monsters.map(m => m.initiativeIconAssetId),
       ...tracks.map(t => [t.trackAudioAssetId, t.coverImageAssetId]).flat(1),
       ...locations.map(l => l.background.type === 'image' && l.background.imageAssetId || null),
-      ...modelResources.map(m => m.result.assetId)
+      ...modelResources.map(m => m.result.assetId),
+      ...roomStates.map(r => r.scene.content.type === 'exposition'
+        && r.scene.content.exposition.background.type === 'image'
+        && r.scene.content.exposition.background.assetId
+        || null)
     ])
     const libraryData = {
       rooms,
