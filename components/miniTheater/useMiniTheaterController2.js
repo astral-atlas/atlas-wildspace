@@ -226,7 +226,7 @@ export const useMiniTheaterController2 = (
       controller.act({ type: 'update', update: { type: 'resources', resources } });
       return controller;
     })
-  }, [resources])
+  }, [resources, !!controller])
 
   return useMemo(() => {
     if (!miniTheaterId || !connection || !controller)

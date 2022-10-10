@@ -39,7 +39,6 @@ export const FreeCamera/*: Component<FreeCameraProps>*/ = ({
     return null;
 
   useEffect(() => {
-    console.log('useing effect');
     const { current: surface } = surfaceRef || render.canvasRef;
     const { current: camera } = render.cameraRef;
     if (!surface || !camera)

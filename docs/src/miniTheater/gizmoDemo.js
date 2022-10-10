@@ -14,7 +14,7 @@ const geometry = new BoxGeometry(10, 10, 10);
 
 const TestCube = () => {
   const ref = useRef();
-  useTransformControls(ref);
+  useTransformControls(ref, 'translate');
   return h(mesh, { ref, geometry });
 }
 

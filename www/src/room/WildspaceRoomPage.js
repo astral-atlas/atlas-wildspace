@@ -90,7 +90,7 @@ export const WildspaceRoomPage/*: Component<WildspaceRoomPageProps>*/ = ({
     miniTheaterState,
     controller,
     assets,
-  );
+  ) || { background: { type: 'color', color: 'white' }, foreground: { type: 'none' } };
 
   return [
     h('div', { className: styles.room, ref }, [

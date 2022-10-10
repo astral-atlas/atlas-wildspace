@@ -17,6 +17,7 @@ import type { AudioPlaylist, AudioTrack } from "../audio";
 import type { AssetID, AssetInfo } from "../asset";
 import type { TerrainProp } from "../game/miniTheater/terrain";
 import type { ModelResource } from "../game/resources";
+import type { RoomState } from "./state";
 
 export type RoomResources = {
   locations:      $ReadOnlyArray<Location>,
@@ -67,7 +68,10 @@ export const emptyRoomResources/*: RoomResources*/ = {
   modelResources: [],
 };
 
-export const getRoomResourcesAssetIds = (resources/*: RoomResources*/)/*: AssetID[]*/ => {
+export const getRoomResourcesAssetIds = (
+  resources/*: RoomResources*/,
+  state/*: RoomState*/
+)/*: AssetID[]*/ => {
   return [
     ...resources.locations.map((l) => {
       switch (l.background.type) {
@@ -93,6 +97,9 @@ export const getRoomResourcesAssetIds = (resources/*: RoomResources*/)/*: AssetI
     }),
     ...resources.modelResources.map(m => {
       return m.assetId;
-    })
+    }),
+    state.scene.content.type === 'exposition'
+      && state.scene.content.exposition.background.type === 'image'
+      && state.scene.content.exposition.background.assetId || null,
   ].filter(Boolean)
 }

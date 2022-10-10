@@ -26,6 +26,7 @@ import { mainMenuPage, mainMenuPages } from "./mainMenu";
 import { miniTheaterPage, miniTheaterPages } from './miniTheater/miniTheater';
 import { snackbarPage, snackbarPages } from "./snackbar";
 import { terrainEditorPage, terrainEditorPages } from "./terrainEditor";
+import { renderPage, renderPages } from "./render";
 
 /*::
 export type Page = {
@@ -59,6 +60,7 @@ const rootPage = {
       miniTheaterPage.link,
       snackbarPage.link,
       terrainEditorPage.link,
+      renderPage.link,
     ],
     href: '/',
   }
@@ -82,6 +84,7 @@ const pages = [
   ...miniTheaterPages,
   ...snackbarPages,
   ...terrainEditorPages,
+  ...renderPages
 ];
 
 const normalizeURLPathname = pathname =>

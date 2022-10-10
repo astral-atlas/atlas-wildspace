@@ -23,8 +23,9 @@ import { miniVectorToThreeVector, miniQuaternionToThreeQuaternion } from "../../
 
 /*::
 import type { Component, Ref } from "@lukekaalim/act";
-import type { Mesh } from "three";
+import type { Group, Mesh } from "three";
 import type { MiniTheaterShape } from "@astral-atlas/wildspace-models";
+import type { ReadOnlyRef } from "../../three/useChildObject";
 */
 
 const calculateFloorAABBMap = (floors/*: $ReadOnlyArray<MiniTheaterShape>*/)/*: Map<MiniTheaterShape, Box3>*/ => {
@@ -286,8 +287,8 @@ export const FloorMesh/*: Component<FloorMeshProps>*/ = ({
   showDebug = false,
   ref: externalRef = null
 }) => {
-  const pointGeometry = useDisposable(() => new BufferGeometry());
-  const floorGeometry = useDisposable(() => new BufferGeometry());
+  const pointGeometry = useDisposable(() => new BufferGeometry(), []);
+  const floorGeometry = useDisposable(() => new BufferGeometry(), []);
   const ref = useRef()
 
   const { floorAABB, cells, chunkFloors, chunks, subChunks, candidates } = useFloorCells(floors);
@@ -328,9 +329,9 @@ export const FloorMesh/*: Component<FloorMeshProps>*/ = ({
   return h(group, { ref }, [
     h(points, { geometry: pointGeometry, visible: showDebug }),
     h(mesh, { geometry: floorGeometry, ref: meshRef, material, visible: showDebug }),
-    showDebug && subChunks.map(({ subChunk }) => h(ChunkDebug, { ref, chunk: subChunk })),
-    showDebug && chunks.map((chunk) => h(ChunkDebug, { ref, chunk, color: new Color('white') })),
-    showDebug && floors.map(floor => h(FloorDebug, { floor })),
+    //showDebug && subChunks.map(({ subChunk }) => h(ChunkDebug, { ref, chunk: subChunk })),
+    //showDebug && chunks.map((chunk) => h(ChunkDebug, { ref, chunk, color: new Color('white') })),
+    //showDebug && floors.map(floor => h(FloorDebug, { floor })),
   ]);
 }
 
@@ -338,7 +339,15 @@ const FloorMeshChunk = ({ chunk, chunkFloors }) => {
 
 };
 
-const ChunkDebug = ({ ref, chunk, color = new Color('yellow') }) => {
+/*::
+type ChunkDebugProps = {
+  ref: ReadOnlyRef<?Group>,
+  chunk: Box3,
+  color?: Color
+}
+*/
+
+const ChunkDebug/*: Component<ChunkDebugProps>*/ = ({ ref, chunk, color = new Color('yellow') }) => {
   const helper = useChildObject(ref, () => {
     return new Box3Helper(chunk, color)
   }, [chunk, color]);

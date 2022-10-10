@@ -13,6 +13,7 @@ import { perspectiveCamera } from "@lukekaalim/act-three";
 import { getBasicTransformationPoint, interpolateBasicTransformAnimation } from "../../animation";
 import { createInitialBasicTransformAnimation } from "../../animation/transform";
 import { v4 } from "uuid";
+import { useMiniTheaterElementControls } from "../../miniTheater";
 
 /*::
 import type {
@@ -62,94 +63,18 @@ export const SceneMiniTheaterRenderer/*: Component<SceneMiniTheaterRendererProps
   const onExitFloor = () => {
     act({ type: 'move-cursor', cursor: null })
   }
-  const canvasProps = controller && {
-    onContextMenu(e) {
-      e.preventDefault();
-      const { cursor, selection, layer, tool } = state;
-      if (!cursor)
-        return;
-      switch (selection.type) {
-        case 'terrain-prop':
-          if (tool.type !== 'place')
-            return;
-          const { terrainId } = selection;
-          act({
-            type: 'remote-action', remoteAction: {
-              type: 'set-terrain',
-              terrain: state.miniTheater.terrain.map(t => t.id === terrainId
-                ? { ...t, position: { x: cursor.x * 10, y: cursor.z * 10, z: cursor.y * 10 } }
-                : t)
-            }
-          })
-          return;
-        case 'piece':
-          act({
-            type: 'remote-action',
-            remoteAction: { type: 'move-piece', movedPiece: selection.pieceId, position: cursor }
-          })
-          return;
-        case 'placement':
-          if (!layer)
-            return;
-          switch (selection.placement.type) {
-            case 'piece':
-              act({ type: 'remote-action', remoteAction: {
-                type: 'place-piece',
-                position: cursor,
-                layer,
-                pieceRepresents: selection.placement.represents,
-              } })
-              return;
-            case 'terrain':
-              const terrainPropId = selection.placement.terrain;
-              act({
-                type: 'remote-action', remoteAction: {
-                  type: 'set-terrain',
-                  terrain: [
-                    ...state.miniTheater.terrain,
-                    {
-                      terrainPropId,
-                      id: v4(),
-                      layer,
-                      position: { x: cursor.x * 10, y: cursor.z * 10, z: cursor.y * 10 },
-                      quaternion: { x: 0, y: 0, z: 0, w: 1 },
-                    }
-                  ]
-                }
-              })
-              return;
-            default:
-              return;
-          }
-      }
-    },
-    onClick() {
-      const { cursor, terrainCursor, miniTheater, selection } = state;
-      const selectedPiece = cursor && miniTheater
-        .pieces
-        .find(p => isBoardPositionEqual(p.position, cursor) && p.layer === state.layer);
-      const selectedTerrain = terrainCursor && miniTheater
-        .terrain
-        .find(t => t.id === terrainCursor) || null;
-
-      if (selectedPiece) {
-        act({ type: 'select', selection: { type: 'piece', pieceId: selectedPiece.id } })
-      }
-      else if (selectedTerrain) {
-        act({ type: 'select', selection: { type: 'terrain-prop', terrainId: selectedTerrain.id } })
-      }
-      else {
-        if (selection.type === 'terrain-prop')
-          return;
-        act({ type: 'select', selection: { type: 'none' } });
-      }
-    }
-  } || {};
+  const canvasRef = useRef()
+  useMiniTheaterElementControls(canvasRef, controller);
  
-  return h(RenderCanvas, { className: styles.miniTheater, canvasProps }, [
-    h(MiniTheaterScene2, { miniTheaterState: state, onOverFloor, onExitFloor, controller }),
-    h(SceneMiniTheaterCamera, { cameraMode }),
-  ]);
+  return [
+    h(RenderCanvas, {
+      className: [styles.miniTheater, state.resources.loadingAssets && styles.loading].filter(Boolean).join(' '),
+      renderSetupOverrides: { canvasRef }
+    }, [
+      h(MiniTheaterScene2, { miniTheaterState: state, onOverFloor, onExitFloor, controller }),
+      h(SceneMiniTheaterCamera, { cameraMode }),
+    ])
+  ];
 }
 
 const SceneMiniTheaterCamera = ({ cameraMode }) => {

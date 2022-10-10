@@ -131,11 +131,7 @@ export const ResourcesAisle/*: Component<ResourcesAisleProps>*/ = ({
             onButtonClick: () => setShowExplorer(true),
             disabled: !explorerModelAsset
           }),
-          !!explorerModelAsset && h('ol', {}, [
-            explorerModelAsset.asset.scene.children.map(child => {
-              return h('li', {}, child.name)
-            })
-          ])
+          !!explorerModelAsset && h(ObjectTreeList, { object: explorerModelAsset.asset.scene })
         ],
       ]
     }),
@@ -146,6 +142,17 @@ export const ResourcesAisle/*: Component<ResourcesAisleProps>*/ = ({
       asset: explorerModelAsset.asset
     })
   ];
+}
+const ObjectTreeList = ({ object }) => {
+  const { children } = object;
+  return h('ol', {}, [
+    !!children && children.map(child => {
+      return h('li', {}, [
+        h('div', {}, child.name),
+        h(ObjectTreeList, { object: child })
+      ])
+    })
+  ]);
 }
 
 const ModelResourceExplorerPopup = ({ onDismiss, visible, asset }) => {

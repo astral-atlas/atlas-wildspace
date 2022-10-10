@@ -1,6 +1,6 @@
 // @flow strict
 
-import { createContext, h } from "@lukekaalim/act";
+import { createContext, h, useState } from "@lukekaalim/act";
 import { useRenderSetup } from "./useRenderSetup";
 import { scene } from "@lukekaalim/act-three";
 
@@ -12,17 +12,21 @@ import type { RenderSetup, RenderSetupOverrides } from "./useRenderSetup";
 export type RenderCanvasProps = {
   className?: string,
   canvasProps?: { [string]: mixed },
+  renderOverride?: RenderSetup,
   renderSetupOverrides?: RenderSetupOverrides,
 }
 */
 
 export const RenderCanvas/*: Component<RenderCanvasProps>*/ = ({
   children,
-  className,
+  className = '',
+  renderOverride,
   canvasProps = {},
   renderSetupOverrides = {}
 }) => {
-  const render = useRenderSetup(renderSetupOverrides)
+  const [] = useState(null)
+  const localRender = useRenderSetup(renderSetupOverrides)
+  const render = renderOverride || localRender;
 
   return [
     h('div', { ref: render.rootRef, style: { position: 'absolute' } }),

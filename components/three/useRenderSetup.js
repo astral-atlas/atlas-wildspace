@@ -1,8 +1,12 @@
 // @flow strict
 /*::
 import type { Ref } from "@lukekaalim/act";
-import type { LoopController, RenderLoopConstants } from "./useLoopController";
-import type { PerspectiveCamera, Scene } from "three";
+import type {
+  LoopController,
+  RenderLoopConstants,
+  RenderLoopVariables,
+} from "./useLoopController";
+import type { Object3D, PerspectiveCamera, Scene } from "three";
 
 import type { KeyboardStateEmitter } from "../keyboard/changes";
 import type { KeyboardTrack } from "../keyboard/track";
@@ -28,16 +32,26 @@ export type RenderSetup = {
 
 export type RenderSetupOverrides = {|
   canvasRef?:  ?Ref<?HTMLCanvasElement>,
+  sceneRef?:  ?Ref<?Scene>,
   cameraRef?: ?Ref<?PerspectiveCamera>,
   rootRef?: ?Ref<?HTMLElement>,
   loop?: ?LoopController,
   keyboardEmitter?: ?KeyboardStateEmitter,
+
+  renderFunction?: (
+    constants: RenderLoopConstants,
+    variables: RenderLoopVariables,
+  ) => mixed,
+  onResize?: (
+    width: number,
+    height: number,
+  ) => void,
 |};
 */
 
 export const useRenderSetup = (
   overrides/*: RenderSetupOverrides*/ = Object.freeze({}),
-  onRendererInit/*: RenderLoopConstants => mixed*/ = _ => {},
+  onRendererInit/*: ?((c: RenderLoopConstants, s: RenderSetup) => ?(() => mixed))*/ = null,
   deps/*: mixed[]*/ = []
 )/*: RenderSetup*/ => {
   const localCanvasRef = useRef();
@@ -45,7 +59,9 @@ export const useRenderSetup = (
 
   const localCameraRef = useRef();
   const cameraRef = overrides.cameraRef || localCameraRef;
-  const sceneRef = useRef();
+
+  const localSceneRef = useRef();
+  const sceneRef = overrides.sceneRef || localSceneRef;
 
   const localRootRef = useRef();
   const rootRef = overrides.rootRef || localRootRef;
@@ -91,31 +107,38 @@ export const useRenderSetup = (
       loop.runLoop(rendererConstants, rendererVariables);
       frameId = requestAnimationFrame(onFrame);
     };
-    const onCanvasResize = (entries) => {
-      const [entry] = entries;
-      if (!entry)
-        return;
-      const [contentSize] = entry.contentBoxSize;
-      renderer.setSize(contentSize.inlineSize, contentSize.blockSize, false);
+    const defaultRenderFunction = (c, v) => {
+      c.renderer.render(c.scene, c.camera);
+      if (c.css2dRenderer)
+        c.css2dRenderer.render(c.scene, c.camera);
+    }
+    const renderFunction = overrides.renderFunction || defaultRenderFunction;
+    const onCanvasResize = () => {
+      const canvasRect = canvas.getBoundingClientRect();
+      renderer.setSize(canvasRect.width, canvasRect.height, false);
       if (css2dRenderer) {
-        css2dRenderer.setSize(contentSize.inlineSize, contentSize.blockSize)
+        css2dRenderer.setSize(canvasRect.width, canvasRect.height)
       }
 
-      camera.aspect = contentSize.inlineSize / contentSize.blockSize;
+      camera.aspect = canvasRect.width / canvasRect.height;
       camera.updateProjectionMatrix();
-      renderer.render(scene, camera);
+
+      const now = performance.now();
+      const delta = now - prevTime;
+      const rendererVariables = {
+        now,
+        delta,
+      }
+      loop.runRender(rendererConstants, rendererVariables);
     }
 
     const resizeObserver = new ResizeObserver(onCanvasResize);
     resizeObserver.observe(canvas);
-    const cancelRenderSubscription = loop.subscribeRender((c, v) => {
-      c.renderer.render(c.scene, c.camera);
-      if (c.css2dRenderer)
-        c.css2dRenderer.render(c.scene, c.camera);
-    })
+    const cancelRenderSubscription = loop.subscribeRender(renderFunction);
     let frameId = requestAnimationFrame(onFrame);
 
-    onRendererInit(rendererConstants);
+    if (onRendererInit)
+      onRendererInit(rendererConstants, setup);
 
     return () => {
       renderer.dispose();
@@ -125,7 +148,7 @@ export const useRenderSetup = (
     }
   }, deps)
 
-  return useMemo(() => ({
+  const setup = useMemo(() => ({
     canvasRef,
     cameraRef,
     sceneRef,
@@ -134,5 +157,6 @@ export const useRenderSetup = (
 
     loop,
   }), []);
+  return setup;
 };
 

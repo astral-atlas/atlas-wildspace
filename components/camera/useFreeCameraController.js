@@ -183,7 +183,6 @@ export const subscribeFreeCameraUpdates = (
       onFocusChange(false);
     }
   }
-
   surface.addEventListener('mousemove', onMouseMove)
   surface.addEventListener('click', onClick)
   document.addEventListener('pointerlockchange', onPointerLockChange)

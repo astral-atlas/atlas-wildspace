@@ -102,13 +102,17 @@ export const MiniTheaterTerrainAisle/*: Component<MiniTheaterTerrainAisleProps>*
   const onDeleteTerrainProp = async (modelToDelete) => {
     await client.game.miniTheater.terrainProps.destroy(game.id, modelToDelete.id);
   }
-  const onUpdateTerrainProp = async (prevTerrainProp, { name, iconPreviewCameraModelPath, modelPath, floorShapes }) => {
+  const onUpdateTerrainProp = async (
+    prevTerrainProp,
+    { name, iconPreviewCameraModelPath, modelPath, floorShapes, modelResourceId }
+  ) => {
     await client.game.miniTheater.terrainProps.update(game.id, prevTerrainProp.id, {
       ...prevTerrainProp,
       floorShapes: floorShapes || prevTerrainProp.floorShapes,
       name: name || prevTerrainProp.name,
       iconPreviewCameraModelPath: iconPreviewCameraModelPath || prevTerrainProp.iconPreviewCameraModelPath,
       modelPath: modelPath || prevTerrainProp.modelPath,
+      modelResourceId: modelResourceId || prevTerrainProp.modelResourceId,
     });
   }
   const [showExplorer, setShowExplorer] = useState(false);
@@ -123,9 +127,9 @@ export const MiniTheaterTerrainAisle/*: Component<MiniTheaterTerrainAisleProps>*
 
   const { focus, toggleFocus } = useAisleFocus()
 
-  const floor = [
+  const floorHeader = [
     h(LibraryFloorHeader, { title: 'Terrain Pieces' }),
-    h('div', { style: { width: '100%', overflow: 'auto' } }, [
+    h('div', { style: { width: '100%' } }, [
       h(EditorForm, {}, [
         h(EditorVerticalSection, {}, [
           h(EditorHorizontalSection, {}, [
@@ -150,7 +154,11 @@ export const MiniTheaterTerrainAisle/*: Component<MiniTheaterTerrainAisleProps>*
         ]),
       ]),
     ]),
-    h(EditorLine),
+  ]
+
+  const floor = h(LibraryFloor, {
+    header: floorHeader
+  }, [
     library.modelResources.map(modelResource => {
       const terrainProps = library.terrainProps.filter(t => t.modelResourceId === modelResource.id);
       const books = terrainProps.map(t => ({
@@ -160,7 +168,16 @@ export const MiniTheaterTerrainAisle/*: Component<MiniTheaterTerrainAisleProps>*
       }));
       return h(LibraryShelf, { title: modelResource.name, selection, books })
     }),
-  ];
+    h(LibraryShelf, { title: 'Orphan Terrain Props', selection, books: [
+      ...library.terrainProps.
+        filter(terrain => {
+          return !library.modelResources.some(mr => terrain.modelResourceId === mr.id);
+        })
+        .map(terrain => {
+          return { title: terrain.name, id: terrain.id }
+        })
+    ] })
+  ]);
 
   const childObjects = modelAsset && modelAsset.asset.scene.children;
   const saveStaging = async () => {
@@ -178,9 +195,14 @@ export const MiniTheaterTerrainAisle/*: Component<MiniTheaterTerrainAisleProps>*
         label: 'Model Resource',
         values: library.modelResources.map(m => ({ title: m.name, value: m.id })),
         selected: selectedTerrainProp.modelResourceId,
-        disabled: true
+        disabled: true,
+        onSelectedChange: modelResourceId => onUpdateTerrainProp(selectedTerrainProp, { modelResourceId })
       }),
-      h(EditorTextInput, { label: 'Name', text: selectedTerrainProp.name, onTextChange: name => onUpdateTerrainProp(selectedTerrainProp, { name }) }),
+      h(EditorTextInput, {
+        label: 'Name',
+        text: selectedTerrainProp.name,
+        onTextChange: name => onUpdateTerrainProp(selectedTerrainProp, { name })
+      }),
       h(EditorTextInput, {
         label: 'Preview Camera Path',
         text: (selectedTerrainProp.iconPreviewCameraModelPath || []).join('.'),
@@ -191,11 +213,7 @@ export const MiniTheaterTerrainAisle/*: Component<MiniTheaterTerrainAisleProps>*
         text: (selectedTerrainProp.modelPath || []).join('.'),
         onTextChange: modelPath => onUpdateTerrainProp(selectedTerrainProp, { modelPath: modelPath.split('.') }) 
       }),
-      h('ol', {}, [
-        !!childObjects && childObjects.map(o => {
-          return h('li', {}, o.name)
-        })
-      ]),
+      !!modelAsset && h(ObjectTreeList, { object: modelAsset.asset.scene }),
       h(EditorButton, { label: 'Delete', onButtonClick: () => onDeleteTerrainProp(selectedTerrainProp)}),
       h(EditorButton, {
         label: 'Open Model Exporer',
@@ -209,35 +227,25 @@ export const MiniTheaterTerrainAisle/*: Component<MiniTheaterTerrainAisleProps>*
     ],
   ]
 
-  const modelRoot = modelAsset && selectedTerrainProp &&
-    getObject3DForModelResourcePath(modelAsset.asset.scene, selectedTerrainProp.modelPath)
-    
-  const workstation = !!modelRoot && !!selectedTerrainProp && h(TerrainPropEditor, {
-    modelResourceObject: modelRoot,
+  const workstation = !!modelAsset && !!selectedTerrainProp && h(TerrainPropEditor, {
+    modelResourceObject: modelAsset.asset.scene,
     terrainProp: stagingTerrainProp || selectedTerrainProp,
     onTerrainPropChange: setStagingTerrainProp,
   })
 
   return [
     h(LibraryAisle, { floor, desk, wideDesk: true, workstation, focus }),
-    
-    !!modelRoot && !!selectedTerrainProp && h(ModelResourceExplorerPopup, {
-      key: selectedTerrainProp.id,
-      onDismiss: () => setShowExplorer(false),
-      visible: showExplorer,
-      modelRoot
-    })
   ];
 }
 
-const ModelResourceExplorerPopup = ({ onDismiss, visible, modelRoot }) => {
-  const ref = useRef();
-
-  return h(PopupOverlay, { onBackgroundClick: () => onDismiss(), visible }, [
-    h('div', { ref, style: { padding: '24px', backgroundColor: 'white' } }, [
-      h(ModelResourceExplorerCanvas, {
-        modelRoot
-      })
-    ])
-  ])
+const ObjectTreeList = ({ object }) => {
+  const { children } = object;
+  return h('ol', {}, [
+    !!children && children.map(child => {
+      return h('li', {}, [
+        h('div', {}, child.name),
+        h(ObjectTreeList, { object: child })
+      ])
+    })
+  ]);
 }

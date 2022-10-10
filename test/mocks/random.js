@@ -1,6 +1,7 @@
 // @flow strict
 import { v4 as uuid } from 'uuid';
 import seedrandom from 'seedrandom';
+import { Box3, Vector3 } from "three";
 
 export const repeat = /*:: <T>*/(func/*: (index: number) => T*/, count/*: number*/)/*: T[]*/ =>
   Array.from({ length: count }).map((_, i) => func(i));
@@ -129,3 +130,18 @@ export const randomObjectName = ()/*: string*/ => [
     "Signpost",
   ]),
 ].filter(Boolean).join(' ')
+
+export const randomVector = ()/*: Vector3*/ => {
+  return new Vector3(
+    randomIntRange(10, -10),
+    randomIntRange(10, -10),
+    randomIntRange(10, -10)
+  );
+}
+export const randomBox3 = ()/*: Box3*/ => {
+  return new Box3()
+    .setFromCenterAndSize(
+      randomVector().multiplyScalar(2),
+      randomVector().addScalar(10)
+    )
+}

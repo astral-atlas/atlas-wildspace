@@ -2,6 +2,23 @@
   position: absolute;
   height: 100%;
   width: 100%;
+  transition: filter 0.3s;
+}
+
+.miniTheater.loading {
+  filter: blur(10px)
+}
+
+.loadingControl {
+  position: relative;
+  height: 100%;
+  width: 100%;
+
+  display: flex;
+}
+.loadingControlBar {
+  margin: auto;
+  width: 20rem;
 }
 
 .controlsAnchor {

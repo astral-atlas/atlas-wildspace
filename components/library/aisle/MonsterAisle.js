@@ -101,16 +101,22 @@ export const MonsterAsile/*: Component<MonsterAisleProps>*/ = ({
         ]),
       ]
     }, [
-      h(LibraryShelf, { selection, title: 'All Monsters', books: monsters.map(m => ({
-        title: m.name,
-        id: `monster:${m.id}`
-      })) }),
+      h(LibraryShelf, { selection, title: 'All Monsters', books: monsters.map(m => {
+        return {
+          title: m.name,
+          id: `monster:${m.id}`,
+          coverURL: m.initiativeIconAssetId && assets.get(m.initiativeIconAssetId)?.downloadURL || ''
+        }
+      }) }),
       monsters.map(monster => {
         const actors = monsterActors.filter(a => a.monsterId === monster.id);
-        return h(LibraryShelf, { selection, title: monster.name, books: actors.map(ma => ({
-          title: ma.secretName || ma.name || monster.name,
-          id: `monster-actor:${ma.id}`
-        })) })
+        return h(LibraryShelf, { selection, title: monster.name, books: actors.map(ma => {
+          return {
+            title: ma.secretName || ma.name || monster.name,
+            id: `monster-actor:${ma.id}`,
+            coverURL: monster.initiativeIconAssetId && assets.get(monster.initiativeIconAssetId)?.downloadURL || ''
+          }
+        }) })
       }),
     ]),
     desk: [

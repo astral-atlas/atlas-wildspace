@@ -16,15 +16,23 @@ import { useElementKeyboard } from "../keyboard";
 import { useKeyboardTrack } from "../keyboard/track";
 
 import styles from './TerrainEditor.module.css';
-import { Color, LineBasicMaterial, Quaternion, Vector3 } from "three";
+import {
+  Camera,
+  CameraHelper,
+  Color,
+  LineBasicMaterial,
+  Quaternion,
+  Vector3,
+} from "three";
 import { ShapeRenderer } from "../miniTheater/floor/ShapeRenderer";
 import { useRaycast2, useRaycastManager } from "../raycast/manager";
 import { useRaycastElement } from "../raycast/useRaycastElement";
 import { useRaycastLoop } from "../raycast/useRaycastLoop";
-import { useLoopController } from "../three";
+import { useChildObject, useLoopController } from "../three";
 import { useTransformControls } from "../gizmos/useTransformControls";
-import { useDisposable } from "@lukekaalim/act-three";
+import { group, useDisposable } from "@lukekaalim/act-three";
 import { quaternionToMiniQuaternion, vectorToMiniVector } from "../utils/miniVector";
+import { getObject3DForModelResourcePath } from "../resources/modelResourceUtils";
 
 /*::
 export type TerrainEditorProps = {
@@ -48,6 +56,17 @@ export const TerrainPropEditor/*: Component<TerrainEditorProps>*/ = ({
   onTerrainPropChange,
   modelResourceObject
 }) => {
+  const modelResourcePropObject = getObject3DForModelResourcePath(
+    modelResourceObject,
+    terrainProp.modelPath
+  );
+  const modelResourcePropCamera = terrainProp.iconPreviewCameraModelPath &&
+    getObject3DForModelResourcePath(
+      modelResourceObject,
+      terrainProp.iconPreviewCameraModelPath
+    );
+
+
   const cameraButtonRef = useRef();
   const emitter = useElementKeyboard(cameraButtonRef);
   const keys = useKeyboardTrack(emitter);
@@ -83,19 +102,28 @@ export const TerrainPropEditor/*: Component<TerrainEditorProps>*/ = ({
       setTerrainEditorState({ ...terrainEditorState, selectedShapeIndex: 0 })
   }
 
+  const cameraMatrix = modelResourcePropCamera && modelResourcePropCamera.matrixWorld;
+  const cameraPosition = cameraMatrix && new Vector3().setFromMatrixPosition(cameraMatrix);
+  const cameraQuaternion = cameraMatrix && new Quaternion().setFromRotationMatrix(cameraMatrix);
+
   return h('div', {}, [
     h(RenderCanvas, {
       renderSetupOverrides: { keyboardEmitter: emitter, canvasRef, loop },
       className: styles.terrainEditorCanvas,
       canvasProps: { onClick }
     }, [
-      h(ModelResourceObject, {
-        object: modelResourceObject,
+      !!modelResourcePropObject && h(ModelResourceObject, {
+        object: modelResourcePropObject,
         position: new Vector3(0, 0, 0),
         quaternion: new Quaternion().identity()
       }),
+      !!modelResourcePropCamera && h(CameraHelperRenderer, { camera: modelResourcePropCamera }),
       h(FloorMesh, { floors: floorShapes, showDebug: true }),
-      h(FreeCamera, { surfaceRef: cameraButtonRef, keys }),
+      h(FreeCamera, {
+        surfaceRef: cameraButtonRef, keys,
+        position: cameraPosition || undefined,
+        quaternion: cameraQuaternion || undefined,
+      }),
       floorShapes.map((shape, index) => {
         const selected = index === terrainEditorState.selectedShapeIndex;
         return h(ShapeEditor, {
@@ -114,6 +142,19 @@ export const TerrainPropEditor/*: Component<TerrainEditorProps>*/ = ({
       onEditorStateChange: setTerrainEditorState
     }),
   ]);
+}
+
+const CameraHelperRenderer = ({ camera }) => {
+  const ref = useRef();
+  useChildObject(ref, () => {
+    console.log(camera)
+    if (!(camera instanceof Camera))
+      return;
+    return new CameraHelper(camera)
+  }, [camera])
+  return [
+    h(group, { ref }),
+  ]
 }
 
 const ShapeEditor = ({ shape, selected, raycast, onSelect, onShapeChange, tool }) => {

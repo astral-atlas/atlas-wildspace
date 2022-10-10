@@ -2,11 +2,13 @@
 /*::
 import type { Component } from "@lukekaalim/act";
 import type { WildspaceClient, UpdatesConnection } from "@astral-atlas/wildspace-client2";
-import type { LibraryData, Monster, Room, Game } from "@astral-atlas/wildspace-models";
+import type {
+  LibraryData, Monster, Room, Game,
+  AssetID, AssetInfo } from "@astral-atlas/wildspace-models";
 import type { AssetDownloadURLMap } from "../../asset/map";
 */
 
-import { h, useState } from "@lukekaalim/act";
+import { h, useEffect, useMemo, useState } from "@lukekaalim/act";
 import debounce from "lodash.debounce";
 import { LibraryAisle } from "../LibraryAisle";
 import { LibraryFloor, LibraryFloorHeader } from "../LibraryFloor";
@@ -32,6 +34,7 @@ import { useMiniTheaterState } from "../../miniTheater/useMiniTheaterState";
 import { getContentRenderData } from "../../scene/content/sceneContentRenderData";
 import { SceneContentEditor } from "../../scene/SceneContentEditor";
 import { v4 } from "uuid";
+import { createAssetDownloadURLMap } from "../../asset/map";
 
 /*::
 export type RoomAisleProps = {
@@ -75,6 +78,20 @@ export const RoomAisle/*: Component<RoomAisleProps>*/ = ({
     await client.game.rooms.destroy(game.id, room.id)
   }
   const [stagingContent, setStatingContent] = useState(null)
+  const [stagingAssets, setStagingAssets] = useState/*:: <[AssetID, ?AssetInfo][]>*/([])
+
+  useEffect(() => {
+    if (!stagingContent)
+      return;
+    if (stagingContent.type !== 'exposition')
+      return;
+    if (stagingContent.exposition.background.type !== 'image')
+      return;
+
+    const assetId = stagingContent.exposition.background.assetId;
+    client.asset.peek(assetId)
+      .then(info => setStagingAssets(a => [...a, [assetId, { ...info, downloadURL: info.downloadURL.href }]]))
+  }, [stagingContent])
   const onContentUpdate = (nextContent) => {
     setStatingContent(nextContent)
   };
@@ -93,7 +110,7 @@ export const RoomAisle/*: Component<RoomAisleProps>*/ = ({
     library,
     room: selectedRoom,
     updates,
-    assets,
+    assets: new Map([...assets, ...stagingAssets]),
     client,
     stagingContent,
     onContentUpdate,

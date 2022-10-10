@@ -31,6 +31,10 @@ export type LoopController = {
     renderConsts: RenderLoopConstants,
     renderVars: RenderLoopVariables,
   ) => void,
+  runRender: (
+    renderConsts: RenderLoopConstants,
+    renderVars: RenderLoopVariables,
+  ) => void,
 };
 */
 
@@ -40,6 +44,7 @@ export const loopControllerContext/*: Context<LoopController>*/ = createContext(
   subscribeRender: () => { throw new Error(`No Loop Manager in Context`) },
 
   runLoop: () => {},
+  runRender: () => {},
 })
 
 const createLoopController = ()/*: LoopController*/ => {
@@ -62,19 +67,32 @@ const createLoopController = ()/*: LoopController*/ => {
     render.add(handler);
     return () => void render.delete(handler);
   };
+  const runRender = (
+    renderConsts/*: RenderLoopConstants*/,
+    renderVars/*: RenderLoopVariables*/
+  ) => {
+    for (const { onRender } of render)
+      onRender(renderConsts, renderVars)
+  }
 
-  const runLoop = (renderConsts/*: RenderLoopConstants*/, renderVars/*: RenderLoopVariables*/) => {
+  const runLoop = (
+    renderConsts/*: RenderLoopConstants*/,
+    renderVars/*: RenderLoopVariables*/
+  ) => {
     for (const { onInput } of input)
       onInput(renderConsts, renderVars)
 
     for (const { onSimulate } of simulate)
       onSimulate(renderConsts, renderVars)
-
-    for (const { onRender } of render)
-      onRender(renderConsts, renderVars)
+    
+    runRender(renderConsts, renderVars)
   };
   
-  return { runLoop, subscribeInput, subscribeRender, subscribeSimulate };
+  return {
+    runLoop,
+    runRender,
+    subscribeInput, subscribeRender, subscribeSimulate 
+  };
 }
 
 
