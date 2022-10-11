@@ -36,7 +36,7 @@ export const createMiniTheaterService = (
 
   const applyAction = async (gameId, miniTheaterId, action, isGM) => {
     const { next } = await data.gameData.miniTheaters.transaction(gameId, miniTheaterId, prev => {
-      if (isPermissableAction(action, prev) && !isGM)
+      if (!isPermissableAction(action, prev) && !isGM)
         return prev;
 
       return {
