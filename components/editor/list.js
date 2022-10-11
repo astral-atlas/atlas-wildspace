@@ -37,6 +37,23 @@ export const useRefMap = /*:: <K, V>*/()/*: [(key: K) => (ref: null | V) => void
 }
 
 /*::
+export type RefMap2<K, V> = {
+  create(key: K): { current: ?V },
+  map: Map<K, { current: ?V }>,
+}
+*/
+
+export const useRefMap2 = /*:: <K, V>*/()/*: RefMap2<K, V>*/ => {
+  const [map] = useState(new Map());
+  const create = (key) => {
+    const ref = map.get(key) || { current: null };
+    map.set(key, ref);
+    return ref;
+  };
+  return { create, map }
+}
+
+/*::
 type Sizes = {
   heights: number[],
   offsets: number[]

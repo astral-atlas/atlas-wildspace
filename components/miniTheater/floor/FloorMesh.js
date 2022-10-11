@@ -13,8 +13,12 @@ import {
   EdgesGeometry,
   MeshBasicMaterial,
   Color,
+  TextureLoader,
+  AdditiveBlending,
+  sRGBEncoding,
 } from "three";
 import { useChildObject } from "../../three";
+import floorTestURL from './floor_test.png';
 import {
   raycastManagerContext,
   useRaycast2,
@@ -26,6 +30,7 @@ import type { Component, Ref } from "@lukekaalim/act";
 import type { Group, Mesh } from "three";
 import type { MiniTheaterShape } from "@astral-atlas/wildspace-models";
 import type { ReadOnlyRef } from "../../three/useChildObject";
+import type { RefMap2 } from "../../editor/list";
 */
 
 const calculateFloorAABBMap = (floors/*: $ReadOnlyArray<MiniTheaterShape>*/)/*: Map<MiniTheaterShape, Box3>*/ => {
@@ -87,7 +92,7 @@ const mapPotentialCells = /*:: <T>*/(
   const offset = floorAABB.getCenter(new Vector3())
     .add(size.clone().multiplyScalar(-5));
 
-  size.addScalar(1);
+  //size.addScalar(1);
     
   const potentialCells = (size.x * size.y * size.z);
   
@@ -271,25 +276,45 @@ const write3dQuadVertices = (array, index, point) => {
   write3dPositionVertex(array, index + (4 * 3), point.x - 5, point.y, point.z - 5);
   write3dPositionVertex(array, index + (5 * 3), point.x - 5, point.y, point.z + 5);
 }
+const write2dPositionVertex = (array, index, x, y) => {
+  array[index + 0] = x;
+  array[index + 1] = y;
+}
+const writeQuadUVs = (array, index, point) => {
+  write2dPositionVertex(array, index + (0 * 2), 1, 1);
+  write2dPositionVertex(array, index + (1 * 2), 1, 0);
+  write2dPositionVertex(array, index + (2 * 2), 0, 0);
+
+  write2dPositionVertex(array, index + (3 * 2), 1, 1);
+  write2dPositionVertex(array, index + (4 * 2), 0, 0);
+  write2dPositionVertex(array, index + (5 * 2), 0, 1);
+}
 
 /*::
 export type FloorMeshProps = {
   floors: $ReadOnlyArray<MiniTheaterShape>,
   showDebug?: boolean,
-  ref?: ?Ref<?Mesh>,
+  refMap?: ?RefMap2<Box3, Mesh>,
 };
 */
 
-const material = new MeshBasicMaterial({ transparent: true, opacity: 0.5, color: new Color('green') })
+const floorTestMap = new TextureLoader().load(floorTestURL);
+floorTestMap.encoding = sRGBEncoding;
+const material = new MeshBasicMaterial({
+  transparent: true,
+  //opacity: 1,
+  map: floorTestMap,
+  //blending: AdditiveBlending,
+  //color: new Color('green')
+})
 
 export const FloorMesh/*: Component<FloorMeshProps>*/ = ({
   floors,
   showDebug = false,
-  ref: externalRef = null
+  refMap,
 }) => {
-  const pointGeometry = useDisposable(() => new BufferGeometry(), []);
   const floorGeometry = useDisposable(() => new BufferGeometry(), []);
-  const ref = useRef()
+  const ref = useRef();
 
   const { floorAABB, cells, chunkFloors, chunks, subChunks, candidates } = useFloorCells(floors);
 
@@ -298,45 +323,80 @@ export const FloorMesh/*: Component<FloorMeshProps>*/ = ({
   }, [floorAABB])
 
   useEffect(() => {
-    if (!showDebug)
-      return;
-    const startTime = performance.now();
-    
-    const positionArray = new Float32Array(candidates.map(c => [c.x, c.y, c.z]).flat(1));
-    pointGeometry.setAttribute('position', new BufferAttribute(positionArray, 3));
-    const endTime = performance.now();
-    console.info(`Floor Points Write Ms`, endTime - startTime)
-  }, [pointGeometry, chunks, chunkFloors, showDebug])
-
-  useEffect(() => {
     const startTime = performance.now();
     const positionArray = new Float32Array(cells.length * 3 * 6);
+    const uvArray = new Float32Array(cells.length * 2 * 6);
 
     for (let i = 0; i < cells.length; i++) {
       const point = cells[i];
       const v = i * 3 * 6;
       write3dQuadVertices(positionArray, v, point.clone().add(new Vector3(0, -4, 0)));
+      writeQuadUVs(uvArray, i * 2 * 6, point);
     }
 
+    floorGeometry.setAttribute('uv', new BufferAttribute(uvArray, 2));
     floorGeometry.setAttribute('position', new BufferAttribute(positionArray, 3));
     const endTime = performance.now();
     console.info(`Floor Geometry Write Ms`, endTime - startTime)
   }, [floorGeometry, cells])
 
-  const localRef = useRef();
-  const meshRef = externalRef || localRef;
-
   return h(group, { ref }, [
-    h(points, { geometry: pointGeometry, visible: showDebug }),
-    h(mesh, { geometry: floorGeometry, ref: meshRef, material, visible: showDebug }),
+    subChunks.map(({ subChunk, subFloors, subCells }) =>
+      h(FloorMeshChunk, {
+        key: boxToString(subChunk),
+        subChunk, subFloors, subCells,
+        showDebug,
+        parentRef: ref,
+        ref: refMap && refMap.create(subChunk),
+      })),
+    //h(points, { geometry: pointGeometry, visible: showDebug }),
+    //h(mesh, { geometry: floorGeometry, ref: meshRef, material, visible: showDebug }),
     //showDebug && subChunks.map(({ subChunk }) => h(ChunkDebug, { ref, chunk: subChunk })),
     //showDebug && chunks.map((chunk) => h(ChunkDebug, { ref, chunk, color: new Color('white') })),
     //showDebug && floors.map(floor => h(FloorDebug, { floor })),
   ]);
 }
+const boxToString = (box) => {
+  return [
+    box.min.x, box.min.y, box.min.z,
+    box.max.x, box.max.y, box.max.z
+  ].join(':');
+}
 
-const FloorMeshChunk = ({ chunk, chunkFloors }) => {
+const FloorMeshChunk = ({ subChunk, subFloors, showDebug, subCells, ref, parentRef }) => {
+  const localRef = useRef();
+  const meshRef = ref || localRef;
+  const geometry = useDisposable(() => new BufferGeometry(), []);
 
+  useEffect(() => {
+    const startTime = performance.now();
+    const positionArray = new Float32Array(subCells.length * 3 * 6);
+    const uvArray = new Float32Array(subCells.length * 2 * 6);
+
+    for (let i = 0; i < subCells.length; i++) {
+      const point = subCells[i];
+      const v = i * 3 * 6;
+      write3dQuadVertices(positionArray, v, point.clone().add(new Vector3(0, -4, 0)));
+      writeQuadUVs(uvArray, i * 2 * 6, point);
+    }
+
+    geometry.setAttribute('uv', new BufferAttribute(uvArray, 2));
+    geometry.setAttribute('position', new BufferAttribute(positionArray, 3));
+    const endTime = performance.now();
+    console.info(`Floor Geometry Write Ms`, endTime - startTime)
+  }, [geometry, subCells]);
+
+  useChildObject(parentRef, () => {
+    if (showDebug)
+      return new Box3Helper(subChunk, new Color('Yellow'))
+  }, [subChunk]);
+
+  return h(mesh, {
+    geometry,
+    ref: meshRef,
+    material,
+    visible: showDebug
+  });
 };
 
 /*::

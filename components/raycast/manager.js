@@ -11,6 +11,7 @@ import type {
 } from "three";
 
 import type { Subscriber, SubscriptionFunction } from "../subscription";
+import type { RefMap2 } from "../editor/list";
 */
 import { Vector2, Raycaster } from 'three';
 
@@ -255,6 +256,32 @@ export const useRaycast2 = /*:: <T: Object>*/(
     const unsubscribe = manager.subscribe(object, events, isHit);
     return () => {
       unsubscribe();
+    }
+  }, [manager, ...deps]);
+}
+
+export const useRaycast3 = /*:: <K, T: Object>*/(
+  manager/*: ?RaycastManager*/,
+  objectRef/*: RefMap2<K, T>*/,
+  events/*: RaycastEvents*/,
+  deps/*: mixed[]*/ = [],
+) => {
+  useEffect(() => {
+    if (!manager)
+      return;
+    const unsubscriptions = [...objectRef.map.values()]
+      .map(objectRef => {
+        const { current: object } = objectRef;
+        if (!object)
+          return;
+        
+        return manager.subscribe(object, events);
+      })
+      .filter(Boolean);
+
+    return () => {
+      for (const unsubscribe of unsubscriptions)
+        unsubscribe()
     }
   }, [manager, ...deps]);
 }

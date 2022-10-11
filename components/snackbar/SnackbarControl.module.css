@@ -5,6 +5,8 @@
   right: 15%;
   display: flex;
 
+  max-height: 12rem;
+
   flex-direction: row;
   background-color: rgba(125, 125, 125, 0.44);
 
@@ -39,4 +41,32 @@
   background-color: rgba(0, 0, 0, 0.4);
   padding: 1rem;
   border-radius: 1rem;
+}
+
+.placementButton {
+  display: flex;
+  position: relative;
+  padding: 0;
+}
+
+.placementButtonText {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transition: opacity 0.2s;
+  opacity: 1;
+}
+.placementButton:hover .placementButtonText {
+  opacity: 0.2;
+}
+
+.placementButtonIcon {
+  width: 100%;
+  height: 100%;
+
+  transition: filter 0.2s;
+  filter: blur(5px) contrast(30%);
+}
+.placementButton:hover .placementButtonIcon {
+  filter: blur(0px) contrast(100%);
 }

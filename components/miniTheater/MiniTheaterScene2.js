@@ -23,12 +23,17 @@ import {
   miniVectorToThreeVector,
 } from "../utils/miniVector";
 import { Matrix4, Quaternion, Vector3 } from "three";
-import { useRaycast2, useRaycastManager } from "../raycast/manager";
+import {
+  useRaycast2,
+  useRaycast3,
+  useRaycastManager,
+} from "../raycast/manager";
 import { useRaycastElement } from "../raycast/useRaycastElement";
 import { renderCanvasContext } from "../three/RenderCanvas";
 import { useSimulateLoop } from "../three/useLoopController";
 import { MiniTheaterCursorRenderer } from "./MiniTheaterCursorRenderer";
 import { MiniTheaterTerrainRenderer } from "./terrain/MiniTheaterTerrainRenderer";
+import { useRefMap, useRefMap2 } from "../editor";
 
 
 const usePlacedTerrainFloors = (miniTheater, resources, layer) => {
@@ -120,11 +125,11 @@ export const MiniTheaterScene2/*: Component<MiniTheaterScene2Props>*/ = ({
     ].filter(Boolean);
   }, [placedFloors, characterFloors, isTerrainLayer])
 
-  const floorRef = useRef();
   const raycast = useRaycastManager();
 
   const includeRaycast = miniTheaterState.targetMode === 'pieces';
-  useRaycast2(includeRaycast ? raycast : null, floorRef, {
+  const refMap = useRefMap2()
+  useRaycast3(includeRaycast ? raycast : null, refMap, {
     over(intersection) {
       onOverFloor(intersection.point);
     },
@@ -132,6 +137,7 @@ export const MiniTheaterScene2/*: Component<MiniTheaterScene2Props>*/ = ({
       onExitFloor();
     }
   }, [floors, onOverFloor, onExitFloor, includeRaycast])
+  
   const render = useContext(renderCanvasContext);
   if (!render)
     return null;
@@ -147,7 +153,7 @@ export const MiniTheaterScene2/*: Component<MiniTheaterScene2Props>*/ = ({
     // Cursor
     h(MiniTheaterCursorRenderer, { miniTheaterState }),
     // Floor
-    h(FloorMesh, { floors, ref: floorRef, showDebug: isTerrainLayer }),
+    h(FloorMesh, { floors, refMap, showDebug: isTerrainLayer }),
     // Terrain
     h(MiniTheaterTerrainRenderer, { miniTheaterState, controller, raycast }),
     h(MiniTheaterPiecesRenderer, { miniTheaterState })

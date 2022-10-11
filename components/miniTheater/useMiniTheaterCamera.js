@@ -75,7 +75,10 @@ export const createMiniTheaterCameraController = (
   }
 
   const simulateCamera = (timeDeltaMs) => {
-    simulateParticle2D(cameraParticle, settings, acceleration, timeDeltaMs);
+    simulateParticle2D(cameraParticle, {
+      ...settings,
+      velocityMagnitudeMax: (zoom/32) * 0.03
+    }, acceleration, timeDeltaMs);
     acceleration.set(0, 0);
   };
 

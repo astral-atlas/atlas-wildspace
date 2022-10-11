@@ -215,6 +215,7 @@ export const useMiniTheaterController2 = (
       })
     });
     return () => {
+      setController(null);
       unsubscribe();
     }
   }, [connection, miniTheaterId]);

@@ -126,7 +126,12 @@ export const SnackbarLayerControlEdge/*: Component<SnackbarLayerControlEdgeProps
   }
   return [
     h(EditorForm, {}, [
-      h(SelectEditor, { values, selected: state.layer || '', onSelectedChange: onSelectedLayerChange }),
+      h(SelectEditor, {
+        label: 'Layer',
+        values,
+        selected: state.layer || '',
+        onSelectedChange: onSelectedLayerChange
+      }),
       h(EditorHorizontalSection, {}, [
         h(EditorButton, {
           disabled: !state.isGM,
