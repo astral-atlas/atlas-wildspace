@@ -49,13 +49,16 @@ const PieceRenderer = ({ piece, miniTheaterState }) => {
   const unfocused = selection.type !== 'none' && !selected;
 
   // Resources
-  const texture = useMemo(() => {
-    const assetId = getPieceAssetId(piece.represents, resources) || null;
-    return assetId && resources.textureMap.get(assetId);
-  }, [resources.textureMap, piece.represents])
+  const assetId = getPieceAssetId(piece.represents, resources) || null;
+  const texture = assetId && resources.textureMap.get(assetId);
 
-  if (!texture)
+  if (!assetId)
+    return null;
+
+  if (!texture) {
+    console.warn('No Texture Found', piece.represents)
     return h(mesh, { geometry: cube });
+  }
 
   const material = useDisposable(() => {
     return new SpriteMaterial({

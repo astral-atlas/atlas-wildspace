@@ -31,10 +31,23 @@ export const SnackbarLayerControlEdge/*: Component<SnackbarLayerControlEdgeProps
 }) => {
   const values = [
     { value: '', title: '<No Layer>' },
-    ...state.miniTheater.layers.map(layer => ({
-      value: layer.id,
-      title: layer.name,
-    }))
+    ...state.miniTheater.layers
+      .filter((layer) => {
+        if (state.isGM)
+          return true;
+        switch (layer.permissions.type) {
+          case 'gm-in-game':
+            return false;
+          case 'players-in-game':
+            return true;
+          case 'allowlist':
+            return false;
+        }
+      })
+      .map(layer => ({
+        value: layer.id,
+        title: layer.name,
+      }))
   ];
   const selectedLayer = state.miniTheater.layers.find(l => l.id === state.layer);
   const onAddLayerClick = () => {
@@ -84,12 +97,47 @@ export const SnackbarLayerControlEdge/*: Component<SnackbarLayerControlEdgeProps
     }
     controller.act({ type: 'remote-action', remoteAction })
   }
+  const onLayerChange = (selectedLayer, properties) => {
+    const remoteAction = {
+      type: 'set-layers',
+      layers: state.miniTheater.layers.map(layer => {
+        return layer.id === selectedLayer.id ? { ...layer, ...properties } : layer;
+      })
+    }
+    controller.act({ type: 'remote-action', remoteAction })
+  }
+  const onLayerPermissionTypeChange = (selectedLayer, type) => {
+    switch (type) {
+      case 'allowlist':
+        return onLayerChange(selectedLayer, { permissions: { type: 'allowlist', userIds: [] }});
+      case 'gm-in-game':
+      default:
+        return onLayerChange(selectedLayer, { permissions: { type: 'gm-in-game' }});
+      case 'players-in-game':
+        return onLayerChange(selectedLayer, { permissions: { type: 'players-in-game' }});
+    }
+  }
+  const onDeleteLayerClick = (selectedLayer) => () => {
+    const remoteAction = {
+      type: 'set-layers',
+      layers: state.miniTheater.layers.filter(layer => layer.id !== selectedLayer.id)
+    }
+    controller.act({ type: 'remote-action', remoteAction })
+  }
   return [
     h(EditorForm, {}, [
       h(SelectEditor, { values, selected: state.layer || '', onSelectedChange: onSelectedLayerChange }),
       h(EditorHorizontalSection, {}, [
-        h(EditorButton, { label: 'Add Layer', onButtonClick: onAddLayerClick }),
-        !!selectedLayer && h(EditorButton, { label: 'Delete Selected Layer' }),
+        h(EditorButton, {
+          disabled: !state.isGM,
+          label: 'Add Layer',
+          onButtonClick: onAddLayerClick
+        }),
+        !!selectedLayer && h(EditorButton, {
+          disabled: !state.isGM,
+          label: 'Delete Selected Layer',
+          onButtonClick: onDeleteLayerClick(selectedLayer)
+        }),
       ]),
       !!selectedLayer && [
         h(EditorTextInput, {
@@ -97,8 +145,23 @@ export const SnackbarLayerControlEdge/*: Component<SnackbarLayerControlEdgeProps
           text: selectedLayer.name,
           onTextChange: onLayerNameChange(selectedLayer)
         }),
-        h(EditorCheckboxInput, { label: 'Visible', checked: selectedLayer.visible, onCheckedChange: onVisibleChange(selectedLayer) }),
+        h(EditorHorizontalSection, {}, [
+          h(EditorCheckboxInput, {
+            disabled: !state.isGM,
+            label: 'Visible',
+            checked: selectedLayer.visible,
+            onCheckedChange: onVisibleChange(selectedLayer)
+          }),
+          h(SelectEditor, {
+            disabled: !state.isGM,
+            label: 'Permissions',
+            values: [{ value: 'gm-in-game' }, { value: 'players-in-game'}, { value: 'allowlist' }],
+            selected: selectedLayer.permissions.type,
+            onSelectedChange: type => onLayerPermissionTypeChange(selectedLayer, type)
+          })
+        ]),
         h(EditorLayerIncludesInput, {
+          state,
           includes: selectedLayer.includes,
           onIncludesChange: onIncludesChange(selectedLayer)
         })
@@ -107,7 +170,7 @@ export const SnackbarLayerControlEdge/*: Component<SnackbarLayerControlEdgeProps
   ];
 }
 
-const EditorLayerIncludesInput = ({ includes, onIncludesChange }) => {
+const EditorLayerIncludesInput = ({ includes, onIncludesChange, state }) => {
   const includesValues = [
     { value: 'any' },
     { value: 'any-terrain' },
@@ -134,18 +197,30 @@ const EditorLayerIncludesInput = ({ includes, onIncludesChange }) => {
     }
     }))
   }
+  const onIncludesRemove = (index) => () => {
+    onIncludesChange(includes.filter((inc, i) => i !== index))
+  }
   return [
-    h(EditorButton, { label: "Add new Includes", onButtonClick: onClickAddIncludes }),
+    h(EditorButton, {
+      label: "Add new Includes",
+      onButtonClick: onClickAddIncludes,
+      disabled: !state.isGM,
+    }),
     h('ol', { style: { listStyle: 'none', padding: 0, margin: 0 }}, [
       includes.map((includes, index) => {
         return h('li', {}, [
           h(EditorHorizontalSection, {}, [
             h(SelectEditor, {
+              disabled: !state.isGM,
               values: includesValues,
               selected: includes.type,
               onSelectedChange: onIncludesTypeChange(index)
             }),
-            h(EditorButton, { label: 'Delete' })
+            h(EditorButton, {
+              disabled: !state.isGM,
+              label: 'Delete',
+              onButtonClick: onIncludesRemove(index)
+            })
           ])
         ])
       })

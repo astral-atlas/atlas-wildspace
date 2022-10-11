@@ -82,7 +82,10 @@ export const WildspaceRoomPage/*: Component<WildspaceRoomPageProps>*/ = ({
     || null
   )
   
-  const controller = useMiniTheaterController2(miniTheaterId, resources, roomController.updates, true);
+  const controller = useMiniTheaterController2(
+    miniTheaterId, resources, roomController.updates,
+    roomController.isGM
+  );
   const miniTheaterState = useMiniTheaterState(controller);
 
   const sceneContentRenderData = getContentRenderData(

@@ -63,7 +63,12 @@ export type RoomPageEvent =
       userId: UserID
     |}> }
   | { type: 'next-page', page: RoomPage }
-  | { type: 'next-state', roomState: RoomState }
+  | {
+      type: 'next-state',
+      roomState: RoomState,
+      assets: $ReadOnlyArray<AssetInfo>,
+      resources: ?RoomResources,
+    }
 */
 
 export const castRoomPageEvent/*: Cast<RoomPageEvent>*/ = c.or('type', {
@@ -73,7 +78,9 @@ export const castRoomPageEvent/*: Cast<RoomPageEvent>*/ = c.or('type', {
   }),
   'next-state': c.obj({
     type: c.lit('next-state'),
-    roomState: castRoomState
+    roomState: castRoomState,
+    assets: c.arr(castAssetInfo),
+    resources: c.maybe(castRoomResources),
   }),
   'connection-update': c.obj({
     type: c.lit('connection-update'),

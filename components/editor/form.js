@@ -134,6 +134,7 @@ export const FilesEditor/*: Component<SingleFileEditorProps>*/ = ({
 export type SelectEditorProps = {
   label?: string,
   selected?: ?string,
+  disabled?: boolean,
   ref?: ?Ref<?HTMLSelectElement>,
   groups?: { title: string, values: { title?: string, value: string }[] }[],
   values?: { title?: string, value: string }[],
@@ -145,6 +146,7 @@ export const SelectEditor/*: Component<SelectEditorProps>*/ = ({
   label,
   ref,
   selected,
+  disabled,
   values = [],
   groups = [],
   onSelectedChange,
@@ -155,7 +157,7 @@ export const SelectEditor/*: Component<SelectEditorProps>*/ = ({
   }
   return h('label', { ...props, classList: [styles.editorRoot] }, [
     h('span', {}, label),
-    h('select', { ref, onChange }, [
+    h('select', { ref, onChange, disabled }, [
       values.map(({ title, value }) =>
         h('option', { key: value, value, selected: value === selected }, title || value)),
       groups.map(({ title, values}) =>
