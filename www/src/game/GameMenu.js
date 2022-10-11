@@ -42,7 +42,7 @@ export const GameMenu/*: Component<GameMenuProps>*/ = ({
       h(MenuGameBreak),
       h(MenuGameDescriptor, {}, `Rooms`),
       gameController.gamePage.rooms.map(room => {
-        const connections = gameController.gamePage.roomConnectionCounts.find(([roomId]) => roomId === room.id);
+        const connections = gameController.gamePage.roomConnectionCounts.find(({ roomId }) => roomId === room.id);
 
         return h(MenuGameRoomButton, {
           connections: connections ? connections.count : 0,

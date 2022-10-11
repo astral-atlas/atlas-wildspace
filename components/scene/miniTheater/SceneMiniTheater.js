@@ -28,13 +28,15 @@ import type {
   BasicTransform,
   BasicTransformAnimation,
 } from "../../animation/transform";
+import type { KeyboardStateEmitter } from "../../keyboard";
 */
 
 /*::
 export type SceneMiniTheaterRendererProps = {
   state: MiniTheaterLocalState,
   controller: ?MiniTheaterController2,
-  cameraMode: SceneContentMiniTheaterCameraMode
+  cameraMode: SceneContentMiniTheaterCameraMode,
+  keys: KeyboardStateEmitter,
 }
 */
 
@@ -42,6 +44,7 @@ export const SceneMiniTheaterRenderer/*: Component<SceneMiniTheaterRendererProps
   state,
   controller,
   cameraMode,
+  keys,
 }) => {
   const act = (action) => {
     if (!controller)
@@ -69,7 +72,7 @@ export const SceneMiniTheaterRenderer/*: Component<SceneMiniTheaterRendererProps
   return [
     h(RenderCanvas, {
       className: [styles.miniTheater, state.resources.loadingAssets && styles.loading].filter(Boolean).join(' '),
-      renderSetupOverrides: { canvasRef }
+      renderSetupOverrides: { canvasRef, keyboardEmitter: keys }
     }, [
       h(MiniTheaterScene2, { miniTheaterState: state, onOverFloor, onExitFloor, controller }),
       h(SceneMiniTheaterCamera, { cameraMode }),

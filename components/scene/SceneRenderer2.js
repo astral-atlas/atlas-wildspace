@@ -1,13 +1,14 @@
 // @flow strict
 /*::
 import type { Component } from "@lukekaalim/act";
-import type { SceneContent, GamePage } from "@astral-atlas/wildspace-models";
+import type { SceneContent, GamePage, ExpositionSubject } from "@astral-atlas/wildspace-models";
 import type { JSONNode, Node } from "prosemirror-model";
 
 import type {
   MiniTheaterController2,
   MiniTheaterLocalState,
 } from "../miniTheater/useMiniTheaterController2";
+import type { KeyboardStateEmitter } from "../keyboard";
 import type { AssetDownloadURLMap } from "../asset/map";
 import type { Box2, Quaternion, Vector3 } from "three";
 */
@@ -26,14 +27,15 @@ export type SceneContentBackgroundRenderData =
       type: 'mini-theater',
       state: MiniTheaterLocalState,
       controller: ?MiniTheaterController2,
-      cameraMode: SceneContentMiniTheaterCameraMode
+      cameraMode: SceneContentMiniTheaterCameraMode,
+      keys: KeyboardStateEmitter,
     }
   | { type: 'image', imageURL: string }
   | { type: 'color', color: string }
 export type SceneContentForegroundRenderData =
   | { type: 'none' }
   | { type: 'mini-theater-controls', state: MiniTheaterLocalState, controller: MiniTheaterController2 }
-  | { type: 'exposition', description: JSONNode }
+  | { type: 'exposition', subject: ExpositionSubject }
 
 export type SceneContentRenderData = {
   background: SceneContentBackgroundRenderData,

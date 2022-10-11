@@ -12,6 +12,7 @@ import type {
   MiniTheaterLocalState,
 } from "../../miniTheater/useMiniTheaterController2";
 import type { AssetDownloadURLMap } from "../../asset/map";
+import type { KeyboardStateEmitter } from "../../keyboard/changes";
 */
 import {
   miniQuaternionToThreeQuaternion,
@@ -23,6 +24,7 @@ export const getBackgroundRenderData = (
   miniTheaterState/*: ?MiniTheaterLocalState*/,
   controller/*: ?MiniTheaterController2*/,
   assets/*: AssetDownloadURLMap*/,
+  keys/*: KeyboardStateEmitter*/,
 )/*: ?SceneContentBackgroundRenderData*/ => {
   switch (content.type) {
     case 'mini-theater':
@@ -32,6 +34,7 @@ export const getBackgroundRenderData = (
         type: 'mini-theater',
         cameraMode: { type: 'interactive', bounds: null },
         controller,
+        keys,
         state: miniTheaterState
       }
 
@@ -55,7 +58,8 @@ export const getBackgroundRenderData = (
             type: 'mini-theater',
             cameraMode: { type: 'fixed', position, quaternion },
             controller: null,
-            state: miniTheaterState
+            state: miniTheaterState,
+            keys,
           }
         default:
           return null;
@@ -70,11 +74,12 @@ export const getForegroundRenderData = (
   content/*: SceneContent*/,
   miniTheaterState/*: ?MiniTheaterLocalState*/,
   controller/*: ?MiniTheaterController2*/,
+  keys/*: KeyboardStateEmitter*/,
 )/*: ?SceneContentForegroundRenderData*/ => {
   switch (content.type) {
     case 'exposition':
-      const { description } = content.exposition
-      return { type: 'exposition', description: description.rootNode };
+      const { description, subject } = content.exposition
+      return { type: 'exposition', subject };
     case "mini-theater":
       if (!controller || !miniTheaterState)
         return null;
@@ -89,10 +94,11 @@ export const getContentRenderData = (
   miniTheaterState/*: ?MiniTheaterLocalState*/,
   controller/*: ?MiniTheaterController2*/,
   assets/*: AssetDownloadURLMap*/,
+  keys/*: KeyboardStateEmitter*/,
 )/*: ?SceneContentRenderData*/ => {
 
-  const background = getBackgroundRenderData(content, miniTheaterState, controller, assets);
-  const foreground = getForegroundRenderData(content, miniTheaterState, controller);
+  const background = getBackgroundRenderData(content, miniTheaterState, controller, assets, keys);
+  const foreground = getForegroundRenderData(content, miniTheaterState, controller, keys);
   if (!background || !foreground) 
     return null;
 

@@ -75,7 +75,6 @@ export const SnackbarPlacementControlCenter/*: Component<SnackbarPlacementContro
             && state.selection.placement.represents.monsterActorId === placement.monster.id;
 
           return h(PlacementButton, {
-            selected: monsterSelected,
             onClick: onPlacementClick({ type: 'piece', represents: { type: 'monster', monsterActorId: placement.monster.id } }),
             name: placement.monster.name,
             iconURL: placement.iconURL
@@ -100,10 +99,9 @@ export const SnackbarPlacementControlCenter/*: Component<SnackbarPlacementContro
   ];
 }
 
-const PlacementButton = ({ selected, onClick, iconURL, name }) => {
+const PlacementButton = ({ onClick, iconURL, name }) => {
   return h('button', {
     class: styles.placementButton,
-    disabled: selected,
     onClick,
   }, [
     h('img', { class: styles.placementButtonIcon, src: iconURL }),

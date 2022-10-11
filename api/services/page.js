@@ -104,7 +104,6 @@ export const createPageService = (
       return null;
     const resources = await roomService.getResources(gameId, roomId, state);
     const assetIds = getRoomResourcesAssetIds(resources, state);
-    console.log(assetIds)
     const assets = await assetService.batchPeek(assetIds);
 
     const roomPage = {

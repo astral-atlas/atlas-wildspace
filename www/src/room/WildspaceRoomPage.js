@@ -6,7 +6,7 @@ import type { CubicBezierAnimation } from "@lukekaalim/act-curve";
 import type { UserID } from "@astral-atlas/sesame-models";
 */
 
-import { CompassLayout, CompassLayoutMinimap, GameOverlay, getContentRenderData, PlaylistPlayer, RoomOverlay, SceneRenderer2, useMiniTheaterController2, useMiniTheaterState, useRoomPageMiniTheaterResources } from "@astral-atlas/wildspace-components";
+import { CompassLayout, CompassLayoutMinimap, GameOverlay, getContentRenderData, PlaylistPlayer, RoomOverlay, SceneRenderer2, useElementKeyboard, useKeyboardTrack, useMiniTheaterController2, useMiniTheaterState, useRoomPageMiniTheaterResources } from "@astral-atlas/wildspace-components";
 import { h, useEffect, useRef, useState } from "@lukekaalim/act";
 import { allScreens, useRoomController } from "./useRoomController";
 import { RoomControlScreen } from "./screens/RoomControlScreen";
@@ -87,17 +87,18 @@ export const WildspaceRoomPage/*: Component<WildspaceRoomPageProps>*/ = ({
     roomController.isGM
   );
   const miniTheaterState = useMiniTheaterState(controller);
+  const keys = useElementKeyboard(ref);
 
   const sceneContentRenderData = getContentRenderData(
     content,
     miniTheaterState,
     controller,
     assets,
+    keys,
   ) || { background: { type: 'color', color: 'white' }, foreground: { type: 'none' } };
 
   return [
-    h('div', { className: styles.room, ref }, [
-      h('div', { className: styles.backgroundScene, ref: roomController.roomBackgroundRef }),
+    h('div', { className: styles.room, ref, tabIndex: 0 }, [
       !!sceneContentRenderData && h(SceneRenderer2, { sceneContentRenderData }),
       //!!playlist && state.audio.playback.type === 'playlist' &&
       //  h(PlaylistPlayer, { playlists: [playlist], assets, state: state.audio.playback.playlist, tracks, volume: roomController.volume.music }),

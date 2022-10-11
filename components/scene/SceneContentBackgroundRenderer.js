@@ -36,33 +36,6 @@ export type SceneContentBackgroundRendererProps = {
 };
 */
 
-const useMode = (content, keys, controller)/*: ?MiniTheaterMode*/ => {
-  return useMemo(() => {
-    switch (content.type) {
-      case 'mini-theater':
-        if (!controller)
-          return null;
-        return {
-          type: 'full-control',
-          controller,
-          keys
-        }
-      case 'exposition':
-        const { background } = content.exposition;
-        switch (background.type) {
-          case 'mini-theater':
-            return {
-              type: 'fixed',
-              transform: hydrateBasicTransformFromMini(background.position, background.rotation)
-            };
-            
-        }
-      default:
-        return null;
-    }
-  }, [content, keys, controller])
-};
-
 /*::
 export type SceneBackgroundRenderData =
   | { type: 'color', color: string }
@@ -76,7 +49,7 @@ export type SceneBackgroundRenderData =
 
 export type SceneContentBackgroundRenderer2Props = {
   backgroundRenderData: SceneContentBackgroundRenderData,
-  focused?: boolean
+  focused?: boolean,
 }
 */
 
@@ -94,6 +67,7 @@ export const SceneContentBackgroundRenderer2/*: Component<SceneContentBackground
         state: backgroundRenderData.state,
         controller: backgroundRenderData.controller, 
         cameraMode: backgroundRenderData.cameraMode,
+        keys: backgroundRenderData.keys,
       })
     default:
       return null;

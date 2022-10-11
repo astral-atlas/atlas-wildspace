@@ -19,8 +19,6 @@ export const App/*: Component<>*/ = () => {
 
   const anims = useFadeTransition(route, r => r.page, [route]);
 
-  console.log(wildspace);
-
   if (!wildspace.proof)
     return h('button', { onClick: async () => {
       const { proof } = await requestLinkGrant(new URL(`https://sesame.astral-atlas.com`))
