@@ -18,7 +18,7 @@ export type DynamoDBTable<PK, SK, Item> = {
   set: (key: CompositeKey<PK, SK>, prevVersion: mixed, nextVersion: mixed, expiresBy: null | number, item: Item) =>
     Promise<void>,
   query: (partitionKey: PK) =>
-    Promise<{ results: $ReadOnlyArray<{ result: Item, version: mixed, sortKey: SK }> }>,
+    Promise<{ results: $ReadOnlyArray<{ result: Item, version: mixed, sortKey: SK, expiresBy: null | number }> }>,
 };
 */
 
@@ -85,7 +85,7 @@ export const createLiveDynamoDBTable = /*:: <I>*/(
     const { Items } = await dynamodb.query({
       TableName: tableName,
       
-      FilterExpression: 'attribute_not_exists(#exp) OR #exp = :null OR #exp < :expiry_cutoff',
+      FilterExpression: 'attribute_not_exists(#exp) OR #exp = :null OR #exp > :expiry_cutoff',
       KeyConditionExpression: `#pkn=:pk`,
       ExpressionAttributeNames: {
         [`#pkn`]: partitionKeyName,
@@ -94,7 +94,7 @@ export const createLiveDynamoDBTable = /*:: <I>*/(
       ExpressionAttributeValues: {
         [`:pk`]: { S: partitionKey },
         [`:null`]: { NULL: true },
-        [`:expiry_cutoff`]: { N: (Date.now() / 1000).toString() },
+        [`:expiry_cutoff`]: { N: Math.floor(Date.now() / 1000).toString() },
       }
     });
 
@@ -105,7 +105,8 @@ export const createLiveDynamoDBTable = /*:: <I>*/(
           const sortKey = c.str(item[sortKeyName]);
           const result = castItem(item[valueKeyName]);
           const version = item[versionKeyName];
-          return { sortKey, result, version };
+          const expiresBy = c.maybe(c.num)(item[expiryKeyName]) || null;
+          return { sortKey, result, version, expiresBy };
         } catch (error) {
           return null;
         }

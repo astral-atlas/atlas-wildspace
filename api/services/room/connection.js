@@ -26,7 +26,7 @@ export const createRoomConnectionService = (data/*: WildspaceData*/)/*: RoomConn
   const connect = async (gameId, roomId, gameConnectionId, userId) => {
     const key = { partition: gameId, sort: [roomId, gameConnectionId] };
 
-    const expiresBy = (Date.now() * 1000) + CONNECTION_TIMEOUT_SECONDS;
+    const expiresBy = Math.floor(Date.now() / 1000) + CONNECTION_TIMEOUT_SECONDS;
     const roomConnectionState = {
       gameConnectionId,
       roomId,
@@ -45,7 +45,7 @@ export const createRoomConnectionService = (data/*: WildspaceData*/)/*: RoomConn
       if (!connection || !version)
         throw new Error();
   
-      const expiresBy = (Date.now() * 1000) + CONNECTION_TIMEOUT_SECONDS;
+      const expiresBy = Math.floor(Date.now() / 1000) + CONNECTION_TIMEOUT_SECONDS;
   
       await data.roomData.roomConnections.set(key, version, uuid(), expiresBy, connection);
     } catch (error) {
