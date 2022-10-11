@@ -39,14 +39,18 @@ export const createRoomConnectionService = (data/*: WildspaceData*/)/*: RoomConn
   };
 
   const heartbeat = async (gameId, roomId, gameConnectionId) => {
-    const key = { partition: gameId, sort: [roomId, gameConnectionId] };
-    const { result: connection, version } = await data.roomData.roomConnections.get(key);
-    if (!connection || !version)
-      throw new Error();
-
-    const expiresBy = (Date.now() * 1000) + CONNECTION_TIMEOUT_SECONDS;
-
-    await data.roomData.roomConnections.set(key, version, uuid(), expiresBy, connection);
+    try {
+      const key = { partition: gameId, sort: [roomId, gameConnectionId] };
+      const { result: connection, version } = await data.roomData.roomConnections.get(key);
+      if (!connection || !version)
+        throw new Error();
+  
+      const expiresBy = (Date.now() * 1000) + CONNECTION_TIMEOUT_SECONDS;
+  
+      await data.roomData.roomConnections.set(key, version, uuid(), expiresBy, connection);
+    } catch (error) {
+      console.warn(error);
+    }
   };
 
   const disconnect = async (gameId, roomId, gameConnectionId) => {
