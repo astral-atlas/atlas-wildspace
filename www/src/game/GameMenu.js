@@ -3,6 +3,7 @@
 import type { Component } from "@lukekaalim/act";
 import type { GameController } from "./useGameController";
 */
+import packageJSON from '../../package.json';
 
 import {
   MenuGameBreak, MenuGameColumn,
@@ -21,6 +22,10 @@ export const GameMenu/*: Component<GameMenuProps>*/ = ({
   gameController,
 }) => {
   return [
+    h('a', { href: `https://github.com/astral-atlas/wildspace` }, [
+      h('pre', { style: { color: 'white', position: 'absolute', bottom: 0, right: 0 }},
+        `${packageJSON.name}@${packageJSON.version}`),
+    ]),
     h(MenuGameColumn, {}, [
       h(MenuGameIdEditor, {
         games: gameController.games,
