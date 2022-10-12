@@ -6,6 +6,7 @@ import { MiniTheaterControls } from "./miniTheater/MiniTheaterControls";
 import { MiniTheaterSnackbarControl } from "../snackbar/MiniTheaterSnackbarControl";
 import { MiniTheaterLoading } from "./miniTheater/MiniTheaterLoading";
 import { emptyRootNode } from "@astral-atlas/wildspace-models";
+import { ExpositionSubjectRenderer } from "./exposition/ExpositionSubjectRenderer";
 
 /*::
 import type { Component } from "@lukekaalim/act";
@@ -22,7 +23,7 @@ export const SceneContentForegroundRenderer/*: Component<SceneContentForegroundR
   switch (foregroundRenderData.type) {
     case 'exposition':
       const { subject } = foregroundRenderData;
-      return h(ExpositionDescription, { description: emptyRootNode, version: 0 })
+      return h(ExpositionSubjectRenderer, { subject })
     case 'mini-theater-controls':
       const { controller, state } = foregroundRenderData;
       if (state.resources.loadingAssets)

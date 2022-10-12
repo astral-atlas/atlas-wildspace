@@ -43,14 +43,16 @@ export const FreeCamera/*: Component<FreeCameraProps>*/ = ({
     const { current: camera } = render.cameraRef;
     if (!surface || !camera)
       return;
+    console.log('reload')
     const controller = createFreeCameraController(position, quaternion);
     const updates = subscribeFreeCameraUpdates(
       controller,
       surface,
       render.loop,
       keys || render.keyboard,
-      () => {
-        onFreeCameraChange(camera)
+      (focus) => {
+        if (!focus)
+          onFreeCameraChange(camera)
       });
     const unsubscribeCameraUpdate = render.loop.subscribeSimulate(() => {
       const controllerChanged = (
@@ -68,7 +70,7 @@ export const FreeCamera/*: Component<FreeCameraProps>*/ = ({
       updates.unsubscribe();
       unsubscribeCameraUpdate();
     }
-  }, [surfaceRef, keys])
+  }, [surfaceRef, keys, onFreeCameraChange])
 
   return h(perspectiveCamera, { ref: render.cameraRef })
 }

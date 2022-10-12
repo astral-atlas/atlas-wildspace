@@ -1,0 +1,67 @@
+.annotation {
+  background: rgba(124, 124, 124, 0.457);
+  backdrop-filter: blur(10px);
+
+  position: absolute;
+  padding: 1rem;
+  color: white;
+  overflow-y: auto;
+
+  left: 4rem;
+  width: 40%;
+  top: 0;
+  bottom: 0;
+
+  display: flex;
+}
+
+.annotationContainer {
+  margin: auto;
+}
+
+.title {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  display: flex;
+}
+
+.titleContainer {
+  margin: auto 0 auto 0;
+  width: 100%;
+  text-align: center;
+  background-color: #7d7d7d7a;
+  backdrop-filter: blur(10px);
+}
+
+.titleContainer > h1 {
+  margin: 0;
+}
+
+.description {
+  position: absolute;
+  background-color: #fff2e1;
+  padding: 0 1em 0 1em;
+  border-radius: 8px;
+  border: outset 4px #cdb89e;
+
+  color: black;
+
+  bottom: 5%;
+  top: 70%;
+  left: 20%;
+  right: 20%;
+  
+  overflow: auto;
+}
+
+.caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 1rem;
+  background-color: #86868678;
+  backdrop-filter: blur(10px);
+  border-top-right-radius: 10px;
+  color: white;
+}

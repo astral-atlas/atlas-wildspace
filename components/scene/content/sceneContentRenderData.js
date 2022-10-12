@@ -24,7 +24,7 @@ export const getBackgroundRenderData = (
   miniTheaterState/*: ?MiniTheaterLocalState*/,
   controller/*: ?MiniTheaterController2*/,
   assets/*: AssetDownloadURLMap*/,
-  keys/*: KeyboardStateEmitter*/,
+  keys/*: ?KeyboardStateEmitter*/,
 )/*: ?SceneContentBackgroundRenderData*/ => {
   switch (content.type) {
     case 'mini-theater':
@@ -74,7 +74,7 @@ export const getForegroundRenderData = (
   content/*: SceneContent*/,
   miniTheaterState/*: ?MiniTheaterLocalState*/,
   controller/*: ?MiniTheaterController2*/,
-  keys/*: KeyboardStateEmitter*/,
+  keys/*: ?KeyboardStateEmitter*/,
 )/*: ?SceneContentForegroundRenderData*/ => {
   switch (content.type) {
     case 'exposition':
@@ -94,7 +94,7 @@ export const getContentRenderData = (
   miniTheaterState/*: ?MiniTheaterLocalState*/,
   controller/*: ?MiniTheaterController2*/,
   assets/*: AssetDownloadURLMap*/,
-  keys/*: KeyboardStateEmitter*/,
+  keys/*: ?KeyboardStateEmitter*/,
 )/*: ?SceneContentRenderData*/ => {
 
   const background = getBackgroundRenderData(content, miniTheaterState, controller, assets, keys);

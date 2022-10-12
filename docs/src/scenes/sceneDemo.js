@@ -56,8 +56,8 @@ export const ExpositionSceneDemo/*: Component<>*/ = () => {
   const expositionContent = {
     type: 'exposition',
     exposition: {
-      background: { type: 'color', color: 'red' },
-      subject: { type: 'none' },
+      background: { type: 'color', color: 'blue' },
+      subject: { type: 'annotation', annotation: loudNode.toJSON() },
       description: {
         version: 0,
         rootNode: exampleNode.toJSON()

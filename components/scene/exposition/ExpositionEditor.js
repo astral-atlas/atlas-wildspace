@@ -20,6 +20,7 @@ import { createMaskForMonsterActor, proseNodeJSONSerializer } from "@astral-atla
 import { MiniTheaterCamera } from "../../camera/MiniTheaterCamera";
 import { useLibraryMiniTheaterResources } from "../../miniTheater/resources/libraryResources";
 import { useMiniTheaterController2 } from "../../miniTheater/useMiniTheaterController2";
+import { ExpositionSubjectEditor } from "./ExpositionSubjectEditor";
 
 /*::
 import type { Exposition, LibraryData } from "@astral-atlas/wildspace-models";
@@ -62,6 +63,12 @@ export const ExpositionEditor/*: Component<ExpositionEditorProps>*/ = ({
       }
     })
   }
+  const onSubjectChange = (subject) => {
+    onExpositionChange({
+      ...exposition,
+      subject
+    })
+  }
 
   return h('div', { }, [
     exposition.background.type !== 'mini-theater' ?
@@ -83,12 +90,11 @@ export const ExpositionEditor/*: Component<ExpositionEditorProps>*/ = ({
         ])
       ]),
     ]),
-    h(ExpositionDescription, {
-      editable: true,
-      onDescriptionUpdate,
-      description: exposition.description.rootNode,
-      version: exposition.description.version
-    })
+    h('div', { style: { position: 'relative' } }, [
+      h(EditorForm, {}, [
+        h(ExpositionSubjectEditor, { subject: exposition.subject, onSubjectChange }),
+      ]),
+    ]),
   ]);
 }
 

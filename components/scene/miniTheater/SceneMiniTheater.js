@@ -36,7 +36,7 @@ export type SceneMiniTheaterRendererProps = {
   state: MiniTheaterLocalState,
   controller: ?MiniTheaterController2,
   cameraMode: SceneContentMiniTheaterCameraMode,
-  keys: KeyboardStateEmitter,
+  keys: ?KeyboardStateEmitter,
 }
 */
 
