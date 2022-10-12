@@ -108,7 +108,9 @@ export const GameMasterPrepLibrary/*: Component<GameMasterPrepLibraryProps>*/ = 
         scenes: data.scenes,
         locations: data.locations,
         miniTheaters: data.miniTheaters,
-        client, game, userId
+        client, game, userId,
+        data,
+        connection: updates,
       })
     },
     {

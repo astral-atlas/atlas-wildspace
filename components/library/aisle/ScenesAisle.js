@@ -9,11 +9,12 @@ import type {
   Exposition,
   MiniTheater,
   Location,
+  LibraryData,
 } from '@astral-atlas/wildspace-models';
 import type { UserID } from "@astral-atlas/sesame-models";
 
 import type { AssetDownloadURLMap } from "../../asset/map";
-import type { WildspaceClient } from '@astral-atlas/wildspace-client2';
+import type { WildspaceClient, UpdatesConnection } from '@astral-atlas/wildspace-client2';
 */
 
 import { h, useState } from "@lukekaalim/act"
@@ -26,19 +27,21 @@ import { LibraryFloor, LibraryFloorHeader } from "../LibraryFloor";
 import { CharacterSheet } from "../../paper/CharacterSheet";
 import debounce from "lodash.debounce";
 import { SelectEditor } from "../../editor/form";
+import { LibraryDesk } from "../LibraryDesk";
+import { useAisleFocus } from "../useAisleFocus";
+import { SceneContentEditor } from "../../scene/SceneContentEditor";
 
 /*::
 export type SceneAisleProps = {
   game: Game,
   userId: UserID,
   
-  scenes: $ReadOnlyArray<Scene>,
-  miniTheaters: $ReadOnlyArray<MiniTheater>,
-  locations: $ReadOnlyArray<Location>,
+  data: LibraryData,
 
   assets: AssetDownloadURLMap,
 
-  client: WildspaceClient
+  client: WildspaceClient,
+  connection: UpdatesConnection,
 }
 */
 
@@ -46,14 +49,15 @@ export const SceneAisle/*: Component<SceneAisleProps>*/ = ({
   game,
   userId,
 
-  scenes,
-  miniTheaters,
-  locations,
+  data,
 
   assets,
   client,
+  connection,
 }) => {
   const selection = useLibrarySelection();
+  const { focus, toggleFocus } = useAisleFocus();
+  const { scenes } = data;
 
   const selectedScene = scenes.find(c => selection.selected.has(c.id));
 
@@ -69,54 +73,38 @@ export const SceneAisle/*: Component<SceneAisleProps>*/ = ({
     await client.game.scene.destroy(game.id, scene.id);
   }
 
-  return [
-    h(LibraryAisle, {
-      floor: h(LibraryFloor, {}, [
-        h(LibraryFloorHeader, { title: 'Scenes', }, [
-          h(EditorForm, {}, [
-            h(EditorButton, { label: 'Create new Scene', onButtonClick: () => onCreateNewScene() }),
-            h(EditorTextInput, { label: 'Title', text: stagingTitle, onTextInput: setStagingTitle }),
-          ]),
-        ]),
-        h(LibraryShelf, { title: 'Scenes', selection, books: scenes.map(s => ({
-          title: s.title,
-          id: s.id,
-        })) }),
+  const floor = h(LibraryFloor, {}, [
+    h(LibraryFloorHeader, { title: 'Scenes', }, [
+      h(EditorForm, {}, [
+        h(EditorButton, { label: 'Create new Scene', onButtonClick: () => onCreateNewScene() }),
+        h(EditorTextInput, { label: 'Title', text: stagingTitle, onTextInput: setStagingTitle }),
       ]),
-      desk: [
-        !!selectedScene && h(EditorForm, {}, [
-          h(EditorTextInput, { label: 'Title', text: selectedScene.title, onTextInput: debounce(title => onUpdateScene(selectedScene, { title })) }),
-          h(EditorButton, { label: 'Delete Scene', onButtonClick: () => onDeleteScene(selectedScene) }),
-          h(SceneSubjectEditor, { locations, selectedScene, miniTheaters, expositions, onUpdateScene })
-        ])
-      ]
-    }),
+    ]),
+    h(LibraryShelf, { title: 'Scenes', selection, books: scenes.map(s => ({
+      title: s.title,
+      id: s.id,
+    })) }),
+  ]);
+  const desk = h(LibraryDesk, {}, [
+    !!selectedScene && h(EditorForm, {}, [
+      h(EditorTextInput, { label: 'Title', text: selectedScene.title, onTextChange: title => onUpdateScene(selectedScene, { title }) }),
+      h(EditorButton, { label: 'Delete Scene', onButtonClick: () => onDeleteScene(selectedScene) }),
+      h(EditorButton, { label: 'Edit Content', onButtonClick: toggleFocus })
+    ])
+  ])
+
+  const workstation = [
+    !!selectedScene && h(SceneContentEditor, {
+      content: selectedScene.content,
+      library: data,
+      assets,
+      client,
+      connection,
+      onContentUpdate: content => onUpdateScene(selectedScene, { content }),
+    })
+  ];
+
+  return [
+    h(LibraryAisle, { floor, desk, workstation, focus }),
   ];
 };
-
-const SceneSubjectEditor = ({ selectedScene, miniTheaters, expositions, onUpdateScene }) => {
-  const [expositionId, setExpositionId] = useState()
-  const [miniTheaterId, setMiniTheaterId] = useState()
-  const { content } = selectedScene;
-
-  return [
-    h(SelectEditor, {
-      values: [...expositions.map(e => ({ value: e.id, title: e.name })), { value: '', title: 'None' }],
-      selected: content.type === 'exposition' && content.expositionId || '',
-      onSelectedChange: selected => {
-        if (!selected)
-          return;
-        onUpdateScene(selectedScene, { content: { type: 'exposition', expositionId: selected }})
-      }
-    }),
-    h(SelectEditor, {
-      values: [...miniTheaters.map(m => ({ value: m.id, title: m.name })), { value: '', title: 'None' }],
-      selected: content.type === 'mini-theater' && content.miniTheaterId || '',
-      onSelectedChange: selected => {
-        if (!selected)
-          return;
-        onUpdateScene(selectedScene, { content: { type: 'mini-theater', miniTheaterId: selected }})
-      }
-    }),
-  ]
-}

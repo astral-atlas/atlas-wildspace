@@ -106,6 +106,21 @@ export const RoomAisle/*: Component<RoomAisleProps>*/ = ({
     })
     setStatingContent(null);
   }
+
+  const [sceneToLoad, setSceneToLoad] = useState(null);
+  const onLoadScene = async (selectedRoom) => {
+    const scene = library.scenes.find(s => s.id === sceneToLoad)
+    if (!scene)
+      return;
+    
+    updates.roomPage.submitAction(selectedRoom.id, {
+      type: 'load-scene',
+      scene,
+      id: v4(),
+      time: Date.now()
+    })
+  }
+
   const workstation = selectedRoom && h(RoomWorkstation, {
     library,
     room: selectedRoom,
@@ -151,6 +166,20 @@ export const RoomAisle/*: Component<RoomAisleProps>*/ = ({
         h(EditorButton, {
           label: 'Delete Room', onButtonClick: () => onDeleteRoom(selectedRoom)
         }),
+        h(EditorHorizontalSection, {}, [
+          h(SelectEditor, {
+            label: 'Scene To Load',
+            values: [...library.scenes.map(s => ({
+              title: s.title,
+              value: s.id,
+            })), { value: '', title: 'N/A' }],
+            selected: sceneToLoad,
+            onSelectedChange: setSceneToLoad
+          }),
+          h(EditorButton, {
+            label: 'Load Scene', onButtonClick: () => onLoadScene(selectedRoom)
+          }),
+        ]),
         h(EditorButton, {
           label: 'Edit Room', onButtonClick: () => toggleFocus()
         }),
