@@ -4,7 +4,7 @@ import { emptyRootNode, proseNodeJSONSerializer } from "@astral-atlas/wildspace-
 import { h } from "@lukekaalim/act";
 import { RichTextSimpleEditor } from "../../richText";
 import { EditorTextInput, SelectEditor } from "../../editor/form";
-
+import styles from './ExpositionSubjectEditor.module.css';
 
 /*::
 import type { ExpositionSubject } from "@astral-atlas/wildspace-models";
@@ -20,10 +20,10 @@ export const ExpositionSubjectEditor/*: Component<ExpositionSubjectEditorProps>*
   subject,
   onSubjectChange
 }) => {
-  return [
+  return h('div', { class: styles.subjecEditor }, [
     h(ExpositionSubjectTypeEditor, { subject, onSubjectChange }),
     h(ExpositionSubjectContentEditor, { subject, onSubjectChange }),
-  ]
+  ])
 };
 
 const ExpositionSubjectTypeEditor = ({

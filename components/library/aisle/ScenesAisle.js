@@ -88,6 +88,15 @@ export const SceneAisle/*: Component<SceneAisleProps>*/ = ({
   const desk = h(LibraryDesk, {}, [
     !!selectedScene && h(EditorForm, {}, [
       h(EditorTextInput, { label: 'Title', text: selectedScene.title, onTextChange: title => onUpdateScene(selectedScene, { title }) }),
+      h(SelectEditor, {
+        label: 'Playlist',
+        values: [...data.playlists.map(p => ({
+          value: p.id,
+          title: p.title,
+        })), { value: '', title: 'N/A' }],
+        selected: selectedScene.playlist || '',
+        onSelectedChange: playlist => onUpdateScene(selectedScene, { playlist: playlist || null })
+      }),
       h(EditorButton, { label: 'Delete Scene', onButtonClick: () => onDeleteScene(selectedScene) }),
       h(EditorButton, { label: 'Edit Content', onButtonClick: toggleFocus })
     ])
