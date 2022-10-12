@@ -65,7 +65,7 @@ export const WildspaceGamePage/*: Component<WildspaceGameProps>*/ = ({
   }, [loadingAnim, gameLoadingAnim]);
 
   const player = gameController.gamePage.players.find(p => p.userId === gameController.userId);
-
+  console.log(gameController.gamePage.roomConnectionCounts);
 
   return [
     h('div', { ref, className: styles.transitionContainer  }, [
