@@ -121,6 +121,20 @@ export const RoomAisle/*: Component<RoomAisleProps>*/ = ({
     })
   }
 
+  const [playlistToLoad, setPlaylistToLoad] = useState(null);
+  const onLoadPlaylist = async (selectedRoom) => {
+    const playlist = library.playlists.find(p => p.id === playlistToLoad)
+    if (!playlist)
+      return;
+    
+    updates.roomPage.submitAction(selectedRoom.id, {
+      type: 'change-playlist',
+      playlist: playlist.id,
+      id: v4(),
+      time: Date.now()
+    })
+  }
+
   const workstation = selectedRoom && h(RoomWorkstation, {
     library,
     room: selectedRoom,
@@ -178,6 +192,20 @@ export const RoomAisle/*: Component<RoomAisleProps>*/ = ({
           }),
           h(EditorButton, {
             label: 'Load Scene', onButtonClick: () => onLoadScene(selectedRoom)
+          }),
+        ]),
+        h(EditorVerticalSection, {}, [
+          h(SelectEditor, {
+            label: 'Playlist To Load',
+            values: [...library.playlists.map(p => ({
+              title: p.title,
+              value: p.id,
+            })), { value: '', title: 'N/A' }],
+            selected: playlistToLoad,
+            onSelectedChange: setPlaylistToLoad
+          }),
+          h(EditorButton, {
+            label: 'Load Playlist', onButtonClick: () => onLoadPlaylist(selectedRoom)
           }),
         ]),
         h(EditorButton, {

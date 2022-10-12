@@ -111,6 +111,13 @@ const reduceRoomPlaybackState = (state, action) => {
         type: 'playlist',
         playlist: { id: playlist, mode: { type: 'playing', startTime: time } }
       };
+    case 'change-playlist': {
+      const { time, playlist } = action;
+      return {
+        type: 'playlist',
+        playlist: { id: playlist, mode: { type: 'playing', startTime: time } }
+      };
+    }
   }
   switch (state.type) {
     case 'none':

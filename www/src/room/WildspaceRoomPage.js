@@ -71,7 +71,7 @@ export const WildspaceRoomPage/*: Component<WildspaceRoomPageProps>*/ = ({
 
   const { state, resources: { audioPlaylists, audioTracks } } = roomController.roomPage;
   const assets = roomController.assets;
-  const { scene: { content } } = state 
+  const { scene: { content }, audio } = state 
 
   const resources = useRoomPageMiniTheaterResources(roomController.gamePage, roomController.roomPage);
 
@@ -97,11 +97,28 @@ export const WildspaceRoomPage/*: Component<WildspaceRoomPageProps>*/ = ({
     keys,
   ) || { background: { type: 'color', color: 'white' }, foreground: { type: 'none' } };
 
+  console.log(state);
+  const { playback } = audio;
+  const playlist = playback.type === 'playlist'
+    && audioPlaylists.find(p => p.id === playback.playlist.id)
+    || null;
+  const tracks = playlist &&
+    playlist.trackIds
+      .map(tid => audioTracks.find(t => t.id === tid))
+      .filter(Boolean)
+    console.log(playlist, tracks);
+
   return [
     h('div', { className: styles.room, ref, tabIndex: 0 }, [
       !!sceneContentRenderData && h(SceneRenderer2, { sceneContentRenderData }),
-      //!!playlist && state.audio.playback.type === 'playlist' &&
-      //  h(PlaylistPlayer, { playlists: [playlist], assets, state: state.audio.playback.playlist, tracks, volume: roomController.volume.music }),
+      !!playlist && !!tracks && state.audio.playback.type === 'playlist' &&
+        h(PlaylistPlayer, {
+          playlists: [playlist],
+          assets,
+          state: state.audio.playback.playlist,
+          tracks,
+          volume: roomController.volume.music
+        }),
       h(RoomOverlay, {
         name: player && player.name,
         sesameURL: new URL(wildspace.config.www.sesame.httpOrigin),
