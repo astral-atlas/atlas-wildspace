@@ -79,8 +79,6 @@ export const calculatePlaylistCurrentTrack = (
 
   const loopedProgress = (progress % totalLength) || 0;
 
-  console.log(progress, offsets)
-
   const nextTrackIndex = offsets.findIndex(offset => loopedProgress < offset);
   const index = nextTrackIndex - 1;
 
@@ -103,7 +101,7 @@ const reduceRoomPlaybackState = (state, action) => {
       const { time } = action;
       const { playlist } = action.scene;
       if (!playlist)
-        return { type: 'none' };
+        return state;
       if (state.type === 'playlist' && state.playlist.id === playlist)
         return state;
 
@@ -117,6 +115,9 @@ const reduceRoomPlaybackState = (state, action) => {
         type: 'playlist',
         playlist: { id: playlist, mode: { type: 'playing', startTime: time } }
       };
+    }
+    case 'stop-audio': {
+      return { type: 'none' };
     }
   }
   switch (state.type) {
