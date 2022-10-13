@@ -8,7 +8,7 @@ import { createRouteListener, createFixedListener, listenServer, createAccessHea
 import { createRoutes } from './routes.js';
 import { createServices } from "./services.js";
 import { loadConfigFromFile } from "./config.js";
-import { defaultOptions } from "./routes/meta";
+import { defaultOptions } from "./routes/meta.js";
 
 const middleware = (c) => (r) => {
   const handler = async (request) => {
