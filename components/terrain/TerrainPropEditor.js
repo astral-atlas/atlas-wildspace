@@ -120,7 +120,8 @@ export const TerrainPropEditor/*: Component<TerrainEditorProps>*/ = ({
       !!modelResourcePropCamera && h(CameraHelperRenderer, { camera: modelResourcePropCamera }),
       h(FloorMesh, { floors: floorShapes, showDebug: true }),
       h(FreeCamera, {
-        surfaceRef: cameraButtonRef, keys,
+        surfaceRef: cameraButtonRef,
+        keys,
         position: cameraPosition || undefined,
         quaternion: cameraQuaternion || undefined,
       }),
