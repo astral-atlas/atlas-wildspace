@@ -1,6 +1,6 @@
 {
   "name": "@astral-atlas/wildspace-api",
-  "version": "3.24.0",
+  "version": "3.25.1",
   "description": "",
   "main": "entry.js",
   "type": "module",

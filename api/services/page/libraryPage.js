@@ -48,10 +48,13 @@ export const createLibraryPageService = (
       ...tracks.map(t => [t.trackAudioAssetId, t.coverImageAssetId]).flat(1),
       ...locations.map(l => l.background.type === 'image' && l.background.imageAssetId || null),
       ...modelResources.map(m => m.result.assetId),
-      ...roomStates.map(r => r.scene.content.type === 'exposition'
-        && r.scene.content.exposition.background.type === 'image'
-        && r.scene.content.exposition.background.assetId
-        || null)
+      ...[
+        scenes.map(s => s.content),
+        roomStates.map(r => r.scene.content),
+      ].flat(1).map(s => s.type === 'exposition'
+        && s.exposition.background.type === 'image'
+        && s.exposition.background.assetId
+        || null),
     ])
     const libraryData = {
       rooms,

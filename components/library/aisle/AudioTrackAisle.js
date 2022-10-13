@@ -13,7 +13,7 @@ import { v4 as uuid } from 'uuid';
 
 import { LibraryShelf } from "../LibraryShelf";
 import { LibraryAisle } from "../LibraryAisle";
-import { LibraryFloorHeader } from "../LibraryFloor";
+import { LibraryFloor, LibraryFloorHeader } from "../LibraryFloor";
 import { EditorForm } from "../../editor";
 import {
   EditorButton,
@@ -123,7 +123,7 @@ export const AudioTrackAisle/*: Component<AudioTrackAisleProps>*/ = ({
   const selectedTrackAsset = selectedTrack && assets.get(selectedTrack.trackAudioAssetId);
 
   return h(LibraryAisle, {
-    floor: [
+    floor: h(LibraryFloor, {}, [
       h(LibraryFloorHeader, {
         title: "Tracks",
       }, [
@@ -178,7 +178,7 @@ export const AudioTrackAisle/*: Component<AudioTrackAisleProps>*/ = ({
         id: track.id,
         title: track.title,
       })) })
-    ],
+    ]),
     desk: [
       !!selectedTrack && h(EditorForm, {}, [
         h(EditorButton, { label: 'Delete', onButtonClick: () => onTrackDeleteClick(selectedTrack) }),
