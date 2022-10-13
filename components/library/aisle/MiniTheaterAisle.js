@@ -284,7 +284,13 @@ const MiniTheaterPreview = ({
   return !!controller && !!state && h(SceneRenderer2, {
     sceneContentRenderData: {
       foreground: { type: 'mini-theater-controls', controller, state },
-      background: { type: 'mini-theater', state, controller, cameraMode: { type: 'interactive', bounds: null } }
+      background: {
+        type: 'mini-theater',
+        state,
+        controller,
+        cameraMode: { type: 'interactive', bounds: null },
+        keys: null,
+      }
     }
   });
 }
