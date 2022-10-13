@@ -195,7 +195,6 @@ export const MiniTheaterTerrainAisle/*: Component<MiniTheaterTerrainAisleProps>*
         label: 'Model Resource',
         values: library.modelResources.map(m => ({ title: m.name, value: m.id })),
         selected: selectedTerrainProp.modelResourceId,
-        disabled: true,
         onSelectedChange: modelResourceId => onUpdateTerrainProp(selectedTerrainProp, { modelResourceId })
       }),
       h(EditorTextInput, {

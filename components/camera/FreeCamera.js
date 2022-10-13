@@ -1,6 +1,6 @@
 // @flow strict
 
-import { h, useContext, useEffect } from "@lukekaalim/act"
+import { h, useContext, useEffect, useState } from "@lukekaalim/act"
 import { perspectiveCamera } from "@lukekaalim/act-three"
 import { renderCanvasContext } from "../three";
 import {
@@ -38,22 +38,14 @@ export const FreeCamera/*: Component<FreeCameraProps>*/ = ({
   if (!render)
     return null;
 
+  const [controller, setController] = useState(null)
   useEffect(() => {
     const { current: surface } = surfaceRef || render.canvasRef;
     const { current: camera } = render.cameraRef;
     if (!surface || !camera)
       return;
-    console.log('reload')
     const controller = createFreeCameraController(position, quaternion);
-    const updates = subscribeFreeCameraUpdates(
-      controller,
-      surface,
-      render.loop,
-      keys || render.keyboard,
-      (focus) => {
-        if (!focus)
-          onFreeCameraChange(camera)
-      });
+    setController(controller)
     const unsubscribeCameraUpdate = render.loop.subscribeSimulate(() => {
       const controllerChanged = (
         !camera.position.equals(controller.position) ||
@@ -67,10 +59,31 @@ export const FreeCamera/*: Component<FreeCameraProps>*/ = ({
       onFreeCameraUpdate(camera);
     })
     return () => {
-      updates.unsubscribe();
       unsubscribeCameraUpdate();
     }
-  }, [surfaceRef, keys, onFreeCameraChange])
+  }, [surfaceRef])
+
+  useEffect(() => {
+    const { current: surface } = surfaceRef || render.canvasRef;
+    const { current: camera } = render.cameraRef;
+    if (!surface || !camera || !controller)
+      return;
+    
+    const updates = subscribeFreeCameraUpdates(
+      controller,
+      surface,
+      render.loop,
+      keys || render.keyboard,
+      (focus) => {
+        if (!focus)
+          onFreeCameraChange(camera)
+      }
+    );
+
+    return () => {
+      updates.unsubscribe();
+    }
+  }, [keys, onFreeCameraChange])
 
   return h(perspectiveCamera, { ref: render.cameraRef })
 }
