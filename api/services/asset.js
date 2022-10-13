@@ -84,7 +84,8 @@ export const createS3AssetService = (data/*: WildspaceData*/, config/*: AWSS3Ass
     return { description, uploadURL, downloadURL };
   };
   const batchPeek = async (ids)/*: Promise<AssetInfo[]>*/ => {
-    return Promise.all(ids.filter(Boolean).map(peek)).then(assetInfos =>  assetInfos.filter(Boolean))
+    return Promise.all(ids.filter(Boolean).map(peek))
+      .then(assetInfos =>  assetInfos.filter(Boolean))
   }
   const getAssetDataStream = async (assetId) => {
     const key = join(config.keyPrefix, assetId);

@@ -3,13 +3,14 @@ import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
 
 import { createWebSocketListener } from "@lukekaalim/ws-server";
-import { createRouteListener, createFixedListener, listenServer } from "@lukekaalim/http-server";
+import { createRouteListener, createFixedListener, listenServer, createAccessHeaders } from "@lukekaalim/http-server";
 
 import { createRoutes } from './routes.js';
 import { createServices } from "./services.js";
 import { loadConfigFromFile } from "./config.js";
+import { defaultOptions } from "./routes/meta";
 
-const middleware = (r) => {
+const middleware = (c) => (r) => {
   const handler = async (request) => {
     try {
       const start = Date.now();
@@ -20,7 +21,13 @@ const middleware = (r) => {
       return response;
     } catch (error) {
       console.error(error);
-      throw error;
+      return {
+        status: 500,
+        headers: {
+          ...createAccessHeaders(request.headers, defaultOptions.access),
+        },
+        body: JSON.stringify({ type: 'error', status: 500, message: error.message }),
+      }
     }
   };
   return {
@@ -35,14 +42,14 @@ const createWildspaceServer = async (configPath) => {
   const { ws, http } = createRoutes(services);
   const wsListener = createWebSocketListener(ws)
   const httpListener = createRouteListener(
-    http.map(middleware),
+    http.map(middleware(config)),
     createFixedListener({ status: 404, body: `Page not found`, headers: {} })
   )
 
   const httpServer = createServer();
   const wsServer = new WebSocketServer({ server: httpServer });
 
-  httpServer.addListener('request',httpListener);
+  httpServer.addListener('request', httpListener);
   wsServer.addListener('connection', wsListener);
     
   const { httpOrigin, wsOrigin } = await listenServer(httpServer, config.port, 'localhost');
