@@ -125,7 +125,7 @@ const findItemIndexFromPosition = (
 /*::
 export type OrderedListEditorProps = {
   EntryComponent: Component<{ id: string }>,
-  itemsIds: string[],
+  itemsIds: $ReadOnlyArray<string>,
   onItemIdsChange: (id: string[]) => mixed,
 };
 */
@@ -134,9 +134,9 @@ export const OrderedListEditor/*: Component<OrderedListEditorProps>*/ = ({
   onItemIdsChange,
   EntryComponent,
 }) => {
-  const [stagingOrder, setStagingOrder] = useState(itemsIds);
+  const [stagingOrder, setStagingOrder] = useState([...itemsIds]);
   useEffect(() => {
-    setStagingOrder(itemsIds);
+    setStagingOrder([...itemsIds]);
   }, [...itemsIds])
 
   const [useKeyedRef, itemRefMap] = useRefMap/*:: <string, HTMLLIElement>*/();

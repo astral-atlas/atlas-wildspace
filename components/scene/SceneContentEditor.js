@@ -185,5 +185,6 @@ const ConnectedTheater = ({
     state: miniTheaterState,
     controller,
     cameraMode: { type: 'interactive', bounds: null },
+    keys: null,
   });
 }

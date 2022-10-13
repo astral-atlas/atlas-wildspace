@@ -53,6 +53,7 @@ export const AudioTrackAisle/*: Component<AudioTrackAisleProps>*/ = ({
   const [stagingPlaylistArtwork, setStagingPlaylistArtwork] = useState(null);
 
   const selectedTrack = tracks.find(t => selection.selected.has(t.id))
+  const selectedStagingTrack = stagingTracks.find(t => selection.selected.has(t.id))
 
   const [stagingPlaylistArtworkURL, setStagingPlaylistArtworkURL] = useState(null);
   useEffect(() => {
@@ -66,6 +67,13 @@ export const AudioTrackAisle/*: Component<AudioTrackAisleProps>*/ = ({
       URL.revokeObjectURL(url);
     }
   }, [stagingPlaylistArtwork])
+  const onStagingTrackUpdate = (stagingTrack, stagingTrackProps) => {
+    setStagingTracks(ts => ts.map(t => {
+      if (t.id !== stagingTrack.id)
+        return t;
+      return { ...t, ...stagingTrackProps };
+    }));
+  }
 
   const onTrackFilesSelect = async (files) => {
     const nextStagingTracks = await Promise.all(files.map(async file => {
@@ -186,6 +194,23 @@ export const AudioTrackAisle/*: Component<AudioTrackAisleProps>*/ = ({
         h(EditorTextInput, { label: 'AssetID', text: selectedTrack.trackAudioAssetId}),
         !!selectedTrackAsset && h(EditorTextInput, { label: 'AssetType', text: selectedTrackAsset.description.MIMEType }),
         !!selectedTrackAsset && h('audio', { src: selectedTrackAsset.downloadURL, controls: true })
+      ]),
+      !!selectedStagingTrack && h(EditorForm, {}, [
+        h(EditorTextInput, {
+          label: 'Track Title',
+          text: selectedStagingTrack.title,
+          onTextChange: title => onStagingTrackUpdate(selectedStagingTrack, { title }),
+        }),
+        h(EditorTextInput, {
+          label: 'Track Album',
+          text: selectedStagingTrack.album,
+          onTextChange: album => onStagingTrackUpdate(selectedStagingTrack, { album }),
+        }),
+        h(EditorTextInput, {
+          label: 'Track Artist',
+          text: selectedStagingTrack.artist,
+          onTextChange: artist => onStagingTrackUpdate(selectedStagingTrack, { artist }),
+        }),
       ]),
     ]
   })
