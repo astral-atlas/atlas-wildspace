@@ -105,10 +105,8 @@ export const ExpositionSceneDemo/*: Component<>*/ = () => {
   const assets = createAssetDownloadURLMap(library.assets)
 
   const client = useMemo(() => createMockWildspaceClient(() => library, l => setLibrary(l)), [library]);
-  const resourcez = useLibraryMiniTheaterResources(library);
-  const resources = useMemo(() => ({ ...resourcez, loadingAssets: true }), [resourcez])
+  const resources = useLibraryMiniTheaterResources(library);
   const [updates] = useAsync(async () => client.updates.create('gameId'), [client]);
-  console.log(resources.loadingProgress)
 
   const miniTheaterId = (
     (content.type === 'mini-theater' && content.miniTheaterId)

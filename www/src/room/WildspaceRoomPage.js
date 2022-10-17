@@ -97,7 +97,6 @@ export const WildspaceRoomPage/*: Component<WildspaceRoomPageProps>*/ = ({
     keys,
   ) || { background: { type: 'color', color: 'white' }, foreground: { type: 'none' } };
 
-  console.log(state);
   const { playback } = audio;
   const playlist = playback.type === 'playlist'
     && audioPlaylists.find(p => p.id === playback.playlist.id)
@@ -106,7 +105,6 @@ export const WildspaceRoomPage/*: Component<WildspaceRoomPageProps>*/ = ({
     playlist.trackIds
       .map(tid => audioTracks.find(t => t.id === tid))
       .filter(Boolean)
-    console.log(playlist, tracks);
 
   return [
     h('div', { className: styles.room, ref, tabIndex: 0 }, [

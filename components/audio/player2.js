@@ -81,14 +81,11 @@ export const usePlaylistPlaybackTrack = (
     const update = () => {
       const nextTrack = calculatePlaylistCurrentTrack(state, tracks, Date.now());
       setCurrentTrack(nextTrack);
-      console.log('update')
       if (!nextTrack)
         return;
       const remainingTrackTime = nextTrack.track.trackLengthMs - (nextTrack.trackProgress % nextTrack.track.trackLengthMs);
-      console.log(nextTrack.track.trackLengthMs, nextTrack.trackProgress);
       id = setTimeout(update, remainingTrackTime);
     };
-    console.log('effect')
     update();
 
     return () => {

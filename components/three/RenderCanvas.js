@@ -39,7 +39,7 @@ export const RenderCanvas/*: Component<RenderCanvasProps>*/ = ({
     h(scene, { ref: render.sceneRef },
       h(renderCanvasContext.Provider, { value: render },
         children)),
-  ]
+  ];
 };
 
 export const renderCanvasContext/*: Context<?RenderSetup>*/ = createContext(null);

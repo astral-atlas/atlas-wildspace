@@ -7,3 +7,4 @@ export * from './resources/index.js';
 export * from './useMiniTheaterState.js';
 
 export * from './controls/index.js';
+export * from './floor/index.js';

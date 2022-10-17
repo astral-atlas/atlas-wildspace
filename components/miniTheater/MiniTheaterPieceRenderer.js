@@ -66,7 +66,6 @@ const usePieceTexture = (piece, resources) => {
   }, [])
   const assetId = getPieceAssetId(piece.represents, resources)
   useEffect(() => {
-    console.log(assetId, piece, resources);
     const info = !!assetId && resources.assets.get(assetId);
     if (!info)
       return;

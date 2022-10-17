@@ -104,7 +104,6 @@ export const createMiniTheaterAssetResourceLoader = ()/*: MiniTheaterAssetResour
 
       const countLoad = /*:: <T>*/(t/*: T*/)/*: T*/ => {
         progress += 1/totalAssets;
-        console.info(`${Math.floor(progress * 100)}% Loaded`, t)
         progressPub.emit(progress);
         return t;
       }

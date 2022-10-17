@@ -26,8 +26,8 @@ export type FreeCameraProps = {
 };
 */
 export const FreeCamera/*: Component<FreeCameraProps>*/ = ({
-  onFreeCameraUpdate = _ => {},
-  onFreeCameraChange = _ => {},
+  onFreeCameraUpdate,
+  onFreeCameraChange,
   surfaceRef,
   keys,
   position = new Vector3(),
@@ -56,7 +56,7 @@ export const FreeCamera/*: Component<FreeCameraProps>*/ = ({
 
       camera.position.copy(controller.position);
       camera.quaternion.copy(controller.rotation);
-      onFreeCameraUpdate(camera);
+      onFreeCameraUpdate && onFreeCameraUpdate(camera);
     })
     return () => {
       unsubscribeCameraUpdate();
@@ -64,8 +64,10 @@ export const FreeCamera/*: Component<FreeCameraProps>*/ = ({
   }, [surfaceRef])
 
   useEffect(() => {
+    console.log('change')
     const { current: surface } = surfaceRef || render.canvasRef;
     const { current: camera } = render.cameraRef;
+    console.log(surface, camera, controller)
     if (!surface || !camera || !controller)
       return;
     
@@ -75,15 +77,16 @@ export const FreeCamera/*: Component<FreeCameraProps>*/ = ({
       render.loop,
       keys || render.keyboard,
       (focus) => {
+        console.log(focus)
         if (!focus)
-          onFreeCameraChange(camera)
+          onFreeCameraChange && onFreeCameraChange(camera)
       }
     );
 
     return () => {
       updates.unsubscribe();
     }
-  }, [keys, onFreeCameraChange])
+  }, [keys, onFreeCameraChange, controller])
 
   return h(perspectiveCamera, { ref: render.cameraRef })
 }
