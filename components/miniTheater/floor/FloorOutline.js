@@ -26,9 +26,9 @@ import { useChildObject } from "../../three/useChildObject";
 const floorOutlineTexture = new TextureLoader()
   .load(floorOutlineTextureURL, texture => {
     texture.encoding = sRGBEncoding;
-    texture.offset = new Vector2(-0.5/1024, -0.5/1024);
-    texture.magFilter = NearestMipmapNearestFilter;
-    texture.minFilter = NearestMipmapNearestFilter;
+    //texture.offset = new Vector2(-0.5/1024, -0.5/1024);
+    //texture.magFilter = NearestMipmapNearestFilter;
+    //texture.minFilter = NearestMipmapNearestFilter;
   });
 
 const floorOutlineMaterial = new MeshBasicMaterial({
@@ -38,59 +38,7 @@ const floorOutlineMaterial = new MeshBasicMaterial({
   readDepth: false,
   color: 'rgb(128, 179, 238)',
 });
-const floorOutlineRotations = [
-  0,
-  1,
-  2,
-  3
-];
 const floorOutlineSize = new Vector2(1/4, 1/4);
-
-export const floorRotatableUVs/*: Vector2[][][]*/ = [
-  new Vector2(0, 3),
-  new Vector2(1, 3),
-  new Vector2(2, 3),
-  new Vector2(3, 3),
-].map(v =>
-  floorOutlineRotations.map(r =>
-    calculate2dQuadUVs(v, floorOutlineSize, r)));
-
-const floorOutlineUVs = calculate2dQuadUVs(new Vector2(0, 2), floorOutlineSize, 0);
-const floorGridlineUVs = calculate2dQuadUVs(new Vector2(1, 2), floorOutlineSize, 0);
-
-export const getFloorUVs = (cell/*: Vector3*/, cells/*: Vector3[]*/)/*: Vector2[]*/ => {
-  const up =    cells.some(c => c.x === (cell.x + 0) && c.z === (cell.z + 10));
-  const down =  cells.some(c => c.x === (cell.x + 0) && c.z === (cell.z - 10));
-  const right = cells.some(c => c.x === (cell.x - 10) && c.z === (cell.z + 0));
-  const left =  cells.some(c => c.x === (cell.x + 10) && c.z === (cell.z + 0));
-
-  if (!up && !down && !left && !right)
-    return floorOutlineUVs;
-  if (up && down && left && right)
-    return floorGridlineUVs;
-
-  return getFloorUVForDirections(up, right, down, left, 0)
-}
-
-const getFloorUVForDirections = (up, right, down, left, rotation) => {
-  if ((!up) && (down && left && right))
-    return floorRotatableUVs[0][rotation];
-
-  if ((!up && !right) && (down && left))
-    return floorRotatableUVs[1][rotation];
-
-  if ((!up && !right && !down) && (left))
-    return floorRotatableUVs[2][rotation];
-
-  if ((!up && !down) && (left && right))
-    return floorRotatableUVs[3][rotation];
-
-  if (rotation >= 3)
-    throw new Error();
-  return getFloorUVForDirections(right, down, left, up, rotation + 1);
-}
-
-
 
 const getFloorQuadrantUVs = (
   cell/*: Vector3*/,
@@ -109,7 +57,6 @@ const getFloorQuadrantUVs = (
   const down =        cells.some(c => c.x === (cell.x + 0) && c.y === cell.y && c.z === (cell.z - 10));
   const downRight =   cells.some(c => c.x === (cell.x - 10) && c.y === cell.y && c.z === (cell.z - 10));
 
-
   switch (true) {
     // top left
     case subcellX === 1 && subcellY === 1:
@@ -127,7 +74,6 @@ const getFloorQuadrantUVs = (
   throw new Error();
 }
 
-const floorCornerUVs = calculate2dQuadUVs(new Vector2(1, 2), floorOutlineSize, 0);
 const tileOrientations = [
   0, 1, 2, 3
 ]
@@ -139,7 +85,7 @@ const tileIndicies = [
   new Vector2(1, 2),
 ].map(tileOffset =>
   tileOrientations.map(r =>
-      calculate2dQuadUVs(tileOffset, floorOutlineSize, r)))
+    calculate2dQuadUVs(tileOffset, floorOutlineSize, r, 1/8)))
 
 const reverseTileIndicies = tileIndicies.map(tis =>
   tis.map(tileIndieciesPerRotation => 
@@ -164,7 +110,7 @@ const getFloorCornerUVs = (
   if (left && right && !outside)
     return tileIndicies[2][rotation];
 
-  return floorCornerUVs;
+  throw new Error();
 }
 
 /*::
@@ -172,7 +118,7 @@ export type FloorOutlineProps = {
   position?: Vector3,
   cells: Vector3[],
   adjacentCells: Vector3[],
-  ref: ?Ref<?Mesh>,
+  ref?: Ref<?Mesh>,
 }
 */
 export const FloorOutline/*: Component<FloorOutlineProps>*/ = ({

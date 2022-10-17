@@ -82,10 +82,14 @@ export const calculate2dQuadUVs = (
   uvOffset/*: Vector2*/,
   uvSize/*: Vector2*/,
   orientation/*: number*/,
+  padding/*: number*/ = 0
 )/*: Vector2[]*/ => {
   return orientations[orientation % 4]
     .map(v => v
         .clone()
+        .multiplyScalar(1 - (padding*2))
+        .addScalar(padding)
         .add(uvOffset)
-        .multiply(uvSize))
+        .multiply(uvSize)
+        )
 }
