@@ -25,7 +25,7 @@ import { useChildObject } from "../../three/useChildObject";
 
 const floorOutlineTexture = new TextureLoader()
   .load(floorOutlineTextureURL, texture => {
-    texture.encoding = sRGBEncoding;
+    //texture.encoding = sRGBEncoding;
     //texture.offset = new Vector2(-0.5/1024, -0.5/1024);
     //texture.magFilter = NearestMipmapNearestFilter;
     //texture.minFilter = NearestMipmapNearestFilter;
@@ -34,9 +34,8 @@ const floorOutlineTexture = new TextureLoader()
 const floorOutlineMaterial = new MeshBasicMaterial({
   transparent: true,
   map: floorOutlineTexture,
-  writeDepth: false,
-  readDepth: false,
-  color: 'rgb(128, 179, 238)',
+  //opacity: 0.5,
+ // color: 'rgb(255, 255, 255)',
 });
 const floorOutlineSize = new Vector2(1/4, 1/4);
 
@@ -156,7 +155,7 @@ export const FloorOutline/*: Component<FloorOutlineProps>*/ = ({
   }, [cells, adjacentCells])
 
   const localRef = useRef();
-  useChildObject(localRef, () => new AxesHelper(), []);
+  //useChildObject(localRef, () => new AxesHelper(), []);
 
   return [
     h(mesh, {
