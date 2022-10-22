@@ -15,7 +15,7 @@ import 'prosemirror-menu/style/menu.css';
 import 'prosemirror-example-setup/style/style.css';
 
 export const prosePlugins/*: Plugin<any, any>[]*/ = [
-  ...exampleSetup({ schema })
+  ...exampleSetup({ schema, floatingMenu: false })
 ];
 
 export const useProseMirrorEditorState = (

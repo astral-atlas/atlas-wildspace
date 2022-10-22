@@ -12,7 +12,8 @@
 }
 
 .container {
-  max-width: 600px;
+  max-width: 40vw;
+  max-height: 100%;
   margin: auto;
 
   display: flex;
