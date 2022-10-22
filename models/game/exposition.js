@@ -1,5 +1,21 @@
 // @flow strict
-
+/*::
+import type { Cast } from "@lukekaalim/cast";
+import type { CharacterID } from "../character";
+import type { NonPlayerCharacterID } from "./character";
+import type { LocationID } from "./location";
+import type { RichText } from "./wiki/richText";
+import type { AssetID } from "../asset";
+import type {
+  LocationResourceReference,
+  MagicItemResourceReference,
+  MiniTheaterResourceReference,
+  NPCResourceReference,
+} from "./references";
+import type { MiniTheaterID } from "./miniTheater";
+import type { MiniQuaternion, MiniVector } from "./miniTheater/primitives";
+import type { JSONNode } from "prosemirror-model";
+*/
 import { c } from "@lukekaalim/cast";
 import { castRichText } from "./wiki/richText.js";
 import {
@@ -11,26 +27,13 @@ import { castAssetID } from "../asset.js";
 import { castMiniTheaterId } from "./miniTheater/miniTheater.js";
 import { castMiniQuaternion, castMiniVector } from "./miniTheater/primitives.js";
 import { castJSONSerializedNode } from "../prose.js";
+import { castMagicItemResourceReference } from "./references.js";
 
 /*::
-import type { Cast } from "@lukekaalim/cast";
-import type { CharacterID } from "../character";
-import type { NonPlayerCharacterID } from "./character";
-import type { LocationID } from "./location";
-import type { RichText } from "./wiki/richText";
-import type { AssetID } from "../asset";
-import type {
-  LocationResourceReference,
-  MiniTheaterResourceReference,
-  NPCResourceReference,
-} from "./references";
-import type { MiniTheaterID } from "./miniTheater";
-import type { MiniQuaternion, MiniVector } from "./miniTheater/primitives";
-import type { JSONNode } from "prosemirror-model";
-
 export type ExpositionSubject = 
   | LocationResourceReference
   | NPCResourceReference
+  | MagicItemResourceReference
   | { type: 'none' }
   | { type: 'title', title: string, subtitle: JSONNode }
   | { type: 'caption', caption: JSONNode }
@@ -52,6 +55,7 @@ export type Exposition = {
 export const castExpositionSubject/*: Cast<ExpositionSubject>*/ = c.or('type', {
   'npc': castNPCResourceReference,
   'location': castLocationResourceReference,
+  'magic-item': castMagicItemResourceReference,
   'title': c.obj({ type: c.lit('title'), title: c.str, subtitle: castJSONSerializedNode }),
   'caption': c.obj({ type: c.lit('caption'), caption: castJSONSerializedNode }),
   'description': c.obj({ type: c.lit('description'), description: castJSONSerializedNode }),

@@ -10,6 +10,7 @@ import type { WikiDoc } from "./wiki/doc";
 import type { Cast } from "@lukekaalim/cast";
 import type { UserID } from "@astral-atlas/sesame-models/src/user";
 import type { GameConnectionID } from "./connection";
+import type { LibraryData } from "./library";
 */
 import { c } from "@lukekaalim/cast";
 
@@ -19,7 +20,7 @@ import { castAssetInfo } from "../asset.js";
 import { castRoom } from "../room/room.js";
 import { castWikiDoc } from "./wiki/doc.js";
 import { castMagicItem } from "./magicItem.js";
-import { castMonsterActorMask, castMonsterActorId } from "../monster/monsterActor.js";
+import { castMonsterActorMask, castMonsterActorId, createMaskForMonsterActor } from "../monster/monsterActor.js";
 import { castRoomId } from "../room/room.js";
 import { castPlayer } from "./game.js";
 /*::
@@ -109,5 +110,31 @@ export const reduceGamePageEvent = (page/*: GamePage*/, event/*: GamePageEvent*/
         ...page,
         monsterMasks: page.monsterMasks.map(m => m.id === event.monsterActorId ? event.monsterMask : m),
       }
+  }
+}
+
+export const createGamePageFromLibrary = (
+  library/*: LibraryData*/,
+  game/*: Game*/,
+)/*: GamePage*/ => {
+  return {
+    game,
+  
+    players: [],
+    characters: library.characters,
+    monsterMasks: library.monsterActors.map(a => {
+      const m = library.monsters.find(m => a.monsterId);
+      if (!m)
+        return null;
+      return createMaskForMonsterActor(m, a);
+    }).filter(Boolean),
+    
+    magicItems: library.magicItems,
+    wikiDocs: [],
+  
+    rooms: library.rooms,
+    roomConnectionCounts: [],
+  
+    assets: [],
   }
 }

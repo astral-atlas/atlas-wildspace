@@ -95,6 +95,7 @@ export const WildspaceRoomPage/*: Component<WildspaceRoomPageProps>*/ = ({
     controller,
     assets,
     keys,
+    roomController.gamePage,
   ) || { background: { type: 'color', color: 'white' }, foreground: { type: 'none' } };
 
   const { playback } = audio;

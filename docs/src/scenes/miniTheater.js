@@ -4,7 +4,8 @@ import {
   createAssetDownloadURLMap, getContentRenderData,
   SceneRenderer2, useMiniTheaterController2,
   useLibraryMiniTheaterResources,
-  useAsync
+  useAsync,
+  getLibraryContentRenderData
 } from "@astral-atlas/wildspace-components";
 import { createMockEditingLayer, createMockLibraryData, createMockTerrainPlacement, createMockTerrainProp, createMockWildspaceClient, randomElement, randomIntRange, repeat } from "@astral-atlas/wildspace-test";
 import { h, useEffect, useMemo, useState } from "@lukekaalim/act";
@@ -119,11 +120,14 @@ export const MiniTheaterSceneDemo/*: Component<>*/ = () => {
     miniTheaterId,
   }), [miniTheaterId]);
 
-  const sceneContentRenderData = getContentRenderData(
+  const sceneContentRenderData = getLibraryContentRenderData(
     content,
     miniTheaterState,
     controller,
-    assets);
+    assets,
+    null,
+    library
+  );
 
   return [
     h(ScaledLayoutDemo, {}, [

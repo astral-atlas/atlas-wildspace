@@ -46,7 +46,11 @@ export const proseNodeJSONSerializer = {
     return node.toJSON();
   },
   deserialize(serializedNode/*: JSONNode*/)/*: Node*/ {
-    return Node.fromJSON(proseSchema, serializedNode);
+    try {
+      return Node.fromJSON(proseSchema, serializedNode);
+    } catch (error) {
+      return emptyRootNode;
+    }
   }
 }
 export const proseStepJSONSerializer = {

@@ -1,7 +1,11 @@
 // @flow strict
 /*::
 import type { Component } from "@lukekaalim/act";
-import type { SceneContent, GamePage, ExpositionSubject } from "@astral-atlas/wildspace-models";
+import type {
+  SceneContent, GamePage,
+  ExpositionSubject, MagicItem,
+  NonPlayerCharacter
+} from "@astral-atlas/wildspace-models";
 import type { JSONNode, Node } from "prosemirror-model";
 
 import type {
@@ -16,6 +20,7 @@ import { h, useEffect, useState } from "@lukekaalim/act";
 import { SceneContentForegroundRenderer } from "./SceneContentForegroundRenderer";
 import { SceneContentBackgroundRenderer2 } from "./SceneContentBackgroundRenderer";
 import { SceneContainer } from "./SceneContainer";
+import { useFadeTransition } from "../transitions/useFadeTransition";
 
 /*::
 export type SceneContentMiniTheaterCameraMode =
@@ -35,7 +40,9 @@ export type SceneContentBackgroundRenderData =
 export type SceneContentForegroundRenderData =
   | { type: 'none' }
   | { type: 'mini-theater-controls', state: MiniTheaterLocalState, controller: MiniTheaterController2 }
-  | { type: 'exposition', subject: ExpositionSubject }
+  | { type: 'simple-exposition', subject: ExpositionSubject }
+  | { type: 'magic-item', magicItem: MagicItem }
+  | { type: 'npc', npc: NonPlayerCharacter }
 
 export type SceneContentRenderData = {
   background: SceneContentBackgroundRenderData,
@@ -50,7 +57,6 @@ export type SceneRenderer2Props = {
 export const SceneRenderer2/*: Component<SceneRenderer2Props>*/ = ({
   sceneContentRenderData,
 }) => {
-
   return h(SceneContainer, {}, [
     h(SceneContentBackgroundRenderer2, {
       backgroundRenderData: sceneContentRenderData.background,

@@ -36,7 +36,7 @@ type MiniTheaterResource = AdvancedGameCRUDAPI<{|
   resourceId: MiniTheaterID,
   resourceIdName: 'miniTheaterId',
 
-  resourcePostInput: { name: string },
+  resourcePostInput: {| name: string |},
   resourcePutInput: { name: ?string, pieces: ?$ReadOnlyArray<Piece>, baseArea: ?BoxBoardArea },
 |}>
 type MiniTheaterActionResource = {|

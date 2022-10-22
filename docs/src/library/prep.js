@@ -16,7 +16,8 @@ export const GameMasterPrepLibraryDemo/*: Component<>*/ = () => {
   const game = useMemo(() => createMockGame());
   const userId = useMemo(() => uuid());
   const [data, setData] = useState/*:: <LibraryData>*/(createMockLibraryData());
-  const mockClient = createMockWildspaceClient();
+
+  const mockClient = createMockWildspaceClient(() => data, data => setData(data));
   const client = {
     ...mockClient,
     game: {
@@ -67,7 +68,6 @@ export const GameMasterPrepLibraryDemo/*: Component<>*/ = () => {
     miniTheater: {
       subscribe: (id, subscriber) => {
         const miniTheater = data.miniTheaters.find(m => m.id === id);
-        console.log(id, miniTheater);
         if (miniTheater)
           subscriber(miniTheater);
         return () => {};

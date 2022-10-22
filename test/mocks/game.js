@@ -3,7 +3,8 @@
 import type {
   Character,
   Game,
-  MonsterID, Monster, MonsterActor
+  MonsterID, Monster, MonsterActor,
+  MagicItem
 } from "@astral-atlas/wildspace-models";
 */
 import {
@@ -12,9 +13,11 @@ import {
   randomMonsterName,
   randomName,
   randomHumanName,
+  randomObjectName,
 } from "./random";
 
 import { v4 as uuid } from 'uuid';
+import { emptyRootNode } from "@astral-atlas/wildspace-models";
 
 
 export const createMockPlayer = () => {
@@ -70,4 +73,14 @@ export const createMockMonsterActor = (monster/*: Monster*/)/*: MonsterActor*/ =
 
   hitpoints: randomIntRange(100),
   conditions: [],
+})
+
+export const createMockMagicItem = ()/*: MagicItem*/ => ({
+  id: uuid(),
+  title: randomObjectName(),
+  description: emptyRootNode.toJSON(),
+  rarity: 'Uncommon',
+  requiresAttunement: false,
+  type: 'Weapon (sword)',
+  visibility: { type: 'players-in-game' }
 })

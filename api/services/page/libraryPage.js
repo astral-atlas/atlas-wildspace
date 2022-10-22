@@ -28,6 +28,7 @@ export const createLibraryPageService = (
       { result: playlists },
       { results: terrainProps },
       { results: modelResources },
+      { result: magicItems },
     ] = await Promise.all([
       data.roomData.rooms.query(gameId),
       data.roomData.roomStates.table.query(gameId),
@@ -41,6 +42,7 @@ export const createLibraryPageService = (
       data.playlists.query(gameId),
       data.gameData.miniTheater.terrainProps.query(gameId),
       data.gameData.resources.models.query(gameId),
+      data.gameData.magicItems.query(gameId),
     ])
     const assets = await asset.batchPeek([
       ...characters.map(c => c.initiativeIconAssetId),
@@ -65,6 +67,7 @@ export const createLibraryPageService = (
       monsterActors,
       miniTheaters,
       terrainProps: terrainProps.map(r => r.result),
+      magicItems,
       scenes,
       locations,
       tracks,

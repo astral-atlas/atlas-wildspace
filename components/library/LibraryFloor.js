@@ -17,12 +17,14 @@ import {
 export type LibraryFloorProps = {
   header?: ?ElementNode,
   selection?: ?LibrarySelection,
+  shelves?: ?ElementNode,
 };
 */
 
 export const LibraryFloor/*: Component<LibraryFloorProps>*/ = ({
   header,
   selection,
+  shelves,
   children
 }) => {
   const onClick = (e) => {
@@ -35,6 +37,7 @@ export const LibraryFloor/*: Component<LibraryFloorProps>*/ = ({
   return h('div', { onClick, class: classes.floor }, [
     header || null,
     children,
+    shelves || null,
   ])
 };
 

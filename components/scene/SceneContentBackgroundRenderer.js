@@ -10,6 +10,9 @@ import { ExpositionImage } from "./exposition/ExpositionImage";
 import { ExpositionColor } from "./exposition/ExpositionColor";
 import { GridHelperGroup } from "../../docs/src/controls/helpers"; 
 import { SceneMiniTheaterRenderer } from "./miniTheater/SceneMiniTheater";
+import { useBezierAnimation } from "@lukekaalim/act-curve";
+import { useFadeTransition } from "../transitions/useFadeTransition";
+import styles from './SceneContentBackgroundRenderer.module.css';
 
 /*::
 import type { SceneContent, MiniTheater } from "@astral-atlas/wildspace-models";
@@ -24,6 +27,10 @@ import type {
 } from "../miniTheater/useMiniTheaterController2";
 import type { MiniTheaterMode } from "../miniTheater/useMiniTheaterMode";
 import type { SceneContentBackgroundRenderData } from "./SceneRenderer2";
+import type {
+  CubicBezier,
+  CubicBezierAnimation,
+} from "@lukekaalim/act-curve/bezier";
 
 export type SceneContentBackgroundRendererProps = {
   content: SceneContent,
@@ -57,19 +64,54 @@ export const SceneContentBackgroundRenderer2/*: Component<SceneContentBackground
   backgroundRenderData,
   focused = false,
 }) => {
-  switch (backgroundRenderData.type) {
-    case 'color':
-      return h(ExpositionColor, { color: backgroundRenderData.color });
-    case 'image':
-      return h(ExpositionImage, { imageURL: backgroundRenderData.imageURL });
-    case 'mini-theater':
-      return h(SceneMiniTheaterRenderer, {
-        state: backgroundRenderData.state,
-        controller: backgroundRenderData.controller, 
-        cameraMode: backgroundRenderData.cameraMode,
-        keys: backgroundRenderData.keys,
-      })
-    default:
-      return null;
+
+  const backgroundTransitions = useFadeTransition(backgroundRenderData, b => {
+    switch (b.type) {
+      case 'color':
+        return b.color;
+      case 'image':
+        return b.imageURL;
+      case 'mini-theater':
+        return b.state.miniTheater.id;
+      default:
+        return b.type;
+    }
+  }, [backgroundRenderData]);
+
+  const getBackgroundElement = (data) => {
+    switch (data.type) {
+      case 'color':
+        return h(ExpositionColor, { color: data.color });
+      case 'image':
+        return h(ExpositionImage, { imageURL: data.imageURL });
+      case 'mini-theater':
+        return h(SceneMiniTheaterRenderer, {
+          state: data.state,
+          controller: data.controller, 
+          cameraMode: data.cameraMode,
+          keys: data.keys,
+        })
+      default:
+        return null;
+    }
   }
+
+  return backgroundTransitions.map(bt => {
+    const backgroundElement = getBackgroundElement(bt.value);
+    return h(TransitionAnimator, {
+      transitionAnim: bt.anim,
+      key: bt.key,
+    }, backgroundElement);
+  })
+}
+
+const TransitionAnimator = ({ transitionAnim, children }) => {
+  const ref = useRef()
+  useBezierAnimation(transitionAnim, point => {
+    const { current: div } = ref;
+    if (!div)
+      return;
+    div.style.opacity = point.position;
+  });
+  return h('div', { ref, class: styles.transitionContainer }, children)
 }

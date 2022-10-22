@@ -23,6 +23,7 @@ import { AudioTrackAisle } from "../aisle/AudioTrackAisle";
 import { AudioPlaylistAisle } from "../aisle/AudioPlaylistAisle";
 import { ResourcesAisle } from "../aisle/ResourcesAisle";
 import { MiniTheaterTerrainAisle } from "../aisle/MiniTheaterTerrainAisle";
+import { MagicItemAisle } from "../aisle/MagicItemAisle";
 
 /*::
 export type GameMasterPrepLibraryProps = {
@@ -132,6 +133,15 @@ export const GameMasterPrepLibrary/*: Component<GameMasterPrepLibraryProps>*/ = 
         updates,
         rooms: data.rooms,
         client, game, userId
+      })
+    },
+    {
+      key: 'MAGIC_ITEM',
+      title: 'Magic Item',
+      component: h(MagicItemAisle, {
+        library: data,
+        client,
+        game
       })
     },
     {

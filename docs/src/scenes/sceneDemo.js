@@ -15,7 +15,8 @@ import {
   useAsync,
   miniVectorToThreeVector,
   miniQuaternionToThreeQuaternion,
-  getContentRenderData
+  getContentRenderData,
+  getLibraryContentRenderData
 } from '@astral-atlas/wildspace-components';
 import { h, useEffect, useMemo, useRef, useState } from '@lukekaalim/act';
 
@@ -26,7 +27,7 @@ import { useAnimation } from '@lukekaalim/act-curve';
 import { LayoutDemo, ScaledLayoutDemo } from "../demo";
 import { createMockImageAsset, createMockLibraryData, createMockMiniTheater, createMockMonster, createMockMonsterActor, createMockMonsterPiece, createMockWildspaceClient } from "@astral-atlas/wildspace-test";
 import { v4 } from "uuid";
-import { createMaskForMonsterActor, emptyRootNode, proseNodeJSONSerializer, proseSchema } from '@astral-atlas/wildspace-models';
+import { createGamePageFromLibrary, createMaskForMonsterActor, emptyRootNode, proseNodeJSONSerializer, proseSchema } from '@astral-atlas/wildspace-models';
 import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { Node } from "prosemirror-model";
@@ -129,11 +130,13 @@ export const ExpositionSceneDemo/*: Component<>*/ = () => {
     return () => unsubscribe();
   }, [controller])
 
-  const sceneContentRenderData = getContentRenderData(
+  const sceneContentRenderData = getLibraryContentRenderData(
     content,
     miniTheaterState,
     controller,
     assets,
+    null,
+    library
   );
 
   return [

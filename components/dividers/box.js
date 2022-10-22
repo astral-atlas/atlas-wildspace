@@ -3,6 +3,17 @@
 import { h } from '@lukekaalim/act';
 
 import dividerStyles from './dividers.module.css';
+const styles = {
+  beveled: dividerStyles.beveled,
+  banner: dividerStyles.banner,
+  square: dividerStyles.square,
+  plain: dividerStyles.plain,
+  feature: dividerStyles.feature,
+};
+
+export {
+  styles as dividerStyles
+}
 
 /*::
 export type StyleCustomizationProps = {|

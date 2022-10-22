@@ -1,0 +1,44 @@
+.container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.background {
+  position: absolute;
+  top: 2rem;
+  bottom: 0px;
+  width: 100%;
+}
+
+.header {
+  margin: 0 2rem 0 2rem;
+}
+.header > h3 {
+  text-align: center;
+}
+
+.attributes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: 5rem;
+
+  justify-items: center;
+}
+
+.content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+
+  padding: 1rem;
+}
+
+.description {
+  padding: 0 2rem 0 2rem;
+
+  background-color: #e8e8e8;
+  border-radius: 1rem;
+
+  min-height: 8rem;
+}

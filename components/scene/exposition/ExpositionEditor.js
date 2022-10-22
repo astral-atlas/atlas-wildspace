@@ -54,15 +54,6 @@ export const ExpositionEditor/*: Component<ExpositionEditorProps>*/ = ({
       background,
     });
   }
-  const onDescriptionUpdate = (rootNode, nextVersion) => {
-    onExpositionChange({
-      ...exposition,
-      description: {
-        rootNode,
-        version: nextVersion,
-      }
-    })
-  }
   const onSubjectChange = (subject) => {
     onExpositionChange({
       ...exposition,
@@ -92,7 +83,7 @@ export const ExpositionEditor/*: Component<ExpositionEditorProps>*/ = ({
     ]),
     h('div', { style: { position: 'relative' } }, [
       h(EditorForm, {}, [
-        h(ExpositionSubjectEditor, { subject: exposition.subject, onSubjectChange }),
+        h(ExpositionSubjectEditor, { subject: exposition.subject, onSubjectChange, library }),
       ]),
     ]),
   ]);

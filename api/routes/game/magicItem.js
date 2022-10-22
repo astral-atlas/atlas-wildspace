@@ -3,76 +3,48 @@
 import type { RoutesConstructor } from "../../routes";
 
 */
-import { createMetaRoutes } from "../meta.js";
+import { createMetaRoutes, createCRUDConstructors } from "../meta.js";
 import { magicItemAPI } from "@astral-atlas/wildspace-models";
 import { HTTP_STATUS } from "@lukekaalim/net-description";
 import { v4 as uuid } from "uuid";
 
 export const createMagicItemRoutes/*: RoutesConstructor*/ = (services) => {
   const { createAuthorizedResource } = createMetaRoutes(services);
+  const { createGameCRUDRoutes } = createCRUDConstructors(services);
 
-  const magicItemRoutes = createAuthorizedResource(magicItemAPI["/games/magicItem"], {
-    GET: {
-      getGameId: r => r.query.gameId,
-      scope: { type: 'player-in-game' },
-      async handler({ game, identity }) {
-        const { result: magicItem } = await services.data.gameData.magicItems.query(game.id);
-
-        if (identity.type === 'link' && game.gameMasterId == identity.grant.identity)
-          return { status: HTTP_STATUS.ok, body: { type: 'found', relatedAssets: [], magicItem }}
-
-        const visibleMagicItems = magicItem.filter(m => m.visibility && m.visibility.type === 'players-in-game');
-        return { status: HTTP_STATUS.ok, body: { type: 'found', relatedAssets: [], magicItem: visibleMagicItems }}
+  const magicItemRoutes = createGameCRUDRoutes(magicItemAPI["/games/magicItem"], {
+    idName: 'magicItemId',
+    name: 'magicItem',
+    gameDataKey: 'magicItem',
+    gameUpdateType: 'magicItem',
+    async create({ game, body: { magicItem: { title } } }) {
+      const magicItem = {
+        id: uuid(),
+        title,
+        description: '',
+        type: '',
+        requiresAttunement: false,
+        visibility: { type: 'game-master-in-game' },
+        rarity: '',
       }
+      await services.data.gameData.magicItems.set(game.id, magicItem.id, magicItem);
+      return magicItem;
     },
-    POST: {
-      getGameId: r => r.body.gameId,
-      scope: { type: 'game-master-in-game' },
-      async handler({ game }) {
-        const magicItem = {
-          id: uuid(),
-          title: '',
-          description: '',
-          type: '',
-          requiresAttunement: false,
-          visibility: { type: 'game-master-in-game' },
-          rarity: '',
-        }
-        await services.data.gameData.magicItems.set(game.id, magicItem.id, magicItem);
-        await services.data.gameUpdates.publish(game.id, { type: 'magicItem' });
-
-        return { status: HTTP_STATUS.ok, body: { type: 'created', magicItem }}
-      }
+    async update({ game, body: { magicItem }, query: { magicItemId } }) {
+      await services.data.gameData.magicItems.set(game.id, magicItemId, { ...magicItem, id: magicItemId });
+      return magicItem;
     },
-    PUT: {
-      getGameId: r => r.query.gameId,
-      scope: { type: 'game-master-in-game' },
-      async handler({ game, body: { magicItem } }) {
-        const { result: prevMagicItem } = await services.data.gameData.magicItems.get(game.id, magicItem.id);
-        if (!prevMagicItem)
-          return { status: HTTP_STATUS.not_found };
-
-        const nextMagicItem = {
-          ...magicItem,
-          id: prevMagicItem.id,
-        }
-        await services.data.gameData.magicItems.set(game.id, magicItem.id, nextMagicItem);
-        await services.data.gameUpdates.publish(game.id, { type: 'magicItem' });
-
-        return { status: HTTP_STATUS.ok, body: { type: 'updated', nextMagicItem }}
-      }
+    async destroy({ game, query: { magicItemId }}) {
+      await services.data.gameData.magicItems.set(game.id, magicItemId, null);
     },
-    DELETE: {
-      getGameId: r => r.query.gameId,
-      scope: { type: 'game-master-in-game' },
-      async handler({ game, query: { magicItem } }) {
-        await services.data.gameData.magicItems.set(game.id, magicItem, null);
-        await services.data.gameUpdates.publish(game.id, { type: 'magicItem' });
-
-        return { status: HTTP_STATUS.ok, body: { type: 'deleted' }}
-      }
-    }
-  })
+    async read({ game, identity }) {
+      const { result } = await services.data.gameData.magicItems.query(game.id);
+      if (identity.type === 'link' && identity.grant.identity === game.gameMasterId)
+        return result;
+      return result
+        .filter(m => m.visibility && m.visibility.type === 'players-in-game')
+    },
+  });
 
   const http = [
     ...magicItemRoutes

@@ -61,3 +61,4 @@ export * from './renderer/index.js';
 export * from './gizmos/index.js';
 export * from './snackbar/index.js';
 export * from './terrain/index.js';
+export * from './magicItem/index.js';

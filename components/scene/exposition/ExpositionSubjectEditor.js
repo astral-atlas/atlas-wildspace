@@ -1,5 +1,7 @@
 // @flow strict
-
+/*::
+import type { LibraryData } from "@astral-atlas/wildspace-models";
+*/
 import { emptyRootNode, proseNodeJSONSerializer } from "@astral-atlas/wildspace-models";
 import { h } from "@lukekaalim/act";
 import { RichTextSimpleEditor } from "../../richText";
@@ -11,22 +13,25 @@ import type { ExpositionSubject } from "@astral-atlas/wildspace-models";
 import type { Component } from "@lukekaalim/act";
 
 export type ExpositionSubjectEditorProps = {
+  library: LibraryData,
   subject: ExpositionSubject,
   onSubjectChange: ExpositionSubject => mixed,
 }
 */
 
 export const ExpositionSubjectEditor/*: Component<ExpositionSubjectEditorProps>*/ = ({
+  library,
   subject,
   onSubjectChange
 }) => {
   return h('div', { class: styles.subjecEditor }, [
-    h(ExpositionSubjectTypeEditor, { subject, onSubjectChange }),
-    h(ExpositionSubjectContentEditor, { subject, onSubjectChange }),
+    h(ExpositionSubjectTypeEditor, { subject, onSubjectChange, library }),
+    h(ExpositionSubjectContentEditor, { subject, onSubjectChange, library }),
   ])
 };
 
 const ExpositionSubjectTypeEditor = ({
+  library,
   subject,
   onSubjectChange
 }) => {
@@ -40,6 +45,10 @@ const ExpositionSubjectTypeEditor = ({
         return { type: 'annotation', annotation: emptyRootNode.toJSON() };
       case 'description':
         return { type: 'description', description: emptyRootNode.toJSON() };
+      case 'magic-item':
+        return { type: 'magic-item', magicItemId: library.magicItems[0]?.id || '' };
+      case 'npc':
+        return { type: 'npc', npcId: '' };
       default:
         return { type: 'none' };
     }
@@ -54,14 +63,15 @@ const ExpositionSubjectTypeEditor = ({
       { value: 'caption' },
       { value: 'annotation' },
       { value: 'description' },
+      { value: 'magic-item' },
+      { value: 'npc' },
       { value: 'none' },
     ],
     selected: subject.type,
     onSelectedChange,
   });
 }
-const ExpositionSubjectContentEditor = ({ subject, onSubjectChange }) => {
-  console.log(subject)
+const ExpositionSubjectContentEditor = ({ library, subject, onSubjectChange }) => {
   switch (subject.type) {
     case 'title':
       return h(TitleEditor, { subject, onSubjectChange });
@@ -71,6 +81,8 @@ const ExpositionSubjectContentEditor = ({ subject, onSubjectChange }) => {
       return h(CaptionEditor, { subject, onSubjectChange });
     case 'description':
       return h(DescriptionEditor, { subject, onSubjectChange });
+    case 'magic-item':
+      return h(MagicItemSubjectEditor, { subject, onSubjectChange, library })
     default:
       return null;
   }
@@ -146,5 +158,25 @@ const CaptionEditor = ({ subject, onSubjectChange }) => {
       node: proseNodeJSONSerializer.deserialize(subject.caption),
       onNodeChange: onCaptionChange,
     })
+  ];
+}
+
+const MagicItemSubjectEditor = ({ library, subject, onSubjectChange }) => {
+  const onMagicItemIdChange = magicItemId => onSubjectChange({
+    ...subject,
+    magicItemId,
+  })
+  return [
+    h('label', {}, [
+      h('span', {}, 'Magic Item'),
+    ]),
+    h(SelectEditor, {
+      values: library.magicItems.map(m => ({
+        value: m.id,
+        title: m.title,
+      })),
+      selected: subject.magicItemId,
+      onSelectedChange: onMagicItemIdChange
+    }),
   ];
 }

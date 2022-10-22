@@ -3,6 +3,7 @@
 import type { NonPlayerCharacter, NonPlayerCharacterID } from "./character";
 import type { Location, LocationID } from "./location";
 import type { MiniTheater, MiniTheaterID } from "./miniTheater";
+import type { MagicItemID } from "./magicItem";
 import type { SceneID } from "./scene";
 
 import type { Cast } from "@lukekaalim/cast/main";
@@ -14,6 +15,7 @@ import { castLocationId } from "./location.js";
 import { castMiniTheaterId } from "./miniTheater/miniTheater.js";
 import { castSceneId } from "./scene.js";
 import { castNonPlayerCharacterID } from "./character.js";
+import { castMagicItemId } from "./magicItem.js";
 
 /*::
 export type SceneResourceReference = {
@@ -32,12 +34,17 @@ export type NPCResourceReference = {
   type: 'npc',
   npcId: NonPlayerCharacterID
 }
+export type MagicItemResourceReference = {
+  type: 'magic-item',
+  magicItemId: MagicItemID
+}
 
 export type ResourceReference =
   | SceneResourceReference
   | MiniTheaterResourceReference
   | LocationResourceReference
   | NPCResourceReference
+  | MagicItemResourceReference
 */
 
 export const castSceneResourceReference/*: Cast<SceneResourceReference>*/ = c.obj({
@@ -55,6 +62,10 @@ export const castLocationResourceReference/*: Cast<LocationResourceReference>*/ 
 export const castNPCResourceReference/*: Cast<NPCResourceReference>*/ = c.obj({
   type: c.lit('npc'),
   npcId: castNonPlayerCharacterID,
+});
+export const castMagicItemResourceReference/*: Cast<MagicItemResourceReference>*/ = c.obj({
+  type: c.lit('magic-item'),
+  magicItemId: castMagicItemId,
 });
 
 

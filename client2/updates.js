@@ -67,7 +67,6 @@ export const createUpdatesClient = (
     }
 
     const recieve = (event) => {
-      console.log(event);
       for (const subscriber of subscribers)
         subscriber(event);
     }

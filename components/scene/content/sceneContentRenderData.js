@@ -1,7 +1,12 @@
 // @flow strict
 
 /*::
-import type { SceneContent } from "@astral-atlas/wildspace-models";
+import type {
+  SceneContent, GamePage,
+  LibraryData,
+  MagicItem,
+  NonPlayerCharacter,
+} from "@astral-atlas/wildspace-models";
 import type {
   SceneContentBackgroundRenderData,
   SceneContentForegroundRenderData,
@@ -75,11 +80,20 @@ export const getForegroundRenderData = (
   miniTheaterState/*: ?MiniTheaterLocalState*/,
   controller/*: ?MiniTheaterController2*/,
   keys/*: ?KeyboardStateEmitter*/,
+  magicItems/*: $ReadOnlyArray<MagicItem>*/
 )/*: ?SceneContentForegroundRenderData*/ => {
   switch (content.type) {
     case 'exposition':
-      const { description, subject } = content.exposition
-      return { type: 'exposition', subject };
+      const { description, subject } = content.exposition;
+      switch (subject.type) {
+        default:
+          return { type: 'simple-exposition', subject };
+        case 'magic-item':
+          const magicItem = magicItems.find(m => m.id === subject.magicItemId);
+          if (!magicItem)
+            return null;
+          return { type: 'magic-item', magicItem }
+      }
     case "mini-theater":
       if (!controller || !miniTheaterState)
         return null;
@@ -95,10 +109,35 @@ export const getContentRenderData = (
   controller/*: ?MiniTheaterController2*/,
   assets/*: AssetDownloadURLMap*/,
   keys/*: ?KeyboardStateEmitter*/,
+  gamePage/*: GamePage*/
 )/*: ?SceneContentRenderData*/ => {
 
   const background = getBackgroundRenderData(content, miniTheaterState, controller, assets, keys);
-  const foreground = getForegroundRenderData(content, miniTheaterState, controller, keys);
+  const foreground = getForegroundRenderData(content, miniTheaterState, controller, keys, gamePage.magicItems);
+  if (!background || !foreground) 
+    return null;
+
+  return {
+    background,
+    foreground,
+  }
+};
+
+export const getLibraryContentRenderData = (
+  content/*: SceneContent*/,
+  miniTheaterState/*: ?MiniTheaterLocalState*/,
+  controller/*: ?MiniTheaterController2*/,
+  assets/*: AssetDownloadURLMap*/,
+  keys/*: ?KeyboardStateEmitter*/,
+  library/*: LibraryData*/
+)/*: ?SceneContentRenderData*/ => {
+  const background = getBackgroundRenderData(content, miniTheaterState, controller, assets, keys);
+  const foreground = getForegroundRenderData(
+    content,
+    miniTheaterState,
+    controller,
+    keys, library.magicItems
+  );
   if (!background || !foreground) 
     return null;
 

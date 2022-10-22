@@ -8,6 +8,7 @@ import type { Room, RoomID } from "../room/room";
 import type { RoomState } from "../room/state";
 import type { Exposition } from "./exposition";
 import type { Location } from "./location";
+import type { MagicItem } from "./magicItem";
 import type { MiniTheater } from "./miniTheater";
 import type { TerrainProp } from "./miniTheater/terrain";
 import type { ModelResource } from "./resources";
@@ -24,6 +25,7 @@ import { castRoom, castRoomId } from "../room/room.js";
 import { castRoomState } from "../room/state.js";
 import { castExposition } from "./exposition.js";
 import { castLocation } from "./location.js";
+import { castMagicItem } from "./magicItem.js";
 import {
   castMiniTheater,
 } from "./miniTheater/index.js";
@@ -48,6 +50,7 @@ export type LibraryData = {|
   scenes: $ReadOnlyArray<Scene>,
 
   locations: $ReadOnlyArray<Location>,
+  magicItems: $ReadOnlyArray<MagicItem>,
 
   tracks: $ReadOnlyArray<AudioTrack>,
   playlists: $ReadOnlyArray<AudioPlaylist>,
@@ -67,7 +70,9 @@ export const castLibraryData/*: Cast<LibraryData>*/ = c.obj({
   miniTheaters: c.arr(castMiniTheater),
   terrainProps: c.arr(castTerrainProp),
   scenes: c.arr(castScene),
+
   locations: c.arr(castLocation),
+  magicItems: c.arr(castMagicItem),
 
   tracks: c.arr(castAudioTrack),
   playlists: c.arr(castAudioPlaylist),

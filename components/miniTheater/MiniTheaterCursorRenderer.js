@@ -45,7 +45,7 @@ export type MiniTheaterCursorRendererProps = {
 */
 
 const cube = new BoxGeometry(10, 2, 10);
-const blue = new MeshBasicMaterial({ color: new Color('blue') })
+const blue = new MeshBasicMaterial({ color: new Color('blue'), opacity: 0.2, transparent: true })
 
 export const MiniTheaterCursorRenderer/*: Component<MiniTheaterCursorRendererProps>*/ = ({
   miniTheaterState,
@@ -61,51 +61,6 @@ export const MiniTheaterCursorRenderer/*: Component<MiniTheaterCursorRendererPro
   const position = new Vector3(cursor.x * 10, (cursor.z * 10) - 3, cursor.y * 10);
 
   return h(mesh, { geometry: cube, position, material: blue });
-  const material = useDisposable(() => {
-    return new MeshBasicMaterial({
-      map: texture,
-      transparent: true,
-      blending: AdditiveBlending,
-      depthTest: false,
-      depthWrite: false,
-    });
-  }, [texture]);
-
-  const [visibilityAnim] = useAnimatedNumber(visible ? 1 : 0, visible ? 1 : 0, { duration: 100, impulse: 3 })
-
-  useBezierAnimation(visibilityAnim, point => {
-    material.opacity = point.position * 0.8;
-  })
-
-  useEffect(() => {
-    const { current: cursorMesh } = ref;
-    if (!cursorMesh)
-      return;
-
-    return controller.subscribeCursor(cursor => {
-      if (!cursor)
-        return setVisible(false);
-
-      setVisible(true);
-      cursorMesh.position.set(
-        cursor.position.x * 10,
-        cursor.position.z * 10,
-        cursor.position.y * 10
-      )
-    })
-  }, [controller])
-
-  const [placement, setPlacement] = useState(null)
-  useEffect(() => {
-    return controller.subscribePlacement(setPlacement)
-  }, [])
-
-
-  return [
-    h(mesh, { geometry, material, ref, controller }, [
-      !!placement && h(PlacementIndicator, { placement, resources })
-    ]),
-  ];
 }
 
 const PlacementIndicator = ({ resources, placement }) => {

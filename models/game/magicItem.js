@@ -1,7 +1,9 @@
 // @flow strict
 /*::
 import type { Cast } from "@lukekaalim/cast";
+import type { JSONNode } from "prosemirror-model";
 */
+import { castJSONSerializedNode } from "../prose.js";
 import { c } from "@lukekaalim/cast";
 
 /*::
@@ -9,7 +11,7 @@ export type MagicItemID = string;
 type MagicItemVisability = 
   | {| type: 'game-master-in-game' |}
   | {| type: 'players-in-game' |}
-export type MagicItem = {
+export type MagicItem = {|
   id: MagicItemID,
 
   title: string,
@@ -19,8 +21,8 @@ export type MagicItem = {
   rarity: string,
   requiresAttunement: boolean,
 
-  description: string,
-};
+  description: JSONNode,
+|};
 */
 export const castMagicItemVisability/*: Cast<MagicItemVisability>*/ = c.or('type', {
   'game-master-in-game': c.obj({ type: (c.lit('game-master-in-game')/*: Cast<'game-master-in-game'>*/) }),
@@ -38,5 +40,5 @@ export const castMagicItem/*: Cast<MagicItem>*/ = c.obj({
   rarity: c.str,
   requiresAttunement: c.bool,
 
-  description: c.str,
+  description: castJSONSerializedNode,
 });

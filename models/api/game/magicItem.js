@@ -4,23 +4,40 @@
 /*::
 import type { Cast } from '@lukekaalim/cast';
 
-import type { CRUDGameAPI } from './meta.js';
+import type { AdvancedGameCRUDAPI } from "./meta";
 
 import type {
   MagicItem, MagicItemID,
 } from "../../game/index.js";
 */
 
-import { createCRUDGameAPI } from './meta.js';
-import { castMagicItem, castMagicItemId } from "../../game/index.js";
+import { castMagicItem } from "../../game/index.js";
+import { createAdvancedCRUDGameAPI } from "./meta.js";
+import { c } from '@lukekaalim/cast';
 
 /*::
-export type MagicItemAPI = CRUDGameAPI<MagicItem, "magicItem", MagicItemID>
+export type MagicItemAPI = {|
+  '/games/magicItem': AdvancedGameCRUDAPI<{
+    resource: MagicItem,
+    resourceId: MagicItemID,
+    resourceIdName: 'magicItemId',
+    resourceName: 'magicItem',
+    resourcePostInput: {
+      title: string,
+    },
+    resourcePutInput: MagicItem
+  }>;
+|}
 */
 
-const magicItemResource/*: ResourceDescription<MagicItemAPI>*/ = createCRUDGameAPI(
-  '/games/magicItem', 'magicItem', castMagicItem, castMagicItemId
-);
+const magicItemResource/*: ResourceDescription<MagicItemAPI['/games/magicItem']>*/ = createAdvancedCRUDGameAPI({
+  path: '/games/magicItem',
+  resourceName: 'magicItem',
+  resourceIdName: 'magicItemId',
+  castResource: castMagicItem,
+  castPostResource: c.obj({ title: c.str }),
+  castPutResource: castMagicItem,
+});
 
 export const magicItemAPI = {
   '/games/magicItem': magicItemResource

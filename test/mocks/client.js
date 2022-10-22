@@ -1,24 +1,37 @@
 // @flow strict
 /*::
+import type {
+  AdvancedGameCRUDAPIDescription,
+  DeriveGameCRUDDescription,
+} from "../../models/api/game/meta";
+import type { MiniTheaterAPI } from "../../models/api/game/miniTheater";
 import type { LibraryData } from "../../models/game/library";
 import type { WildspaceClient, GameCRUDClient, UpdatesConnection } from "@astral-atlas/wildspace-client2";
 */
 
 import { createMockUpdateConnection } from "./client/connection";
+import { createMockMagicItem } from "./game";
+import { createMockMiniTheater } from "./miniTheater";
 import { randomHumanName } from "./random";
 
-export const createMockGameCRUDClient = ()/*: GameCRUDClient<any>*/ => {
+export const createMockGameCRUDClient = /*:: <T: AdvancedGameCRUDAPIDescription>*/(
+  getList/*: () => $ReadOnlyArray<T['resource']>*/,
+  onListChange/*: T['resource'][] => mixed*/,
+  getId/*: T['resource'] => string*/,
+  createListElement/*: T['resourcePostInput'] => T['resource']*/,
+  updateListElement/*: (T['resourcePutInput'], T['resource']) => T['resource']*/
+)/*: GameCRUDClient<T>*/ => {
   const read = async () => {
-    throw new Error(`Mock Function!`)
+    return getList();
   };
-  const create = async () => {
-    throw new Error(`Mock Function!`)
+  const create = async (_, t) => {
+    onListChange([...getList(), createListElement(t)])
   };
-  const update = async () => {
-    throw new Error(`Mock Function!`)
+  const update = async (_, id, t) => {
+    onListChange(getList().map(et => getId(et) === id ? updateListElement(t, et) : et))
   }
-  const destroy = async () => {
-    throw new Error(`Mock Function!`)
+  const destroy = async (_, id) => {
+    onListChange(getList().filter(et => getId(et) !== id))
   };
 
   return {
@@ -35,11 +48,24 @@ export const createMockWildspaceClient = (
 )/*: WildspaceClient*/ => {
   const game/*: any*/ = {
     miniTheater: {
-      ...createMockGameCRUDClient(),
+      ...createMockGameCRUDClient(
+        () => getLibrary().miniTheaters,
+        miniTheaters => onLibraryChange({ ...getLibrary(), miniTheaters }),
+        m => m.id,
+        post => ({ ...createMockMiniTheater(), ...post }),
+        (put, v) => ({ ...v, ...put,  })
+      ),
       async act() {
         throw new Error();
       }
-    }
+    },
+    magicItem: createMockGameCRUDClient(
+      () => getLibrary().magicItems,
+      magicItems => onLibraryChange({ ...getLibrary(), magicItems }),
+      m => m.id,
+      post => ({ ...createMockMagicItem(), ...post }),
+      (put, v) => ({  ...v, ...put,})
+    ),
   };
   const asset/*: any*/ = {
 

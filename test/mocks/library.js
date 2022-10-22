@@ -4,7 +4,11 @@ import type { LibraryData, AssetInfo } from "@astral-atlas/wildspace-models";
 */
 
 import { createMockImageAsset } from "./asset";
-import { createMockMonster, createMockMonsterActor } from "./game";
+import {
+  createMockMagicItem,
+  createMockMonster,
+  createMockMonsterActor,
+} from "./game";
 import { createMockCharacter } from "./game.js";
 import {
   createMockEditingLayer,
@@ -68,6 +72,7 @@ export const createMockLibraryData = ()/*: LibraryData*/ => {
       .map(c => c.initiativeIconAssetId ? createMockImageAsset(c.initiativeIconAssetId) : null)
       .filter(Boolean)
   ];
+  const magicItems = repeat(() => createMockMagicItem(), randomIntRange(10, 5))
 
 
   return {
@@ -83,6 +88,8 @@ export const createMockLibraryData = ()/*: LibraryData*/ => {
     scenes,
     locations,
     assets,
+    magicItems,
+    roomStates: [],
   }
 };
 

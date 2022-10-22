@@ -31,7 +31,10 @@ import { useLibraryMiniTheaterResources } from "../../miniTheater/resources/libr
 import { createDefaultRoomState, reduceRoomState } from "@astral-atlas/wildspace-models";
 import { useMiniTheaterController2 } from "../../miniTheater/useMiniTheaterController2";
 import { useMiniTheaterState } from "../../miniTheater/useMiniTheaterState";
-import { getContentRenderData } from "../../scene/content/sceneContentRenderData";
+import {
+  getContentRenderData,
+  getLibraryContentRenderData,
+} from "../../scene/content/sceneContentRenderData";
 import { SceneContentEditor } from "../../scene/SceneContentEditor";
 import { v4 } from "uuid";
 import { createAssetDownloadURLMap } from "../../asset/map";
@@ -234,11 +237,13 @@ const RoomWorkstation = ({ library, room, updates, assets, client, onContentUpda
   const controller = useMiniTheaterController2(miniTheaterId, resources, updates, true);
   const miniTheaterState = useMiniTheaterState(controller);
 
-  const sceneContentRenderData = getContentRenderData(
+  const sceneContentRenderData = getLibraryContentRenderData(
     content,
     miniTheaterState,
     controller,
     assets,
+    null,
+    library,
   );
 
   return h(SceneContentEditor, {
