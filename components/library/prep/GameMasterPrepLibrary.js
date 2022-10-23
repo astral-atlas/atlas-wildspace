@@ -149,6 +149,7 @@ export const GameMasterPrepLibrary/*: Component<GameMasterPrepLibraryProps>*/ = 
       title: 'Audio Tracks',
       component: h(AudioTrackAisle, {
         assets,
+        library: data,
         tracks: data.tracks,
         game,
         client,

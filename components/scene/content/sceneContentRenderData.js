@@ -48,7 +48,6 @@ export const getBackgroundRenderData = (
       switch (background.type) {
         case 'image':
           const imageAsset = assets.get(background.assetId);
-          console.log(background)
           if (!imageAsset)
             return null;
           return { type: 'image', imageURL: imageAsset.downloadURL };

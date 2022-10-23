@@ -38,6 +38,9 @@
   text-align: center;
   vertical-align: text-top;
 }
+.attributeValue {
+  text-transform: capitalize;
+}
 
 .content {
   position: relative;

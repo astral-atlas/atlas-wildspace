@@ -1,7 +1,7 @@
 // @flow strict
 /*::
 import type { Component } from "@lukekaalim/act";
-import type { AudioTrack, Game } from "@astral-atlas/wildspace-models";
+import type { AudioTrack, Game, LibraryData } from "@astral-atlas/wildspace-models";
 import type { AssetDownloadURLMap } from "../../asset/map";
 import type { WildspaceClient } from "@astral-atlas/wildspace-client2";
 import type { StagingTrack } from "../../audio/track";
@@ -34,6 +34,7 @@ export type AudioTrackAisleProps = {
   game: Game,
 
   tracks: $ReadOnlyArray<AudioTrack>,
+  library: LibraryData,
   client: WildspaceClient,
   assets: AssetDownloadURLMap,
 };
@@ -44,6 +45,7 @@ export const AudioTrackAisle/*: Component<AudioTrackAisleProps>*/ = ({
   client,
   game,
   assets,
+  library,
 }) => {
   const selection = useLibrarySelection()
 
@@ -123,10 +125,21 @@ export const AudioTrackAisle/*: Component<AudioTrackAisleProps>*/ = ({
     await client.audio.tracks.remove(game.id, track.id);
   }
 
+  const artists = tracks.map(t => t.artist);
+  const [filter, setFilter] = useState('');
+
   const [page, setPage] = useState(0);
   const tracksPerPage = 32;
   const pageCount = Math.ceil(tracks.length / tracksPerPage);
   const tracksInPage = tracks.slice(page * tracksPerPage, (page + 1) * tracksPerPage);
+  const filteredPlaylists = library.playlists.filter(p => p.title.toLowerCase().includes(filter.toLowerCase()));
+  const filteredTracks = tracks.filter(t => (
+    t.title.toLowerCase().includes(filter.toLowerCase()) ||
+    filteredPlaylists.some(p => p.trackIds.includes(t.id)) ||
+    t.artist?.includes(filter)
+  ))
+
+  const tracksDisplayed = filter ? filteredTracks : tracksInPage;
 
   const selectedTrackAsset = selectedTrack && assets.get(selectedTrack.trackAudioAssetId);
 
@@ -134,6 +147,7 @@ export const AudioTrackAisle/*: Component<AudioTrackAisleProps>*/ = ({
     floor: h(LibraryFloor, {}, [
       h(LibraryFloorHeader, {
         title: "Tracks",
+        filter: { text: filter, onFilterInput: setFilter }
       }, [
         h(EditorForm, {}, [
           h(FilesButtonEditor, {
@@ -182,7 +196,7 @@ export const AudioTrackAisle/*: Component<AudioTrackAisleProps>*/ = ({
           ]
         ])
       ],
-      h(LibraryShelf, { selection, title: 'Tracks', books: tracksInPage.map(track => ({
+      h(LibraryShelf, { selection, title: 'Tracks', books: tracksDisplayed.map(track => ({
         id: track.id,
         title: track.title,
       })) })
