@@ -5,12 +5,14 @@ import type { MiniTheaterRenderResources } from "../../miniTheater/useMiniTheate
 import type { Component } from "@lukekaalim/act";
 */
 import { FreeCamera } from "../../camera";
-import { RenderCanvas } from "../../three";
+import { RenderCanvas, useLoopController } from "../../three";
 import { ModelResourceObject } from "../ModelResourceObject";
 import { Overlay } from "./Overlay";
 import { h, useRef } from "@lukekaalim/act";
 import { useEditorData } from "./editorData";
 import { ModelPreview } from "./preview/ModelPreview";
+import { GridHelperGroup } from "../../../docs/src/controls/helpers";
+import { useElementKeyboard, useKeyboardTrack } from "../../keyboard";
 
 /*::
 export type ModelResourceEditorProps ={
@@ -21,13 +23,22 @@ export type ModelResourceEditorProps ={
 
 export const ModelResourceEditor/*: Component<ModelResourceEditorProps>*/ = ({ resources, modelId }) => {
   const cameraButtonRef = useRef();
-  const editorData = useEditorData(modelId, resources);
+  const editor = useEditorData(modelId, resources);
+
+  const loop = useLoopController();
+  const canvasRef = useRef();
+
+  const emitter = useElementKeyboard(cameraButtonRef);
+  const keys = useKeyboardTrack(emitter);
 
   return [
     h(Overlay, { cameraButtonRef }),
-    h(RenderCanvas, { }, [
-      h(FreeCamera, { surfaceRef: cameraButtonRef }),
-      h(ModelPreview),
+    h(RenderCanvas, {
+      renderSetupOverrides: { keyboardEmitter: emitter, canvasRef, loop },
+    }, [
+      h(FreeCamera, { surfaceRef: cameraButtonRef, keys }),
+      h(ModelPreview, { editor }),
+      h(GridHelperGroup, { size: 10, interval: 10 })
     ]),
   ]
 };

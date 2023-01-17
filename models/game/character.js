@@ -1,12 +1,12 @@
 // @flow strict
 import { c } from "@lukekaalim/cast";
 import { castAssetID } from "../asset.js";
-import { castJSONSerializedNode } from "../prose.js";
+import { castProseMirrorJSONNode } from "../prose.js";
 
 /*::
 import type { Cast } from "@lukekaalim/cast";
 import type { AssetID } from "../asset";
-import type { JSONNode } from "prosemirror-model";
+import type { ProseMirrorJSONNode } from "prosemirror-model";
 
 export type CharacterImageID = string;
 export type CharacterImage = {
@@ -42,7 +42,7 @@ export type NonPlayerCharacter = {
 
   name: string,
 
-  description: JSONNode,
+  description: ProseMirrorJSONNode,
   
   images: $ReadOnlyArray<CharacterImage>,
 
@@ -55,7 +55,7 @@ export const castNonPlayerCharacter/*: Cast<NonPlayerCharacter>*/ = c.obj({
   id: castNonPlayerCharacterID,
 
   name: c.str,
-  description: castJSONSerializedNode,
+  description: castProseMirrorJSONNode,
   
   images: c.arr(castCharacterImage),
 

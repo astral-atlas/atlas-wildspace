@@ -20,8 +20,8 @@ export default {
   },
   server: {
     port: 8080,
-    key: readFileSync('../localhost.key'),
-    cert: readFileSync('../localhost.cert')
+    //key: readFileSync('../localhost.key'),
+    //cert: readFileSync('../localhost.cert')
   },
   assetsInclude: [
     '**/*.glb',

@@ -1,9 +1,18 @@
 // @flow strict
+/*::
+import type { Ref, Component } from "@lukekaalim/act";
+*/
 
 import { h } from "@lukekaalim/act"
 
-export const Toolbar = () => {
+/*::
+export type ToolbarProps = {
+  cameraButtonRef: Ref<?HTMLElement>
+}
+*/
+
+export const Toolbar/*: Component<ToolbarProps>*/ = ({ cameraButtonRef }) => {
   return [
-    h('button', {}, 'Camera')
+    h('button', { ref: cameraButtonRef }, 'Camera')
   ]
 }
