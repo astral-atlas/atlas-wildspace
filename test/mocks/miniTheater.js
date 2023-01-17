@@ -17,6 +17,7 @@ import type {
 import type { ModelResourceID } from "../../models/game/resources";
 import type { CharacterID, Character, Monster, MiniTheater, MonsterActorID, Piece, BoardPosition } from "@astral-atlas/wildspace-models";
 */
+import { createMockGameResourceMeta } from "./game";
 import { randomGameName, randomObjectName, repeat } from "./random";
 import { randomIntRange } from "./random.js";
 import { Quaternion } from "three";
@@ -96,12 +97,10 @@ export const createMockTerrainProp = (
   floorShapes/*: ?MiniTheaterShape[]*/ = null,
   name/*: ?string*/ = null,
 )/*: TerrainProp*/ => ({
-  id: uuid(),
-  iconPreviewCameraModelPath: [],
-  modelPath,
-  modelResourceId,
-  name: name || randomObjectName(),
-  floorShapes: floorShapes || repeat(() => createMockShape(), 2),
+  ...createMockGameResourceMeta(),
+  iconCameraId: null,
+  nodes: [],
+  rootNodes: [],
 })
 export const createMockShape = ()/*: MiniTheaterShape*/ => ({
   type: 'box',

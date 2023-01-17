@@ -14,7 +14,7 @@ import type {
 } from "./references";
 import type { MiniTheaterID } from "./miniTheater";
 import type { MiniQuaternion, MiniVector } from "./miniTheater/primitives";
-import type { JSONNode } from "prosemirror-model";
+import type { ProseMirrorJSONNode } from "prosemirror-model";
 */
 import { c } from "@lukekaalim/cast";
 import { castRichText } from "./wiki/richText.js";
@@ -26,7 +26,7 @@ import {
 import { castAssetID } from "../asset.js";
 import { castMiniTheaterId } from "./miniTheater/miniTheater.js";
 import { castMiniQuaternion, castMiniVector } from "./miniTheater/primitives.js";
-import { castJSONSerializedNode } from "../prose.js";
+import { castProseMirrorJSONNode } from "../prose.js";
 import { castMagicItemResourceReference } from "./references.js";
 
 /*::
@@ -35,10 +35,10 @@ export type ExpositionSubject =
   | NPCResourceReference
   | MagicItemResourceReference
   | { type: 'none' }
-  | { type: 'title', title: string, subtitle: JSONNode }
-  | { type: 'caption', caption: JSONNode }
-  | { type: 'description', description: JSONNode }
-  | { type: 'annotation', annotation: JSONNode }
+  | { type: 'title', title: string, subtitle: ProseMirrorJSONNode }
+  | { type: 'caption', caption: ProseMirrorJSONNode }
+  | { type: 'description', description: ProseMirrorJSONNode }
+  | { type: 'annotation', annotation: ProseMirrorJSONNode }
 
 export type ExpositionBackground =
   | { type: 'mini-theater', miniTheaterId: MiniTheaterID, position: MiniVector, rotation: MiniQuaternion }
@@ -56,10 +56,10 @@ export const castExpositionSubject/*: Cast<ExpositionSubject>*/ = c.or('type', {
   'npc': castNPCResourceReference,
   'location': castLocationResourceReference,
   'magic-item': castMagicItemResourceReference,
-  'title': c.obj({ type: c.lit('title'), title: c.str, subtitle: castJSONSerializedNode }),
-  'caption': c.obj({ type: c.lit('caption'), caption: castJSONSerializedNode }),
-  'description': c.obj({ type: c.lit('description'), description: castJSONSerializedNode }),
-  'annotation': c.obj({ type: c.lit('annotation'), annotation: castJSONSerializedNode }),
+  'title': c.obj({ type: c.lit('title'), title: c.str, subtitle: castProseMirrorJSONNode }),
+  'caption': c.obj({ type: c.lit('caption'), caption: castProseMirrorJSONNode }),
+  'description': c.obj({ type: c.lit('description'), description: castProseMirrorJSONNode }),
+  'annotation': c.obj({ type: c.lit('annotation'), annotation: castProseMirrorJSONNode }),
   'none': c.obj({ type: c.lit('none') })
 })
 export const castExpositionBackground/*: Cast<ExpositionBackground>*/ = c.or('type', {

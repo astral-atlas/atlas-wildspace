@@ -3,6 +3,9 @@
 /*::
 import type { Cast } from '@lukekaalim/cast';
 import type { ResourceDescription, ConnectionDescription } from "@lukekaalim/net-description";
+import type { GameMetaResource, Version } from "../../game/meta";
+import type { GamePermission } from "../../game/permission";
+import type { TagID } from "../../game/tag";
 
 import type {
   GameID, Game,
@@ -14,6 +17,9 @@ import type {
 import { c } from '@lukekaalim/cast';
 import { castGameId } from '../../game.js';
 import { castAssetInfoDatabase } from "../../asset.js";
+import { castGameMetaResource } from "../../game/meta.js";
+import { castTagId } from "../../game/tag.js";
+import { castGamePermission } from "../../game/permission.js";
 
 /*::
 export type CRUDGameAPI<Resource, ResourceName: string, ResourceID: string> = {|
@@ -164,3 +170,6 @@ export const createAdvancedCRUDGameAPI = /*:: <T: AdvancedGameCRUDAPIDescription
     },
   }
 };
+
+
+export * from './meta/gameResource.js';

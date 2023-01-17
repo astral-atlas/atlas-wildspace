@@ -14,6 +14,10 @@ export type TransformControlEvents<T> = {
   change?: (object: T) => void,
   changeFinish?: (object: T) => void,
 }
+
+export type TransformOptions = {
+  rotationSnap: null | number,
+}
 */
 
 export const useTransformControls = /*:: <T: Object3D>*/(
@@ -21,7 +25,8 @@ export const useTransformControls = /*:: <T: Object3D>*/(
   mode/*: 'translate' | 'rotate' | 'scale'*/,
   enabled/*: boolean*/ = true,
   events/*: TransformControlEvents<T>*/ = {},
-  deps/*: mixed[]*/ = []
+  deps/*: mixed[]*/ = [],
+  options/*: TransformOptions*/ = { rotationSnap: Math.PI / 4 }
 )/*: ?TransformControls*/ => {
   const render = useContext(renderCanvasContext);
   const controls = useChildObject(render?.sceneRef, () => {
@@ -35,10 +40,12 @@ export const useTransformControls = /*:: <T: Object3D>*/(
 
     const controls = new TransformControls(camera, canvas);
     controls.setMode(mode);
-    controls.setRotationSnap(Math.PI / 4)
+    if (options.rotationSnap)
+      controls.setRotationSnap(options.rotationSnap)
+
     controls.attach(target)
     return controls;
-  }, [render, enabled]);
+  }, [render, enabled, options]);
 
   useEffect(() => {
     const { current: target } = targetRef;
@@ -50,7 +57,6 @@ export const useTransformControls = /*:: <T: Object3D>*/(
         change(target);
     }
     const onDragging = (e) => {
-      console.log(e.value);
       if (!e.value && changeFinish)
         changeFinish(target)
     }

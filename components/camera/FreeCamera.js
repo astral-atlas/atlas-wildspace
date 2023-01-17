@@ -64,10 +64,8 @@ export const FreeCamera/*: Component<FreeCameraProps>*/ = ({
   }, [surfaceRef])
 
   useEffect(() => {
-    console.log('change')
     const { current: surface } = surfaceRef || render.canvasRef;
     const { current: camera } = render.cameraRef;
-    console.log(surface, camera, controller)
     if (!surface || !camera || !controller)
       return;
     
@@ -77,7 +75,6 @@ export const FreeCamera/*: Component<FreeCameraProps>*/ = ({
       render.loop,
       keys || render.keyboard,
       (focus) => {
-        console.log(focus)
         if (!focus)
           onFreeCameraChange && onFreeCameraChange(camera)
       }

@@ -19,6 +19,8 @@ import type {
 import type { MiniTheaterRenderResources } from "../useMiniTheaterResources";
 import type { Component } from "@lukekaalim/act";
 import type { RaycastManager } from "../../raycast/manager";
+import type { ReadOnlyRef } from "../../three/useChildObject";
+import type { Object3D } from "three";
 
 export type MiniTheaterTerrainRendererProps = {
   miniTheaterState: MiniTheaterLocalState,
@@ -30,7 +32,7 @@ export type MiniTheaterTerrainRendererProps = {
 export const MiniTheaterTerrainRenderer/*: Component<MiniTheaterTerrainRendererProps>*/ = ({
   miniTheaterState,
   controller,
-  raycast
+  raycast,
 }) => {
   const { miniTheater, resources, selection, targetMode, terrainCursor } = miniTheaterState;
   const { terrain } = miniTheater;

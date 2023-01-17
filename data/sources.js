@@ -244,3 +244,6 @@ export const createSortRemappedExpiryTable = /*:: <PK, ASK, BSK, V: {}>*/(
     }
   };
 };
+
+
+export * from './sources/dynamoTable.js';

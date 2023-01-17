@@ -5,6 +5,11 @@ import type { WildspaceClient } from "@astral-atlas/wildspace-client2";
 import type { LibraryData, Monster, MonsterActor, Game, ModelResourceID } from "@astral-atlas/wildspace-models";
 import type { AssetDownloadURLMap } from "../../asset/map";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
+import type {
+  MiniTheaterAssetResources,
+  MiniTheaterRenderResources,
+} from "../../miniTheater/useMiniTheaterResources";
+import type { ThreeController } from "../../controllers";
 */
 
 import { h, useEffect, useMemo, useRef, useState } from "@lukekaalim/act";
@@ -39,6 +44,12 @@ import {
   TerrainPropEditor,
 } from "../../terrain/TerrainPropEditor";
 import { useAisleFocus } from "../useAisleFocus";
+import { createIconForTerrainProp } from "../../miniTheater/terrain/icon";
+import { LibraryDesk } from "../LibraryDesk";
+import { GameResourceEditor } from "../editor";
+import { castTerrainProp, createGamePageFromLibrary } from "@astral-atlas/wildspace-models";
+import { createTerrainPropObject } from "../../miniTheater/terrain/terrainProp";
+import { useLibraryMiniTheaterResources } from "../../miniTheater/resources/libraryResources";
 
 /*::
 export type MiniTheaterTerrainAisleProps = {
@@ -46,6 +57,8 @@ export type MiniTheaterTerrainAisleProps = {
   assets: AssetDownloadURLMap,
   client: WildspaceClient,
   library: LibraryData,
+
+  threeController: ThreeController,
 }
 */
 
@@ -53,34 +66,71 @@ export const MiniTheaterTerrainAisle/*: Component<MiniTheaterTerrainAisleProps>*
   game,
   assets,
   client,
-  library
+  library,
+  threeController,
 }) => {
+  const gamePage = createGamePageFromLibrary(library, game);
 
-  const [stagingTerrainProp, setStagingTerrainProp] = useState(null);
-  const selection = useLibrarySelection([], () => {
-    setStagingTerrainProp(null)
-  });
+  const miniTheaterResources = useLibraryMiniTheaterResources(library);
 
-  const modelResourceIds = useMemo(() => [...new Set(library.terrainProps.map(tp => tp.modelResourceId))]
-    .map(id => library.modelResources.find(r => r.id === id))
-    .filter(Boolean)
-  , [library.terrainProps]);
+  const selection = useLibrarySelection();
+  const { focus, toggleFocus } = useAisleFocus()
 
-  const [modelAssets, loader] = useModelResourceAssetMap(modelResourceIds, assets);
-  const modelAssetPathMap = useMemo(() => {
-    return new Map(library.terrainProps
-      .map((tp) => {
-        const asset = modelAssets.get(tp.modelResourceId);
-        if (!asset)
-          return null;
-        return [tp.id, {
-          asset: asset.asset,
-          path: tp.iconPreviewCameraModelPath,
-        }]
-      })
-      .filter(Boolean))
-  }, [library.terrainProps, modelAssets])
-  const modelIconMap = useModelResourceAssetsIconURL(modelAssetPathMap);
+  const [icons, setIcons] = useState(new Map());
+  useEffect(() => {
+    const iconResults = library.terrainProps.map(prop =>
+      createIconForTerrainProp(prop, miniTheaterResources, threeController));
+    Promise.all(iconResults
+        .map(i => i && i.promise)
+        .filter(Boolean))
+      .then(terrainPropIcons =>
+        setIcons(new Map(terrainPropIcons.map(i => [i.propId, i.url]))))
+
+    return () => {
+      for (const iconResult of iconResults)
+        iconResult && iconResult.cancel();
+    }
+  }, []);
+  const selectedProp = library.terrainProps.find(m => selection.selected.has(m.id));
+  const modelResourceObject = useMemo(() => {
+    return selectedProp && createTerrainPropObject(selectedProp, miniTheaterResources);
+  }, [selectedProp, miniTheaterResources]);
+  const onTerrainPropChange = async (nextProp) => {
+    if (!selectedProp)
+      return;
+    await client.game.miniTheater.terrainProps.update(game.id, selectedProp.id, nextProp)
+  };
+  
+  return [
+    h(LibraryAisle, {
+      floor: h(LibraryFloor, { selection }, [
+        h(LibraryShelf, { selection, books: library.terrainProps.map(prop => ({
+          id: prop.id,
+          title: prop.title,
+          coverURL: icons.get(prop.id) || null,
+        })) })
+      ]),
+      desk: h(LibraryDesk, { }, [
+        !!selectedProp && h(GameResourceEditor, {
+          client: client.game.miniTheater.terrainProps,
+          gamePage,
+          resources: library.terrainProps,
+          schema: { type: 'object', props: {} },
+          selection,
+          tagClient: client.game.tags,
+          castResource: castTerrainProp,
+        }),
+        h(EditorButton, { label: 'Toggle', onButtonClick: toggleFocus }),
+      ]),
+      wideDesk: true,
+      workstation: modelResourceObject && selectedProp && h(TerrainPropEditor, {
+        resources: miniTheaterResources,
+        terrainProp: selectedProp,
+        onTerrainPropChange
+      }),
+      focus
+    }),
+  ];
 
   const terrainPropBooks = library.terrainProps.map(t => ({
     title: t.name,
@@ -122,10 +172,8 @@ export const MiniTheaterTerrainAisle/*: Component<MiniTheaterTerrainAisleProps>*
   const [stagingCameraPath, setStagingCameraPath] = useState('Piece.Camera');
   const [stagingPath, setStagingPath] = useState('Piece');
 
-  const selectedTerrainProp = library.terrainProps.find(m => selection.selected.has(m.id))
   const modelAsset = selectedTerrainProp && modelAssets.get(selectedTerrainProp.modelResourceId);
 
-  const { focus, toggleFocus } = useAisleFocus()
 
   const floorHeader = [
     h(LibraryFloorHeader, { title: 'Terrain Pieces' }),

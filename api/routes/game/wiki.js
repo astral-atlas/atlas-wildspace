@@ -16,35 +16,44 @@ export const createWikiRoutes/*: RoutesConstructor*/ = (services) => {
     gameUpdateType: 'wikiDoc',
 
     async create({ game, grant }, { title }) {
+      const doc = emptyRootNode.toJSON();
       const document = {
         gameId: game.id,
         id: uuid(),
         title,
+        version: uuid(),
 
-        rootNode: emptyRootNode.toJSON(),
-        version: 0,
-        lastUpdatedBy: grant.identity,
+        content: doc,
+        visibility: { type: 'game-master-in-game' },
+        history: [{ type: 'doc', doc, version: uuid() }],
+        tags: []
       };
-      await services.data.wiki.documents.set(game.id, document.id, document)
+      await services.data.wiki.documents2.set2({
+        key: { partition: game.id, sort: document.id },
+        item: document,
+      })
       return document;
     },
     async read({ game }) {
-      const { result: wikiDocs } = await services.data.wiki.documents.query(game.id)
-      return wikiDocs;
+      const { results: wikiDocs } = await services.data.wiki.documents2.query(game.id)
+      return wikiDocs.map(r => r.result);
     },
     async update({ game }, wikiDocId, { title }) {
-      const { result: wikiDoc } = await services.data.wiki.documents.get(game.id, wikiDocId)
+      const { result: wikiDoc } = await services.data.wiki.documents2.get({ partition: game.id, sort: wikiDocId });
       if (!wikiDoc)
         throw new Error();
       const nextWikiDoc = {
         ...wikiDoc,
         title
       };
-      await services.data.wiki.documents.set(game.id, wikiDocId, nextWikiDoc)
+      await services.data.wiki.documents2.set2({
+        key: { partition: game.id, sort: wikiDoc.id },
+        item: nextWikiDoc,
+      })
       return nextWikiDoc;
     },
     async destroy({ game }, wikiDocId) {
-      await services.data.wiki.documents.set(game.id, wikiDocId, null)
+      await services.data.wiki.documents2.remove({ partition: game.id, sort: wikiDocId })
     },
   });
 

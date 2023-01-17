@@ -15,7 +15,8 @@ import {
   castMiniTheaterAction,
   castMiniTheaterEvent,
   castTerrainProp,
-  castModelResource
+  castModelResource,
+  castTag
 } from "@astral-atlas/wildspace-models";
 
 /*::
@@ -56,6 +57,7 @@ export const createTableWildspaceGameData = (sources/*: WildspaceDataSources*/)/
     terrainProps: sources.createDynamoDBTable('mini_theater_terrain_props', castTerrainProp),
   }
   const gameDataEvent = sources.createChannel('game_data', c.str);
+  const tags = sources.createDynamoDBTable('tags', castTag);
 
   return {
     locations,
@@ -70,5 +72,6 @@ export const createTableWildspaceGameData = (sources/*: WildspaceDataSources*/)/
     resources,
     miniTheater,
     gameDataEvent,
+    tags,
   }
 }

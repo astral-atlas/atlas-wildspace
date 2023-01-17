@@ -33,7 +33,7 @@ export type CubicBezier2DPoint = {
 
 export const useAnimatedVector2 = (
   vector/*: [number, number]*/,
-  initial/*: [number, number]*/ = [0, 0],
+  initial/*: ?[number, number]*/ = [0, 0],
   impulse/*: number*/ = 0,
   duration/*: number*/ = 1000,
 )/*: CubicBezier2DAnimation*/ => {

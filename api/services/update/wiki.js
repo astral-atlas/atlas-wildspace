@@ -7,7 +7,7 @@ import type {
   
   WikiDocID,
   WikiDocEvent,
-  WikiDocAction, WikiDocFocusAction, WikiDocUpdate,
+  WikiDocAction, WikiDocFocusAction,
   WikiDocChannel
 } from "@astral-atlas/wildspace-models";
 import type { ServerUpdateChannel } from "./meta";
@@ -21,7 +21,7 @@ export type WikiService = {
 };
 */
 
-import { applyWikiDocUpdate } from "@astral-atlas/wildspace-models";
+import { applyRichTextUpdate } from "@astral-atlas/wildspace-models";
 
 export const createServerWikiDocChannel = (
   data/*: WildspaceData*/,
@@ -55,7 +55,7 @@ export const createServerWikiDocChannel = (
   const onUpdate = async (wikiDocId, clientId, steps, version) => {
     const update = { version, steps, userId, clientId };
     try {
-      await data.wiki.documents.transaction(game.id, wikiDocId, wikiDoc => applyWikiDocUpdate(wikiDoc, update), 4);
+      await data.wiki.documents.transaction(game.id, wikiDocId, wikiDoc => applyRichTextUpdate(wikiDoc.content, update), 4);
       data.wiki.documentEvents.publish(wikiDocId, { type: 'update', docId: wikiDocId, update });
     } catch (error) {
       // this is expected

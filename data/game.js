@@ -19,6 +19,8 @@ import type {
 
   TerrainProp,
   TerrainPropID,
+
+  TagID, Tag,
 } from "@astral-atlas/wildspace-models";
 
 import type { Transactable } from "./sources/table2";
@@ -52,5 +54,6 @@ export type WildspaceGameData = {
   },
 
   gameDataEvent: Channel<GameID, string>,
+  tags: DynamoDBTable<GameID, TagID, Tag>,
 };
 */

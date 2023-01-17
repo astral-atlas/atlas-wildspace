@@ -2,12 +2,11 @@
 /*::
 import type { Cast } from "@lukekaalim/cast";
 
-import type { WikiDoc, WikiDocID, WikiDocUpdate } from "./doc";
+import type { WikiDoc, WikiDocID } from "./doc";
 import type { WikiDocFocus, WikiDocFocusAction } from "./focus";
 */
 
 import { c } from "@lukekaalim/cast";
-import { castWikiDoc, castWikiDocUpdate, castWikiDocId } from "./doc.js";
 import { castWikiDocFocus, castWikiDocFocusAction } from "./focus.js";
 
 /*::

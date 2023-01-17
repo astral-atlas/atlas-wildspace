@@ -268,3 +268,5 @@ export const EditorCheckboxInput/*: Component<EditorCheckboxInputProps>*/ = ({
     ])
   ]
 }
+
+export { styles as editorStyles };

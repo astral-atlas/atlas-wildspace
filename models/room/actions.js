@@ -9,7 +9,7 @@ import type { UserID } from "@astral-atlas/sesame-models";
 import type { AudioPlaylistID } from "../audio";
 import type { GameConnectionID } from "../game/connection";
 import type { Scene, SceneContent } from "../game/scene";
-import type { JSONNode } from "prosemirror-model";
+import type { ProseMirrorJSONNode } from "prosemirror-model";
 
 export type RoomStateActionMetadata = {|
   time: number,
@@ -21,7 +21,7 @@ export type RoomStateAction = {|
     | {| type: 'change-scene-content', content: SceneContent |}
     | {| type: 'load-scene', scene: Scene |}
     // Message actions
-    | {| type: 'send-message', user: UserID, message: JSONNode |}
+    | {| type: 'send-message', user: UserID, message: ProseMirrorJSONNode |}
     // Audio actions
     | {| type: 'change-playlist', playlist: AudioPlaylistID |}
     | {| type: 'ajust-volume', volume: number |}

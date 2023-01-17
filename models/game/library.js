@@ -6,14 +6,17 @@ import type { Character, Monster } from "../character";
 import type { MonsterActor } from "../monster/monsterActor";
 import type { Room, RoomID } from "../room/room";
 import type { RoomState } from "../room/state";
+import type { NonPlayerCharacter } from "./character";
 import type { Exposition } from "./exposition";
 import type { Location } from "./location";
 import type { MagicItem } from "./magicItem";
 import type { MiniTheater } from "./miniTheater";
 import type { TerrainProp } from "./miniTheater/terrain";
-import type { ModelResource } from "./resources";
+import type { ModelResource } from "./resources/index";
+import type { ModelResourcePart } from "./resources/model";
 import type { Scene } from "./scene";
-import type { Cast } from "@lukekaalim/cast/main";
+import type { Tag } from "./tag";
+import type { Cast } from "@lukekaalim/cast";
 */
 
 import { castAssetInfo } from "../asset.js";
@@ -23,6 +26,7 @@ import { castCharacter } from "../character.js";
 import { castMonsterActor } from "../monster/monsterActor.js";
 import { castRoom, castRoomId } from "../room/room.js";
 import { castRoomState } from "../room/state.js";
+import { castNonPlayerCharacter } from "./character.js";
 import { castExposition } from "./exposition.js";
 import { castLocation } from "./location.js";
 import { castMagicItem } from "./magicItem.js";
@@ -30,17 +34,23 @@ import {
   castMiniTheater,
 } from "./miniTheater/index.js";
 import { castTerrainProp } from "./miniTheater/terrain.js";
-import { castModelResource } from "./resources.js";
+import { castModelResource } from "./resources/index.js";
+import { castModelResourcePart } from "./resources/model.js";
 import { castScene } from "./scene.js";
+import { castTag } from "./tag.js";
 import { c } from "@lukekaalim/cast";
 
 /*::
 export type LibraryData = {|
+  tags: $ReadOnlyArray<Tag>,
+
   rooms: $ReadOnlyArray<Room>,
   roomStates: $ReadOnlyArray<RoomState>,
   modelResources: $ReadOnlyArray<ModelResource>,
+  modelResourceParts: $ReadOnlyArray<ModelResourcePart>,
 
   characters: $ReadOnlyArray<Character>,
+  npcs: $ReadOnlyArray<NonPlayerCharacter>,
   monsters: $ReadOnlyArray<Monster>,
 
   monsterActors: $ReadOnlyArray<MonsterActor>,
@@ -57,13 +67,27 @@ export type LibraryData = {|
 
   assets: $ReadOnlyArray<AssetInfo>,
 |};
+
+export type LibraryTypeKey = $Keys<LibraryData>;
+
+export type OfLibraryType<+T: LibraryTypeKey> = $Call<<X>(x: $ReadOnlyArray<X>) => X, LibraryData[T]>;
+
+export type LibraryTypeUpdate<+T: LibraryTypeKey> = {
+  +type: T,
+  +update: $ReadOnlyArray<OfLibraryType<T>>,
+}
 */
+
+
 export const castLibraryData/*: Cast<LibraryData>*/ = c.obj({
+  tags: c.arr(castTag),
   rooms: c.arr(castRoom),
   roomStates: c.arr(castRoomState),
   modelResources: c.arr(castModelResource),
+  modelResourceParts: c.arr(castModelResourcePart),
   characters: c.arr(castCharacter),
   monsters: c.arr(castMonster),
+  npcs: c.arr(castNonPlayerCharacter),
 
   monsterActors: c.arr(castMonsterActor),
 

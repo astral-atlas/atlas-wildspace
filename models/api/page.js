@@ -34,7 +34,6 @@ export type GamePageAPI = {|
 |};
 */
 
-
 const gamePage/*: ResourceDescription<GamePageResource>*/ = {
   path: '/pages/game',
   GET: {

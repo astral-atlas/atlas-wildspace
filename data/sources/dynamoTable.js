@@ -17,6 +17,13 @@ export type DynamoDBTable<PK, SK, Item> = {
     Promise<void>,
   set: (key: CompositeKey<PK, SK>, prevVersion: mixed, nextVersion: mixed, expiresBy: null | number, item: Item) =>
     Promise<void>,
+  set2: ({
+    key: CompositeKey<PK, SK>,
+    item: Item,
+    version?: { prev: mixed, next: mixed },
+    expiresBy?: null | number,
+  }) =>
+    Promise<void>,
   query: (partitionKey: PK) =>
     Promise<{ results: $ReadOnlyArray<{ result: Item, version: mixed, sortKey: SK, expiresBy: null | number }> }>,
 };
@@ -81,6 +88,9 @@ export const createLiveDynamoDBTable = /*:: <I>*/(
       ...versionConditionProps,
     });
   };
+  const set2 = async ({ key, expiresBy, item, version }) => {
+
+  }
   const query = async (partitionKey) => {
     const { Items } = await dynamodb.query({
       TableName: tableName,
@@ -115,7 +125,7 @@ export const createLiveDynamoDBTable = /*:: <I>*/(
     return { results };
   }
 
-  return { get, remove, set, query };
+  return { get, remove, set, set2, query };
 }
 
 export const createMemoryDynamoDBTable = ()/*: DynamoDBTable<any, any, any>*/ => {
@@ -138,6 +148,14 @@ export const createNamespacedDynamoDBTable = /*:: <PK, SKA, SKB, Item>*/(
     },
     set(key, prevVersion, nextVersion, expiresBy, item) {
       return table.set(transformKey(key), prevVersion, nextVersion, expiresBy, item);
+    },
+    set2({ expiresBy, item, key, version }) {
+      return table.set2({
+        key: transformKey(key),
+        version,
+        expiresBy,
+        item
+      });
     },
     remove(key) {
       return table.remove(transformKey(key));

@@ -22,26 +22,4 @@ export const castTextureResource/*: Cast<TextureResource>*/ = c.obj({
   assetId: castAssetID,
 })
 
-/*::
-export type ModelResourcePath = $ReadOnlyArray<string>;
-
-export type ModelResourceID = string;
-export type ModelResource = {
-  id: ModelResourceID,
-  name: string,
-  assetId: AssetID,
-  format: 'gltf',
-
-  previewCameraPath: ?ModelResourcePath,
-}
-*/
-export const castModelResourceId/*: Cast<ModelResourceID>*/ = c.str;
-export const castModelResourcePath/*: Cast<ModelResourcePath>*/ = c.arr(c.str);
-export const castModelResource/*: Cast<ModelResource>*/ = c.obj({
-  id: castModelResourceId,
-  name: c.str,
-  assetId: castAssetID,
-  format: c.enums(['gltf']),
-
-  previewCameraPath: c.maybe(castModelResourcePath),
-})
+export * from './resources/index.js'

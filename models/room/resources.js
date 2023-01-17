@@ -6,7 +6,8 @@ import { castNonPlayerCharacter } from "../game/character.js";
 import { castAudioTrack, castAudioPlaylist } from "../audio.js";
 import { castAssetInfo } from "../asset.js";
 import { castTerrainProp } from "../game/miniTheater/terrain.js";
-import { castModelResource } from "../game/resources.js";
+import { castModelResource } from "../game/resources/index.js";
+import { castModelResourcePart } from "../game/resources/model.js";
 
 /*::
 import type { Cast } from "@lukekaalim/cast";
@@ -16,14 +17,16 @@ import type { Location } from "../game/location";
 import type { AudioPlaylist, AudioTrack } from "../audio";
 import type { AssetID, AssetInfo } from "../asset";
 import type { TerrainProp } from "../game/miniTheater/terrain";
-import type { ModelResource } from "../game/resources";
+import type { ModelResource } from "../game/resources/index.js";
 import type { RoomState } from "./state";
+import type { ModelResourcePart } from "../game/resources/model";
 
 export type RoomResources = {
   locations:      $ReadOnlyArray<Location>,
   npcs:           $ReadOnlyArray<NonPlayerCharacter>,
   terrainProps:   $ReadOnlyArray<TerrainProp>,
   modelResources: $ReadOnlyArray<ModelResource>,
+  modelResourceParts: $ReadOnlyArray<ModelResourcePart>,
   audioTracks:    $ReadOnlyArray<AudioTrack>,
   audioPlaylists: $ReadOnlyArray<AudioPlaylist>,
 };
@@ -34,6 +37,7 @@ export const castRoomResources/*: Cast<RoomResources>*/ = c.obj({
   npcs:           c.arr(castNonPlayerCharacter),
   terrainProps:   c.arr(castTerrainProp),
   modelResources: c.arr(castModelResource),
+  modelResourceParts: c.arr(castModelResourcePart),
   audioTracks:    c.arr(castAudioTrack),
   audioPlaylists: c.arr(castAudioPlaylist),
 });
@@ -57,6 +61,7 @@ export const mergeRoomResources = (a/*: RoomResources*/, b/*: RoomResources*/)/*
   audioPlaylists: merge(a.audioPlaylists, b.audioPlaylists, p => p.id),
   terrainProps:   merge(a.terrainProps,   b.terrainProps,   t => t.id),
   modelResources: merge(a.modelResources, b.modelResources, m => m.id),
+  modelResourceParts: merge(a.modelResourceParts, b.modelResourceParts, p => p.id),
 })
 
 export const emptyRoomResources/*: RoomResources*/ = {
@@ -66,6 +71,7 @@ export const emptyRoomResources/*: RoomResources*/ = {
   audioPlaylists: [],
   terrainProps:   [],
   modelResources: [],
+  modelResourceParts: [],
 };
 
 export const getRoomResourcesAssetIds = (

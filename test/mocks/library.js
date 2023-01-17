@@ -8,6 +8,7 @@ import {
   createMockMagicItem,
   createMockMonster,
   createMockMonsterActor,
+  createMockTag,
 } from "./game";
 import { createMockCharacter } from "./game.js";
 import {
@@ -22,6 +23,7 @@ import { randomElement, randomIntRange, randomSlice } from "./random";
 import { repeat } from "./random.js";
 
 export const createMockLibraryData = ()/*: LibraryData*/ => {
+  const tags = repeat(() => createMockTag(), randomIntRange(10, 8));
   const characters = repeat(createMockCharacter, randomIntRange(5, 2));
   const monsters = repeat(() => createMockMonster(), randomIntRange(5, 2));
 
@@ -29,7 +31,8 @@ export const createMockLibraryData = ()/*: LibraryData*/ => {
     () => createMockMonsterActor(randomElement(monsters)),
     randomIntRange(10, 2)
   )
-  const terrainProps = repeat(() => createMockTerrainProp(), 10);
+  const terrainProps = repeat(() => createMockTerrainProp(), 10)
+    .map(r => ({ ...r, tags: randomSlice(tags.map(t => t.id), 1) }));
 
   const miniTheaters = repeat(() => {
     const monsterLayer = createMockEditingLayer([{ type: 'any-monsters' }]);
@@ -64,6 +67,9 @@ export const createMockLibraryData = ()/*: LibraryData*/ => {
   const rooms = [
 
   ]
+  const modelResourceParts = [
+
+  ];
   const assets = [
     ...monsters
       .map(m => m.initiativeIconAssetId ? createMockImageAsset(m.initiativeIconAssetId) : null)
@@ -74,11 +80,11 @@ export const createMockLibraryData = ()/*: LibraryData*/ => {
   ];
   const magicItems = repeat(() => createMockMagicItem(), randomIntRange(10, 5))
 
-
   return {
     characters,
     monsters,
     modelResources,
+    modelResourceParts,
     playlists,
     rooms,
     monsterActors,
@@ -90,6 +96,8 @@ export const createMockLibraryData = ()/*: LibraryData*/ => {
     assets,
     magicItems,
     roomStates: [],
+    tags,
+    npcs: [],
   }
 };
 

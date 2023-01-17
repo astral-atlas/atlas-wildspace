@@ -9,3 +9,4 @@ export * from './LibraryFloor.js';
 export * from './librarySelection.js';
 
 export * from './prep/PrepLibrary.js';
+export* from './editor/index.js';

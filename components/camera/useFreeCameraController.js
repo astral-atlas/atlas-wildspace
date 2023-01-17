@@ -165,8 +165,9 @@ export const subscribeFreeCameraUpdates = (
 )/*: { unsubscribe: () => void }*/ => {
   let moveCam = false;
   const onMouseMove = (event/*: MouseEvent*/) => {
-    if (moveCam)
+    if (moveCam) {
       controller.moveCursor(event.movementX, event.movementY);
+    }
   }
   const onClick = () => {
     if (!moveCam) {

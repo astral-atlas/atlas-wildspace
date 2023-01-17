@@ -10,6 +10,7 @@ import type { WikiDoc } from "./wiki/doc";
 import type { Cast } from "@lukekaalim/cast";
 import type { UserID } from "@astral-atlas/sesame-models/src/user";
 import type { GameConnectionID } from "./connection";
+import type { Tag } from "./tag";
 import type { LibraryData } from "./library";
 */
 import { c } from "@lukekaalim/cast";
@@ -23,9 +24,11 @@ import { castMagicItem } from "./magicItem.js";
 import { castMonsterActorMask, castMonsterActorId, createMaskForMonsterActor } from "../monster/monsterActor.js";
 import { castRoomId } from "../room/room.js";
 import { castPlayer } from "./game.js";
+import { castTag } from "./tag.js";
 /*::
 export type GamePage = {
   game: Game,
+  tags: $ReadOnlyArray<Tag>,
 
   players: $ReadOnlyArray<Player>,
   characters: $ReadOnlyArray<Character>,
@@ -46,6 +49,7 @@ export type GamePage = {
 
 export const castGamePage/*: Cast<GamePage>*/ = c.obj({
   game: castGame,
+  tags: c.arr(castTag),
 
   players: c.arr(castPlayer),
   characters: c.arr(castCharacter),
@@ -118,6 +122,7 @@ export const createGamePageFromLibrary = (
   game/*: Game*/,
 )/*: GamePage*/ => {
   return {
+    tags: library.tags,
     game,
   
     players: [],

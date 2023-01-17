@@ -11,6 +11,7 @@ export const createTableWikiData = (sources/*: WildspaceDataSources*/)/*: WikiDa
     ...sources.createTransactable('wiki_documents', castWikiDoc, 'version')
   };
   const documentEvents = sources.createChannel('wiki_document_events', castWikiDocEvent);
+  const documents2 = sources.createDynamoDBTable('wiki_documents_2', castWikiDoc);
   
   const documentFocus = sources.createCompositeTable('wiki_focus', castWikiDocFocus)
   const documentConnections = sources.createCompositeTable('wiki_connections', castWikiDocConnection)
@@ -20,5 +21,6 @@ export const createTableWikiData = (sources/*: WildspaceDataSources*/)/*: WikiDa
     documentEvents,
     documentConnections,
     documentFocus,
+    documents2,
   };
 }

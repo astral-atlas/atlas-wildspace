@@ -79,7 +79,7 @@ export const GameMasterPrepLibrary/*: Component<GameMasterPrepLibraryProps>*/ = 
       component: h(MiniTheaterTerrainAisle, {
         library: data,
         assets,
-        client, game, userId
+        client, game, userId,
       })
     },
     {

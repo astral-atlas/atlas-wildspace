@@ -1,20 +1,27 @@
 // @flow strict
 /*::
 import type { Cast } from "@lukekaalim/cast";
-import type { JSONNode } from "prosemirror-model";
+import type { ProseMirrorJSONNode } from "prosemirror-model";
+import type { ProseMirrorJSONStep } from "prosemirror-transform";
 */
 import { c } from "@lukekaalim/cast";
-import { proseNodeJSONSerializer, proseStepJSONSerializer, castJSONSerializedNode } from "../../prose.js";
+import {
+  proseNodeJSONSerializer,
+  proseStepJSONSerializer,
+  
+  castProseMirrorJSONNode,
+  castProseMirrorJSONStep
+} from "../../prose.js";
 
 /*::
 export type RichTextVersion = number;
 export type RichText = {
-  rootNode: JSONNode,
+  rootNode: ProseMirrorJSONNode,
   version: RichTextVersion,
 };
 */
 export const castRichText/*: Cast<RichText>*/ = c.obj({
-  rootNode: castJSONSerializedNode,
+  rootNode: castProseMirrorJSONNode,
   version: c.num,
 });
 
@@ -22,7 +29,7 @@ export const castRichText/*: Cast<RichText>*/ = c.obj({
 export type RichTextUpdate = {
   clientId: number,
   version: RichTextVersion,
-  steps: $ReadOnlyArray<mixed>,
+  steps: $ReadOnlyArray<ProseMirrorJSONStep>,
 };
 */
 
@@ -30,7 +37,7 @@ export const castRichTextUpdate/*: Cast<RichTextUpdate>*/ = c.obj({
   clientId: c.num,
 
   version: c.num,
-  steps: c.arr(s => s),
+  steps: c.arr(castProseMirrorJSONStep),
 })
 
 export const applyRichTextUpdate = (richText/*: RichText*/, richTextUpdate/*: RichTextUpdate*/)/*: RichText*/ => {

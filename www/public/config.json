@@ -16,8 +16,8 @@
   },
   "api": {
     "wildspace": {
-      "httpOrigin": "http://localhost:5567",
-      "wsOrigin": "ws://localhost:5567"
+      "httpOrigin": "https://api.wildspace.astral-atlas.com",
+      "wsOrigin": "wss://api.wildspace.astral-atlas.com"
     },
     "sesame": {
       "httpOrigin": "https://api.sesame.astral-atlas.com"

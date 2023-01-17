@@ -9,10 +9,10 @@ import type { Cast } from "@lukekaalim/cast";
 */
 import { c } from "@lukekaalim/cast";
 
-import { applyWikiDocUpdate } from "./doc.js";
 import { castWikiDoc } from "./doc.js";
 import { castWikiDocFocus } from "./focus.js";
 import { castWikiDocConnection } from "./connection.js";
+import { applyRichTextUpdate } from "./richText.js";
 
 /*::
 export type WikiDocState = {
@@ -22,7 +22,10 @@ export type WikiDocState = {
 }
 */
 
-export const reduceWikiDocStateEvent = (state/*: WikiDocState*/, event/*: WikiDocEvent*/)/*: WikiDocState*/ => {
+export const reduceWikiDocStateEvent = (
+  state/*: WikiDocState*/,
+  event/*: WikiDocEvent*/,
+)/*: WikiDocState*/ => {
   switch (event.type) {
     case 'connect':
       return {
@@ -36,7 +39,7 @@ export const reduceWikiDocStateEvent = (state/*: WikiDocState*/, event/*: WikiDo
         focus: state.focus.filter(f => f.connectionId === event.connectionId)
       };
     case 'update':
-      return { ...state, doc: applyWikiDocUpdate(state.doc, event.update) };
+      return { ...state, doc: { ...state.doc, content: applyRichTextUpdate(state.doc.content, event.update)} };
     case 'focus':
       return { ...state, focus: [...new Map([...state.focus, event.focus].map(f => [f.connectionId, f])).values()] }
     default:

@@ -7,8 +7,11 @@ import { EditorFormDemo, FileEditorDemo, TextEditorDemo } from "./demos";
 
 import editorsText from './index.md?raw';
 import richText from './richText.md?raw';
+import modelResourceEditorText from './modelResourceEditor.md?raw';
+
 import { ListEditorDemo } from "./list";
 import { ProseMirrorDemo } from "./richTextDemo.js";
+import { ModelResourceEditorDemo } from "./modelResourceEditor";
 
 const Demo = ({ node }) => {
   switch (node.attributes.name) {
@@ -22,6 +25,8 @@ const Demo = ({ node }) => {
       return h(ListEditorDemo);
     case 'prose_mirror':
       return h(ProseMirrorDemo);
+    case 'model_resource_editor':
+      return h(ModelResourceEditorDemo);
     default:
       throw new Error();
   }
@@ -30,6 +35,11 @@ const Demo = ({ node }) => {
 const directives = {
   demo: Demo,
 }
+
+const modelEditorPage/*: Page*/ = {
+  content: h(Document, {}, h(Markdown, { text: modelResourceEditorText, directives })),
+  link: { children: [], name: 'Model Resource Editor', href: '/editors/model-resource' }
+};
 
 export const richTextEditor/*: Page*/ = {
   content: h(Document, {}, h(Markdown, { text: richText, directives })),
@@ -41,6 +51,7 @@ export const editorsPage/*: Page*/ = {
   content: h(Document, {}, h(Markdown, { text: editorsText, directives })),
   link: { children: [
     richTextEditor.link,
+    modelEditorPage.link,
   ], name: 'Editors', href: '/editors' }
 }
 
@@ -48,4 +59,5 @@ export const editorsPage/*: Page*/ = {
 export const editorsPages/*: Page[]*/ = [
   editorsPage,
   richTextEditor,
+  modelEditorPage,
 ];

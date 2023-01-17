@@ -3,7 +3,7 @@
 import type { Component } from '@lukekaalim/act';
 */
 import { requestLinkGrant } from "@astral-atlas/sesame-components";
-import { GameOverlay, HompepageLoginPrompt, rootStyles, useAppSetup, useFadeTransition, useWildspaceController } from "@astral-atlas/wildspace-components";
+import { rootStyles, useAppSetup, useFadeTransition, useWildspaceController } from "@astral-atlas/wildspace-components";
 
 import { h, useRef } from "@lukekaalim/act";
 import { WildspaceGamePage } from "./game/GamePage";

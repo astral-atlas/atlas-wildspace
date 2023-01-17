@@ -19,6 +19,7 @@ import type { ScenesAPI } from "./game/scene";
 import type { LibraryAPI } from './game/library';
 import type { GameRoomsAPI } from "./game/rooms";
 import type { GameResourceAPI } from "./game/resource";
+import type { TagAPI } from "./game/tag";
 */
 
 import {
@@ -45,6 +46,7 @@ import { scenesAPI } from "./game/scene.js";
 import { libraryAPI } from "./game/library.js";
 import { gamesRoomsAPI } from './game/rooms.js';
 import { resourceAPI } from "./game/resource.js";
+import { tagResourceSpec, tagsResourceSpecs } from './game/tag.js';
 
 /*::
 export type GameAPI = {
@@ -93,6 +95,7 @@ export type GameAPI = {
   ...LibraryAPI,
   ...GameRoomsAPI,
   ...GameResourceAPI,
+  ...TagAPI,
 };
 */
 
@@ -155,6 +158,9 @@ export const gameAPI = {
   '/games/all': allGamesResourceDescription,
   '/games/updates': gameStateConnectionDescription,
 }
+export const gameResourceSpec = {
+  ...tagsResourceSpecs,
+};
 export * from './game/characters.js';
 export * from './game/players.js';
 export * from './game/monsters.js';

@@ -1,0 +1,47 @@
+.tagDropdown {
+  font-size: 12px;
+  border: 1px solid rgb(88, 88, 88);
+  border-radius: 4px;
+}
+
+.tagList {
+  margin: 0;
+  padding: 0;
+}
+.tagList > li {
+  display: inline-block;
+}
+
+.tagSticker {
+  background-color: var(--tag-color, rgb(204, 204, 255));
+  display: inline-block;
+  border-radius: 4px;
+  padding: 4px;
+  margin: 4px;
+}
+
+.tagTitle {
+  mix-blend-mode: multiply;
+}
+
+.tagSticker.selected {
+  
+}
+.tagInfo {
+  margin: 8px
+}
+.createTagButton {
+  margin: 8px;
+  display: block;
+  width: calc(100% - 16px);
+}
+
+.tagListContainer {
+  max-height: 7.5rem;
+  overflow-y: auto;
+  margin: 8px;
+}
+
+.addTagsSummary {
+  margin: 8px;
+}

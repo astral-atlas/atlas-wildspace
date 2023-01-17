@@ -10,13 +10,13 @@ import { v4 } from "uuid";
 
 /*::
 import type { Component } from "@lukekaalim/act";
-import type { JSONNode } from "prosemirror-model";
+import type { ProseMirrorJSONNode } from "prosemirror-model";
 
 export type ExpositionDescriptionProps = {
-  description: JSONNode,
+  description: ProseMirrorJSONNode,
   version: number,
   editable?: boolean,
-  onDescriptionUpdate?: (node: JSONNode, version: number) => mixed,
+  onDescriptionUpdate?: (node: ProseMirrorJSONNode, version: number) => mixed,
 }
 */
 

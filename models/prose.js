@@ -1,7 +1,8 @@
 // @flow strict
 /*::
 import type { Cast } from "@lukekaalim/cast";
-import type { NodeSpec, JSONNode } from "prosemirror-model";
+import type { NodeSpec, ProseMirrorJSONNode } from "prosemirror-model";
+import type { ProseMirrorJSONStep } from "prosemirror-transform";
 */
 
 import { Node, Schema } from "prosemirror-model";
@@ -39,13 +40,14 @@ export const emptyRootNode/*: Node*/ = proseSchema.node("doc", null, [
   proseSchema.node("paragraph")
 ]);
 
-export const castJSONSerializedNode/*: Cast<JSONNode>*/ = v => v;
+export const castProseMirrorJSONNode/*: Cast<ProseMirrorJSONNode>*/ = v => v;
+export const castProseMirrorJSONStep/*: Cast<ProseMirrorJSONStep>*/ = v => v;
 
 export const proseNodeJSONSerializer = {
-  serialize(node/*: Node*/)/*: JSONNode*/ {
+  serialize(node/*: Node*/)/*: ProseMirrorJSONNode*/ {
     return node.toJSON();
   },
-  deserialize(serializedNode/*: JSONNode*/)/*: Node*/ {
+  deserialize(serializedNode/*: ProseMirrorJSONNode*/)/*: Node*/ {
     try {
       return Node.fromJSON(proseSchema, serializedNode);
     } catch (error) {
@@ -54,10 +56,10 @@ export const proseNodeJSONSerializer = {
   }
 }
 export const proseStepJSONSerializer = {
-  serialize(step/*: Step*/)/*: JSONNode*/ {
+  serialize(step/*: Step*/)/*: ProseMirrorJSONNode*/ {
     return step.toJSON();
   },
-  deserialize(serializedStep/*: JSONNode*/)/*: Step*/ {
+  deserialize(serializedStep/*: ProseMirrorJSONNode*/)/*: Step*/ {
     return Step.fromJSON(proseSchema, serializedStep);
   }
 }

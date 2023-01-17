@@ -10,7 +10,7 @@ declare module "prosemirror-state" {
     static create<Nodes, Marks>({ schema: Schema<any>, doc?: Node }): EditorState<Nodes, Marks>;
 
     apply(transaction: Transaction): EditorState<any, any>;
-    doc: Node,
+    doc: Node;
     selection: Selection;
     tr: Transaction;
   }
@@ -52,12 +52,12 @@ declare module "prosemirror-view" {
   import type { EditorState, Transaction } from "prosemirror-state";
 
   declare export type EditorProps = {
-    editable?: (state: EditorState<>) => boolean
+    editable?: (state: EditorState<>) => boolean;
   }
   declare export type DirectEditorProps = {
     ...EditorProps,
-    state?: EditorState<any, any>,
-    dispatchTransaction?: (transaction: Transaction) => void,
+    state?: EditorState<any, any>;
+    dispatchTransaction?: (transaction: Transaction) => void;
   }
 
   declare export class EditorView {
@@ -78,19 +78,21 @@ declare module "prosemirror-transform" {
   import type { Schema, Node } from "prosemirror-model";
   import type { Plugin } from "prosemirror-state";
 
+  declare export type ProseMirrorJSONStep = mixed;
+
   declare export class Step {
     static fromJSON(schema: Schema<any>, input: mixed): Step;
-    toJSON(): mixed;
-    apply(node: Node): { doc: Node },
+    toJSON(): ProseMirrorJSONStep;
+    apply(node: Node): { doc: Node };
   }
 }
 
 declare module "prosemirror-model" {
-  declare export type JSONNode = mixed;
+  declare export type ProseMirrorJSONNode = mixed;
 
   declare export class Node {
-    static fromJSON(schema: Schema<any>, input: JSONNode): Node,
-    toJSON(): JSONNode;
+    static fromJSON(schema: Schema<any>, input: ProseMirrorJSONNode): Node,
+    toJSON(): ProseMirrorJSONNode;
   }
 
   declare export type AttributeSpec = {

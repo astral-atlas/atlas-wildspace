@@ -27,7 +27,7 @@ import {
 import { castCharacterId, castMonsterId } from "../../character.js";
 import { castGameId } from "../../game/game.js";
 import { castPiece ,castBoxBoardArea } from "../../game/index.js";
-import { terrainAPI } from "./miniTheater/terrain.js";
+import { terrainAPI, terrainAPISpec } from "./miniTheater/terrain.js";
 
 /*::
 type MiniTheaterResource = AdvancedGameCRUDAPI<{|
@@ -98,3 +98,7 @@ export const miniTheaterAPI = {
   '/mini-theater/action': miniTheaterAction,
   ...terrainAPI,
 };
+
+export const miniTheaterAPISpec = {
+  ...terrainAPISpec,
+}

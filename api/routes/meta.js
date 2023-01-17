@@ -4,7 +4,9 @@
   ResourceDescription, ResourceMethod, Resource,
   
   Connection, ConnectionDescription
-} from '@lukekaalim/net-description'; */
+} from '@lukekaalim/net-description';
+import type { ResourceRouteConstructors } from "./meta/gameResource";
+*/
 /*:: import type { GameID, Game, RoomID, Room } from '@astral-atlas/wildspace-models'; */
 /*::
 import type { WebSocketRoute, ClientConnection, } from "@lukekaalim/ws-server";
@@ -13,18 +15,22 @@ import type { AuthorizedConnection } from '@astral-atlas/wildspace-models'
 import type { LinkGrant } from "@astral-atlas/sesame-models";
 
 import type {
+  GameResource, GameResourceDescription,
   AdvancedGameCRUDAPI,
   AdvancedGameCRUDAPIDescription,
   GameUpdate,
+  GameResourceAPIResponse,
 } from "@astral-atlas/wildspace-models";
 */
 
 /*:: import type { Identity } from "../services/auth.js"; */
 /*:: import type { GameIdentityScope } from "../services/game.js"; */
 /*:: import type { Services } from "../services.js"; */
+import { createStandardGameAPIDescription } from '@astral-atlas/wildspace-models';
 import { createJSONResourceRoutes } from '@lukekaalim/http-server';
 import { HTTP_STATUS } from "@lukekaalim/net-description";
 import { createJSONConnectionRoute } from '@lukekaalim/ws-server';
+import { createGameResourceRouteConstructors } from "./meta/gameResource.js";
 
 export const defaultOptions/*: {| access?: AccessOptions, cache?: CacheOptions |} */ = {
   access: {
@@ -65,7 +71,10 @@ export type AuthorizedImplementation<T> = {|
   PATCH?:   AuthorizedResourceMethod<T['PATCH']>,
 |}
 
-export type AuthorizedResourceConstructor = <T: Resource>(description: ResourceDescription<T>, implementation: AuthorizedImplementation<T>) => Route[];
+export type AuthorizedResourceConstructor = <T: Resource>(
+  description: ResourceDescription<T>,
+  implementation: AuthorizedImplementation<T>
+) => Route[];
 
 
 export type RoomResourceRequest<T: ResourceMethod<>> = {
@@ -112,7 +121,8 @@ export type GameConnectionConstructor = <T: Connection<>>(
 export type MetaRoutes = {
   createAuthorizedResource: AuthorizedResourceConstructor,
   createRoomResource: RoomResourceConstructor,
-  createGameConnection: GameConnectionConstructor
+  createGameConnection: GameConnectionConstructor,
+  ...ResourceRouteConstructors,
 };
 */
 
@@ -238,8 +248,18 @@ export const createMetaRoutes = (services/*: Services*/)/*: MetaRoutes*/ => {
     }
     return createJSONConnectionRoute(description, (c, s, r) => void handler(c, s, r))
   }
+  const {
+    createGameResourceRoutes,
+    createDynamoDBGameResourceRoute
+  } = createGameResourceRouteConstructors(createAuthorizedResource);
 
-  return { createAuthorizedResource, createRoomResource, createGameConnection }
+  return {
+    createAuthorizedResource,
+    createRoomResource,
+    createGameConnection,
+    createGameResourceRoutes,
+    createDynamoDBGameResourceRoute
+  }
 };
 
 /*::

@@ -6,7 +6,7 @@ import type {
   ExpositionSubject, MagicItem,
   NonPlayerCharacter
 } from "@astral-atlas/wildspace-models";
-import type { JSONNode, Node } from "prosemirror-model";
+import type { ProseMirrorJSONNode, Node } from "prosemirror-model";
 
 import type {
   MiniTheaterController2,

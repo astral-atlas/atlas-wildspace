@@ -1,0 +1,34 @@
+.toolbar {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+}
+
+.toolButton {
+  cursor: pointer;
+}
+
+.tool, .toolButton {
+  margin: 4px 0 4px 0;
+  padding: 4px;
+
+  border: 1px solid white;
+  border-radius: 8px;
+  color: white;
+  background-color: rgba(121, 121, 121, 0.25);
+  transition: background-color 0.2s, height 0.2s, width 0.2s;
+
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: row;
+}
+.tool:first-child, .toolButton:first-child {
+  margin: 0 0 4px 0;
+}
+
+.tool:hover, .toolButton:hover {
+  background-color: rgba(121, 121, 121, 0.5);
+}

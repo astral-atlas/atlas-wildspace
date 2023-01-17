@@ -1,0 +1,44 @@
+.row {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+
+  background-color: rgb(185, 184, 184);
+  transition: background-color 0.2s;
+
+  border-radius: 4px;
+}
+
+.row:hover {
+  background-color: rgb(216, 216, 216);
+}
+
+.selected {
+  margin: 8px;
+}
+
+.nameContainer {
+  padding: 4px;
+  overflow: hidden;
+}
+
+.name {
+  overflow: auto;
+  white-space: nowrap;
+}
+
+.type {
+  background-color: black;
+  color: white;
+
+  font-size: small;
+  padding: 0px 4px 0px 4px;
+  border-radius: 16px;
+  margin: auto;
+}
+.tagContainer {
+  display: flex;
+  flex-direction: column;
+
+  margin: 8px;
+}

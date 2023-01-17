@@ -19,8 +19,10 @@ export const SnackbarControl/*: Component<SnackbarControlProps>*/ = ({
   right
 }) => {
   return h('div', { class: styles.snackbarControl }, [
-    h('div', { class: styles.snackbarLeftControl }, left),
-    h('div', { class: styles.snackbarCenterControl }, center),
-    h('div', { class: styles.snackbarRightControl }, right),
+    h('div', { class: styles.snackbarCore }, [
+      h('div', { class: styles.snackbarLeftControl }, left),
+      h('div', { class: styles.snackbarCenterControl }, center),
+      h('div', { class: styles.snackbarRightControl }, right),
+    ])
   ]);
 };

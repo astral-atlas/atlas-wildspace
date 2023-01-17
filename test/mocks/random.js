@@ -6,12 +6,12 @@ import { Box3, Vector3 } from "three";
 export const repeat = /*:: <T>*/(func/*: (index: number) => T*/, count/*: number*/)/*: T[]*/ =>
   Array.from({ length: count }).map((_, i) => func(i));
 
-export const randomSlice = /*:: <T>*/(a/*: T[]*/)/*: T[]*/ => {
+export const randomSlice = /*:: <T>*/(a/*: T[]*/, minCount/*: number*/ = 0)/*: T[]*/ => {
   const b = randomIntRange(a.length - 1);
   const c = randomIntRange(a.length - 1);
 
   const start = Math.min(b, c);
-  const end = Math.max(b, c);
+  const end = Math.max(b, c) + minCount;
 
   return a.slice(start, end);
 }
@@ -144,4 +144,8 @@ export const randomBox3 = ()/*: Box3*/ => {
       randomVector().multiplyScalar(2),
       randomVector().addScalar(10)
     )
+}
+
+export const randomSoftColor = ()/*: string*/ => {
+  return `hsl(${Math.floor(Math.random() * 360)}deg, 40%, 80%)`;
 }

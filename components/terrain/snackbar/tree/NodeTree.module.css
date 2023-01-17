@@ -1,0 +1,39 @@
+.root {
+  display: flex;
+  flex-direction: column;
+}
+
+.branch {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.leaf {
+  margin: 4px 0 4px 0;
+}
+
+.leafDetailsSummary {
+  list-style-type: none;
+}
+
+.leafBranch {
+  padding-left: 32px;
+}
+
+.addChildrenControls button:first-child {
+  margin: 0 8px 0 0px;
+}
+.addChildrenControls button {
+  border: 1px solid white;
+  background-color: rgba(0, 0, 0, 0);
+  border-radius: 8px;
+  margin: 0 4px 0 4px;
+  color: white;
+  font-weight: bold;
+
+  transition: background-color 0.2s;
+}
+.addChildrenControls button:hover {
+  background-color: rgba(0, 0, 0, 0.5);
+}

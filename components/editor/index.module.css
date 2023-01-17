@@ -11,14 +11,12 @@
 }
 
 .editorRoot {
-  margin: 8px;
-}
-
-label.editorRoot {
+  margin: 0 8px 8px 8px;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
 }
+
 label.editorRoot span {
   display: flex;
   flex-direction: row;
@@ -31,6 +29,15 @@ label.editorRoot span {
 .editorRoot input[type=text] {
   padding: 4px;
 }
+
+.editorRoot input[type=text] {
+  height: 26px;
+  box-sizing: border-box;
+}
+.editorRoot select {
+  height: 26px;
+}
+
 .editorRoot textarea {
   padding: 4px;
   height: 120px;

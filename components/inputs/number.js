@@ -1,7 +1,7 @@
 // @flow strict
 /*:: import type { Component, ElementNode } from '@lukekaalim/act'; */
 import { h } from '@lukekaalim/act';
-import { PlainDivider } from '../entry';
+import { PlainDivider } from '../entry.js';
 
 import inputStyles from './inputs.module.css';
 

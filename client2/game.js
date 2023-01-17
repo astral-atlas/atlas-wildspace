@@ -22,6 +22,7 @@ import { createLibraryClient } from "./game/library";
 import { createMonsterClient } from "./game/monsters.js";
 import { createRoomClient } from "./game/roomClient.js";
 import { createGameResourcesClient } from "./game/resources.js";
+import { createTagClient } from "./game/tags.js";
 
 /*::
 import type { WikiDocID, WikiDocEvent, WikiDocAction, GameConnectionID, GamePage } from '@astral-atlas/wildspace-models';
@@ -34,6 +35,7 @@ import type { LibraryClient } from "./game/library";
 import type { MonsterClient } from "./game/monsters";
 import type { RoomClient } from "./game/roomClient";
 import type { GameResourceClient } from "./game/resources";
+import type { TagClient } from "./game/tags";
 
 export type GameClient = {
   read: (gameId: GameID) => Promise<Game>,
@@ -54,6 +56,7 @@ export type GameClient = {
   monster: MonsterClient,
   rooms: RoomClient,
   resources: GameResourceClient,
+  tags: TagClient,
 };
 
 export * from './game/wiki';
@@ -86,6 +89,7 @@ export const createGameClient = (
   const library = createLibraryClient(http);
   const miniTheater = createMiniTheaterClient(http);
   const wiki = createWikiDocClient(http);
+  const tags = createTagClient(http);
 
   return {
     read,
@@ -105,6 +109,7 @@ export const createGameClient = (
     miniTheater,
     library,
     resources: createGameResourcesClient(http),
+    tags,
   };
 }
 

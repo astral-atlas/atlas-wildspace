@@ -4,7 +4,7 @@
 /*:: import type { AssetID } from "./asset.js"; */
 
 import { castString, createObjectCaster, createArrayCaster, castNumber, createConstantUnionCaster, createNullableCaster, c } from "@lukekaalim/cast";
-import { castGameId } from "./game.js";
+import { castGameId } from "./game/game.js";
 import { castAssetID } from "./asset.js";
 
 /*::

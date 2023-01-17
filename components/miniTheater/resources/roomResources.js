@@ -19,8 +19,9 @@ export const useRoomPageMiniTheaterResources = (
     const monsterMasks = new Map(game.monsterMasks.map(m => [m.id, m]));
     const terrainProps = new Map(room.resources.terrainProps.map(t => [t.id, t]));
     const modelResources = new Map(room.resources.modelResources.map(m => [m.id, m]));
+    const modelParts = new Map(room.resources.modelResourceParts.map(p => [p.id, p]));
 
-    return { assets, characters, monsterMasks, terrainProps, modelResources }
+    return { assets, characters, monsterMasks, terrainProps, modelResources, modelParts }
   }, [game.assets, game.characters, game.monsterMasks, game]);
 
   const assetResources = useMiniTheaterAssetResources(data);

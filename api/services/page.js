@@ -37,6 +37,7 @@ export const createPageService = (
       { result: wikiDocs },
       { result: allRooms },
       roomConnections,
+      { results: tagResults },
     ] = await Promise.all([
       data.game.get(gameId),
       gameService.listPlayers(gameId, identity),
@@ -47,6 +48,7 @@ export const createPageService = (
       data.wiki.documents.query(gameId),
       data.roomData.rooms.query(gameId),
       roomService.connection.listAll(gameId),
+      data.gameData.tags.query(gameId),
     ]);
     if (!game)
       return null;
@@ -86,6 +88,7 @@ export const createPageService = (
       roomConnectionCounts: countRoomConnections(roomConnections),
 
       assets,
+      tags: tagResults.map(r => r.result),
     };
     return gamePage;
   };

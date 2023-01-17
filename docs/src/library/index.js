@@ -17,6 +17,7 @@ import { LibraryAisle } from "@astral-atlas/wildspace-components/library/Library
 import { createMockCharacter, createMockImageAsset, createMockWildspaceClient } from "@astral-atlas/wildspace-test"
 import { GameMasterPrepLibraryDemo } from "./prep";
 import { WidePage } from "../page";
+import { TestPage } from "./test";
 
 const BookDemo = () => {
   const selection = useLibrarySelection()
@@ -203,15 +204,21 @@ export const libraryPrepPage/*: Page*/ = {
   content: h(WidePage, {}, h(Markdown, { text: libraryPrepText, directives })),
   link: { children: [], name: 'Prep Library', href: '/library/prep' }
 }
+export const libraryTestPage/*: Page*/ = {
+  content: h(WidePage, {}, h(TestPage)),
+  link: { children: [], name: 'Test Page', href: '/library/test' }
+}
 
 export const libraryPage/*: Page*/ = {
   content: h(Document, {}, h(Markdown, { text: libraryText, directives })),
   link: { children: [
-    libraryPrepPage.link
+    libraryPrepPage.link,
+    libraryTestPage.link,
   ], name: 'Library', href: '/library' }
 }
 
 export const libraryPages = [
   libraryPage,
   libraryPrepPage,
+  libraryTestPage
 ];

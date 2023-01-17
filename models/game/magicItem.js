@@ -1,9 +1,9 @@
 // @flow strict
 /*::
 import type { Cast } from "@lukekaalim/cast";
-import type { JSONNode } from "prosemirror-model";
+import type { ProseMirrorJSONNode } from "prosemirror-model";
 */
-import { castJSONSerializedNode } from "../prose.js";
+import { castProseMirrorJSONNode } from "../prose.js";
 import { c } from "@lukekaalim/cast";
 
 /*::
@@ -21,7 +21,7 @@ export type MagicItem = {|
   rarity: string,
   requiresAttunement: boolean,
 
-  description: JSONNode,
+  description: ProseMirrorJSONNode,
 |};
 */
 export const castMagicItemVisability/*: Cast<MagicItemVisability>*/ = c.or('type', {
@@ -40,5 +40,5 @@ export const castMagicItem/*: Cast<MagicItem>*/ = c.obj({
   rarity: c.str,
   requiresAttunement: c.bool,
 
-  description: castJSONSerializedNode,
+  description: castProseMirrorJSONNode,
 });

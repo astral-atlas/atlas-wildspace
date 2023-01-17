@@ -123,7 +123,6 @@ export const createMiniTheaterAssetResourceLoader = ()/*: MiniTheaterAssetResour
       const textureMap = new Map(textureEntries);
 
       const resources = {
-        meshMap: new Map(),
         materialMap: new Map(),
     
         textureMap,
@@ -175,7 +174,6 @@ export const useMiniTheaterAssetResources = (
 }
 
 export const defaultMiniTheaterAssetResources/*: MiniTheaterAssetResources*/ = {
-  meshMap: new Map(),
   materialMap: new Map(),
 
   textureMap: new Map(),

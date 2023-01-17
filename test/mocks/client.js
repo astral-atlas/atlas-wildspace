@@ -3,16 +3,22 @@
 import type {
   AdvancedGameCRUDAPIDescription,
   DeriveGameCRUDDescription,
-} from "../../models/api/game/meta";
+  GameResourceDescription,
+  GameMeta, GameResourceInputMetadata,
+} from "@astral-atlas/wildspace-models";
 import type { MiniTheaterAPI } from "../../models/api/game/miniTheater";
 import type { LibraryData } from "../../models/game/library";
-import type { WildspaceClient, GameCRUDClient, UpdatesConnection } from "@astral-atlas/wildspace-client2";
+import type {
+  WildspaceClient, GameCRUDClient,
+  UpdatesConnection, GameResourceClient
+} from "@astral-atlas/wildspace-client2";
 */
 
 import { createMockUpdateConnection } from "./client/connection";
 import { createMockMagicItem } from "./game";
 import { createMockMiniTheater } from "./miniTheater";
 import { randomHumanName } from "./random";
+import { v4 } from "uuid";
 
 export const createMockGameCRUDClient = /*:: <T: AdvancedGameCRUDAPIDescription>*/(
   getList/*: () => $ReadOnlyArray<T['resource']>*/,
@@ -42,6 +48,31 @@ export const createMockGameCRUDClient = /*:: <T: AdvancedGameCRUDAPIDescription>
   };
 }
 
+export const createMockGameResourceClient = /*:: <T: GameResourceDescription<any>>*/(implementation/*: {
+  getResources: () => $ReadOnlyArray<T["resource"]>,
+  setResources: $ReadOnlyArray<T["resource"]> => mixed,
+  createResource: ({ ...T["input"], ...GameMeta<string> }, ?T["resource"]) => T["resource"],
+}*/)/*: GameResourceClient<T>*/ => {
+  const { createResource, getResources, setResources } = implementation;
+  const create = async (gameId, input) => {
+    const resources = getResources();
+    const newResource = createResource({ ...input, id: v4(), version: v4(), gameId }, null);
+    setResources([...resources, newResource ])
+  }
+  const read = async () => {
+    return getResources();
+  };
+  const update = async (gameId, id, input) => {
+    const resources = getResources();
+    setResources(resources.map(r => r.id === id ? createResource(input, r) : r));
+  };
+  const destroy = async (gameId, id) => {
+    const resources = getResources();
+    setResources(resources.filter(r => r.id === id));
+  };
+  return { create, read, update, destroy };
+}
+
 export const createMockWildspaceClient = (
   getLibrary/*: () => LibraryData*/ = () => { throw new Error() },
   onLibraryChange/*: LibraryData => mixed*/ = _ => {},
@@ -57,7 +88,12 @@ export const createMockWildspaceClient = (
       ),
       async act() {
         throw new Error();
-      }
+      },
+      terrainProps: createMockGameResourceClient({
+        getResources: () => getLibrary().terrainProps,
+        setResources: (terrainProps) => onLibraryChange({ ...getLibrary(), terrainProps }),
+        createResource: (input, prev) => ({ ...prev, ...input }),
+      }),
     },
     magicItem: createMockGameCRUDClient(
       () => getLibrary().magicItems,
@@ -66,6 +102,11 @@ export const createMockWildspaceClient = (
       post => ({ ...createMockMagicItem(), ...post }),
       (put, v) => ({  ...v, ...put,})
     ),
+    tags: createMockGameResourceClient({
+      getResources: () => getLibrary().tags,
+      setResources: (tags) => onLibraryChange({ ...getLibrary(), tags }),
+      createResource: (input, prev) => ({ ...prev, ...input }),
+    })
   };
   const asset/*: any*/ = {
 

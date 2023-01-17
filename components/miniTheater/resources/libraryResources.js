@@ -2,6 +2,7 @@
 
 import { createMaskForMonsterActor } from "@astral-atlas/wildspace-models";
 import { useMemo } from "@lukekaalim/act";
+import { useWildspaceClientServices } from "../../services/wildspaceController";
 import {
   useMiniTheaterAssetResources,
 } from "./assetResources";
@@ -24,11 +25,11 @@ export const useLibraryMiniTheaterResources = (
       return [actor.id, createMaskForMonsterActor(monster, actor)]
     }).filter(Boolean));
     const modelResources = new Map(library.modelResources.map(m => [m.id, m]));
+    const modelParts = new Map(library.modelResourceParts.map(p => [p.id, p]))
     const terrainProps = new Map(library.terrainProps
-      .filter(t => modelResources.has(t.modelResourceId))
       .map(t => [t.id, t]));
 
-    return { assets, characters, monsterMasks, terrainProps, modelResources }
+    return { assets, characters, monsterMasks, terrainProps, modelResources, modelParts }
   }, [
     library.assets, library.characters,
     library.monsterActors, library.monsters,
