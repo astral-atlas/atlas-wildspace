@@ -1,0 +1,48 @@
+.tree {
+
+}
+
+.branch {
+  border-left: 1px solid black;
+  list-style:  none;
+  margin: 0 8px 0 8px;
+  padding: 0;
+}
+
+.leaf {
+  list-style: none;
+}
+
+.leafContainer {
+  display: flex;
+  align-items: center;
+}
+
+.leafDetails {
+  border: 1px solid black;
+  padding: 2px;
+  margin: 2px;
+}
+
+.branchEntry {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.leaf > summary > * {
+  display: inline-block;
+}
+.leaf details {
+  display: inline-block;
+}
+.leaf > summary {
+  list-style: none;
+}
+
+.arrow {
+  display: inline-block;
+  border-top: 1px solid black;
+  width: 8px;
+  margin-top: 8px;
+}

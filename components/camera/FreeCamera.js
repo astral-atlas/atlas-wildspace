@@ -8,7 +8,17 @@ import {
   subscribeFreeCameraUpdates,
   useFreeCameraController,
 } from "./useFreeCameraController";
-import { Vector3, Quaternion } from "three";
+import { Vector3, Quaternion, Matrix4 } from "three";
+
+export const createDefaultCameraPosition = (distance/*: number*/ = 50)/*: {| quaternion: Quaternion, position: Vector3 |}*/ => {
+  const position = new Vector3(distance, distance, distance);
+  const cameraMatrix = new Matrix4()
+  cameraMatrix.setPosition(position);
+  cameraMatrix.lookAt(position, new Vector3(0, 0, 0), new Vector3(0, 1, 0))
+  const quaternion = new Quaternion().setFromRotationMatrix(cameraMatrix);
+
+  return { quaternion, position };
+}
 
 
 /*::

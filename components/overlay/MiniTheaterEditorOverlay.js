@@ -4,16 +4,16 @@ import type { Component, ElementNode } from "@lukekaalim/act";
 */
 
 import { h } from "@lukekaalim/act";
-import styles from './MiniTheaterOverlay.module.css';
+import styles from './MiniTheaterEditorOverlay.module.css';
 
 /*::
-export type MiniTheaterOverlayProps = {
+export type MiniTheaterEditorOverlayProps = {
   toolbar?: ?ElementNode,
   sidebar?: ?ElementNode,
 };
 */
 
-export const MiniTheaterOverlay/*: Component<MiniTheaterOverlayProps>*/ = ({
+export const MiniTheaterEditorOverlay/*: Component<MiniTheaterEditorOverlayProps>*/ = ({
   toolbar,
   sidebar
 }) => {

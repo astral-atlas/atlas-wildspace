@@ -3,6 +3,7 @@
 import { h } from "@lukekaalim/act";
 import { Toolbar } from "./overlay/Toolbar";
 import { Sidebar } from "./overlay/Sidebar";
+import { MiniTheaterOverlay } from "../../miniTheater/MiniTheaterOverlay";
 
 /*::
 import type { Component, Ref } from "@lukekaalim/act";

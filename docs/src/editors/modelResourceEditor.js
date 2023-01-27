@@ -11,6 +11,7 @@ import { h, useState } from "@lukekaalim/act";
 
 import { v4 as uuid } from "uuid";
 import { testModelURLs } from "@astral-atlas/wildspace-test/models";
+import { ScaledLayoutDemo } from "../demo";
 
 export const ModelResourceEditorDemo/*: Component<>*/ = () => {
   const [modelId] = useState(uuid())
@@ -42,5 +43,9 @@ export const ModelResourceEditorDemo/*: Component<>*/ = () => {
 
   const resources = useLibraryMiniTheaterResources(library)
 
-  return h(ModelResourceEditor, { modelId, resources });
+  return [
+    h(ScaledLayoutDemo, {}, [
+      h(ModelResourceEditor, { modelId, resources })
+    ])
+  ];
 };

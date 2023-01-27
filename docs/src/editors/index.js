@@ -12,6 +12,7 @@ import modelResourceEditorText from './modelResourceEditor.md?raw';
 import { ListEditorDemo } from "./list";
 import { ProseMirrorDemo } from "./richTextDemo.js";
 import { ModelResourceEditorDemo } from "./modelResourceEditor";
+import { TreeEditorDemo } from "./TreeEditorDemo";
 
 const Demo = ({ node }) => {
   switch (node.attributes.name) {
@@ -27,6 +28,8 @@ const Demo = ({ node }) => {
       return h(ProseMirrorDemo);
     case 'model_resource_editor':
       return h(ModelResourceEditorDemo);
+    case 'tree_editor':
+      return h(TreeEditorDemo)
     default:
       throw new Error();
   }

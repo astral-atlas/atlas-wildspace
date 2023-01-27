@@ -19,3 +19,7 @@ This component is used to contain multiple editors at once.
 ### Editor List
 
 ::demo{name=list_editor}
+
+### Tree Editor
+
+::demo{name=tree_editor}
