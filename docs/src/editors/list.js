@@ -13,6 +13,6 @@ export const ListEditorDemo/*: Component<>*/ = () => {
   const onItemIdsChange = (nextIds) => {
     setItemIds(nextIds);
   };
-  return h('div', { style: { height: '600px', overflowY: 'auto' } },
+  return h('div', { style: { overflowY: 'auto' } },
     h(OrderedListEditor, { itemsIds, onItemIdsChange, EntryComponent: DemoEntryEditor(itemsIds) }));
 }

@@ -1,0 +1,24 @@
+.expandButtonColumn {
+  display: flex;
+  flex-direction: column;
+  margin: auto 4px auto 4px;
+}
+
+.expandButton {
+  height: 18px;
+  width: 18px;
+  background-position: center center;
+  background-image: url("./assets/black-plus-square.svg");
+  background-size: contain;
+  
+  transition: background-color 0.2s;
+  background-color: rgba(125, 125, 125, 0);
+  
+  border: 0;
+}
+.expandButton:hover {
+  background-color: rgba(125, 125, 125, 0.729);
+}
+.expandButton.expanded {
+  background-image: url("./assets/black-minus-square.svg");
+}

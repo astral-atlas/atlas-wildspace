@@ -1,6 +1,6 @@
 // @flow strict
 /*::
-import type { Component } from "@lukekaalim/act";
+import type { Component, ElementNode } from "@lukekaalim/act";
 */
 import { TreeEditorRow } from "./TreeEditorRow";
 import { h, useState } from "@lukekaalim/act";
@@ -10,43 +10,49 @@ import styles from './TreeEditor.module.css';
 export type TreeEditorNodeID = string;
 export type TreeEditorNode = {
   id: TreeEditorNodeID,
-  name: string,
   children: TreeEditorNode[],
 };
 
+type RenderNodeFunc = ({
+  id: TreeEditorNodeID,
+  depth: number,
+  showExpanded: boolean,
+  expanded: boolean,
+  onExpandedChange: (expanded: boolean) => mixed
+}) => ElementNode
+
 export type TreeEditorProps = {
+  renderNode: RenderNodeFunc,
   selectedNodes: Set<TreeEditorNodeID>,
   rootNodes: TreeEditorNode[],
 };
 */
 
-export const TreeEditor/*: Component<TreeEditorProps>*/ = ({ rootNodes, selectedNodes }) => {
+export const TreeEditor/*: Component<TreeEditorProps>*/ = ({
+  rootNodes,
+  selectedNodes,
+  renderNode
+}) => {
   return h('div', { class: styles.tree }, [
-    h(Branch, { nodes: rootNodes, selectedNodes })
+    h(NodeList, { nodes: rootNodes, selectedNodes, depth: 0, renderNode })
   ])
 };
 
-const Branch = ({ nodes, selectedNodes }) => {
-  return h('ol', { class: styles.branch }, nodes.map(node =>
-    h('li', { class: styles.branchEntry }, [
-      h(Leaf, { node, selectedNodes }),
-    ])))  
-};
+const NodeList = ({ nodes, depth = 0, renderNode }) => {
+  return nodes.map(node => h(Node, { key: node.id, node, depth, renderNode }))
+}
 
-const Leaf = ({ node, selectedNodes }) => {
-  const [open, setOpen] = useState(true);
-  const selected = selectedNodes.has(node.id);
+const Node = ({ node, depth, renderNode }) => {
+  const [expanded, setExpanded] = useState(true);
+
   return [
-    h('details', { class: styles.leaf, open: open ? "open" : null }, [
-      h('summary', { class: styles.leafContainer }, [
-        h('div', { class: styles.arrow }),
-        h('span', { class: styles.leafDetails }, [
-          h('button', { onClick: () => setOpen(!open) }, 'Hide children'), 
-          h(TreeEditorRow, { title: node.name, selected })
-        ]),
-      ]),
-      node.children.length > 0 &&
-        h(Branch, { nodes: node.children, selectedNodes }),
-    ])
-  ];
-};
+    renderNode({
+      id: node.id,
+      depth,
+      expanded,
+      showExpanded: node.children.length > 0,
+      onExpandedChange: expanded => setExpanded(expanded),
+    }),
+    !!expanded && h(NodeList, { nodes: node.children, depth: depth + 1, renderNode }),
+  ]
+}

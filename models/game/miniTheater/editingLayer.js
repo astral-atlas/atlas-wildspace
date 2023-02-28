@@ -36,6 +36,7 @@ export type EditingLayer = {
 const castIncludeAny = c.obj({
   type: c.lit('any'),
 });
+
 const castIncludeCharacter = c.obj({
   type: c.lit('characters'),
   characters: c.arr(castCharacterId)

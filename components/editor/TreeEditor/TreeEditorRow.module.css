@@ -2,3 +2,49 @@
   border: 1px solid white;
   border-radius: 4px;
 }
+
+.row {
+  display: flex;
+  flex-direction: row;
+  transition: background-color 0.2s;
+  background-color: rgba(125, 125, 125, 0);
+}
+.row:hover {
+  background-color: rgba(125, 125, 125, 0.203);
+}
+
+.box {
+  border: 1px solid black;
+  display: flex;
+  flex-direction: row;
+  padding-right: 4px;
+  padding-left: 4px;
+}
+.content {
+  margin: auto;
+}
+
+.expandButtonColumn {
+  display: flex;
+  flex-direction: column;
+  margin: 4px;
+}
+
+.expandButton {
+  height: 18px;
+  width: 18px;
+  background-position: center center;
+  background-image: url("./assets/black-plus-square.svg");
+  background-size: contain;
+  
+  transition: background-color 0.2s;
+  background-color: rgba(125, 125, 125, 0);
+  
+  border: 0;
+}
+.expandButton:hover {
+  background-color: rgba(125, 125, 125, 0.729);
+}
+.expandButton.expanded {
+  background-image: url("./assets/black-minus-square.svg");
+}

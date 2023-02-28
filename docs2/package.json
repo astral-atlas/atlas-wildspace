@@ -1,0 +1,31 @@
+{
+  "name": "@astral-atlas/wildspace-docs2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/astral-atlas/wildspace.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/astral-atlas/wildspace/issues"
+  },
+  "homepage": "https://github.com/astral-atlas/wildspace#readme",
+  "dependencies": {
+    "@astral-atlas/wildspace-components": "*",
+    "@lukekaalim/act": "^2.6.0",
+    "@lukekaalim/act-markdown": "^1.4.0",
+    "@lukekaalim/act-rehersal": "^2.5.0",
+    "@lukekaalim/act-three": "^5.8.3",
+    "three": "^0.150.0"
+  },
+  "devDependencies": {
+    "vite": "^4.1.4"
+  }
+}

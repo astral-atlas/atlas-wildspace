@@ -17,7 +17,7 @@ resource "aws_amplify_app" "site" {
 
   environment_variables = {
     AMPLIFY_DIFF_DEPLOY: false
-    AMPLIFY_MONOREPO_APP_ROOT: "docs"
+    AMPLIFY_MONOREPO_APP_ROOT: "docs2"
     _LIVE_UPDATES: jsonencode([{"pkg":"node","type":"nvm","version":"16"}])
   }
 }

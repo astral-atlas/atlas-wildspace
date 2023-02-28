@@ -10,7 +10,7 @@ import { createWebRenderer, setNodeChildren } from '@lukekaalim/act-web';
 import { createTree } from '@lukekaalim/act-reconciler';
 
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
-import { setObjectProps } from "@lukekaalim/act-three";
+//import { setObjectProps } from "@lukekaalim/act-three";
 
 const web = createWebRenderer(diff => {
   switch (diff.next.element.type) {

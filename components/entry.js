@@ -29,6 +29,8 @@ export * from './utils/index.js';
 
 export * from './game/index.js';
 
+export * from './dom/index.js';
+
 export * from './navigation/index.js';
 export * from './user/index.js';
 export * from './scenes/index.js';

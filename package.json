@@ -13,7 +13,8 @@
     "docs",
     "task",
     "test",
-    "bundle"
+    "bundle",
+    "docs2"
   ],
   "devDependencies": {
     "concurrently": "^7.4.0",
@@ -22,8 +23,10 @@
   "scripts": {
     "dev:api": "npm run dev -w api",
     "dev:www": "npm run dev -w www",
-    "dev:docs": "npm run dev -w docs",
+    "dev:docs": "npm run dev -w docs2",
     "dev": "npx concurrently npm:dev:*",
     "test": "npm test -w test"
+  },
+  "dependencies": {
   }
 }

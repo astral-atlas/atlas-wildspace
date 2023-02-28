@@ -114,6 +114,7 @@ export const useRenderSetup = (
     }
     const renderFunction = overrides.renderFunction || defaultRenderFunction;
     const onCanvasResize = () => {
+      console.log('canvas resize')
       const canvasRect = canvas.getBoundingClientRect();
       renderer.setSize(canvasRect.width, canvasRect.height, false);
       if (css2dRenderer) {

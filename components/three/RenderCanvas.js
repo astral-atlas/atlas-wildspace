@@ -33,7 +33,8 @@ export const RenderCanvas/*: Component<RenderCanvasProps>*/ = ({
     h('canvas', {
       ...canvasProps,
       ref: render.canvasRef,
-      width: 600, height: 300, tabIndex: 0,
+      width: 600, height: 300,
+      tabIndex: 0,
       className,
     }),
     h(scene, { ref: render.sceneRef },
