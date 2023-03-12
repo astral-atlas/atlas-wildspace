@@ -5,40 +5,23 @@ import type { ModelResourcePart } from '@astral-atlas/wildspace-models';
 */
 
 import { ModelResourceEditorSection } from "@astral-atlas/wildspace-components";
-import { h, useMemo, useState } from "@lukekaalim/act";
+import { h, useEffect, useMemo, useState } from "@lukekaalim/act";
 import { FramePresenter } from "./presentation";
 import { BoxGeometry, Mesh } from "three";
-import { createMockModelResource, randomName } from "@astral-atlas/wildspace-test";
+import { createMockModelResource, randomName, } from "@astral-atlas/wildspace-test";
 import { nanoid } from "nanoid/non-secure";
-
-
-const modelObject = new Mesh();
-modelObject.add(
-  new Mesh().add(
-    new Mesh(),
-    new Mesh(),
-  ),
-  new Mesh(),
-  new Mesh().add(
-    new Mesh()
-  ),
-);
-const changeRandomly = (object) => {
-  object.name = randomName()
-  object.geometry = new BoxGeometry(10, 10, 10)
-  object.position.set(
-    (Math.floor(Math.random() * 50)) - 25,
-    (Math.floor(Math.random() * 50)) - 25,
-    (Math.floor(Math.random() * 50)) - 25,
-  );
-  object.updateMatrix();
-  for (const child of object.children)
-    if (child instanceof Mesh)
-      changeRandomly(child)
-}
-changeRandomly(modelObject);
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { testModelURLs } from '@astral-atlas/wildspace-test/models'
 
 export const ModelResourceEditorSectionDemo/*: Component<>*/ = () => {
+  const [modelObject, setModelObject] = useState(null);
+  useEffect(() => {
+    const loader = new GLTFLoader();
+    loader.load(testModelURLs.gunTurret, (result) => {
+      setModelObject(result.scene);
+      console.log(result.scene)
+    })
+  }, []);
 
   const resource = useMemo(() => createMockModelResource(), []);
 
@@ -65,5 +48,5 @@ export const ModelResourceEditorSectionDemo/*: Component<>*/ = () => {
   }
 
   return h(FramePresenter, { height: 'calc(512px + 256px)' },
-    h(ModelResourceEditorSection, { events, modelObject, parts, resource }));
+    !!modelObject && h(ModelResourceEditorSection, { events, modelObject, parts, resource }));
 };

@@ -16,11 +16,11 @@ import {
   MeshBasicMaterial,
   Vector3,
   Color,
+  Object3D,
 } from "three";
 
 /*::
 import type { Component } from "@lukekaalim/act";
-import type { Object3D } from "three";
 import type {
   ModelResource,
   ModelResourcePart,
@@ -42,19 +42,38 @@ export type ModelResourceEditorSectionProps = {
 const selectedMaterial = new MeshBasicMaterial({ color: 'red' })
 const unSelectedMaterial = new MeshBasicMaterial({ color: 'blue' })
 
-const MeshNode = ({ object, selected }) => {
-  if (!(object instanceof Mesh))
-    return null;
+const Node = ({ object, selected }) => {
+  if (object instanceof Mesh)
+    return h(MeshNode, { object, selected });
 
+  if (object instanceof Object3D)
+    return h(ObjectNode, { object, selected })
+};
+
+const ObjectNode = ({ object, selected }) => {
+  return [
+    h(group, {
+      position: object.position,
+      quaternion: object.quaternion,
+      scale: object.scale,
+    },[
+      object.children.map(object => h(Node, { object, selected })),
+    ]),
+  ];
+}
+
+const MeshNode = ({ object, selected }) => {
   const isSelected = selected === object;
 
   return [
     h(mesh, {
       geometry: object.geometry,
-      material: isSelected ? selectedMaterial : unSelectedMaterial,
-      position: object.position
+      material: isSelected ? selectedMaterial : object.material,
+      position: object.position,
+      quaternion: object.quaternion,
+      scale: object.scale,
     },[
-      object.children.map(object => h(MeshNode, { object, selected })),
+      object.children.map(object => h(Node, { object, selected })),
     ]),
   ];
 };
@@ -114,7 +133,7 @@ export const ModelResourceEditorSection/*: Component<ModelResourceEditorSectionP
       h(RenderCanvas, { className: styles.previewCanvas }, [
         h(scene, {}, [
           h(FreeCamera, { position: new Vector3(0, 0, 100) }),
-          h(MeshNode, { object: modelObject, selected }),
+          h(Node, { object: modelObject, selected }),
           !!selected && h(HighlightNode, { object: selected }),
           //h(Object3DDuplicate, { target: modelObject, context: { materials: new Map() } }),
         ]),
