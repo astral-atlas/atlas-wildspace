@@ -1,5 +1,9 @@
 # Changelog
 
+#### 13th March, 2023
+- Added `GunTurret` test model
+- Fixed `Resource Model Editor` not rendering non-mesh children
+
 #### 11th March, 2023
 - Added `ResourceChip` (and friends)
 - Added `GameWindowOverlayLayout` (and friends)
