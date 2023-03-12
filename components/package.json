@@ -23,7 +23,7 @@
     "@lukekaalim/act": "^2.4.0",
     "@lukekaalim/act-curve": "^3.1.2",
     "@lukekaalim/act-markdown": "^1.4.0",
-    "@lukekaalim/act-three": "^5.7.0",
+    "@lukekaalim/act-three": "^5.8.3",
     "@lukekaalim/act-web": "^2.0.1",
     "@mediapipe/holistic": "^0.5.1635989137",
     "@sindresorhus/string-hash": "^2.0.0",
@@ -45,6 +45,6 @@
     "seedrandom": "^3.0.5",
     "spark-md5": "^3.0.2",
     "upgrade": "^1.1.0",
-    "uuid": "^8.3.2"
+    "uuid": "^9.0.0"
   }
 }

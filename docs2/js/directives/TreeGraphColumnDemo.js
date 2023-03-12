@@ -47,10 +47,10 @@ export const TreeGraphColumnDemo/*: Component<>*/ = () => {
   const selectedNodes = new Set([
 
   ]);
-  const renderNode = ({ depth, expanded, id, onExpandedChange, showExpanded }) => {
+  const renderNode = ({ depth, expanded, id, onExpandedChange, showExpanded, hidden }) => {
     const style = {
       marginLeft: `${depth}rem`,
-      display: 'flex',
+      display: hidden ? 'none' : 'flex',
       backgroundColor: `hsl(${cyrb53(id) % 360}deg, 50%, 50%)`,
       color: 'white',
     };
@@ -59,6 +59,9 @@ export const TreeGraphColumnDemo/*: Component<>*/ = () => {
 
   return [
     h(FramePresenter, {},
-      h(TreeGraphColumn, { rootNodes, selectedNodes, renderNode }))
+      h(TreeGraphColumn, { rootNodes, selectedNodes, renderNode })),
+    h('pre', { style: { overflow: 'auto', background: 'black', color: 'white', padding: '1rem', borderRadius: '1rem' }},[
+      TreeGraphColumnDemo.toString()
+    ])
   ]
 }

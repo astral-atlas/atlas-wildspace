@@ -6,7 +6,7 @@ import type { Component, Ref } from "@lukekaalim/act";
 import type { CubicBezierAnimation } from "@lukekaalim/act-curve/bezier";
 */
 
-import { MarkdownRenderer, MiniTheaterCanvas, ToolbarPalette, useFadeTransition, useMiniTheaterController, useResourcesLoader } from "@astral-atlas/wildspace-components";
+import { MiniTheaterCanvas, ToolbarPalette, useFadeTransition, useMiniTheaterController, useResourcesLoader } from "@astral-atlas/wildspace-components";
 import { useKeyboardStateEmitterMiddleware } from "@astral-atlas/wildspace-components/keyboard/middleware";
 import { h, useEffect, useRef, useState } from "@lukekaalim/act";
 

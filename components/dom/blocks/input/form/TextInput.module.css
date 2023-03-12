@@ -1,0 +1,10 @@
+.textInput {
+  display: flex;
+  flex-direction: column;
+}
+
+.textInputLabel {
+  font-size: 14px;
+  margin-left: 8px;
+  margin-right: 8px;
+}

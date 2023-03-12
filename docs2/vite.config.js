@@ -3,11 +3,6 @@ export default {
   plugins: [],
   build: {
     sourcemap: true,
-    rollupOptions: {
-      plugins: [],
-      input: {
-        'main': 'index.html',
-      }
-    }
+    targets: ['es2020'],
   },
 }

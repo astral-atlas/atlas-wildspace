@@ -7,7 +7,8 @@ import type {
   MonsterID, Monster, MonsterActor,
   MagicItem,
   GameMetaResource, GameMeta,
-  ModelResource
+  ModelResource,
+  ModelResourcePart
 } from "@astral-atlas/wildspace-models";
 */
 import {
@@ -117,4 +118,10 @@ export const createMockModelResource = ()/*: ModelResource*/ => ({
   assetId: uuid(),
   format: 'gltf',
   previewCameraPath: null
+})
+
+export const createMockModelResourcePart = ()/*: ModelResourcePart*/ => ({
+  ...createMockGameResourceMeta(),
+  modelResourceId: uuid(),
+  objectUuid: uuid(),
 })

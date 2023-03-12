@@ -1,0 +1,32 @@
+.resourceMetaInput {
+  display: flex;
+  flex-direction: column;
+}
+
+.readonlyProperty {
+  margin: 2px;
+  max-width: 240px;
+  overflow: hidden;
+}
+.key {
+  font-size: 14px;
+  font-weight: bold;
+}
+.value {
+  padding: 4px;
+  font-size: 14px;
+  text-align: center;
+  border-top: 2px solid black;
+  background-color: #dee1eb;
+  color: #262626;
+  overflow: auto;
+  max-height: 28px;
+  line-height: 14px;
+  font-family: monospace;
+}
+
+.propertyGroup {
+  display: flex;
+  flex-direction: row;
+  margin: auto;
+}

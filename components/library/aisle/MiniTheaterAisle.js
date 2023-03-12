@@ -34,7 +34,6 @@ import { useMiniTheaterController } from "../../miniTheater/useMiniTheaterContro
 import { useMiniTheaterSceneController } from "../../miniTheater/useMiniTheaterSceneController";
 import { MiniTheaterCanvas } from "../../miniTheater/MiniTheaterCanvas";
 import { useResourcesLoader } from "../../encounter";
-import { TextInput } from "../../preview/inputs";
 import { useElementKeyboard } from "../../keyboard/changes";
 import { MiniTheaterOverlay } from "../../miniTheater/MiniTheaterOverlay";
 import { useAisleFocus } from "../useAisleFocus";

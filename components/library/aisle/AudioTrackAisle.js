@@ -26,7 +26,6 @@ import {
   SelectEditor,
 } from "../../editor/form";
 import { useLibrarySelection } from "../librarySelection";
-import { TextInput } from "../../preview/inputs";
 
 /*::
 

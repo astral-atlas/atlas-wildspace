@@ -14,7 +14,7 @@ export type TagDropdownProps = {
   allTags: $ReadOnlyArray<Tag>,
 
   selectedTagsIds: $ReadOnlyArray<TagID>,
-  onSelectedTagIdsChange: $ReadOnlyArray<TagID> => mixed,
+  onSelectedTagIdsChange?: $ReadOnlyArray<TagID> => mixed,
 
   allowNewTagCreation?: boolean,
   onCreateNewTag?: (title: string) => mixed,
@@ -25,7 +25,7 @@ export type TagDropdownProps = {
 export const TagDropdown/*: Component<TagDropdownProps>*/ = ({
   allTags,
   selectedTagsIds,
-  onSelectedTagIdsChange,
+  onSelectedTagIdsChange = _ => {},
   onCreateNewTag,
   allowNewTagCreation = false
 }) => {

@@ -5,9 +5,16 @@
   display: flex;
   flex: 1;
   position: absolute;
+  
+  background-position: center center;
+  background-size: cover;
 }
 
 .fillBlockLabel {
   margin: auto;
   color: white;
+  text-align: center;
+}
+.fillBlockLabel.invert {
+  color: black;
 }

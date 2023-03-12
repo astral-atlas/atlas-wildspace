@@ -14,6 +14,7 @@ export type TreeGraphColumnNode = {
 };
 
 type RenderNodeFunc = ({
+  hidden: boolean,
   id: TreeGraphColumnNodeID,
   depth: number,
   showExpanded: boolean,
@@ -34,25 +35,31 @@ export const TreeGraphColumn/*: Component<TreeGraphColumnProps>*/ = ({
   renderNode
 }) => {
   return h('div', { class: styles.tree }, [
-    h(NodeList, { nodes: rootNodes, selectedNodes, depth: 0, renderNode })
+    h(NodeList, { nodes: rootNodes, selectedNodes, depth: 0, renderNode, hidden: false })
   ])
 };
 
-const NodeList = ({ nodes, depth = 0, renderNode }) => {
-  return nodes.map(node => h(Node, { key: node.id, node, depth, renderNode }))
+const NodeList = ({ nodes, depth = 0, renderNode, hidden }) => {
+  return nodes.map(node => h(Node, { key: node.id, node, depth, renderNode, hidden }))
 }
 
-const Node = ({ node, depth, renderNode }) => {
+const Node = ({ node, depth, renderNode, hidden }) => {
   const [expanded, setExpanded] = useState(true);
 
   return [
     renderNode({
+      hidden,
       id: node.id,
       depth,
       expanded,
       showExpanded: node.children.length > 0,
       onExpandedChange: expanded => setExpanded(expanded),
     }),
-    !!expanded && h(NodeList, { nodes: node.children, depth: depth + 1, renderNode }),
+    h(NodeList, {
+      nodes: node.children,
+      depth: depth + 1,
+      renderNode,
+      hidden: hidden || !expanded
+    }),
   ]
 }

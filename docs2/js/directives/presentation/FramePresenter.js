@@ -3,31 +3,37 @@
 /*::
 import type { Component } from '@lukekaalim/act';
 */
-import { h } from '@lukekaalim/act';
+import { h, useState } from '@lukekaalim/act';
+import { nanoid } from 'nanoid/non-secure';
 import styles from './FramePresenter.module.css';
 
 /*::
 export type FramePresenterProps = {
   height?: string,
+  padding?: string,
 };
 */
 
 export const FramePresenter/*: Component<FramePresenterProps>*/ = ({
   children,
   //style,
-  height = '512px'
+  height = '512px',
+  padding = '0px'
 }) => {
-  return h('div', { class: styles.framePresenterContainer, style: { height } }, [
-    h('div', { class: styles.framePresenterContent, style: {
-      position: 'relative',
-      width: '100%', height: '100%',
-      maxWidth: '100%', maxHeight: '100%',
-      border: '1px solid black', boxSizing: 'border-box',
-      resize: 'both', overflow: 'hidden'
-    } }, [
-      children
+  return [
+    h('div', { class: styles.framePresenterContainer, style: { height } }, [
+      h('div', { class: styles.framePresenterContent, style: {
+        position: 'relative',
+        width: '100%', height: '100%',
+        maxWidth: '100%', maxHeight: '100%',
+        boxSizing: 'border-box',
+        resize: 'both', overflow: 'hidden',
+        padding
+      } }, [
+        children
+      ]),
     ]),
-  ])
+  ]
 }
 
 /*::

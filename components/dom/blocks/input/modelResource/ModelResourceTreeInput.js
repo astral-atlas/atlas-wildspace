@@ -1,21 +1,24 @@
 // @flow strict
 import { Object3D } from "three";
 import { h, useMemo } from "@lukekaalim/act";
-import { TreeGraphColumn, ExpandToggleInput } from "..";
+import { TreeGraphColumn, ExpandToggleInput } from "../..";
 import styles from './ModelResourceTreeInput.module.css';
 import hash from '@sindresorhus/string-hash';
 
 /*::
 import type { Component } from "@lukekaalim/act";
+import type { ModelResourcePart } from "@astral-atlas/wildspace-models";
 
 export type ModelResourceTreeInputProps = {
   modelObject: Object3D,
+  parts: ModelResourcePart[],
   selectedObject?: null | Object3D,
   onSelectChange?: (null | Object3D) => mixed,
 };
 */
 export const ModelResourceTreeInput/*: Component<ModelResourceTreeInputProps>*/ = ({
   modelObject,
+  parts,
   selectedObject,
   onSelectChange = _ => {},
 }) => {
@@ -28,7 +31,7 @@ export const ModelResourceTreeInput/*: Component<ModelResourceTreeInputProps>*/ 
     return [buildNodesFromObject(modelObject)];
   }, [modelObject])
 
-  const renderNode = ({ depth, expanded, id, onExpandedChange, showExpanded }) => {
+  const renderNode = ({ depth, expanded, id, onExpandedChange, showExpanded, hidden }) => {
     const object = modelObject.getObjectById(Number.parseInt(id));
     const isSelected = selectedObject === object;
     const style = {
@@ -37,7 +40,8 @@ export const ModelResourceTreeInput/*: Component<ModelResourceTreeInputProps>*/ 
     const onClick = () => {
       onSelectChange(object);
     }
-    return h('div', { style, classList: [styles.objectNode, isSelected && styles.selected] }, [
+    const nodeParts = parts.filter(p => p.objectUuid === object.uuid);
+    return !hidden && h('div', { style, classList: [styles.objectNode, isSelected && styles.selected] }, [
       showExpanded && h(ExpandToggleInput, { expanded, onExpandedChange }),
       h('button', {
         class: styles.objectName,
@@ -47,9 +51,16 @@ export const ModelResourceTreeInput/*: Component<ModelResourceTreeInputProps>*/ 
           object.name),
       h('span', {
         class: styles.objectTagColumn,
-      },
+      }, [
+        h('span', { class: styles.objectTag, style: { 
+          backgroundColor: `hsl(${hash(object.type) % 360}deg, 50%, 50%)` } }, object.type),
+      ]),
+      nodeParts.map(part =>
+        h('span', { class: styles.objectTagColumn }, [
           h('span', { class: styles.objectTag, style: { 
-            backgroundColor: `hsl(${hash(object.type) % 360}deg, 50%, 50%)` } }, object.type))
+            backgroundColor: `hsl(${hash(part.id) % 360}deg, 50%, 50%)` } }, part.title),
+        ])
+      ),
     ]);
   }
 

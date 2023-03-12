@@ -23,7 +23,8 @@
     "@lukekaalim/act-markdown": "^1.4.0",
     "@lukekaalim/act-rehersal": "^2.5.0",
     "@lukekaalim/act-three": "^5.8.3",
-    "three": "^0.150.0"
+    "nanoid": "^4.0.1",
+    "three": "0.149.0"
   },
   "devDependencies": {
     "vite": "^4.1.4"

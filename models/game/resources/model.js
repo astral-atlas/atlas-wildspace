@@ -10,6 +10,7 @@ import { castGameMetaResource } from "../meta.js";
 
 /*::
 export type ModelResourcePath = $ReadOnlyArray<string>;
+export type ModelResourceObjectUUID = string;
 
 export type ModelResourceID = string;
 export type ModelResource = GameMetaResource<{|
@@ -22,11 +23,12 @@ export type ModelResource = GameMetaResource<{|
 export type ModelResourcePartID = string;
 export type ModelResourcePart = GameMetaResource<{|
   modelResourceId: ModelResourceID,
-  path: ModelResourcePath,
+  objectUuid: ModelResourceObjectUUID,
 |}, ModelResourcePartID>;
 */
 export const castModelResourceId/*: Cast<ModelResourceID>*/ = c.str;
 export const castModelResourcePath/*: Cast<ModelResourcePath>*/ = c.arr(c.str);
+export const castModelResourceObjectUUID/*: Cast<ModelResourceObjectUUID>*/ = c.str;
 export const castModelResource/*: Cast<ModelResource>*/ = castGameMetaResource(castModelResourceId, c.obj({
   assetId: castAssetID,
   format: c.enums(['gltf']),
@@ -34,7 +36,10 @@ export const castModelResource/*: Cast<ModelResource>*/ = castGameMetaResource(c
 }))
 
 export const castModelResourcePartID/*: Cast<ModelResourcePartID>*/ = c.str;
-export const castModelResourcePart/*: Cast<ModelResourcePart>*/ = castGameMetaResource(castModelResourcePartID, c.obj({
-  modelResourceId: castModelResourceId,
-  path: castModelResourcePath,
-}));
+export const castModelResourcePart/*: Cast<ModelResourcePart>*/ = castGameMetaResource(
+  castModelResourcePartID, 
+  c.obj({
+    modelResourceId: castModelResourceId,
+    objectUuid: castModelResourceObjectUUID,
+  })
+);

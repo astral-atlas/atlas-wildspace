@@ -1,0 +1,123 @@
+.resourceChip {
+  background-color: var(--id-hash-color, rgb(69, 103, 255));
+  border-radius: 4px;
+  padding: 4px;
+
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.61);
+
+  display: flex;
+  flex-direction: column;
+  position: relative;
+
+  overflow: hidden;
+  margin: 8px;
+}
+
+.resourceMetaRow {
+  font-size: small;
+  line-height: 14px;
+
+  overflow-x: auto;
+}
+
+.resourceInlineEntry {
+  margin: 4px;
+  display: inline-flex;
+  flex-direction: row;
+}
+.resourceInlineEntry > .key {
+  color: rgb(105, 104, 104);
+  margin: auto 2px auto 2px;
+  text-decoration: underline;
+}
+.resourceInlineEntry > .value {
+  color: rgb(28, 28, 28);
+  background-color: rgba(214, 214, 214, 0.462);
+  border-radius: 4px;
+  padding: 2px;
+  white-space: pre;
+}
+
+.divider {
+  width: 75%;
+  border: 0;
+  border-top: 1px solid #00000036;
+  margin: 4px auto 4px auto;
+}
+
+.labelContainer {
+  display: inline-flex;
+  flex-direction: column;
+  margin: 4px;
+}
+
+.label {
+  color: rgb(105, 104, 104);
+  margin: auto 0 auto 0;
+
+  font-size: small;
+  text-decoration: underline;
+  line-height: 14px;
+}
+
+.labelContainer > .controller {
+  display: flex;
+}
+
+.actionRow {
+  margin: 4px;
+  display: flex;
+  flex-direction: row;
+}
+.tagRow {
+  margin: 16px 4px 12px 4px;
+  display: flex;
+  flex-direction: row;
+  font-size: small;
+}
+.tagName {
+  border-radius: 4px;
+  background-color: white;
+  line-height: 12px;
+  padding: 4px;
+  margin: auto 4px auto 4px;
+  box-shadow: 0 0 4px 0 #0000007d;
+  white-space: pre;
+}
+.tagLabelContainer {
+  position: relative;
+  height: 22px;
+  display: flex;
+  flex-direction: column;
+}
+.tagInput {
+  height: 100%;
+  width: 128px;
+}
+.tagLabel {
+  position: absolute;
+  bottom: 100%;
+
+  line-height: 14px;
+  text-decoration: underline;
+  color: rgb(105, 104, 104);
+}
+.addTagButton {
+  height: 22px;
+}
+
+.tagList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: row;
+}
+
+.chipset {
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
+}

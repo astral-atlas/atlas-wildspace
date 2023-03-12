@@ -1,0 +1,139 @@
+.overlay {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.anchor {
+  position: absolute;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.anchor.top {
+  top: 0px;
+  flex-direction: column;
+}
+.anchor.bottom {
+  bottom: 0px;
+  flex-direction: column-reverse;
+}
+.anchor.left {
+  left: 0px;
+  align-items: flex-start;
+}
+.anchor.right {
+  right: 0px;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.iconWindow {
+  margin: 4px;
+
+  overflow: hidden;
+
+  border: 1px solid rgba(123, 123, 123, 0.497);
+  border-radius: 8px;
+  background-color: rgba(45, 45, 45, 0.481);
+  color: white;
+
+  display: flex;
+  flex-direction: row;
+
+  transition: width 0.2s, height 0.2s, border 0.2s;
+
+  backdrop-filter: blur(8px);
+  pointer-events: initial;
+}
+
+.anchor.left .iconWindow {
+  justify-content: flex-start;
+}
+.anchor.right .iconWindow {
+  justify-content: flex-end;
+}
+.anchor.bottom .iconWindow {
+  align-items: flex-end;
+}
+.anchor.top .iconWindow {
+  align-items: flex-start;
+}
+
+.iconWindow:hover {
+  border: 1px solid rgb(130, 130, 130);
+}
+.iconContainer {
+  display: flex;
+  flex-direction: row;
+
+  height: 64px;
+  min-width: 256px;
+}
+.anchor.left .iconContainer {
+  flex-direction: row;
+}
+.anchor.right .iconContainer {
+  flex-direction: row-reverse;
+}
+
+.iconImage {
+  width: 24px;
+  height: 24px;
+  filter: invert(1);
+
+  padding: 4px;
+  display: inline-block;
+}
+
+.anchor.top .iconImage {
+  margin-bottom: auto;
+}
+.anchor.bottom .iconImage {
+  margin-top: auto;
+}
+
+.overlayButton {
+  border: 1px solid rgba(123, 123, 123, 0.497);
+  border-radius: 8px;
+  background-color: rgba(45, 45, 45, 0.481);
+
+  padding: 0;
+  width: 34px;
+  height: 34px;
+
+  margin: 4px;
+
+  cursor: pointer;
+  transform: scale(1);
+  transition: transform 0.2s;
+
+  backdrop-filter: blur(8px);
+  pointer-events: initial;
+}
+.overlayButton:hover {
+  transform: scale(1.1)
+}
+.overlayButtonImage {
+  width: 24px;
+  height: 24px;
+  filter: invert(1);
+}
+
+.overlayBox {
+  border: 1px solid rgba(123, 123, 123, 0.497);
+  border-radius: 8px;
+  background-color: rgba(45, 45, 45, 0.481);
+
+  margin: 4px;
+  padding: 8px;
+
+  color: white;
+  backdrop-filter: blur(8px);
+
+  display: flex;
+  flex-direction: column;
+  pointer-events: initial;
+}
