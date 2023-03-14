@@ -3,6 +3,7 @@
 /*::
 import type { Component } from '@lukekaalim/act';
 */
+import { DropdownRoot } from '@astral-atlas/wildspace-components';
 import { h, useState } from '@lukekaalim/act';
 import { nanoid } from 'nanoid/non-secure';
 import styles from './FramePresenter.module.css';
@@ -29,9 +30,7 @@ export const FramePresenter/*: Component<FramePresenterProps>*/ = ({
         boxSizing: 'border-box',
         resize: 'both', overflow: 'hidden',
         padding
-      } }, [
-        children
-      ]),
+      } }, h(DropdownRoot, {}, children)),
     ]),
   ]
 }

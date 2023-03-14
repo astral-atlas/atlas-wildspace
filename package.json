@@ -21,8 +21,8 @@
     "flow-bin": "^0.186.0"
   },
   "scripts": {
-    "dev:api": "npm run dev -w api",
-    "dev:www": "npm run dev -w www",
+    "++dev:api": "npm run dev -w api",
+    "++dev:www": "npm run dev -w www",
     "dev:docs": "npm run dev -w docs2",
     "dev": "npx concurrently npm:dev:*",
     "test": "npm test -w test"

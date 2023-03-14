@@ -2,7 +2,8 @@
 /*::
 import type {
   ModelResourcePart, ModelResourcePartID,
-  ModelResource
+  ModelResource,
+  Tag, TagID,
 } from "@astral-atlas/wildspace-models";
 import type { Component } from "@lukekaalim/act";
 import type { Object3D } from "three";
@@ -20,8 +21,16 @@ import {
 
 /*::
 export type ModelResourceObjectInputProps = {
+  allTags?: $ReadOnlyArray<Tag>,
+
   modelResource: ModelResource,
   parts: ModelResourcePart[],
+
+  onEvent?: (
+    | { type: 'submit-new-tag', tagTitle: string, partId: ModelResourcePartID }
+    | { type: 'update-part', partId: ModelResourcePartID, part: ModelResourcePart }
+  ) => mixed,
+
   onPartCreate?: () => mixed,
   onPartRemove?: (id: ModelResourcePartID) => mixed,
   onPartUpdate?: (id: ModelResourcePartID, part: ModelResourcePart) => mixed,
@@ -33,6 +42,8 @@ export const ModelResourceObjectInput/*: Component<ModelResourceObjectInputProps
   modelResource,
   parts,
   object,
+  allTags = [],
+  onEvent = _ => {},
 
   onPartRemove = _ => {},
   onPartUpdate = (_, __) => {},
@@ -41,6 +52,17 @@ export const ModelResourceObjectInput/*: Component<ModelResourceObjectInputProps
   const partsForObject = parts
     .filter(p => p.modelResourceId === modelResource.id)
     .filter(p => p.objectUuid === object.uuid)
+
+  const onTagEvent = (part) => (event) => {
+    switch (event.type) {
+      case 'attach-tag':
+        return onPartUpdate(part.id, { ...part, tags: [...part.tags, event.tagId] })
+      case 'detach-tag':
+        return onPartUpdate(part.id, { ...part, tags: part.tags.filter(id => id !== event.tagId) })
+      case 'submit-new-tag':
+        return onEvent({ type: 'submit-new-tag', partId: part.id, tagTitle: event.tagTitle })
+    }
+  }
 
   return h('div', { style: { display: 'flex', flexDirection: 'column', overflow: 'hidden' } }, [
     h('button', { onClick: onPartCreate }, 'Add Part'),
@@ -56,7 +78,11 @@ export const ModelResourceObjectInput/*: Component<ModelResourceObjectInputProps
             ...part,
             title: e.target.value,
           }) })),
-        h(ResourceChipTagRow, { tags: [] }),
+        allTags && h(ResourceChipTagRow, {
+          allTags,
+          attachedTagIds: part.tags,
+          onEvent: onTagEvent(part)
+        }),
         h(ResourceChipActionRow, { actions: [
           { title: 'Delete', onAction: onPartRemove && (() => onPartRemove(part.id)) }
         ]}),

@@ -1,14 +1,14 @@
 // @flow strict
 /*::
 import type { Component } from "@lukekaalim/act";
-import type { ModelResourcePart } from '@astral-atlas/wildspace-models';
+import type { ModelResourcePart, Tag } from '@astral-atlas/wildspace-models';
 */
 
 import { ModelResourceEditorSection } from "@astral-atlas/wildspace-components";
 import { h, useEffect, useMemo, useState } from "@lukekaalim/act";
 import { FramePresenter } from "./presentation";
 import { BoxGeometry, Mesh } from "three";
-import { createMockModelResource, randomName, } from "@astral-atlas/wildspace-test";
+import { createMockModelResource, createMockTag, randomName } from "@astral-atlas/wildspace-test";
 import { nanoid } from "nanoid/non-secure";
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { testModelURLs } from '@astral-atlas/wildspace-test/models'
@@ -17,6 +17,7 @@ export const ModelResourceEditorSectionDemo/*: Component<>*/ = () => {
   const [modelObject, setModelObject] = useState(null);
   useEffect(() => {
     const loader = new GLTFLoader();
+    
     loader.load(testModelURLs.gunTurret, (result) => {
       setModelObject(result.scene);
       console.log(result.scene)
@@ -25,9 +26,17 @@ export const ModelResourceEditorSectionDemo/*: Component<>*/ = () => {
 
   const resource = useMemo(() => createMockModelResource(), []);
 
+  const [allTags, setTags] = useState/*:: <Tag[]>*/([])
   const [parts, setParts] = useState/*:: <ModelResourcePart[]>*/([])
-  const events = (event) => {
+  const onEvent = (event) => {
+    console.log(event)
     switch (event.type) {
+      case 'submit-new-tag':
+        const newTag = { ...createMockTag(), title: event.tagTitle };
+        setTags([...allTags, newTag]);
+        return setParts(parts.map(p => p.id !== event.partId ? p : {
+          ...p, tags: [...p.tags, newTag.id]
+        }))
       case 'add-part':
         const newPart = {
           gameId: '0',
@@ -48,5 +57,5 @@ export const ModelResourceEditorSectionDemo/*: Component<>*/ = () => {
   }
 
   return h(FramePresenter, { height: 'calc(512px + 256px)' },
-    !!modelObject && h(ModelResourceEditorSection, { events, modelObject, parts, resource }));
+    !!modelObject && h(ModelResourceEditorSection, { onEvent, modelObject, parts, resource, allTags }));
 };

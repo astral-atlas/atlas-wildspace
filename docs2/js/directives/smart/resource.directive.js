@@ -6,9 +6,10 @@ import type { Component } from "@lukekaalim/act";
 import { ResourceChipTagRow } from "../../../../components/dom/blocks/layout/ResourceChip";
 import { FramePresenter } from "../presentation/FramePresenter";
 import { FillBlock } from "../presentation/blocks";
-import { ResourceChip, ResourceChipInlineRow, ResourceChipDivider, ResourceChipLabel, ResourceChipActionRow, ResourceChipset } from "@astral-atlas/wildspace-components";
-import { h } from "@lukekaalim/act";
+import { ResourceChip, ResourceChipInlineRow, ResourceChipDivider, ResourceChipLabel, ResourceChipActionRow, ResourceChipset, DropdownRoot } from "@astral-atlas/wildspace-components";
+import { h, useMemo } from "@lukekaalim/act";
 import { nanoid } from 'nanoid/non-secure';
+import { repeat, createMockTag } from "@astral-atlas/wildspace-test";
 
 export const ResourceChipDemo/*: Component<>*/ = () => {
   return h(FramePresenter, {  }, [
@@ -29,12 +30,11 @@ export const ResourceChipDemo/*: Component<>*/ = () => {
 
       h(ResourceChip, { id: nanoid(), version: nanoid() }, [
         h(ResourceChipDivider),
-        h(ResourceChipTagRow, { currentTags: [
-          { id: nanoid(), title: 'Tag A' },
-          { id: nanoid(), title: 'Tag B' }
-        ], allTags: [
-          { id: nanoid(), title: 'Tag C' }
-        ] }),
+        h(ResourceChipTagRow, {
+          allTags: useMemo(() => repeat(() => createMockTag(), 10), []),
+          attachedTagIds: [],
+          onEvent: console.log,
+        }),
         h(ResourceChipInlineRow, { fields: [
           { key: 'blorgs', value: Math.round(Math.random() * 100).toString() }
         ] }),

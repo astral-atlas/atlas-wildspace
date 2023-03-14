@@ -5,9 +5,12 @@ import stringHash from "@sindresorhus/string-hash";
 import { nanoid } from 'nanoid/non-secure';
 import styles from './ResourceChip.module.css';
 import { TagDropdown } from "../../../library/editor/tags/TagDropdown";
+import { TagRowInput } from "../input";
 
 /*::
 import type { Component, ElementNode } from "@lukekaalim/act";
+import type { Tag, TagID } from '@astral-atlas/wildspace-models';
+import type { TagRowInputProps } from "../input/TagRowInput";
 
 export type ResourceChipProps = {
   id: string,
@@ -82,33 +85,9 @@ export const ResourceChipActionRow/*: Component<ResourceChipActionRowProps>*/ = 
   ));
 }
 
-/*::
-export type ResourceChipTagRowProps = {
-  currentTags: { title: string, id: string }[],
-
-  allTags: { title: string, id: string }[],
-};
-*/
-
-export const ResourceChipTagRow/*: Component<ResourceChipTagRowProps>*/ = ({
-  currentTags,
-  allTags,
-}) => {
-  return h('div', { class: styles.tagRow }, [
-    h('span', { class: styles.label }, 'tags'),
-    h('ol', { class: styles.tagList }, currentTags.map(tag =>
-      h('li', {
-        class: styles.tagName,
-        style: { backgroundColor: `hsl(${stringHash(tag.id) % 360}deg, 50%, 80%)`}
-      }, tag.title))),
-    h('label', { class: styles.tagLabelContainer }, [
-      h('span', { class: styles.tagLabel }, 'new tag name'),
-      h('input', { class: styles.tagInput, type: 'text' })
-    ]),
-    h('button', { class: styles.addTagButton }, 'add tag'),
-    h('select', {}, allTags.map(tag =>
-      h('option', { value: tag.id }, tag.title))),
-  ]);
+export const ResourceChipTagRow/*: Component<TagRowInputProps>*/ = (props) => {
+  return h('div', { class: styles.tagRow },
+    h(TagRowInput, props));
 }
 
 

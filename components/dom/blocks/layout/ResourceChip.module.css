@@ -71,8 +71,10 @@
 }
 .tagRow {
   margin: 16px 4px 12px 4px;
+  
   display: flex;
   flex-direction: row;
+
   font-size: small;
 }
 .tagName {

@@ -1,0 +1,95 @@
+.tagRow, .tagBlock {
+  padding: 4px;
+  background-color: rgb(227, 227, 227);
+  border-radius: 4px;
+}
+
+.tagRow {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  overflow: hidden;
+}
+
+.tagBlock {
+  flex: 1;
+  
+  display: inline-block;
+  overflow-x: auto;
+} 
+.tagBlock.disabled {
+  opacity: 0.5;
+}
+
+.tagButton {
+  border: 0;
+  border-radius: 4px;
+  box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.4);
+  margin: 0 4px 0 4px;
+
+  white-space: pre;
+  line-height: 22px;
+  height: 24px;
+  vertical-align: middle;
+
+  display: inline-flex;
+  flex-direction: row;
+
+  font-size: 14px;
+  color: black;
+
+  cursor: pointer;
+}
+.tagButton[disabled] {
+  cursor: auto;
+  opacity: 0.5;
+}
+.tagButtonIcon {
+  height: 14px;
+  width: 14px;
+  margin: auto;
+  transition: opacity 0.2s;
+  opacity: 0.4;
+}
+.tagButton:hover > .tagButtonIcon {
+  opacity: 0.75;
+}
+.tagNameInput {
+  background-color: transparent;
+  border: 0;
+
+  flex: 1;
+  min-width: 33%;
+
+  margin-bottom: 16px;
+}
+
+.tagDropDown {
+  flex: 1;
+  height: 128px;
+  position: absolute;
+  top: 100%;
+  background-color: #c8c8c8;
+  left: 0;
+  right: 0;
+  border: 1px solid black;
+  border-radius: 4px;
+  transition: height 0.2s, opacity 0.2s;
+
+  overflow-y: auto;
+}
+.tagDropDown.hidden {
+  height: 0px;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.tagDropdownSectionTitle {
+  font-size: 14px;
+  line-height: 14px;
+
+  margin: auto 0 auto 0;
+
+  color: black;
+}

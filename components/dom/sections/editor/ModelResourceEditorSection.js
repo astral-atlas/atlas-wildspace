@@ -25,16 +25,19 @@ import type {
   ModelResource,
   ModelResourcePart,
   ModelResourcePartID,
+  Tag,
 } from "@astral-atlas/wildspace-models";
 
 export type ModelResourceEditorSectionProps = {
+  allTags: $ReadOnlyArray<Tag>,
   modelObject: Object3D,
   resource: ModelResource,
   parts: ModelResourcePart[],
 
-  events?: (
+  onEvent?: (
     | { type: 'add-part', objectUUID: string }
     | { type: 'remove-part', partId: ModelResourcePartID }
+    | { type: 'submit-new-tag', partId: ModelResourcePartID, tagTitle: string }
     | { type: 'update-part', partId: ModelResourcePartID, part: ModelResourcePart }
   ) => mixed,
 };
@@ -120,11 +123,12 @@ const HighlightNode = ({ object }) => {
 }
 
 export const ModelResourceEditorSection/*: Component<ModelResourceEditorSectionProps>*/ = ({
+  allTags,
   modelObject,
   resource,
   parts,
 
-  events = _ => {},
+  onEvent = _ => {},
 }) => {
   const [selected, setSelected] = useState/*:: <null | Object3D>*/(null)
 
@@ -156,12 +160,14 @@ export const ModelResourceEditorSection/*: Component<ModelResourceEditorSectionP
       }),
     bottomPane: selected && [
       h(ModelResourceObjectInput, {
+        onEvent,
+        allTags,
         object: selected,
         parts,
         modelResource: resource,
-        onPartCreate: () => events({ type: 'add-part', objectUUID: selected.uuid }),
-        onPartRemove: (partId) => events({ type: 'remove-part', partId }),
-        onPartUpdate: (partId, part) => events({ type: 'update-part', partId, part })
+        onPartCreate: () => onEvent({ type: 'add-part', objectUUID: selected.uuid }),
+        onPartRemove: (partId) => onEvent({ type: 'remove-part', partId }),
+        onPartUpdate: (partId, part) => onEvent({ type: 'update-part', partId, part })
       }),
     ]
   })
