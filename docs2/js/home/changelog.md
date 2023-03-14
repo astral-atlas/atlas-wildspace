@@ -3,7 +3,9 @@
 #### 15th March, 2023
 - Added `TagRowInput`
 - Added `DropdownLayout` (and friends)
-- Added tag support to `ResourceChip`, `ModelResourceEditorSection`
+- Added tag support to
+  - `ResourceChip`
+  - `ModelResourceEditorSection`
 
 #### 13th March, 2023
 - Added `GunTurret` test model
