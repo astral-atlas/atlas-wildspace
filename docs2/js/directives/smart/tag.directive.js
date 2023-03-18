@@ -31,6 +31,8 @@ export const InlineTagInputDemo/*: Component<>*/ = () => {
   }
 
   return h(FramePresenter, {}, [
-    h(TagRowInput, { attachedTagIds, allTags, onEvent })
+    h('div', {}, [
+      h(TagRowInput, { attachedTagIds, allTags, onEvent })
+    ])
   ])
 }

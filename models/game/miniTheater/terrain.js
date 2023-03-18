@@ -26,13 +26,13 @@ export type TerrainPropID = string;
 export type TerrainProp = GameMetaResource<{
   nodes: $ReadOnlyArray<TerrainPropNode>,
   rootNodes: $ReadOnlyArray<TerrainPropNodeID>,
-  iconCameraId: ?TerrainPropNodeID,
+  iconCameraId: null | TerrainPropNodeID,
 }, TerrainPropID>;
 
 export type TerrainPropNodeID = string;
 export type TerrainPropNodePath = $ReadOnlyArray<TerrainPropNodeID>;
 export type TerrainPropNodeMeta = {|
-  name: ?string,
+  name: null | string,
   id: TerrainPropNodeID,
   path: TerrainPropNodePath,
 |};
@@ -54,7 +54,9 @@ export type TerrainPropTransformNode = {|
 export type TerrainPropNodes = {
   'floor': {| type: 'floor', floorShape: MiniTheaterShape, meta: TerrainPropNodeMeta |},
   'prop': {| type: 'prop', propId: TerrainPropID, meta: TerrainPropNodeMeta |},
-  'camera': {| type: 'camera', meta: TerrainPropNodeMeta |}
+  'camera': {| type: 'camera', meta: TerrainPropNodeMeta |},
+  'transform': TerrainPropTransformNode,
+  'model': TerrainPropModelNode,
 }
 
 export type TerrainPropNode = (

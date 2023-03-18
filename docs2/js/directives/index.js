@@ -6,7 +6,6 @@ import type { ComponentMap } from "@lukekaalim/act-markdown";
 import { ResourceModelObjectInputDemo, ResourceModelTreeInputDemo } from "./ResourceModelTreeInput.js";
 import { ExpandToggleInputDemo } from "./togglesDemo.js";
 import { TreeGraphColumnDemo } from "./TreeGraphColumnDemo.js";
-import { ModelResourceEditorSectionDemo } from "./editors.js";
 import { PreviewSidebarLayoutDemo, ResourceMetaLayoutDemo } from "./layout.js";
 import { TextInputDemo } from "./form.js";
 
@@ -26,7 +25,6 @@ export const directives/*: ComponentMap*/ = {
   TreeGraphColumnDemo: TreeGraphColumnDemo,
   ExpandToggleInputDemo: ExpandToggleInputDemo,
   ResourceModelTreeInputDemo: ResourceModelTreeInputDemo,
-  ModelResourceEditorSectionDemo: ModelResourceEditorSectionDemo,
   PreviewSidebarLayoutDemo: PreviewSidebarLayoutDemo,
   ResourceModelObjectInputDemo: ResourceModelObjectInputDemo,
   ResourceMetaLayoutDemo: ResourceMetaLayoutDemo,

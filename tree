@@ -1,0 +1,123 @@
+wildspace@ /Users/lkaalim/Projects/atlas/wildspace
+├─┬ @astral-atlas/wildspace-api@3.26.0 -> ./api
+│ ├── @astral-atlas/sesame-client@3.2.0
+│ ├── @astral-atlas/sesame-models@11.7.0
+│ ├── @astral-atlas/wildspace-data@1.0.0 deduped -> ./data
+│ ├── @astral-atlas/wildspace-models@1.0.0 deduped -> ./models
+│ ├── @aws-sdk/client-dynamodb@3.172.0
+│ ├── @aws-sdk/client-ssm@3.171.0
+│ ├── @aws-sdk/s3-presigned-post@3.171.0
+│ ├── @aws-sdk/s3-request-presigner@3.173.0
+│ ├── @lukekaalim/http-client@5.2.0
+│ ├── @lukekaalim/http-server@13.7.0
+│ ├── @lukekaalim/ws-server@2.0.1
+│ ├── json5@2.2.3
+│ ├── nodemon@2.0.20
+│ ├── redis@4.3.1
+│ ├── uuid@8.3.2
+│ └── ws@8.12.1
+├─┬ @astral-atlas/wildspace-cli@1.0.0 -> ./cli
+│ ├── @aws-sdk/client-sts@3.171.0
+│ ├── json5@2.2.3 deduped
+│ └── redis@4.3.1 deduped
+├─┬ @astral-atlas/wildspace-client2@1.0.0 -> ./client2
+│ ├── @astral-atlas/sesame-models@11.7.0 deduped
+│ ├── @astral-atlas/wildspace-models@1.0.0 deduped -> ./models
+│ ├── @lukekaalim/http-client@6.1.0
+│ └── @lukekaalim/ws-client@2.1.0
+├─┬ @astral-atlas/wildspace-components@0.0.0 -> ./components
+│ ├── @astral-atlas/wildspace-client2@1.0.0 deduped -> ./client2
+│ ├── @astral-atlas/wildspace-models@1.0.0 deduped -> ./models
+│ ├── @lukekaalim/act-curve@3.1.2
+│ ├── @lukekaalim/act-markdown@1.4.0
+│ ├── @lukekaalim/act-three@5.8.3
+│ ├── @lukekaalim/act-web@2.2.1
+│ ├── @lukekaalim/act@2.6.0
+│ ├── @mediapipe/holistic@0.5.1635989137
+│ ├── @sindresorhus/string-hash@2.0.0
+│ ├── a11y-dialog@7.5.2
+│ ├── color-string@1.9.1
+│ ├── lodash.debounce@4.0.8
+│ ├── math-random-seed@2.0.0
+│ ├── mdast-util-from-markdown@1.2.0
+│ ├── mime-types@2.1.35
+│ ├── mime@3.0.0
+│ ├── music-metadata-browser@2.5.9
+│ ├── parse-audio-metadata@1.1.0
+│ ├── prosemirror-collab@1.3.0
+│ ├── prosemirror-example-setup@1.2.1
+│ ├── prosemirror-model@1.18.1
+│ ├── prosemirror-schema-basic@1.2.0
+│ ├── prosemirror-state@1.4.1
+│ ├── prosemirror-view@1.28.0
+│ ├── seedrandom@3.0.5
+│ ├── spark-md5@3.0.2
+│ ├── upgrade@1.1.0
+│ └── uuid@9.0.0
+├─┬ @astral-atlas/wildspace-data@1.0.0 -> ./data
+│ ├── @astral-atlas/wildspace-models@1.0.0 deduped -> ./models
+│ ├── @aws-sdk/client-dynamodb@3.172.0 deduped
+│ ├── @aws-sdk/client-s3@3.171.0
+│ ├── @lukekaalim/cast@4.1.1
+│ ├── ioredis@4.28.5
+│ └── redis@4.3.1 deduped
+├─┬ @astral-atlas/wildspace-docs@1.0.0 -> ./docs
+│ ├── @astral-atlas/wildspace-client2@1.0.0 deduped -> ./client2
+│ ├── @astral-atlas/wildspace-components@0.0.0 deduped -> ./components
+│ ├── @astral-atlas/wildspace-test@1.0.0 deduped -> ./test
+│ ├── @lukekaalim/act-curve@3.1.2 deduped
+│ ├── @lukekaalim/act-markdown@1.4.0 deduped
+│ ├── @lukekaalim/act-navigation@1.1.0
+│ ├── @lukekaalim/act-rehersal@2.5.0
+│ ├── @lukekaalim/act-three@5.8.3 deduped
+│ ├── @lukekaalim/act-web@2.2.1 deduped
+│ ├── @lukekaalim/act@2.6.0 deduped
+│ ├── lodash.throttle@4.1.1
+│ ├── upgrade@1.1.0 deduped
+│ └── vite@2.9.13
+├─┬ @astral-atlas/wildspace-docs2@1.0.0 -> ./docs2
+│ ├── @astral-atlas/wildspace-components@0.0.0 deduped -> ./components
+│ ├── @lukekaalim/act-markdown@1.4.0 deduped
+│ ├── @lukekaalim/act-rehersal@2.5.0 deduped
+│ ├── @lukekaalim/act-three@5.8.3 deduped
+│ ├── @lukekaalim/act@2.6.0 deduped
+│ ├── three@0.150.0
+│ └── vite@4.1.4
+├─┬ @astral-atlas/wildspace-models@1.0.0 -> ./models
+│ ├── @astral-atlas/sesame-models@11.7.0 deduped
+│ ├── @lukekaalim/cast@4.1.1 deduped
+│ ├── @lukekaalim/net-description@1.3.0
+│ ├── prosemirror-model@1.18.1 deduped
+│ ├── prosemirror-schema-basic@1.2.0 deduped
+│ └── prosemirror-schema-list@1.2.2
+├─┬ @astral-atlas/wildspace-test@1.0.0 -> ./test
+│ ├── @astral-atlas/wildspace-models@1.0.0 deduped -> ./models
+│ ├── @lukekaalim/test@8.3.0
+│ └── uuid@9.0.0
+├─┬ @astral-atlas/wildspace-www@3.21.0 -> ./www
+│ ├── @astral-atlas/sesame-client@3.2.0 deduped
+│ ├── @astral-atlas/sesame-components@3.3.0
+│ ├── @astral-atlas/sesame-models@11.7.0 deduped
+│ ├── @astral-atlas/wildspace-client2@1.0.0 deduped -> ./client2
+│ ├── @astral-atlas/wildspace-components@0.0.0 deduped -> ./components
+│ ├── @astral-atlas/wildspace-test@1.0.0 deduped -> ./test
+│ ├── @lukekaalim/act-curve@3.1.2 deduped
+│ ├── @lukekaalim/act-navigation@1.1.0 deduped
+│ ├── @lukekaalim/act-three@5.8.3 deduped
+│ ├── @lukekaalim/act-web@2.2.1 deduped
+│ ├── @lukekaalim/act@2.6.0 deduped
+│ ├── @lukekaalim/cast@4.1.1 deduped
+│ ├── @lukekaalim/http-client@5.2.0 deduped
+│ ├── @lukekaalim/ws-client@2.1.0 deduped
+│ ├── lodash.debounce@4.0.8 deduped
+│ ├── lodash.throttle@4.1.1 deduped
+│ ├── upgrade@1.1.0 deduped
+│ └── vite@2.9.13 deduped
+├─┬ @lukekaalim/bundle@1.0.0 -> ./bundle
+│ ├── @craftamap/esbuild-plugin-html@0.4.0
+│ ├── esbuild-css-modules-plugin@2.5.2
+│ └── esbuild@0.14.54
+├── @lukekaalim/task@1.0.0 -> ./task
+├── concurrently@7.4.0
+└── flow-bin@0.186.0
+

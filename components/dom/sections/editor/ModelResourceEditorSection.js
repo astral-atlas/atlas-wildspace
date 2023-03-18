@@ -45,12 +45,14 @@ export type ModelResourceEditorSectionProps = {
 const selectedMaterial = new MeshBasicMaterial({ color: 'red' })
 const unSelectedMaterial = new MeshBasicMaterial({ color: 'blue' })
 
-const Node = ({ object, selected }) => {
+const Node/*: Component<{ selected: ?Object3D, object: Object3D }>*/ = ({ object, selected }) => {
   if (object instanceof Mesh)
     return h(MeshNode, { object, selected });
 
   if (object instanceof Object3D)
     return h(ObjectNode, { object, selected })
+
+  return null;
 };
 
 const ObjectNode = ({ object, selected }) => {
