@@ -1,5 +1,9 @@
 # Changelog
 
+#### 20th March, 2023
+- Added `TagBoxTreeColumn`
+- Added `TerrainPropEditor`
+
 #### 15th March, 2023
 - Added `TagRowInput`
 - Added `DropdownLayout` (and friends)

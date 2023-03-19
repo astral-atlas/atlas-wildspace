@@ -41,6 +41,8 @@ type RenderNodeFunc = (renderedNodeSettings: {
 
 ::TreeGraphColumnDemo
 
+::TagBoxTreeColumnDemo
+
 ## Implementations
 
  - [Resource Model Tree Editor](../input/resourceModel)

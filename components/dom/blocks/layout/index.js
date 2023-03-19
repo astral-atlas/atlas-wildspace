@@ -1,6 +1,8 @@
 // @flow strict
 
 export * from './TreeGraphColumn.js';
+export * from './TagBoxTreeColumn.js'
+
 export * from './PreviewSidebarLayout.js';
 export * from './ResourceLayout.js';
 export * from './ResourceChip.js';

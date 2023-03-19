@@ -53,6 +53,11 @@ export const ModelResourceObjectInput/*: Component<ModelResourceObjectInputProps
     .filter(p => p.modelResourceId === modelResource.id)
     .filter(p => p.objectUuid === object.uuid)
 
+  console.log(parts
+    .filter(p => p.modelResourceId === modelResource.id))
+  console.log(parts
+    .filter(p => p.objectUuid === object.uuid))
+
   const onTagEvent = (part) => (event) => {
     switch (event.type) {
       case 'attach-tag':

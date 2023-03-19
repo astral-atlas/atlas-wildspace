@@ -44,17 +44,17 @@ export const ModelResourceEditorSectionDemo/*: Component<>*/ = () => {
     switch (event.type) {
       case 'submit-new-tag':
         const newTag = { ...createMockTag(), title: event.tagTitle };
-        setTags([...allTags, newTag]);
-        return setParts(parts.map(p => p.id !== event.partId ? p : {
+        setTags(ts => [...ts, newTag]);
+        return setParts(ps => ps.map(p => p.id !== event.partId ? p : {
           ...p, tags: [...p.tags, newTag.id]
         }))
       case 'add-part':
-        const newPart = { ...createMockModelResourcePart(), objectUuid: event.objectUUID }
-        return setParts([...parts, newPart])
+        const newPart = { ...createMockModelResourcePart(), modelResourceId: resource.id, objectUuid: event.objectUUID }
+        return setParts(ps => [...ps, newPart])
       case 'update-part':
-        return setParts(parts.map(p => p.id === event.partId ? event.part : p));
+        return setParts(ps => ps.map(p => p.id === event.partId ? event.part : p));
       case 'remove-part':
-        return setParts(parts.filter(p => p.id !== event.partId))
+        return setParts(ps => ps.filter(p => p.id !== event.partId))
     }
   }
 
@@ -77,8 +77,8 @@ const createMockTerrainPropNode = ()/*: TerrainPropNode[]*/ => {
     propId: nanoid(),
     meta: createMockMeta()
   });
-  const createMockTransformNode = ()/*: TerrainPropNode[] */ => {
-    const children = repeat(() => createNodes(), 3).flat(1);
+  const createMockTransformNode = (depth)/*: TerrainPropNode[] */ => {
+    const children = depth < 2 ? repeat(() => createNodes(depth + 1), 3).flat(1) : [];
     return [{
       type: 'transform',
       children: children.map(c => c.meta.id),
@@ -89,19 +89,19 @@ const createMockTerrainPropNode = ()/*: TerrainPropNode[]*/ => {
   };
   
 
-  const createNodes = ()/*: TerrainPropNode[]*/ => {
+  const createNodes = (depth = 0)/*: TerrainPropNode[]*/ => {
     switch (randomElement(['prop', 'camera', 'transform'])) {
       case 'prop':
         return [createMockPropNode()];
       case 'transform':
-        return createMockTransformNode();
+        return createMockTransformNode(depth);
       case 'camera':
         return [createMockCameraNode()];
       default:
         throw new Error();
     }
   }
-  return createMockTransformNode();
+  return createMockTransformNode(0);
 };
 
 export const TerrainPropEditorDemo/*: Component<>*/ = () => {
@@ -118,7 +118,7 @@ export const TerrainPropEditorDemo/*: Component<>*/ = () => {
     rootNodes: terrainPropsNodes.map(n => n.meta.id)
   };
 
-  return h(FramePresenter, {},
+  return h(FramePresenter, { height: 'calc(512px + 256px)' },
     h(TerrainPropEditor2, { resources, tags, terrainProp })
   )
 };

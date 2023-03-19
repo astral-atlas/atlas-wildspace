@@ -4,11 +4,12 @@ import type { Component } from "@lukekaalim/act";
 import type { MiniTheaterRenderResources } from "../../../miniTheater/useMiniTheaterResources";
 import type { TerrainProp, Tag, TagID } from "@astral-atlas/wildspace-models";
 */
-import { h, useMemo } from '@lukekaalim/act';
+import { h, useMemo, useState } from '@lukekaalim/act';
 import { scene } from "@lukekaalim/act-three";
-import { ExpandToggleInput, PreviewSidebarLayout } from '../../blocks'
+import { ExpandToggleInput, PreviewSidebarLayout, TagBoxTreeColumn } from '../../blocks'
 import { RenderCanvas } from "../../../three/RenderCanvas";
 import { TreeGraphColumn } from "../../blocks/layout/TreeGraphColumn";
+import stringHash from '@sindresorhus/string-hash';
 
 /*::
 export type TerrainPropEditor2Props = {
@@ -28,6 +29,8 @@ export const TerrainPropEditor2/*: Component<TerrainPropEditor2Props>*/ = ({
   tags,
   onEvent = _ => {},
 }) => {
+  const [selectedNodeId, setSelectedNodeId] = useState(null)
+
   const nodeMap = new Map(terrainProp.nodes.map(n => [n.meta.id, n]));
   const getNodes = (ids) => {
     return ids
@@ -44,21 +47,23 @@ export const TerrainPropEditor2/*: Component<TerrainPropEditor2Props>*/ = ({
   }
   const rootNodes = getNodes(terrainProp.rootNodes);
 
-  const renderNode = useMemo(() => {
-    return ({ depth, expanded, hidden, id, showExpanded, onExpandedChange }) => {
-      return !hidden && h('div', { style: { marginLeft: `${depth * 14}px`, display: 'flex' } }, [
-        showExpanded && h(ExpandToggleInput, { expanded, onExpandedChange }),
-        h('pre', { style: { margin: 0, display: 'inline' }}, id)
-      ]);
-    }
-  }, [])
-
   return h(PreviewSidebarLayout, {
     bottomPane: '',
-    topPane: h(TreeGraphColumn, {
-      renderNode,
+    topPane: h(TagBoxTreeColumn, {
       rootNodes,
-      selectedNodes: new Set(),
+      nodeDetails: new Map(terrainProp.nodes.map(n => ([n.meta.id, {
+        title: n.meta.name || 'Untitled Node',
+        color: `hsl(${stringHash(n.meta.id) % 360}deg, 40%, 80%)`,
+        id: n.meta.id,
+        tags: [{ title: n.type, color: `hsl(${stringHash(n.type) % 360}deg, 60%, 40%)` }],
+      }]))),
+      selectedNodeIds: [selectedNodeId].filter(Boolean),
+      onEvent: event => {
+        switch (event.type) {
+          case 'select':
+            return setSelectedNodeId(event.nodeId)
+        }
+      }
     }),
     preview: h(RenderCanvas, { },
       h(scene)),

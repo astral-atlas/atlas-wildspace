@@ -26,15 +26,18 @@ export type TreeGraphColumnProps = {
   renderNode: RenderNodeFunc,
   selectedNodes: Set<TreeGraphColumnNodeID>,
   rootNodes: TreeGraphColumnNode[],
+
+  class?: string,
 };
 */
 
 export const TreeGraphColumn/*: Component<TreeGraphColumnProps>*/ = ({
   rootNodes,
   selectedNodes,
-  renderNode
+  renderNode,
+  class: _class,
 }) => {
-  return h('div', { class: styles.tree }, [
+  return h('div', { classList: [styles.tree, _class] }, [
     h(NodeList, { nodes: rootNodes, selectedNodes, depth: 0, renderNode, hidden: false })
   ])
 };

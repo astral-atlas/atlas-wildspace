@@ -1,6 +1,9 @@
 // @flow strict
 /*::
-import type { TreeGraphColumnNode } from "./TreeGraphColumn";
+import type {
+  TreeGraphColumnNode,
+  TreeGraphColumnNodeID,
+} from "./TreeGraphColumn";
 import type { Component } from "@lukekaalim/act";
 */
 
@@ -10,51 +13,56 @@ import { h, useMemo } from "@lukekaalim/act";
 import { ExpandToggleInput } from "../input";
 
 /*::
-export type TaggedNodeID = string;
-export type TaggedNode = {
-  id: TaggedNodeID,
-  children: TaggedNode[],
-  color: string,
-  tags: { title: string, color: string }[],
-}
-
 export type TagBoxTreeColumnProps = {
   rootNodes: TreeGraphColumnNode[],
-  selected: null | TaggedNodeID,
+  nodeDetails: Map<TreeGraphColumnNodeID, {
+    color: string,
+    title: string,
+    tags: { color: string, title: string }[]
+  }>,
+  selectedNodeIds?: TreeGraphColumnNodeID[],
+  onEvent?: (
+    | { type: 'select', nodeId: TreeGraphColumnNodeID }
+  ) => mixed,
 };
 */
 
 export const TagBoxTreeColumn/*: Component<TagBoxTreeColumnProps>*/ = ({
   rootNodes,
-  selected
+  nodeDetails,
+  selectedNodeIds = [],
+  onEvent = _ => {},
 }) => {
-  const renderNode = useMemo(() => ({ depth, expanded, hidden, id, onExpandedChange, showExpanded }) => {
-    return !hidden && h('div', { class: styles.boxNode }, [
+  const renderNode = ({ depth, expanded, hidden, id, onExpandedChange, showExpanded }) => {
+    const details = nodeDetails.get(id);
+    if (!details)
+      return null;
+
+    return !hidden && h('div', {
+      classList: [styles.row, selectedNodeIds.includes(id) && styles.selected],
+      style: { paddingLeft: `${depth * 3}rem`}
+    }, [
       showExpanded && h(ExpandToggleInput, { expanded, onExpandedChange }),
       h('button', {
-        class: styles.objectName,
-        onClick,
+        onClick: () => onEvent({ type: 'select', nodeId: id }),
+        class: styles.box,
         style: {
-          ['--name-color']: `hsl(${hash(object.name) % 360}deg, 20%, 80%)` } },
-          object.name),
-      h('span', {
-        class: styles.objectTagColumn,
-      }, [
-        h('span', { class: styles.objectTag, style: { 
-          backgroundColor: `hsl(${hash(object.type) % 360}deg, 50%, 50%)` } }, object.type),
-      ]),
-      nodeParts.map(part =>
-        h('span', { class: styles.objectTagColumn }, [
-          h('span', { class: styles.objectTag, style: { 
-            backgroundColor: `hsl(${hash(part.id) % 360}deg, 50%, 50%)` } }, part.title),
-        ])
-      ),
+          ['backgroundColor']: details.color
+        },
+      }, details.title),
+      h('span', { class: styles.tagRow, },
+        details.tags.map(tag => 
+          h('span', { class: styles.tag, style: { 
+            backgroundColor: tag.color
+          } }, tag.title),
+        )),
     ]);
-  }, []);
+  };
 
-  return h(TreeGraphColumn, {
+  return h('div', { class: styles.container }, h(TreeGraphColumn, {
     renderNode,
     rootNodes,
+    class: styles.column,
     selectedNodes: new Set()
-  });
+  }));
 }
